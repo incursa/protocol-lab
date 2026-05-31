@@ -9,7 +9,7 @@ namespace Incursa.ProtocolLab.Runner;
 
 internal static class RunMetadataCapture
 {
-    public static async Task<RunMetadata> CaptureAsync()
+    public static async Task<RunMetadata> CaptureAsync(ExecutionProfile executionProfile)
     {
         var warnings = new List<string>();
         var dockerVersion = await CaptureDockerVersionAsync(warnings);
@@ -39,7 +39,10 @@ internal static class RunMetadataCapture
             DateTimeOffset.UtcNow,
             await CaptureGitAsync(["rev-parse", "--short", "HEAD"], warnings),
             await CaptureGitAsync(["status", "--short"], warnings),
-            warnings);
+            warnings)
+        {
+            ExecutionProfile = executionProfile
+        };
     }
 
     private static async Task<string?> CaptureDockerVersionAsync(ICollection<string> warnings)

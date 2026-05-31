@@ -285,7 +285,10 @@ public sealed class RunnerEngine
     public async Task<RunnerCommandResult> ValidateAsync(string root, RunnerCommandOptions options, IRunnerEventSink? eventSink = null)
     {
         var output = new RunnerOutputBuffer(RunnerCommandKind.Validate, eventSink);
-        var cells = LoadCells(root, options);
+        var executionProfile = BuildExecutionProfile(options);
+        var cells = LoadCells(root, options)
+            .Select(cell => cell with { ExecutionProfile = executionProfile })
+            .ToArray();
         var externalBaseUrl = options.Get("base-url");
         var outputDirectory = options.Get("output") ?? Path.Combine(root, ".artifacts", "runs");
         var runId = options.Get("run-id") ?? $"validate-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
@@ -370,7 +373,10 @@ public sealed class RunnerEngine
     public async Task<RunnerCommandResult> RunBenchmarkAsync(string root, RunnerCommandOptions options, IRunnerEventSink? eventSink = null)
     {
         var output = new RunnerOutputBuffer(RunnerCommandKind.Run, eventSink);
-        var cells = LoadCells(root, options);
+        var executionProfile = BuildExecutionProfile(options);
+        var cells = LoadCells(root, options)
+            .Select(cell => cell with { ExecutionProfile = executionProfile })
+            .ToArray();
         var externalBaseUrl = options.Get("base-url");
         var outputDirectory = options.Get("output") ?? Path.Combine(root, ".artifacts", "runs");
         var runId = options.Get("run-id") ?? $"local-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
@@ -393,7 +399,7 @@ public sealed class RunnerEngine
             options.Get("counter-format") ?? "json",
             root);
         var loadTools = LoadToolCatalog.Load(Path.Combine(root, "load-tools"));
-        var metadata = await RunMetadataCapture.CaptureAsync();
+        var metadata = await RunMetadataCapture.CaptureAsync(executionProfile);
         var results = new List<BenchmarkResult>();
         var compatibilities = new List<RunCellCompatibility>();
         var totalRepetitionsByCell = cells
@@ -1284,13 +1290,21 @@ public sealed class RunnerEngine
             options.Get("target-configuration"));
     }
 
+    private static ExecutionProfile BuildExecutionProfile(RunnerCommandOptions options)
+    {
+        var explicitProfile = options.Get("execution-profile") ?? Environment.GetEnvironmentVariable("PROTOCOL_LAB_EXECUTION_PROFILE");
+        if (string.IsNullOrWhiteSpace(explicitProfile) &&
+            string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            explicitProfile = "ci-container";
+        }
+
+        return ExecutionProfiles.Infer(options.Get("target-mode"), options.Get("target-network-mode"), explicitProfile);
+    }
+
     private static string BuildCellId(RunCell cell)
     {
-        return string.Join(
-            "-",
-            $"c{cell.Connections}",
-            $"s{cell.StreamsPerConnection}",
-            $"r{cell.Repetition}");
+        return cell.Identity.ToSlug();
     }
 
     private static DockerResourceLimits? BuildTargetDockerResourceLimits(RunnerCommandOptions options)
@@ -1526,7 +1540,7 @@ public sealed class RunnerEngine
 
     private static async Task<(ToolCapability? Capability, string? Error)> ValidateH3LoadToolCapabilityAsync(RunCell cell, ResolvedLoadTool tool)
     {
-        if (!string.Equals(cell.Protocol, "h3", StringComparison.OrdinalIgnoreCase))
+        if (!ProtocolIds.IsHttp3(cell.Protocol))
         {
             return (null, null);
         }
@@ -1909,7 +1923,7 @@ public sealed class RunnerEngine
     private static EffectiveLoadShape BuildSkippedEffectiveLoadShape(RunCell cell)
     {
         var warnings = new List<string>();
-        if (string.Equals(cell.Protocol, "h1", StringComparison.OrdinalIgnoreCase) && cell.StreamsPerConnection != 1)
+        if (ProtocolIds.IsHttp1(cell.Protocol) && cell.StreamsPerConnection != 1)
         {
             warnings.Add("HTTP/1.1 does not support streamsPerConnection; the requested value is not applicable.");
         }
@@ -1918,7 +1932,7 @@ public sealed class RunnerEngine
         {
             Connections = cell.Connections,
             Concurrency = cell.Connections,
-            StreamsPerConnection = string.Equals(cell.Protocol, "h1", StringComparison.OrdinalIgnoreCase) ? 1 : cell.StreamsPerConnection,
+            StreamsPerConnection = ProtocolIds.IsHttp1(cell.Protocol) ? 1 : cell.StreamsPerConnection,
             DurationSeconds = cell.DurationSeconds,
             WarmupSeconds = cell.WarmupSeconds,
             Repetitions = cell.Repetition,
@@ -1934,11 +1948,13 @@ public sealed class RunnerEngine
             cell.Implementation.Id,
             cell.Scenario.Id,
             cell.Protocol,
+            ExecutionProfiles.ToId(cell.ExecutionProfile),
+            string.IsNullOrWhiteSpace(cell.LoadProfileId) ? "no-load-profile" : cell.LoadProfileId,
+            cell.NetworkProfile,
             cell.Connections.ToString(System.Globalization.CultureInfo.InvariantCulture),
             cell.StreamsPerConnection.ToString(System.Globalization.CultureInfo.InvariantCulture),
             cell.DurationSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            cell.WarmupSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            cell.NetworkProfile);
+            cell.WarmupSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
 
     private static IReadOnlyList<string> BuildFairnessWarnings(
@@ -1948,12 +1964,12 @@ public sealed class RunnerEngine
         bool? parsedMetricsAvailable)
     {
         var warnings = new List<string>();
-        if (string.Equals(cell.Protocol, "h1", StringComparison.OrdinalIgnoreCase) && cell.StreamsPerConnection != 1)
+        if (ProtocolIds.IsHttp1(cell.Protocol) && cell.StreamsPerConnection != 1)
         {
             warnings.Add("HTTP/1.1 does not support streamsPerConnection; treat the effective stream count as 1.");
         }
 
-        if (string.Equals(cell.Protocol, "h3", StringComparison.OrdinalIgnoreCase))
+        if (ProtocolIds.IsHttp3(cell.Protocol))
         {
             warnings.Add("HTTP/3 cells require explicit protocol proof; fallback is not accepted as validation success.");
         }

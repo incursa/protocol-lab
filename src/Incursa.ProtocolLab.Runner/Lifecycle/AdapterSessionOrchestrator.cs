@@ -436,14 +436,7 @@ internal static class AdapterSessionOrchestrator
 
     private static string BuildSessionId(RunCell cell)
     {
-        return string.Join(
-            "-",
-            ArtifactLayout.SanitizeSegment(cell.Implementation.Id),
-            ArtifactLayout.SanitizeSegment(cell.Scenario.Id),
-            ArtifactLayout.SanitizeSegment(cell.Protocol),
-            $"c{cell.Connections}",
-            $"s{cell.StreamsPerConnection}",
-            $"r{cell.Repetition}");
+        return cell.Identity.ToSlug();
     }
 
     private static async Task WriteJsonAsync<T>(string path, T value)

@@ -564,13 +564,13 @@ internal static class LoadToolInvoker
 
     private static EffectiveLoadShape BuildEffectiveLoadShape(LoadToolManifest manifest, RunCell cell, LoadShapeSemantics semantics)
     {
-        var protocol = cell.Protocol.ToLowerInvariant();
-        var streams = protocol == "h1" ||
+        var protocol = ProtocolIds.Normalize(cell.Protocol);
+        var streams = ProtocolIds.IsHttp1(protocol) ||
             string.Equals(manifest.Id, "oha", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(manifest.Id, ManagedHttp3LoadGenerator.ToolId, StringComparison.OrdinalIgnoreCase)
             ? 1
             : cell.StreamsPerConnection;
-        var concurrency = string.Equals(manifest.Id, "h2load", StringComparison.OrdinalIgnoreCase) && protocol is "h2" or "h3"
+        var concurrency = string.Equals(manifest.Id, "h2load", StringComparison.OrdinalIgnoreCase) && (ProtocolIds.IsHttp2(protocol) || ProtocolIds.IsHttp3(protocol))
             ? cell.Connections * cell.StreamsPerConnection
             : cell.Connections;
 
@@ -608,11 +608,11 @@ internal static class LoadToolInvoker
 
     private static IReadOnlyList<string> BuildOhaProtocolArguments(string protocol)
     {
-        return protocol.ToLowerInvariant() switch
+        return ProtocolIds.Normalize(protocol) switch
         {
-            "h1" => ["--http-version", "1.1"],
-            "h2" => ["--http-version", "2"],
-            "h3" => ["--http-version", "3"],
+            ProtocolIds.Http1 => ["--http-version", "1.1"],
+            ProtocolIds.Http2 => ["--http-version", "2"],
+            ProtocolIds.Http3 => ["--http-version", "3"],
             _ => []
         };
     }
@@ -625,7 +625,7 @@ internal static class LoadToolInvoker
         string? connectTarget,
         bool captureQlog)
     {
-        if (!protocol.Equals("h3", StringComparison.OrdinalIgnoreCase))
+        if (!ProtocolIds.IsHttp3(protocol))
         {
             return [];
         }
@@ -1115,7 +1115,7 @@ internal static class LoadToolInvoker
 
     private static int GetSelectionPriority(LoadToolManifest manifest, RunCell cell)
     {
-        if (string.Equals(cell.Protocol, "h3", StringComparison.OrdinalIgnoreCase))
+        if (ProtocolIds.IsHttp3(cell.Protocol))
         {
             if (string.Equals(manifest.Id, "h2load", StringComparison.OrdinalIgnoreCase))
             {

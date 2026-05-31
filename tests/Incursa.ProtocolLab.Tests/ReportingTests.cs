@@ -34,6 +34,7 @@ public sealed class ReportingTests
             [first, second]);
 
         Assert.Equal("run-1", report.RunId);
+        Assert.Equal(ReportClaimLevel.Regression, report.ClaimLevel);
         Assert.Equal(2, report.Totals.ResultCount);
         Assert.Equal(1, report.Totals.AggregateCount);
         Assert.Equal(2, report.Totals.BenchmarkAttemptCount);
@@ -81,8 +82,10 @@ public sealed class ReportingTests
         Assert.Equal(report.RunId, roundTrip.RunId);
         Assert.Equal(report.Totals.AggregateCount, roundTrip.Totals.AggregateCount);
         Assert.Equal(report.Metadata!.HostName, roundTrip.Metadata!.HostName);
+        Assert.Equal(report.ClaimLevel, roundTrip.ClaimLevel);
 
         var markdown = MarkdownSummaryWriter.Write(report);
+        Assert.Contains("Claim level: regression", markdown);
         Assert.Contains("## Run Metadata", markdown);
         Assert.Contains("## Totals", markdown);
         Assert.Contains("## Aggregate Results", markdown);

@@ -34,10 +34,13 @@ public sealed class RunPlanBuilder
     public static MatrixOptions BuildMatrixOptions(RunnerCommandOptions options, IReadOnlyList<LoadProfileDefinition>? profiles = null)
     {
         var loadProfileId = options.Get("load-profile") ?? options.Get("profile");
+        var protocols = SplitCsv(options.Get("protocol"));
         var matrixOptions = new MatrixOptions(
             SplitCsv(options.Get("implementations") ?? options.Get("implementation")),
             SplitCsv(options.Get("scenarios") ?? options.Get("scenario")),
-            SplitCsv(options.Get("protocol")),
+            protocols is { Count: > 0 }
+                ? protocols.Select(ProtocolIds.Normalize).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+                : null,
             SplitIntCsv(options.Get("concurrency") ?? options.Get("connections")),
             SplitIntCsv(options.Get("streams-per-connection") ?? options.Get("streams")),
             ParseInt(options.Get("duration")),

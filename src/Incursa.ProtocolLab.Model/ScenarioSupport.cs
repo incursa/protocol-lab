@@ -31,7 +31,8 @@ public static class ScenarioSupport
             }
         }
 
-        if (!ContainsIgnoreCase(implementation.SupportedProtocols, protocol))
+        if (!implementation.SupportedProtocols.Any(candidate =>
+                string.Equals(ProtocolIds.Normalize(candidate), ProtocolIds.Normalize(protocol), StringComparison.OrdinalIgnoreCase)))
         {
             failures.Add($"protocol '{protocol}' is not supported");
         }

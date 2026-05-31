@@ -25,7 +25,11 @@ public sealed record RunCell(
     int DurationSeconds,
     int WarmupSeconds,
     string NetworkProfile,
-    string? LoadProfileId = null);
+    string? LoadProfileId = null)
+{
+    public ExecutionProfile ExecutionProfile { get; init; } = ExecutionProfile.LocalProcess;
+    public RunCellIdentity Identity => RunCellIdentity.Create(this);
+}
 
 public static class ScenarioMatrix
 {
@@ -42,7 +46,9 @@ public static class ScenarioMatrix
         {
             foreach (var scenario in selectedScenarios)
             {
-                var protocols = options.Protocols is { Count: > 0 } ? options.Protocols : [scenario.Protocol];
+                var protocols = options.Protocols is { Count: > 0 }
+                    ? options.Protocols.Select(ProtocolIds.Normalize).Distinct(StringComparer.OrdinalIgnoreCase)
+                    : [ProtocolIds.Normalize(scenario.Protocol)];
                 var connections = options.Connections is { Count: > 0 } ? options.Connections : scenario.Benchmark.Connections;
                 var streams = options.StreamsPerConnection is { Count: > 0 } ? options.StreamsPerConnection : scenario.Benchmark.StreamsPerConnection;
                 var repetitions = options.Repetitions ?? scenario.Benchmark.Repetitions;
@@ -61,7 +67,7 @@ public static class ScenarioMatrix
                                     cells.Add(new RunCell(
                                         implementation,
                                         scenario,
-                                        protocol,
+                                        ProtocolIds.Normalize(protocol),
                                         connection,
                                         stream,
                                         repetition,

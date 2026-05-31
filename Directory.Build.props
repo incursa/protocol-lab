@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>1.0.6</Version>
+    <Version>1.0.8</Version>
     <ProtocolLabTargetFramework>net10.0</ProtocolLabTargetFramework>
     <TargetFramework>$(ProtocolLabTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

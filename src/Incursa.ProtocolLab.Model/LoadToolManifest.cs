@@ -363,7 +363,9 @@ public sealed class LoadToolManifest
 
     public bool SupportsProtocol(string protocol)
     {
-        return GetEffectiveProtocols().Contains(protocol, StringComparer.OrdinalIgnoreCase);
+        var requested = ProtocolIds.Normalize(protocol);
+        return GetEffectiveProtocols().Any(candidate =>
+            string.Equals(ProtocolIds.Normalize(candidate), requested, StringComparison.OrdinalIgnoreCase));
     }
 
     public bool SupportsRole(string role)

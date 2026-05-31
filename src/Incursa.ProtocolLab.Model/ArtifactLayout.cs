@@ -81,13 +81,11 @@ public static class ArtifactLayout
 
     public static string GetCellDirectory(string outputRoot, string runId, RunCell cell)
     {
+        var identity = cell.Identity;
         return Path.Combine(
-            GetRunRoot(outputRoot, runId),
-            "implementations",
-            SanitizeSegment(cell.Implementation.Id),
-            SanitizeSegment(cell.Scenario.Id),
-            SanitizeSegment(cell.Protocol),
-            $"c{cell.Connections}-s{cell.StreamsPerConnection}-r{cell.Repetition}");
+            new[] { GetRunRoot(outputRoot, runId), "implementations" }
+                .Concat(identity.PathSegments)
+                .ToArray());
     }
 
     public static ArtifactPaths GetCellPaths(string outputRoot, string runId, RunCell cell)

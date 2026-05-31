@@ -70,6 +70,9 @@ public sealed class CliRunTests
                 "kestrel-http3",
                 "http.core.plaintext",
                 "h1",
+                "local-process",
+                "clean",
+                "no-load-profile",
                 "c1-s1-r1");
 
             Assert.True(File.Exists(Path.Combine(cellDirectory, "load-tool.stdout.txt")));

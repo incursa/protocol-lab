@@ -106,6 +106,9 @@ public sealed class RunnerBoundaryTests
                 "kestrel-http3",
                 "http.core.plaintext",
                 "h1",
+                "local-process",
+                "clean",
+                "no-load-profile",
                 "c1-s1-r1",
                 "result.json");
             var result = ResultJson.Deserialize<BenchmarkResult>(await File.ReadAllTextAsync(resultPath));

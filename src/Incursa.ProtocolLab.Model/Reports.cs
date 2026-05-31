@@ -20,7 +20,10 @@ public sealed record RunMetadata(
     DateTimeOffset? TimestampUtc = null,
     string? GitCommit = null,
     string? WorkingTreeStatus = null,
-    IReadOnlyList<string>? Warnings = null);
+    IReadOnlyList<string>? Warnings = null)
+{
+    public ExecutionProfile ExecutionProfile { get; init; } = ExecutionProfile.LocalProcess;
+}
 
 public sealed record ValidationCounts(
     int Passed,
@@ -44,6 +47,7 @@ public sealed record RunAggregate
     public required string Family { get; init; }
     public required string Protocol { get; init; }
     public required string Role { get; init; }
+    public required string ExecutionProfile { get; init; }
     public string? LoadProfileId { get; init; }
     public string? LoadProfileTitle { get; init; }
     public string? LoadProfilePurpose { get; init; }
@@ -175,14 +179,20 @@ public sealed record RunDescriptor(
     string RunId,
     DateTimeOffset GeneratedAt,
     RunMetadata? Metadata,
-    RunTotals Totals);
+    RunTotals Totals)
+{
+    public ReportClaimLevel ClaimLevel { get; init; } = ReportClaimLevel.DiagnosticOnly;
+}
 
 public sealed record RunReport(
     string RunId,
     DateTimeOffset GeneratedAt,
     RunMetadata? Metadata,
     RunTotals Totals,
-    IReadOnlyList<RunAggregate> Aggregates);
+    IReadOnlyList<RunAggregate> Aggregates)
+{
+    public ReportClaimLevel ClaimLevel { get; init; } = ReportClaimLevel.DiagnosticOnly;
+}
 
 public static class RunReportBuilder
 {
@@ -197,6 +207,7 @@ public static class RunReportBuilder
                 result.ImplementationId,
                 result.ScenarioId,
                 result.Protocol,
+                result.ExecutionProfile,
                 result.LoadTool,
                 result.LoadToolMode,
                 result.LoadToolCategory,
@@ -212,6 +223,7 @@ public static class RunReportBuilder
             .OrderBy(static aggregate => aggregate.ImplementationId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static aggregate => aggregate.ScenarioId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static aggregate => aggregate.Protocol, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static aggregate => aggregate.ExecutionProfile, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static aggregate => aggregate.TargetExecutionMode, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static aggregate => aggregate.Connections)
             .ThenBy(static aggregate => aggregate.StreamsPerConnection)
@@ -219,6 +231,7 @@ public static class RunReportBuilder
             .ThenBy(static aggregate => aggregate.WarmupSeconds)
             .ThenBy(static aggregate => aggregate.NetworkProfile, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var claimLevel = ReportClaimDeriver.Derive(metadata, results);
 
         var comparableLocalCount = aggregates.Count(static aggregate =>
             string.Equals(aggregate.Evidence?.ComparabilityStatus, BenchmarkComparabilityStatuses.ComparableLocal, StringComparison.OrdinalIgnoreCase));
@@ -281,12 +294,18 @@ public static class RunReportBuilder
                 result.DockerCleanup?.LoadToolMetricsSamplerCleanupSucceeded == false ||
                 result.DockerCleanup?.NetworkCleanupSucceeded == false));
 
-        return new RunReport(runId, generatedAt, metadata, totals, aggregates);
+        return new RunReport(runId, generatedAt, metadata, totals, aggregates)
+        {
+            ClaimLevel = claimLevel
+        };
     }
 
     public static RunDescriptor CreateDescriptor(RunReport report)
     {
-        return new RunDescriptor(report.RunId, report.GeneratedAt, report.Metadata, report.Totals);
+        return new RunDescriptor(report.RunId, report.GeneratedAt, report.Metadata, report.Totals)
+        {
+            ClaimLevel = report.ClaimLevel
+        };
     }
 
     private static RunAggregate BuildAggregate(IGrouping<RunGroupKey, BenchmarkResult> group)
@@ -364,6 +383,7 @@ public static class RunReportBuilder
             Family = first.Family,
             Protocol = first.Protocol,
             Role = first.Role,
+            ExecutionProfile = first.ExecutionProfile,
             LoadProfileId = first.LoadProfileId,
             LoadProfileTitle = first.LoadProfileTitle,
             LoadProfilePurpose = first.LoadProfilePurpose,
@@ -588,6 +608,7 @@ public static class RunReportBuilder
         string ImplementationId,
         string ScenarioId,
         string Protocol,
+        string ExecutionProfile,
         string? LoadTool,
         string? LoadToolMode,
         string? LoadToolCategory,

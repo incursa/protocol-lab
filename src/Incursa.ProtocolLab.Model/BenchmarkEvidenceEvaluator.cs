@@ -92,7 +92,7 @@ public static class BenchmarkEvidenceEvaluator
 
         if (results.Any(static result =>
                 result.ValidationResult.Status != ValidationStatus.Passed ||
-                result.Protocol == "h3" && result.ProtocolProof is null))
+                ProtocolIds.IsHttp3(result.Protocol) && result.ProtocolProof is null))
         {
             comparabilityStatus = BenchmarkComparabilityStatuses.Invalid;
             if (results.Any(static result => result.ValidationResult.Status != ValidationStatus.Passed))
@@ -100,7 +100,7 @@ public static class BenchmarkEvidenceEvaluator
                 comparabilityWarnings.Add(BenchmarkEvidenceReasons.ValidationFailure);
             }
 
-            if (results.Any(static result => result.Protocol == "h3" && result.ProtocolProof is null))
+            if (results.Any(static result => ProtocolIds.IsHttp3(result.Protocol) && result.ProtocolProof is null))
             {
                 comparabilityWarnings.Add(BenchmarkEvidenceReasons.ProtocolProofMissing);
             }
@@ -281,7 +281,7 @@ public static class BenchmarkEvidenceEvaluator
             return;
         }
 
-        if (result.Protocol == "h3" && result.ProtocolProof is null)
+        if (ProtocolIds.IsHttp3(result.Protocol) && result.ProtocolProof is null)
         {
             warnings.Add(BenchmarkEvidenceReasons.ProtocolProofMissing);
             return;
@@ -409,7 +409,7 @@ public static class BenchmarkEvidenceEvaluator
             return BenchmarkComparabilityStatuses.Invalid;
         }
 
-        if (result.Protocol == "h3" && result.ProtocolProof is null)
+        if (ProtocolIds.IsHttp3(result.Protocol) && result.ProtocolProof is null)
         {
             return BenchmarkComparabilityStatuses.Invalid;
         }

@@ -93,12 +93,12 @@ public sealed class ScenarioDefinition
     {
         if (Requires.Protocols.Count > 0)
         {
-            return Requires.Protocols;
+            return Requires.Protocols.Select(ProtocolIds.Normalize).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
         if (!string.IsNullOrWhiteSpace(Protocol))
         {
-            return [Protocol];
+            return [ProtocolIds.Normalize(Protocol)];
         }
 
         return [];

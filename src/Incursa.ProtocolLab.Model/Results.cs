@@ -91,6 +91,7 @@ public sealed record BenchmarkResult
     public string? ProvenProtocol { get; init; }
     public ProtocolProofResult? ProtocolProof { get; init; }
     public required string Role { get; init; }
+    public required string ExecutionProfile { get; init; }
     public string? LoadProfileId { get; init; }
     public string? LoadProfileTitle { get; init; }
     public string? LoadProfilePurpose { get; init; }
@@ -240,11 +241,12 @@ public sealed record BenchmarkResult
             ScenarioId = cell.Scenario.Id,
             ScenarioName = cell.Scenario.Name,
             Family = cell.Scenario.Family,
-            Protocol = cell.Protocol,
-            RequestedProtocol = cell.Protocol,
+            Protocol = ProtocolIds.Normalize(cell.Protocol),
+            RequestedProtocol = ProtocolIds.Normalize(cell.Protocol),
             ProvenProtocol = protocolProof?.ProvenProtocol ?? validationResult.ProtocolProof?.ProvenProtocol,
             ProtocolProof = protocolProof ?? validationResult.ProtocolProof,
             Role = cell.Scenario.ImplementationRole,
+            ExecutionProfile = ExecutionProfiles.ToId(cell.ExecutionProfile),
             LoadProfileId = cell.LoadProfileId,
             LoadTool = loadTool,
             LoadToolMode = loadToolMode,

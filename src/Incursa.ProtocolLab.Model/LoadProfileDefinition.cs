@@ -122,34 +122,34 @@ public sealed record LoadProfileDefinition
 
     public int? GetConnections(string protocol)
     {
-        return protocol?.ToLowerInvariant() switch
+        return ProtocolIds.Normalize(protocol) switch
         {
-            "h1" or "http1" => Http?.Connections,
-            "h2" or "http2" => Http2?.Connections ?? Http?.Connections,
-            "h3" or "http3" => Http3?.Connections ?? Http?.Connections,
-            "quic" => Quic?.Connections,
+            ProtocolIds.Http1 => Http?.Connections,
+            ProtocolIds.Http2 => Http2?.Connections ?? Http?.Connections,
+            ProtocolIds.Http3 => Http3?.Connections ?? Http?.Connections,
+            ProtocolIds.Quic => Quic?.Connections,
             _ => null
         };
     }
 
     public int? GetStreamsPerConnection(string protocol)
     {
-        return protocol?.ToLowerInvariant() switch
+        return ProtocolIds.Normalize(protocol) switch
         {
-            "h2" or "http2" => Http2?.StreamsPerConnection,
-            "h3" or "http3" => Http3?.StreamsPerConnection,
-            "quic" => Quic?.StreamsPerConnection,
+            ProtocolIds.Http2 => Http2?.StreamsPerConnection,
+            ProtocolIds.Http3 => Http3?.StreamsPerConnection,
+            ProtocolIds.Quic => Quic?.StreamsPerConnection,
             _ => null
         };
     }
 
     public int? GetConcurrency(string protocol)
     {
-        return protocol?.ToLowerInvariant() switch
+        return ProtocolIds.Normalize(protocol) switch
         {
-            "h1" or "http1" => Http?.Concurrency,
-            "h2" or "http2" => Http2?.Concurrency,
-            "h3" or "http3" => Http3?.Concurrency,
+            ProtocolIds.Http1 => Http?.Concurrency,
+            ProtocolIds.Http2 => Http2?.Concurrency,
+            ProtocolIds.Http3 => Http3?.Concurrency,
             _ => Http?.Concurrency
         };
     }

@@ -21,6 +21,7 @@ public static class MarkdownSummaryWriter
         builder.AppendLine($"# Incursa Protocol Lab Run {report.RunId}");
         builder.AppendLine();
         builder.AppendLine($"Generated at: {report.GeneratedAt:O}");
+        builder.AppendLine($"Claim level: {FormatClaimLevel(report.ClaimLevel)}");
 
         if (report.Metadata is not null)
         {
@@ -260,6 +261,7 @@ public static class MarkdownSummaryWriter
         builder.AppendLine($"- operating system architecture: {Escape(metadata.OperatingSystemArchitecture)}");
         builder.AppendLine($"- runtime: {Escape(metadata.FrameworkDescription)}");
         builder.AppendLine($"- process architecture: {Escape(metadata.ProcessArchitecture)}");
+        builder.AppendLine($"- execution profile: {Escape(ExecutionProfiles.ToId(metadata.ExecutionProfile))}");
         builder.AppendLine($"- processor count: {metadata.ProcessorCount}");
         builder.AppendLine($"- is 64-bit process: {(metadata.Is64BitProcess ? "yes" : "no")}");
         builder.AppendLine($"- working set bytes: {metadata.WorkingSetBytes.ToString(CultureInfo.InvariantCulture)}");
@@ -604,6 +606,19 @@ public static class MarkdownSummaryWriter
 
         var lines = value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return lines.Length > 0 ? lines[0] : value.Trim();
+    }
+
+    private static string FormatClaimLevel(ReportClaimLevel claimLevel)
+    {
+        return claimLevel switch
+        {
+            ReportClaimLevel.DiagnosticOnly => "diagnostic-only",
+            ReportClaimLevel.Validation => "validation",
+            ReportClaimLevel.Regression => "regression",
+            ReportClaimLevel.Benchmark => "benchmark",
+            ReportClaimLevel.Verified => "verified",
+            _ => claimLevel.ToString().ToLowerInvariant()
+        };
     }
 
     private static string Escape(string value)

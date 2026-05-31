@@ -61,7 +61,7 @@ internal static class HttpScenarioValidator
                 warnings: ["Definition compatibility was checked only."]);
         }
 
-        if (string.Equals(cell.Protocol, "h3", StringComparison.OrdinalIgnoreCase))
+        if (ProtocolIds.IsHttp3(cell.Protocol))
         {
             if (paths is null)
             {

@@ -56,6 +56,10 @@ search index metadata:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\Publish-ProtocolLabReport.ps1 -RunRoot .artifacts\runs\{runId}
 ```
 
+For production and CI publication, pass `-VerifyPublishedRuns` so the script
+re-scans D1 after the publish and fails if any published run is missing its
+R2 payload set.
+
 The script performs these steps in order:
 
 1. Validates the source run, report shapes, run IDs, execution profile versus

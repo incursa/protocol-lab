@@ -56,6 +56,7 @@ public sealed class CliRunTests
                 "--implementations", "kestrel-http3",
                 "--scenarios", "http.core.plaintext",
                 "--protocol", "h1",
+                "--execution-profile", "local-process",
                 "--output", output,
                 "--run-id", "artifact-test",
                 "--load-tool", "definitely-missing-protocol-lab-tool"
@@ -70,7 +71,7 @@ public sealed class CliRunTests
                 "kestrel-http3",
                 "http.core.plaintext",
                 "h1",
-                "local-process",
+                ExecutionProfiles.ToId(ExecutionProfile.LocalProcess),
                 "clean",
                 "no-load-profile",
                 "c1-s1-r1");

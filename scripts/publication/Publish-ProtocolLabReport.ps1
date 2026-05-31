@@ -689,7 +689,6 @@ function Write-D1SqlFile {
     $objectKeyRows = @($objectKeys | ForEach-Object { New-SqlTuple @($Entry.runId, $_.objectKind, $_.objectKey) })
 
     $statements = New-Object System.Collections.Generic.List[string]
-    $statements.Add("BEGIN;") | Out-Null
     $statements.Add(("INSERT INTO public_report_runs (" + ($runColumns -join ", ") + ") VALUES " + (New-SqlTuple $runValues) + " ON CONFLICT(run_id) DO UPDATE SET " + ($runAssignments -join ", ") + ";")) | Out-Null
 
     if ($implementationRows.Count -gt 0) {
@@ -808,7 +807,6 @@ function Write-D1SqlFile {
         $statements.Add(("INSERT INTO public_report_latest (" + ($latestColumns -join ", ") + ") VALUES " + (New-SqlTuple $latestValues) + ";")) | Out-Null
     }
 
-    $statements.Add("COMMIT;") | Out-Null
     Set-Content -LiteralPath $SqlPath -Value ($statements -join "`n") -Encoding utf8NoBOM
 }
 

@@ -620,6 +620,53 @@ function Assert-UploadedRunBundleComplete {
         [Parameter(Mandatory = $true)][string]$TempDirectory
     )
 
+    $requiredRootObjects = @(
+        "evidence-report-v1.json",
+        "evidence-report-v1.md",
+        "artifacts-index.json",
+        "publication-manifest.json",
+        "publication-warnings.md",
+        "publication-skipped.md",
+        "report-index-entry.json",
+        "report-index.json"
+    )
+
+    foreach ($objectName in $requiredRootObjects) {
+        $requiredObjectKey = "public/runs/$RunId/$objectName"
+        if (-not (Test-R2ObjectExists -Bucket $Bucket -ObjectKey $requiredObjectKey)) {
+            throw "Required R2 object '$requiredObjectKey' was not found."
+        }
+    }
+
+    $artifactsIndex = Read-R2JsonObject -Bucket $Bucket -ObjectKey "public/runs/$RunId/artifacts-index.json" -TempDirectory $TempDirectory
+    if ($null -eq $artifactsIndex) {
+        throw "Required R2 object 'public/runs/$RunId/artifacts-index.json' is missing or malformed JSON."
+    }
+
+    if ($artifactsIndex.PSObject.Properties.Name -contains "runId" -and
+        -not [string]::IsNullOrWhiteSpace([string]$artifactsIndex.runId) -and
+        -not [string]::Equals([string]$artifactsIndex.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Uploaded artifacts index 'public/runs/$RunId/artifacts-index.json' has mismatched run id '$($artifactsIndex.runId)'."
+    }
+
+    foreach ($cell in @($artifactsIndex.cells)) {
+        foreach ($file in @($cell.files)) {
+            if ($file.exists -ne $true) {
+                continue
+            }
+
+            $artifactPath = [string]$file.path
+            if ([string]::IsNullOrWhiteSpace($artifactPath)) {
+                throw "Uploaded artifacts index 'public/runs/$RunId/artifacts-index.json' includes a copied artifact with a blank path."
+            }
+
+            $artifactKey = "public/runs/$RunId/$artifactPath"
+            if (-not (Test-R2ObjectExists -Bucket $Bucket -ObjectKey $artifactKey)) {
+                throw "Uploaded artifacts index 'public/runs/$RunId/artifacts-index.json' references missing copied artifact '$artifactKey'."
+            }
+        }
+    }
+
     $bundleFiles = @(Get-ChildItem -LiteralPath $BundleRoot -File -Recurse | Sort-Object FullName)
     foreach ($file in $bundleFiles) {
         $relativePath = [System.IO.Path]::GetRelativePath($BundleRoot, $file.FullName)

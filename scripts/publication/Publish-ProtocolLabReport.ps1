@@ -272,7 +272,7 @@ function Parse-PublicationWarnings {
         throw "Required file not found: $WarningsPath"
     }
 
-    $warnings = New-Object System.Collections.Generic.List[object]
+    $warnings = @()
     $capturing = $false
     foreach ($line in Get-Content -LiteralPath $WarningsPath) {
         if ($line -eq "## Warnings") {
@@ -284,23 +284,23 @@ function Parse-PublicationWarnings {
             continue
         }
 
-        if (-not [string]::IsNullOrWhiteSpace($line) -and $line.StartsWith("- [", [System.StringComparison]::OrdinalIgnoreCase)) {
-            $closingBracket = $line.IndexOf(']')
-            $messageSeparator = $line.IndexOf('] ', [System.StringComparison]::OrdinalIgnoreCase)
-            if ($closingBracket -gt 3 -and $messageSeparator -gt $closingBracket) {
-                $code = $line.Substring(3, $closingBracket - 3)
-                $message = $line.Substring($messageSeparator + 2)
-                $source = if ($code -like "report:*") { "report" } else { "plan" }
-                $warnings.Add([ordered]@{
-                    warningSource = $source
-                    warningCode = $code
-                    warningMessage = $message
-                }) | Out-Null
+        if ([string]::IsNullOrWhiteSpace([string]$line)) {
+            continue
+        }
+
+        if ($line -match '^\- \[(?<code>[^\]]+)\]\s+(?<message>.*)$') {
+            $code = [string]$Matches.code
+            $message = [string]$Matches.message
+            $source = if ($code -like "report:*") { "report" } else { "plan" }
+            $warnings += [pscustomobject]@{
+                warningSource = $source
+                warningCode = $code
+                warningMessage = $message
             }
         }
     }
 
-    return @($warnings)
+    return $warnings
 }
 
 function Build-RegistryMerge {

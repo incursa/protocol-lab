@@ -4,9 +4,9 @@ Promotes a completed ProtocolLab run to the public Cloudflare layout.
 
 .DESCRIPTION
 Stages the public-safe bundle with the existing publish-report flow, uploads
-the bundle under public/runs/{runId}/ in the protocol-lab-reports R2 bucket,
-refreshes the public registry objects, and indexes searchable metadata into
-D1 through the PROTOCOL_LAB_DB binding.
+the bundle under public/runs/{runId}/ in the protocol-lab-reports R2 bucket
+through the S3-compatible API, refreshes the public registry objects, and
+indexes searchable metadata into D1 through the PROTOCOL_LAB_DB binding.
 
 The script fails closed on malformed bundle metadata, mismatched run IDs,
 private-path leaks, or artifact paths that escape the completed run root.
@@ -37,6 +37,9 @@ Wrangler database name. Defaults to protocol-lab-reports.
 .PARAMETER WranglerPath
 Path to wrangler or an equivalent executable.
 
+.PARAMETER PythonPath
+Path to python or an equivalent executable that can run boto3.
+
 .PARAMETER AllowDiagnosticPublication
 Allows DiagnosticOnly bundles to be promoted when the source bundle remains
 explicitly labeled diagnostic-only.
@@ -55,6 +58,7 @@ param(
     [string]$D1DatabaseId,
     [string]$D1DatabaseName = "protocol-lab-reports",
     [string]$WranglerPath = "wrangler",
+    [string]$PythonPath = "python",
     [switch]$AllowDiagnosticPublication,
     [switch]$DryRun
 )
@@ -198,6 +202,29 @@ function Get-ObjectCacheControl {
     return "public, max-age=31536000, immutable"
 }
 
+function Normalize-R2Endpoint {
+    param(
+        [Parameter(Mandatory = $true)][string]$Endpoint
+    )
+
+    try {
+        $uri = [Uri]$Endpoint
+    }
+    catch {
+        throw "Invalid R2 endpoint URI: $Endpoint"
+    }
+
+    if (-not [string]::Equals($uri.Scheme, "https", [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "R2 endpoint must use https: $Endpoint"
+    }
+
+    $builder = [System.UriBuilder]::new($uri)
+    $builder.Path = ""
+    $builder.Query = ""
+    $builder.Fragment = ""
+    return $builder.Uri.AbsoluteUri.TrimEnd("/")
+}
+
 function Read-R2JsonObject {
     param(
         [Parameter(Mandatory = $true)][string]$Bucket,
@@ -207,17 +234,20 @@ function Read-R2JsonObject {
 
     $tempFile = Join-Path $TempDirectory ([System.IO.Path]::GetRandomFileName() + ".json")
     try {
-        Push-Location $RepoRoot
-        try {
-            $commandOutput = & $WranglerPath @("r2", "object", "get", "$Bucket/$ObjectKey", "--file", $tempFile) 2>&1
-            $exitCode = $LASTEXITCODE
+        $helperScript = Join-Path $PSScriptRoot "r2_s3_helper.py"
+        if (-not (Test-Path -LiteralPath $helperScript)) {
+            throw "R2 helper script not found: $helperScript"
         }
-        finally {
-            Pop-Location
-        }
+
+        $commandOutput = & $PythonPath $helperScript "get" $Bucket $ObjectKey $tempFile 2>&1
+        $exitCode = $LASTEXITCODE
 
         if ($exitCode -ne 0) {
             $message = (($commandOutput | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine).Trim()
+            if ($exitCode -eq 2) {
+                return $null
+            }
+
             if ($message -match '(?i)\b404\b' -or
                 $message -match '(?i)\bnot found\b' -or
                 $message -match '(?i)\bno such object\b') {
@@ -393,11 +423,19 @@ function Write-R2Object {
 
     $contentType = Get-ObjectContentType -RelativePath ([System.IO.Path]::GetFileName($FilePath))
     $cacheControl = Get-ObjectCacheControl -ObjectKey $ObjectKey
-    Invoke-Tool -FilePath $WranglerPath -Arguments @(
-        "r2", "object", "put", "$BucketName/$ObjectKey",
-        "--file", $FilePath,
-        "--content-type", $contentType,
-        "--cache-control", $cacheControl
+    $helperScript = Join-Path $PSScriptRoot "r2_s3_helper.py"
+    if (-not (Test-Path -LiteralPath $helperScript)) {
+        throw "R2 helper script not found: $helperScript"
+    }
+
+    Invoke-Tool -FilePath $PythonPath -Arguments @(
+        $helperScript,
+        "put",
+        $BucketName,
+        $ObjectKey,
+        $FilePath,
+        $contentType,
+        $cacheControl
     ) -WorkingDirectory $RepoRoot
 }
 
@@ -751,7 +789,7 @@ if ([string]::IsNullOrWhiteSpace($cloudflareApiToken)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($cloudflareApiToken)) {
-    throw "CLOUDFLARE_API_TOKEN or CF_API_TOKEN is required for Cloudflare uploads."
+    throw "CLOUDFLARE_API_TOKEN or CF_API_TOKEN is required for D1 indexing."
 }
 
 $cloudflareAccountId = $env:CLOUDFLARE_ACCOUNT_ID
@@ -760,8 +798,33 @@ if ([string]::IsNullOrWhiteSpace($cloudflareAccountId)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($cloudflareAccountId)) {
-    throw "CLOUDFLARE_ACCOUNT_ID is required for Wrangler authentication."
+    throw "CLOUDFLARE_ACCOUNT_ID is required for D1 indexing and the default R2 endpoint."
 }
+
+if ([string]::IsNullOrWhiteSpace($env:AWS_ACCESS_KEY_ID)) {
+    throw "AWS_ACCESS_KEY_ID is required for R2 publication."
+}
+
+if ([string]::IsNullOrWhiteSpace($env:AWS_SECRET_ACCESS_KEY)) {
+    throw "AWS_SECRET_ACCESS_KEY is required for R2 publication."
+}
+
+if ([string]::IsNullOrWhiteSpace($env:AWS_DEFAULT_REGION)) {
+    $env:AWS_DEFAULT_REGION = "auto"
+}
+
+if ([string]::IsNullOrWhiteSpace($env:R2_ENDPOINT)) {
+    $env:R2_ENDPOINT = "https://$cloudflareAccountId.r2.cloudflarestorage.com"
+}
+else {
+    $env:R2_ENDPOINT = Normalize-R2Endpoint -Endpoint $env:R2_ENDPOINT
+}
+
+if (-not (Get-Command $PythonPath -ErrorAction SilentlyContinue)) {
+    throw "python was not found on PATH. Install Python or pass -PythonPath."
+}
+
+Invoke-Tool -FilePath $PythonPath -Arguments @("-c", "import boto3") -WorkingDirectory $RepoRoot
 
 $manifest = Read-JsonFile (Join-Path $BundleRoot "publication-manifest.json")
 $entry = Read-JsonFile (Join-Path $BundleRoot "report-index-entry.json")

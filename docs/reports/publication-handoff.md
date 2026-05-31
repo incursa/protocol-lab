@@ -97,6 +97,12 @@ The workflow requires these repository secrets:
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 - `PROTOCOL_LAB_DB_ID`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+
+The workflow derives the S3 endpoint from `CLOUDFLARE_ACCOUNT_ID` as
+`https://<ACCOUNT_ID>.r2.cloudflarestorage.com`. Store a different endpoint
+only if Cloudflare tells you the bucket uses a non-default jurisdiction.
 
 ## Public R2 Layout
 

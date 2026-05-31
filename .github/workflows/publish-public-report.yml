@@ -15,6 +15,10 @@ on:
         required: true
       PROTOCOL_LAB_DB_ID:
         required: true
+      R2_ACCESS_KEY_ID:
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        required: true
 
 jobs:
   publish-public-report:
@@ -30,6 +34,10 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       PROTOCOL_LAB_DB_ID: ${{ secrets.PROTOCOL_LAB_DB_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      R2_ENDPOINT: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
 
     steps:
       - name: Checkout
@@ -53,6 +61,13 @@ jobs:
           $ErrorActionPreference = 'Stop'
           npm install --global wrangler@3 --no-fund --no-audit
           wrangler --version
+
+      - name: Install boto3
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python -m pip install --upgrade boto3 --disable-pip-version-check --no-input
+          python -c "import boto3; print(boto3.__version__)"
 
       - name: Restore .NET tools
         shell: pwsh

@@ -6,11 +6,16 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using Incursa.ProtocolLab.Adapter.Contracts;
+
+[assembly: SupportedOSPlatform("windows")]
+[assembly: SupportedOSPlatform("linux")]
+[assembly: SupportedOSPlatform("macos")]
 
 namespace Incursa.ProtocolLab.Adapters.MsQuicDotNet;
 

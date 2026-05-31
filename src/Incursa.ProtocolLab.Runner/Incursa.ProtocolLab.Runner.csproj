@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Incursa.ProtocolLab.Adapter.Contracts\Incursa.ProtocolLab.Adapter.Contracts.csproj" />
+    <ProjectReference Include="..\Incursa.ProtocolLab.Model\Incursa.ProtocolLab.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Incursa.ProtocolLab.Cli" />
+    <InternalsVisibleTo Include="Incursa.ProtocolLab.Tests" />
+  </ItemGroup>
+
+</Project>

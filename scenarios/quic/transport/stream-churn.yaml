@@ -1,0 +1,75 @@
+schemaVersion: "1.0"
+title: QUIC Connection Churn
+status: stable
+kind: protocolValidation
+layer: transport
+roles:
+  - server
+requires:
+  capabilities:
+    - quic.server
+  protocols:
+    - quic
+  roles:
+    - server
+trafficShape: bidirectional-stream
+id: quic.transport.connection-churn
+name: QUIC Connection Churn
+family: quic.transport
+description: Validate and benchmark repeated QUIC connection and stream churn behavior once a raw QUIC validator and load generator exist.
+protocol: quic
+implementationRole: server
+requiredCapabilities:
+  - quicTransport
+  - quicStreams
+quicTransport:
+  behavior: connection-churn
+  connectionCount: 1
+  streamType: bidirectional
+  streamCount: 1000
+  payloadSizeBytes: 128
+  payloadDirection: bidirectional
+  openPattern: churn
+  expectedBytes: 128000
+validation:
+  required: true
+  checks:
+    - unsupported-until-quic-validator
+    - connection-and-stream-churn-completes
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1000
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - quic.stream.openedStreams
+  - quic.stream.closedStreams
+  - quic.stream.resetCount
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+  - qlog
+tags:
+  - phase6
+  - quic
+  - churn

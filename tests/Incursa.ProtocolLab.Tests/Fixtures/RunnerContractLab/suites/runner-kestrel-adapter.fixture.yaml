@@ -1,0 +1,36 @@
+id: runner-kestrel-adapter-fixture
+name: Runner Kestrel Adapter Fixture Suite
+description: Fixture lab suite that documents the process-backed real Kestrel adapter target.
+targetMode: process
+targetNetworkMode: published-port
+implementations:
+  - fixture-kestrel-adapter-v1
+  - fixture-kestrel-adapter-start-failure
+  - fixture-kestrel-adapter-readiness-failure
+scenarios:
+  - fixture.kestrel.success
+  - fixture.kestrel.unsupported
+  - fixture.kestrel.json
+  - fixture.kestrel.status
+  - fixture.kestrel.bytes
+  - fixture.kestrel.stream-bytes
+  - fixture.kestrel.sink
+  - fixture.kestrel.hash
+  - fixture.kestrel.echo
+  - fixture.kestrel.response-headers
+  - fixture.kestrel.inspect-headers
+protocol: h1
+loadTools:
+  - id: fixture-load-success
+    mode: process
+    category: managed-lab
+defaults:
+  durationSeconds: 1
+  warmupSeconds: 0
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: dotnet-counters
+notes: The real Kestrel adapter is process-backed and keeps the control plane separate from the returned protocol endpoint URL. The suite is fixture-only documentation; the runner does not consume suite files yet.

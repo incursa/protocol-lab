@@ -1,0 +1,43 @@
+id: fixture-http-startup-failure
+name: Fixture HTTP Startup Failure
+description: Dummy target that cannot start because the executable does not exist.
+image: ""
+targetKind: process
+executable: definitely-missing-fixture-target.exe
+project: ""
+workingDirectory: .
+dockerfile: ""
+buildContext: .
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: http://127.0.0.1:51885
+baseUrl: http://127.0.0.1:51885
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - h1
+supportedWorkloadFamilies:
+  - fixture.http
+ports:
+  - name: http
+    containerPort: 51885
+    hostPort: 51885
+    protocol: tcp
+environment: {}
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: http
+  url: /ok
+  timeoutSeconds: 10
+shutdownBehavior: process-exit
+capabilities:
+  - fixtureHttp
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Fixture-only startup failure target.

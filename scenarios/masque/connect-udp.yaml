@@ -1,0 +1,50 @@
+schemaVersion: "1.0"
+id: masque.connect-udp
+title: MASQUE CONNECT-UDP
+name: MASQUE CONNECT-UDP
+family: masque
+description: Placeholder for MASQUE CONNECT-UDP tunnel scenario. Not yet implemented.
+status: placeholder
+kind: protocolValidation
+layer: transport
+protocol: h3
+roles:
+  - server
+requires:
+  capabilities:
+    - masque.server
+  protocols:
+    - h3
+  roles:
+    - server
+trafficShape: datagram
+validation:
+  required: true
+  checks:
+    - unsupported-until-masque-validator
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes: []
+  primaryMetrics:
+    - masque.tunnel.setupDurationMs
+artifacts:
+  required:
+    - validation.json
+  optional:
+    - qlog
+networkProfile: clean
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+tags:
+  - phase8
+  - masque
+  - future-family
+  - placeholder

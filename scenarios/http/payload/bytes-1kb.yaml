@@ -1,0 +1,67 @@
+schemaVersion: "1.0"
+title: HTTP Bytes 1KB
+status: stable
+kind: workload
+layer: application
+roles:
+  - server
+requires:
+  capabilities:
+    - http.server
+  protocols:
+    - h1
+    - h2
+    - h3
+  roles:
+    - server
+trafficShape: download
+id: http.payload.bytes.1kb
+name: HTTP Bytes 1KB
+family: http.application
+description: Validate and benchmark a deterministic 1KB byte payload.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - httpBytes
+endpoint:
+  method: GET
+  path: /bytes/1024
+  query: {}
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/octet-stream
+  expectedBodyRule: deterministicBytes
+  expectedBodySize: 1024
+validation:
+  required: true
+  checks: [status, content-type, body-size, deterministic-bytes]
+http:
+  expectedStatus: 200
+  expectedBody: <deterministicBytes>
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections: [1]
+  streamsPerConnection: [1]
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics: [requestsPerSecond, bytesReceived]
+artifactRequirements: [load-tool.stdout.txt, load-tool.stderr.txt]
+tags: [phase2, http, payload]

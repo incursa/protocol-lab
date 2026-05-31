@@ -1,0 +1,5 @@
+id: fixture-docker-tc
+name: Fixture Docker TC
+description: Modeled impairment profile used to prove unsupported classification.
+provider: docker-tc
+notes: Fixture-only modeled impairment profile.

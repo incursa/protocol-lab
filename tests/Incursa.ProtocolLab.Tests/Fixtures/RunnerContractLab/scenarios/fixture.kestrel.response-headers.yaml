@@ -1,0 +1,49 @@
+id: fixture.kestrel.response-headers
+name: Fixture Kestrel Response Headers
+family: fixture.kestrel
+version: 1.0
+description: Validates deterministic response headers.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - httpHeaders
+endpoint:
+  method: GET
+  path: /headers/response
+  query:
+    count: "3"
+    size: "4"
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: text/plain
+  expectedHeaderPrefix: X-Protocol-Bench-Header-
+  expectedHeaderCount: 3
+  expectedHeaderValueSize: 4
+  expectedBodyRule: exact
+  expectedBody: headers
+  expectedBodySize: 7
+validation:
+  required: true
+  checks:
+    - status
+    - response-headers
+    - body
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - kestrel
+  - adapter

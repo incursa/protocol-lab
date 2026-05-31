@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Incursa.ProtocolLab.Adapter.Contracts\Incursa.ProtocolLab.Adapter.Contracts.csproj" />
+    <ProjectReference Include="..\Incursa.ProtocolLab.Model\Incursa.ProtocolLab.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NJsonSchema" Version="11.6.1" />
+  </ItemGroup>
+
+</Project>

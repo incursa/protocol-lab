@@ -1,0 +1,44 @@
+id: fixture.incursa-http3.plaintext
+name: Fixture Incursa HTTP/3 Plaintext
+family: fixture.incursa-http3
+version: 1.0
+description: Validates the adapter-backed Incursa HTTP/3 plaintext path.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - httpPlaintext
+endpoint:
+  method: GET
+  path: /plaintext
+  query: {}
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: text/plain
+  expectedBodyRule: exact
+  expectedBody: Hello, World!
+  expectedBodySize: 13
+validation:
+  required: true
+  checks:
+    - status
+    - content-type
+    - body
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - incursa-http3
+  - adapter

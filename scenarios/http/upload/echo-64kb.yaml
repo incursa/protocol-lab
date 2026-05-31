@@ -1,0 +1,68 @@
+schemaVersion: "1.0"
+title: HTTP Upload Echo 64KB
+status: stable
+kind: workload
+layer: application
+roles:
+  - server
+requires:
+  capabilities:
+    - http.server
+  protocols:
+    - h1
+    - h2
+    - h3
+  roles:
+    - server
+trafficShape: upload
+id: http.upload.echo.64kb
+name: HTTP Upload Echo 64KB
+family: http.application
+description: Validate and benchmark echoing a 64KB request body.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - httpUpload
+endpoint:
+  method: POST
+  path: /echo
+  query: {}
+  requestHeaders: {}
+  requestBodyGeneration: deterministic-bytes:65536
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/octet-stream
+  expectedBodyRule: requestBodyEcho
+  expectedBodySize: 65536
+validation:
+  required: true
+  checks: [status, content-type, echo]
+http:
+  expectedStatus: 200
+  expectedBody: <requestBodyEcho>
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections: [1]
+  streamsPerConnection: [1]
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics: [requestsPerSecond, bytesSent, bytesReceived]
+artifactRequirements: [load-tool.stdout.txt, load-tool.stderr.txt]
+tags: [phase2, http, upload]

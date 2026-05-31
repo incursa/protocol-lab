@@ -1,0 +1,27 @@
+id: quic-go-http3
+name: quic-go HTTP/3 Placeholder
+description: Reserved manifest for a future quic-go HTTP/3 benchmark target.
+image: incursa/protocol-lab-quic-go-http3:future
+roles:
+  - server
+supportedProtocols: []
+supportedWorkloadFamilies: []
+ports:
+  - name: https
+    containerPort: 8443
+    protocol: tcp
+environment:
+  PROTOCOL_LAB_IMPLEMENTATION: quic-go-http3
+commandArguments: []
+readinessCheck:
+  type: none
+  url: ""
+  timeoutSeconds: 30
+shutdownBehavior: process-exit
+capabilities: []
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Placeholder only. This manifest reserves the quic-go HTTP/3 position but intentionally advertises no runnable protocol, workload family, or endpoint capability until a server image, configuration, TLS policy, and validation contract are scheduled.

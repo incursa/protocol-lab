@@ -1,0 +1,51 @@
+id: fixture-msquic-dotnet-raw-adapter-v1
+name: Fixture MSQuic/.NET Raw QUIC Adapter v1
+description: Deterministic adapter-backed MSQuic/.NET raw QUIC target for runner contract tests.
+image: ""
+targetKind: process
+targetContract: adapter-v1
+executable: dotnet
+project: ../../../../src/Incursa.ProtocolLab.Adapters.MsQuicDotNet/Incursa.ProtocolLab.Adapters.MsQuicDotNet.csproj
+workingDirectory: .
+dockerfile: ""
+buildContext: .
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: http://127.0.0.1:53381
+baseUrl: http://127.0.0.1:53381
+adapterControlPlaneBaseUrl: http://127.0.0.1:53381
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - quic
+supportedWorkloadFamilies:
+  - fixture.quic
+ports:
+  - name: control-plane
+    containerPort: 53381
+    hostPort: 53381
+    protocol: tcp
+environment:
+  ASPNETCORE_URLS: http://127.0.0.1:53381
+  PROTOCOL_LAB_MSQUIC_READINESS_TIMEOUT_SECONDS: "10"
+  PROTOCOL_LAB_MSQUIC_HTTP_TIMEOUT_SECONDS: "5"
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: http
+  url: /protocol-lab/adapter/v1/health
+  timeoutSeconds: 10
+shutdownBehavior: process-exit
+capabilities:
+  - quicTransport
+  - quicHandshake
+  - quicStreams
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+  - server.log.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Fixture-backed MSQuic/.NET raw QUIC adapter control plane. The adapter hosts an in-process QUIC server using System.Net.Quic. QUIC/UDP only.

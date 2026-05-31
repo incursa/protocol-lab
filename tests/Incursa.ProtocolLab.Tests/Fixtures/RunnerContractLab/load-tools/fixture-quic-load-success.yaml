@@ -1,0 +1,36 @@
+id: fixture-quic-load-success
+name: Fixture QUIC Load Success
+description: Dummy process load tool that emits fixture QUIC metrics without real QUIC traffic.
+kind: process
+category: managed-lab
+supportedProtocols:
+  - quic
+supportedScenarioFamilies:
+  - fixture.quic
+executable: powershell
+dockerImage: ""
+dockerCommand: ""
+dockerArguments: []
+dockerEnvironment: {}
+dockerAutoPull: false
+dockerHostRewrite: ""
+sni: ""
+defaultArguments:
+  - -NoProfile
+  - -ExecutionPolicy
+  - Bypass
+  - -File
+  - tests/Incursa.ProtocolLab.Tests/Fixtures/RunnerContractLab/scripts/fixture-load-tool.ps1
+  - -Mode
+  - success
+versionCommand:
+  - -NoProfile
+  - -ExecutionPolicy
+  - Bypass
+  - -File
+  - tests/Incursa.ProtocolLab.Tests/Fixtures/RunnerContractLab/scripts/fixture-load-tool.ps1
+  - -Mode
+  - version
+availabilityCheck: path
+outputParserId: oha-json
+notes: Fixture-only raw QUIC load tool proof. Does not perform real QUIC traffic. Returns deterministic fixture metrics.

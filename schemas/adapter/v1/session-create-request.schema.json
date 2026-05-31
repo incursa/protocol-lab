@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Adapter Contract v1 Session Create Request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "requestedSessionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional session identifier hint supplied by the runner."
+    },
+    "runId": { "type": "string" },
+    "cellId": { "type": "string" },
+    "sessionLabel": { "type": "string" },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

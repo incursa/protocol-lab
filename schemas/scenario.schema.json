@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://protocol-lab.incursa.com/schemas/scenario.schema.json",
+  "title": "ProtocolLab Scenario v1",
+  "description": "Schema for ProtocolLab scenario definition files.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "title",
+    "status",
+    "kind",
+    "layer",
+    "protocol",
+    "roles",
+    "requires",
+    "trafficShape",
+    "validation"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Schema version identifier (e.g., 1.0)"
+    },
+    "id": {
+      "type": "string",
+      "description": "Stable dotted scenario ID (e.g., http.plaintext)",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable scenario title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the scenario behavior"
+    },
+    "status": {
+      "type": "string",
+      "description": "Scenario maturity status",
+      "enum": ["draft", "stable", "experimental", "deprecated", "placeholder"]
+    },
+    "kind": {
+      "type": "string",
+      "description": "Scenario classification",
+      "enum": ["workload", "protocolValidation", "interopValidation", "diagnostic", "profile"]
+    },
+    "layer": {
+      "type": "string",
+      "description": "OSI layer focus",
+      "enum": ["application", "protocol", "transport"]
+    },
+    "protocol": {
+      "type": "string",
+      "description": "Primary protocol (e.g., h1, h2, h3, quic)"
+    },
+    "family": {
+      "type": "string",
+      "description": "Workload family classification (legacy)"
+    },
+    "version": {
+      "type": "string",
+      "description": "Scenario version"
+    },
+    "roles": {
+      "type": "array",
+      "description": "Roles required for this scenario",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "requires": {
+      "type": "object",
+      "description": "Capability and protocol requirements",
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Required adapter capabilities"
+        },
+        "protocols": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Required protocols",
+          "minItems": 1
+        },
+        "roles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Required roles"
+        }
+      }
+    },
+    "trafficShape": {
+      "type": "string",
+      "description": "Expected traffic pattern",
+      "enum": [
+        "requestResponse", "request-response",
+        "upload",
+        "download",
+        "streamingDownload", "streaming-download",
+        "streamingUpload", "streaming-upload",
+        "bidirectionalStream", "bidirectional-stream",
+        "datagram",
+        "handshakeOnly", "handshake-only",
+        "connectionLifecycle", "connection-lifecycle"
+      ]
+    },
+    "endpoint": {
+      "type": "object",
+      "description": "HTTP endpoint specification"
+    },
+    "h3Protocol": {
+      "type": "object",
+      "description": "HTTP/3 protocol-level specification"
+    },
+    "quicTransport": {
+      "type": "object",
+      "description": "QUIC transport-level specification"
+    },
+    "webTransport": {
+      "type": "object",
+      "description": "WebTransport specification"
+    },
+    "masque": {
+      "type": "object",
+      "description": "MASQUE specification"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Scenario parameters",
+      "additionalProperties": { "type": "string" }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Validation rules",
+      "required": ["required"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "checks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "http": {
+          "type": "object",
+          "description": "HTTP-specific validation",
+          "properties": {
+            "expectedStatus": { "type": "integer" },
+            "expectedBody": { "type": "string" },
+            "expectedProtocol": { "type": "string" }
+          }
+        },
+        "http3": {
+          "type": "object",
+          "description": "HTTP/3-specific validation",
+          "properties": {
+            "requireAlpn": { "type": "string" }
+          }
+        },
+        "quic": {
+          "type": "object",
+          "description": "QUIC-specific validation",
+          "properties": {
+            "handshakeMustComplete": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "benchmark": {
+      "type": "object",
+      "description": "Benchmark compatibility and metrics"
+    },
+    "benchmarkCompat": {
+      "type": "object",
+      "description": "Benchmark compatibility specification",
+      "properties": {
+        "compatibleLoadShapes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "primaryMetrics": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Required and optional artifacts",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "optional": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "comparability": {
+      "type": "object",
+      "description": "Comparability notes",
+      "properties": {
+        "requires": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "networkProfile": {
+      "type": "string",
+      "description": "Default network profile"
+    },
+    "requiredCapabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Legacy required capabilities list"
+    },
+    "implementationRole": {
+      "type": "string",
+      "description": "Legacy implementation role"
+    },
+    "requiredMetrics": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Required metrics"
+    },
+    "artifactRequirements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Legacy artifact requirements"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Arbitrary tags"
+    }
+  }
+}

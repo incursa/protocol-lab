@@ -1,0 +1,75 @@
+schemaVersion: "1.0"
+title: H3 Cancel Mid Response
+status: stable
+kind: protocolValidation
+layer: protocol
+roles:
+  - server
+requires:
+  capabilities:
+    - h3.server
+    - quic.server
+  protocols:
+    - h3
+  roles:
+    - server
+trafficShape: bidirectional-stream
+id: h3.protocol.cancel-mid-response
+name: H3 Cancel Mid Response
+family: h3.protocol
+description: Validate and benchmark HTTP/3 request-stream cancellation behavior once an H3 protocol validator and load generator exist.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - h3Protocol
+  - h3StreamCancellation
+h3Protocol:
+  behavior: cancel-mid-response
+  requestPath: /stream/bytes
+  cancellationPoint: after-response-bytes
+  responseBytesBeforeCancel: 65536
+  expectedFrameTypes:
+    - headers
+    - data
+    - reset-stream
+validation:
+  required: true
+  checks:
+    - unsupported-until-h3-validator
+    - reset-stream-observable
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - h3.stream.resetCount
+  - h3.stream.bytesBeforeCancel
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+  - qlog
+tags:
+  - phase5
+  - h3
+  - cancellation

@@ -1,0 +1,44 @@
+id: fixture.kestrel.unsupported
+name: Fixture Kestrel Unsupported
+family: fixture.kestrel
+version: 1.0
+description: Models a Kestrel scenario that the adapter reports as unsupported.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - httpPlaintext
+endpoint:
+  method: GET
+  path: /unsupported
+  query: {}
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: text/plain
+  expectedBodyRule: exact
+  expectedBody: unsupported
+validation:
+  required: true
+  checks:
+    - status
+    - content-type
+    - body
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - kestrel
+  - adapter
+  - unsupported

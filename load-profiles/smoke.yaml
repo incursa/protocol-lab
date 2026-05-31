@@ -1,0 +1,43 @@
+# Load Profile Contract v1
+schemaVersion: protocol-lab.load-profile.v1
+
+id: smoke
+title: Smoke
+status: stable
+purpose: smoke
+
+description: >
+  Minimal single-connection smoke test to verify basic protocol
+  and endpoint function. Not intended for any benchmark comparison.
+
+durationSeconds: 5
+warmupSeconds: 1
+repetitions: 1
+
+http:
+  connections: 1
+  concurrency: 1
+
+http2:
+  connections: 1
+  concurrency: 1
+  streamsPerConnection: 1
+
+http3:
+  connections: 1
+  concurrency: 1
+  streamsPerConnection: 1
+
+quic:
+  connections: 1
+  streamsPerConnection: 1
+
+evidence:
+  minimumTier: smoke
+  publishable: false
+
+artifacts:
+  required:
+    - load.stdout.log
+    - load.stderr.log
+    - validation.json

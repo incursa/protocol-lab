@@ -1,0 +1,44 @@
+id: fixture.kestrel.inspect-headers
+name: Fixture Kestrel Inspect Headers
+family: fixture.kestrel
+version: 1.0
+description: Validates that request headers are echoed in the inspection payload.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - httpHeaders
+endpoint:
+  method: GET
+  path: /inspect/headers
+  query: {}
+  requestHeaders:
+    X-Protocol-Bench-Test: fixture-kestrel
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/json
+  expectedJsonProperties:
+    X-Protocol-Bench-Test: fixture-kestrel
+validation:
+  required: true
+  checks:
+    - status
+    - content-type
+    - json
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - kestrel
+  - adapter

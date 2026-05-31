@@ -1,0 +1,41 @@
+id: fixture.quic.unidirectional-send
+name: Fixture QUIC Unidirectional Send
+family: fixture.quic
+version: 1.0
+description: Fixture-only raw QUIC unidirectional stream send through the adapter-backed runner flow.
+protocol: quic
+implementationRole: server
+requiredCapabilities:
+  - quicTransport
+  - quicStreams
+quicTransport:
+  behavior: unidirectional-send-fixture
+  connectionCount: 1
+  streamType: unidirectional
+  streamCount: 4
+  payloadSizeBytes: 4096
+  payloadDirection: client-to-server
+  openPattern: sequential
+  expectedBytes: 16384
+validation:
+  required: true
+  checks:
+    - fixture
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 4
+networkProfile: clean
+requiredMetrics:
+  - fixture.quic.unidirectional
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - quic
+  - foundation

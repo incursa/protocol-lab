@@ -1,0 +1,28 @@
+id: h3-local-docker-target-caddy
+name: ProtocolLab local Caddy HTTP/3 Docker target suite
+description: Local shared-network Docker h2load suite for the Caddy HTTP/3 target.
+targetMode: docker
+targetNetworkMode: shared-docker-network
+implementations:
+  - caddy-http3
+scenarios:
+  - http.core.plaintext
+  - http.core.json
+protocol: h3
+loadTools:
+  - id: h2load
+    mode: docker
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 16
+  streamsPerConnection: 10
+dockerResourceLimits:
+  target:
+    cpus: "2"
+    memory: 1g
+  loadTool:
+    cpus: "2"
+    memory: 1g
+notes: Build incursa/protocol-lab-caddy-bench-server:local with scripts/build/Build-CaddyBenchServerImage.ps1 before running. The suite uses a generated shared Docker network and h2load --connect-to routing with SNI localhost.

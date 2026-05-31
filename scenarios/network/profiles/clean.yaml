@@ -1,0 +1,5 @@
+id: clean
+name: Clean Network
+description: No intentional network impairment.
+provider: none
+notes: Initial executable provider. This profile applies no synthetic latency, loss, or bandwidth limit.

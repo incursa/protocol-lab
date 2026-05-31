@@ -1,0 +1,73 @@
+schemaVersion: "1.0"
+title: WebTransport Session Bidi Echo
+status: placeholder
+kind: protocolValidation
+layer: application
+roles:
+  - server
+requires:
+  capabilities:
+    - webtransport.server
+  protocols:
+    - h3
+  roles:
+    - server
+trafficShape: bidirectional-stream
+id: webtransport.session-bidi-echo
+name: WebTransport Session Bidi Echo
+family: webtransport
+description: Future WebTransport session and bidirectional stream echo scenario.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - webtransport
+  - webtransportBidiStreams
+webTransport:
+  behavior: session-bidi-echo
+  sessionPath: /webtransport/echo
+  streamType: bidirectional
+  streamCount: 1
+  payloadSizeBytes: 65536
+  payloadDirection: bidirectional
+validation:
+  required: true
+  checks:
+    - unsupported-until-webtransport-validator
+    - session-established
+    - bidirectional-stream-echoes-payload
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - webtransport.session.durationMs
+  - webtransport.stream.bytesEchoed
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+  - qlog
+tags:
+  - phase8
+  - webtransport
+  - future-family

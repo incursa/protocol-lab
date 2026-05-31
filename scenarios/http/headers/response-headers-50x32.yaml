@@ -1,0 +1,73 @@
+schemaVersion: "1.0"
+title: HTTP Response Headers 50x32
+status: stable
+kind: workload
+layer: application
+roles:
+  - server
+requires:
+  capabilities:
+    - http.server
+  protocols:
+    - h1
+    - h2
+    - h3
+  roles:
+    - server
+trafficShape: request-response
+id: http.headers.response.50x32
+name: HTTP Response Headers 50x32
+family: http.application
+description: Validate and benchmark returning 50 synthetic response headers with 32-byte values.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - httpHeaders
+endpoint:
+  method: GET
+  path: /headers/response
+  query:
+    count: "50"
+    size: "32"
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: text/plain
+  expectedHeaderPrefix: X-Protocol-Bench-Header-
+  expectedHeaderCount: 50
+  expectedHeaderValueSize: 32
+  expectedBodyRule: exact
+  expectedBody: headers
+  expectedBodySize: 7
+validation:
+  required: true
+  checks: [status, response-headers, body]
+http:
+  expectedStatus: 200
+  expectedBody: headers
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections: [1]
+  streamsPerConnection: [1]
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics: [requestsPerSecond]
+artifactRequirements: [load-tool.stdout.txt, load-tool.stderr.txt]
+tags: [phase2, http, headers]

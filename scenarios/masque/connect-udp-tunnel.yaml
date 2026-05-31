@@ -1,0 +1,71 @@
+schemaVersion: "1.0"
+title: MASQUE CONNECT-UDP Tunnel
+status: placeholder
+kind: protocolValidation
+layer: application
+roles:
+  - server
+requires:
+  capabilities:
+    - masque.server
+  protocols:
+    - h3
+  roles:
+    - server
+trafficShape: bidirectional-stream
+id: masque.connect-udp-tunnel
+name: MASQUE CONNECT-UDP Tunnel
+family: masque
+description: Future MASQUE CONNECT-UDP tunnel setup scenario.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - masque
+  - masqueConnectUdp
+masque:
+  behavior: connect-udp-tunnel
+  tunnelMode: connect-udp
+  targetAuthority: example.invalid:443
+  datagramPolicy: required
+validation:
+  required: true
+  checks:
+    - unsupported-until-masque-validator
+    - tunnel-established
+    - datagrams-forwarded
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - masque.tunnel.setupDurationMs
+  - masque.datagram.forwardedCount
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+  - qlog
+tags:
+  - phase8
+  - masque
+  - future-family

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Adapter Contract v1 Session Resource",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["session"],
+  "properties": {
+    "session": { "$ref": "./common.schema.json#/$defs/sessionSummary" },
+    "adapterResult": { "$ref": "./common.schema.json#/$defs/operationResult" },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

@@ -1,0 +1,70 @@
+id: kestrel-http3
+name: Kestrel HTTP/3 Baseline
+description: ASP.NET Core Kestrel benchmark server baseline for HTTP/1 and isolated HTTP/3 proof.
+image: incursa/protocol-lab-kestrel-bench-server:local
+targetKind: process
+executable: dotnet
+project: servers/KestrelBenchServer/KestrelBenchServer.csproj
+workingDirectory: .
+dockerfile: servers/KestrelBenchServer/Dockerfile
+buildContext: .
+dockerNetworkMode: published-port
+dockerBaseUrl: http://127.0.0.1:5080
+dockerProtocolBaseUrls:
+  h1: http://127.0.0.1:5080
+  h2: https://127.0.0.1:5443
+  h3: https://127.0.0.1:5443
+baseUrl: http://127.0.0.1:5080
+protocolBaseUrls:
+  h1: http://127.0.0.1:5080
+  h2: https://127.0.0.1:5443
+  h3: https://127.0.0.1:5443
+certificateMode: aspnetcore-development-certificate-or-explicit-pfx
+roles:
+  - server
+supportedProtocols:
+  - h1
+  - h2
+  - h3
+supportedWorkloadFamilies:
+  - http.application
+ports:
+  - name: http
+    containerPort: 5080
+    hostPort: 5080
+    protocol: tcp
+  - name: https-h3
+    containerPort: 5443
+    hostPort: 5443
+    protocol: tcp+udp
+environment:
+  PROTOCOL_LAB_ENABLE_EXPLICIT_ENDPOINTS: "true"
+  PROTOCOL_LAB_H1_URL: http://127.0.0.1:5080
+  PROTOCOL_LAB_H3_URL: https://127.0.0.1:5443
+  PROTOCOL_LAB_IMPLEMENTATION: kestrel-http3
+dockerEnvironment:
+  PROTOCOL_LAB_ENABLE_EXPLICIT_ENDPOINTS: "true"
+  PROTOCOL_LAB_H1_URL: http://0.0.0.0:5080
+  PROTOCOL_LAB_H3_URL: https://0.0.0.0:5443
+  PROTOCOL_LAB_GENERATE_LOCAL_CERT: "true"
+  PROTOCOL_LAB_IMPLEMENTATION: kestrel-http3
+commandArguments: []
+readinessCheck:
+  type: http
+  url: /plaintext
+  timeoutSeconds: 30
+shutdownBehavior: process-exit
+capabilities:
+  - httpPlaintext
+  - httpJson
+  - httpStatus
+  - httpBytes
+  - httpStreaming
+  - httpUpload
+  - httpHeaders
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: H1 remains the baseline on http://127.0.0.1:5080. H3 proof uses https://127.0.0.1:5443 with Kestrel HTTP/3 enabled, the ASP.NET Core development certificate by default, and platform MsQuic support. Set PROTOCOL_LAB_CERTIFICATE_PATH and PROTOCOL_LAB_CERTIFICATE_PASSWORD to use an explicit local PFX. Private key material must not be committed.

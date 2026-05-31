@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "companyName": "Incursa LLC",
+      "copyrightText": "Copyright (c) 2026 {companyName}.\nLicensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.",
+      "variables": {},
+      "xmlHeader": false,
+      "documentInterfaces": false,
+      "documentExposedElements": false,
+      "documentInternalElements": false,
+      "documentPrivateElements": false,
+      "documentPrivateFields": false,
+      "documentationCulture": "en-US",
+      "fileNamingConvention": "metadata"
+    }
+  }
+}

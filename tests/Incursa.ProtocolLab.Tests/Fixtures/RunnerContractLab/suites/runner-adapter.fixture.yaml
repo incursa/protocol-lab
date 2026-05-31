@@ -1,0 +1,33 @@
+id: runner-adapter-fixture
+name: Runner Adapter Fixture Suite
+description: Fixture lab suite that groups adapter-backed runner scenarios.
+targetMode: external
+targetNetworkMode: published-port
+implementations:
+  - fixture-adapter-http
+  - fixture-adapter-quic
+scenarios:
+  - fixture.adapter.success
+  - fixture.adapter.unsupported
+  - fixture.adapter.prepare-failure
+  - fixture.adapter.start-failure
+  - fixture.adapter.readiness-failure
+  - fixture.adapter.metrics
+  - fixture.adapter.artifacts
+  - fixture.adapter.cleanup
+  - fixture.adapter.quic-discovery
+protocol: h1
+loadTools:
+  - id: fixture-load-success
+    mode: process
+    category: managed-lab
+defaults:
+  durationSeconds: 1
+  warmupSeconds: 0
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: dotnet-counters
+notes: Adapter-backed fixture suite that documents the runner's control-plane path. The runner does not consume suite files yet, but the fixture lab records the intended contract surface.

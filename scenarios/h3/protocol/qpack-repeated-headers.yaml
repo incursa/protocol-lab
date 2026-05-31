@@ -1,0 +1,74 @@
+schemaVersion: "1.0"
+title: H3 QPACK Repeated Headers
+status: stable
+kind: protocolValidation
+layer: protocol
+roles:
+  - server
+requires:
+  capabilities:
+    - h3.server
+    - quic.server
+  protocols:
+    - h3
+  roles:
+    - server
+trafficShape: bidirectional-stream
+id: h3.protocol.qpack-repeated-headers
+name: H3 QPACK Repeated Headers
+family: h3.protocol
+description: Validate and benchmark HTTP/3 header compression behavior for repeated response headers once an H3 protocol validator and load generator exist.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - h3Protocol
+  - h3Qpack
+h3Protocol:
+  behavior: qpack-repeated-headers
+  requestPath: /headers/response
+  repeatedHeaderCount: 50
+  headerValueSize: 32
+  expectedFrameTypes:
+    - headers
+    - data
+validation:
+  required: true
+  checks:
+    - unsupported-until-h3-validator
+    - qpack-header-block-observable
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - h3.qpack.encodedHeaderBytes
+  - h3.qpack.dynamicTableInsertions
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+  - qlog
+tags:
+  - phase5
+  - h3
+  - qpack

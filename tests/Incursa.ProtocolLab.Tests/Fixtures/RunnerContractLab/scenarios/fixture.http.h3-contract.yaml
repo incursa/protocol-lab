@@ -1,0 +1,35 @@
+id: fixture.http.h3-contract
+name: Fixture HTTP H3 Contract
+family: fixture.http
+description: Triggers modeled H3 validation unsupported behavior.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - fixtureHttp
+h3Protocol:
+  behavior: modeled-fixture
+  requestPath: /ok
+endpoint:
+  method: GET
+  path: /ok
+  expectedStatus: 200
+  expectedBodyRule: exact
+  expectedBody: fixture-ok
+validation:
+  required: true
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture

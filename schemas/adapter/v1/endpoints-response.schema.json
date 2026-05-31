@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Adapter Contract v1 Endpoint Discovery Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["session", "endpoints"],
+  "properties": {
+    "session": { "$ref": "./common.schema.json#/$defs/sessionSummary" },
+    "endpoints": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/endpoint" }
+    },
+    "operation": { "$ref": "./common.schema.json#/$defs/operationResult" },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

@@ -1,0 +1,6 @@
+id: rtt-25ms
+name: RTT 25ms
+description: Reserved profile for 25ms round-trip latency.
+provider: docker-tc
+rttMilliseconds: 25
+notes: Modeled for Phase 7, but not executable until the docker-tc provider is implemented.

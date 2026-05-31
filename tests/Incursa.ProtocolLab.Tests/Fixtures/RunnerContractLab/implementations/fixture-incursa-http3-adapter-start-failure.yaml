@@ -1,0 +1,59 @@
+id: fixture-incursa-http3-adapter-start-failure
+name: Fixture Incursa HTTP/3 Adapter Start Failure
+description: Fixture adapter-backed Incursa target that forces endpoint startup to fail.
+image: ""
+targetKind: process
+targetContract: adapter-v1
+executable: dotnet
+project: ../../../../src/Incursa.ProtocolLab.Adapters.IncursaHttp3/Incursa.ProtocolLab.Adapters.IncursaHttp3.csproj
+workingDirectory: .
+dockerfile: ""
+buildContext: .
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: http://127.0.0.1:53172
+baseUrl: http://127.0.0.1:53172
+adapterControlPlaneBaseUrl: http://127.0.0.1:53172
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - h3
+supportedWorkloadFamilies:
+  - http.application
+  - fixture.incursa-http3
+ports:
+  - name: control-plane
+    containerPort: 53172
+    hostPort: 53172
+    protocol: tcp
+environment:
+  ASPNETCORE_URLS: http://127.0.0.1:53172
+  PROTOCOL_LAB_INCURSA_FORCE_ENDPOINT_START_FAILURE_MESSAGE: Forced endpoint start failure for fixture.
+  PROTOCOL_LAB_INCURSA_READINESS_TIMEOUT_SECONDS: "2"
+  PROTOCOL_LAB_INCURSA_HTTP_TIMEOUT_SECONDS: "5"
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: http
+  url: /protocol-lab/adapter/v1/health
+  timeoutSeconds: 10
+shutdownBehavior: process-exit
+capabilities:
+  - adapter-control-plane
+  - http3.server
+  - quic.server
+  - httpPlaintext
+  - httpJson
+  - httpStatus
+  - httpBytes
+  - httpStreaming
+  - httpUpload
+  - httpHeaders
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Fixture-only start-failure target. The control plane starts, but the adapter reports a forced endpoint start failure before the protocol endpoint can become ready.

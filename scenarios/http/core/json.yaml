@@ -1,0 +1,79 @@
+schemaVersion: "1.0"
+title: HTTP JSON
+status: stable
+kind: workload
+layer: application
+roles:
+  - server
+requires:
+  capabilities:
+    - http.server
+  protocols:
+    - h1
+    - h2
+    - h3
+  roles:
+    - server
+trafficShape: request-response
+id: http.core.json
+name: HTTP JSON
+family: http.application
+description: Validate and benchmark a small JSON HTTP response serialized per request.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - httpJson
+endpoint:
+  method: GET
+  path: /json
+  query: {}
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/json
+  expectedBodyRule: jsonEquivalent
+  expectedBody: '{"message":"Hello, World!"}'
+validation:
+  required: true
+  checks:
+    - status
+    - content-type
+    - json-body
+http:
+  expectedStatus: 200
+  expectedBody: '{"message":"Hello, World!"}'
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+  - latencyMeanMs
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+tags:
+  - phase1
+  - http
+  - json

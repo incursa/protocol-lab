@@ -1,0 +1,6 @@
+id: loss-0.1pct
+name: Loss 0.1 Percent
+description: Reserved profile for 0.1 percent packet loss.
+provider: docker-tc
+lossPercent: 0.1
+notes: Modeled for Phase 7, but not executable until the docker-tc provider is implemented.

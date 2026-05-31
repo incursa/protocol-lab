@@ -1,0 +1,44 @@
+id: fixture.kestrel.status
+name: Fixture Kestrel Status
+family: fixture.kestrel
+version: 1.0
+description: Validates the adapter-backed status endpoint.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - httpStatus
+endpoint:
+  method: GET
+  path: /status
+  query: {}
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/json
+  expectedJsonProperties:
+    server: KestrelBenchServer
+    implementation: kestrel-http3
+validation:
+  required: true
+  checks:
+    - status
+    - content-type
+    - body
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - kestrel
+  - adapter

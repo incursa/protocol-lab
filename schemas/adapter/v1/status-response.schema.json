@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Adapter Contract v1 Status Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["session", "readiness", "health"],
+  "properties": {
+    "session": { "$ref": "./common.schema.json#/$defs/sessionSummary" },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "$ref": "./common.schema.json#/$defs/readinessStatus" },
+        "message": { "type": "string" },
+        "warnings": {
+          "$ref": "./common.schema.json#/$defs/stringArray"
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+      }
+    },
+    "health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "$ref": "./common.schema.json#/$defs/healthStatus" },
+        "message": { "type": "string" },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+      }
+    },
+    "operation": { "$ref": "./common.schema.json#/$defs/operationResult" },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

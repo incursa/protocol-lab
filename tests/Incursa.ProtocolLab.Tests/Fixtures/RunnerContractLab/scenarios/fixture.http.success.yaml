@@ -1,0 +1,32 @@
+id: fixture.http.success
+name: Fixture HTTP Success
+family: fixture.http
+description: Validates the success path for the runner contract fixture lab.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - fixtureHttp
+endpoint:
+  method: GET
+  path: /ok
+  expectedStatus: 200
+  expectedBodyRule: exact
+  expectedBody: fixture-ok
+validation:
+  required: true
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture

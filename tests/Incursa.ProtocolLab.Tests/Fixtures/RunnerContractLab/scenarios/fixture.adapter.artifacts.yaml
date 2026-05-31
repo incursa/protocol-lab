@@ -1,0 +1,35 @@
+id: fixture.adapter.artifacts
+name: Fixture Adapter Artifacts
+family: fixture.adapter
+version: 1.0
+description: Models a successful adapter-backed session that exposes artifact discovery.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - fixtureAdapter
+endpoint:
+  method: GET
+  path: /ok
+  expectedStatus: 200
+  expectedBodyRule: exact
+  expectedBody: fixture-ok
+validation:
+  required: true
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - adapter
+  - artifacts

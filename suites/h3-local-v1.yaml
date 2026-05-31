@@ -1,0 +1,27 @@
+id: h3-local-v1
+name: ProtocolLab v1 local HTTP/3 acceptance suite
+description: Documentation/input suite for the Phase 2L local v1 acceptance script.
+implementations:
+  - kestrel-http3
+  - incursa-http3
+scenarios:
+  - http.core.plaintext
+  - http.core.json
+protocol: h3
+loadTools:
+  - id: managed-httpclient-h3-load
+    mode: managed
+    category: managed-lab
+  - id: h2load
+    mode: docker
+    category: external-reference
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 16
+  streamsPerConnection: 10
+counterCapture:
+  enabledByDefault: false
+  tool: dotnet-counters
+notes: This suite is intentionally consumed by scripts/acceptance/Invoke-ProtocolLabAcceptance.ps1 as documented input. It is not a generalized workflow engine.

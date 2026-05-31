@@ -1,0 +1,35 @@
+id: fixture.adapter.metrics
+name: Fixture Adapter Metrics
+family: fixture.adapter
+version: 1.0
+description: Models a successful adapter-backed session that returns metrics snapshots.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - fixtureAdapter
+endpoint:
+  method: GET
+  path: /ok
+  expectedStatus: 200
+  expectedBodyRule: exact
+  expectedBody: fixture-ok
+validation:
+  required: true
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - adapter
+  - metrics

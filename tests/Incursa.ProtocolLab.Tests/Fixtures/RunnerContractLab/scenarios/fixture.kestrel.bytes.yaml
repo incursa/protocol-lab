@@ -1,0 +1,45 @@
+id: fixture.kestrel.bytes
+name: Fixture Kestrel Bytes
+family: fixture.kestrel
+version: 1.0
+description: Validates the deterministic byte payload endpoint.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - httpBytes
+endpoint:
+  method: GET
+  path: /bytes/1024
+  query: {}
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/octet-stream
+  expectedBodyRule: deterministicBytes
+  expectedBodySize: 1024
+validation:
+  required: true
+  checks:
+    - status
+    - content-type
+    - body-size
+    - deterministic-bytes
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+  - bytesReceived
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - kestrel
+  - adapter

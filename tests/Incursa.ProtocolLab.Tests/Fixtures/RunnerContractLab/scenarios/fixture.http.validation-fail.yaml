@@ -1,0 +1,32 @@
+id: fixture.http.validation-fail
+name: Fixture HTTP Validation Fail
+family: fixture.http
+description: Validates the failed validation path for the runner contract fixture lab.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - fixtureHttp
+endpoint:
+  method: GET
+  path: /ok
+  expectedStatus: 200
+  expectedBodyRule: exact
+  expectedBody: fixture-expected-different
+validation:
+  required: true
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture

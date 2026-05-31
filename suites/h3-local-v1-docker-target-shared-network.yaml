@@ -1,0 +1,26 @@
+id: h3-local-v1-docker-target-shared-network
+name: ProtocolLab local HTTP/3 Docker target shared-network smoke suite
+description: Documentation/input suite for local HTTP/3 Docker target acceptance using a generated shared Docker network for Docker h2load benchmark traffic.
+targetMode: docker
+targetNetworkMode: shared-docker-network
+implementations:
+  - kestrel-http3
+  - incursa-http3
+scenarios:
+  - http.core.plaintext
+  - http.core.json
+protocol: h3
+loadTools:
+  - id: h2load
+    mode: docker
+    category: external-reference
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 16
+  streamsPerConnection: 10
+counterCapture:
+  enabledByDefault: false
+  tool: dotnet-counters
+notes: Shared Docker network mode creates a generated protocol-lab-{runId} network, attaches the Docker target and Docker h2load containers to that network, keeps host-published ports for managed H3 validation, and routes h2load with SNI localhost plus --connect-to toward the target network alias.

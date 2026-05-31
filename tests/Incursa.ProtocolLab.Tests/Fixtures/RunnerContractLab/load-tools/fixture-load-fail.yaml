@@ -1,0 +1,39 @@
+id: fixture-load-fail
+name: Fixture Load Fail
+description: Dummy process load tool that writes stderr and exits non-zero.
+kind: process
+category: managed-lab
+supportedProtocols:
+  - h1
+  - h3
+supportedScenarioFamilies:
+  - fixture.http
+  - fixture.adapter
+  - fixture.kestrel
+executable: powershell
+dockerImage: ""
+dockerCommand: ""
+dockerArguments: []
+dockerEnvironment: {}
+dockerAutoPull: false
+dockerHostRewrite: ""
+sni: ""
+defaultArguments:
+  - -NoProfile
+  - -ExecutionPolicy
+  - Bypass
+  - -File
+  - tests/Incursa.ProtocolLab.Tests/Fixtures/RunnerContractLab/scripts/fixture-load-tool.ps1
+  - -Mode
+  - fail
+versionCommand:
+  - -NoProfile
+  - -ExecutionPolicy
+  - Bypass
+  - -File
+  - tests/Incursa.ProtocolLab.Tests/Fixtures/RunnerContractLab/scripts/fixture-load-tool.ps1
+  - -Mode
+  - version
+availabilityCheck: path
+outputParserId: oha-json
+notes: Fixture-only load tool that triggers process failure.

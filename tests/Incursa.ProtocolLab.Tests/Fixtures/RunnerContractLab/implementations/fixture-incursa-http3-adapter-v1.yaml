@@ -1,0 +1,56 @@
+id: fixture-incursa-http3-adapter-v1
+name: Fixture Incursa HTTP/3 Adapter v1
+description: Deterministic adapter-backed Incursa HTTP/3 target for runner contract tests.
+image: ""
+targetKind: process
+targetContract: adapter-v1
+executable: dotnet
+project: ../../../../src/Incursa.ProtocolLab.Adapters.IncursaHttp3/Incursa.ProtocolLab.Adapters.IncursaHttp3.csproj
+workingDirectory: .
+dockerfile: ""
+buildContext: .
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: http://127.0.0.1:53172
+baseUrl: http://127.0.0.1:53172
+adapterControlPlaneBaseUrl: http://127.0.0.1:53172
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - h3
+supportedWorkloadFamilies:
+  - http.application
+  - fixture.incursa-http3
+ports:
+  - name: control-plane
+    containerPort: 53172
+    hostPort: 53172
+    protocol: tcp
+environment:
+  ASPNETCORE_URLS: http://127.0.0.1:53172
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: http
+  url: /protocol-lab/adapter/v1/health
+  timeoutSeconds: 10
+shutdownBehavior: process-exit
+capabilities:
+  - adapter-control-plane
+  - http3.server
+  - quic.server
+  - httpPlaintext
+  - httpJson
+  - httpStatus
+  - httpBytes
+  - httpStreaming
+  - httpUpload
+  - httpHeaders
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Fixture-backed Incursa HTTP/3 adapter control plane. The adapter starts a separate Incursa HTTP/3 endpoint per session, reports endpoint discovery through the adapter contract, and reports unsupported scenarios explicitly. HTTP/3 only.

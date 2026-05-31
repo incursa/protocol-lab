@@ -1,0 +1,50 @@
+schemaVersion: "1.0"
+id: websocket.echo
+title: WebSocket Echo
+name: WebSocket Echo
+family: websocket
+description: Placeholder for WebSocket echo scenario. Not yet implemented.
+status: placeholder
+kind: protocolValidation
+layer: application
+protocol: ws
+roles:
+  - server
+requires:
+  capabilities:
+    - websocket.server
+  protocols:
+    - ws
+  roles:
+    - server
+trafficShape: bidirectional-stream
+validation:
+  required: true
+  checks:
+    - unsupported-until-websocket-validator
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes: []
+  primaryMetrics:
+    - websocket.messagesPerSecond
+artifacts:
+  required:
+    - validation.json
+  optional:
+    - qlog
+networkProfile: clean
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+tags:
+  - phase7
+  - websocket
+  - future-family
+  - placeholder

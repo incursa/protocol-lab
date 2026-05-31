@@ -1,0 +1,31 @@
+id: fixture.adapter.quic-discovery
+name: Fixture Adapter QUIC Discovery
+family: fixture.adapter
+version: 1.0
+description: Proves that the adapter contract can discover a non-HTTP endpoint description.
+protocol: quic
+implementationRole: server
+requiredCapabilities:
+  - fixtureAdapter
+quicTransport:
+  behavior: fixture
+validation:
+  required: true
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - result.json
+  - validation.json
+tags:
+  - fixture
+  - adapter
+  - quic

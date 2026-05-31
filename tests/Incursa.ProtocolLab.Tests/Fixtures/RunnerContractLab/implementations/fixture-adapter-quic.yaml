@@ -1,0 +1,43 @@
+id: fixture-adapter-quic
+name: Fixture Adapter QUIC
+description: Dummy adapter-backed target that surfaces a non-HTTP endpoint through the adapter control plane.
+image: ""
+targetKind: external
+targetContract: adapter-v1
+executable: ""
+project: ""
+workingDirectory: .
+dockerfile: ""
+buildContext: .
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: ""
+baseUrl: ""
+adapterControlPlaneBaseUrl: ""
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - quic
+supportedWorkloadFamilies:
+  - fixture.adapter
+ports: []
+environment: {}
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: none
+  url: ""
+  timeoutSeconds: 1
+shutdownBehavior: external
+capabilities:
+  - fixtureAdapter
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+  - target.stdout.txt
+  - target.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Fixture-only adapter-backed target for the runner contract lab.

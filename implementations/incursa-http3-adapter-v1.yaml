@@ -1,0 +1,60 @@
+id: incursa-http3-adapter-v1
+name: Incursa HTTP/3 Adapter v1
+description: ProtocolLab Adapter Contract v1 control plane for Incursa HTTP/3 sessions and endpoint discovery.
+image: ""
+targetKind: process
+targetContract: adapter-v1
+executable: dotnet
+project: src/Incursa.ProtocolLab.Adapters.IncursaHttp3/Incursa.ProtocolLab.Adapters.IncursaHttp3.csproj
+workingDirectory: .
+dockerfile: ""
+buildContext: .
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: http://127.0.0.1:53172
+baseUrl: http://127.0.0.1:53172
+adapterControlPlaneBaseUrl: http://127.0.0.1:53172
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - h3
+supportedWorkloadFamilies:
+  - http.application
+  - fixture.incursa-http3
+ports:
+  - name: control-plane
+    containerPort: 53172
+    hostPort: 53172
+    protocol: tcp
+environment:
+  ASPNETCORE_URLS: http://127.0.0.1:53172
+  PROTOCOL_LAB_INCURSA_READINESS_PROBE_PATH: /plaintext
+  PROTOCOL_LAB_INCURSA_READINESS_TIMEOUT_SECONDS: "30"
+  PROTOCOL_LAB_INCURSA_HTTP_TIMEOUT_SECONDS: "5"
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: http
+  url: /protocol-lab/adapter/v1/health
+  timeoutSeconds: 10
+shutdownBehavior: process-exit
+capabilities:
+  - adapter-control-plane
+  - http3.server
+  - quic.server
+  - httpPlaintext
+  - httpJson
+  - httpStatus
+  - httpBytes
+  - httpStreaming
+  - httpUpload
+  - httpHeaders
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: ProtocolLab Adapter Contract v1 control plane for Incursa HTTP/3. The control plane creates a separate Incursa HTTP/3 endpoint per session, discovers that endpoint through the adapter contract, and reports unsupported scenarios explicitly instead of fabricating support. The adapter does not depend on a sibling endpoint project.
+

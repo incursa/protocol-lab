@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <ProtocolLabTargetFramework>net10.0</ProtocolLabTargetFramework>
+    <TargetFramework>$(ProtocolLabTargetFramework)</TargetFramework>
+    <IncursaQuicVersion>1.0.6</IncursaQuicVersion>
+    <IncursaQpackVersion>1.0.6</IncursaQpackVersion>
+    <IncursaQuicHttp3Version>1.0.6</IncursaQuicHttp3Version>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Product>Incursa Protocol Lab</Product>
+    <Authors>Incursa LLC</Authors>
+    <RepositoryUrl>https://github.com/incursa/protocol-lab</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

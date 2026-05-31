@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Adapter Contract v1 Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "adapterIdentity",
+    "implementationIdentity",
+    "versionCompatibility",
+    "supportedRoles",
+    "claimedCapabilities",
+    "supportedScenarioSelectors",
+    "supportedEndpointTypes",
+    "supportedArtifactTypes",
+    "metricsAvailability"
+  ],
+  "properties": {
+    "adapterIdentity": { "$ref": "./common.schema.json#/$defs/identity" },
+    "implementationIdentity": { "$ref": "./common.schema.json#/$defs/identity" },
+    "versionCompatibility": {
+      "$ref": "./common.schema.json#/$defs/versionCompatibility"
+    },
+    "supportedRoles": {
+      "$ref": "./common.schema.json#/$defs/stringArray",
+      "description": "Open-ended role identifiers supported by the adapter."
+    },
+    "claimedCapabilities": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/capability" }
+    },
+    "supportedScenarioSelectors": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/scenarioSelector" }
+    },
+    "supportedEndpointTypes": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/endpointType" }
+    },
+    "supportedArtifactTypes": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/artifactType" }
+    },
+    "metricsAvailability": {
+      "$ref": "./common.schema.json#/$defs/metricsAvailability"
+    },
+    "defaultResponseContentTypes": {
+      "$ref": "./common.schema.json#/$defs/stringArray",
+      "description": "Optional response content types the adapter can emit."
+    },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

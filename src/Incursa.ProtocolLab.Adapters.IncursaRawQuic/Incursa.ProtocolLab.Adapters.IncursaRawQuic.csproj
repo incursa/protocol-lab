@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <AssemblyName>Incursa.ProtocolLab.Adapters.IncursaRawQuic</AssemblyName>
+    <RootNamespace>Incursa.ProtocolLab.Adapters.IncursaRawQuic</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Incursa.ProtocolLab.Adapter.Contracts\Incursa.ProtocolLab.Adapter.Contracts.csproj" />
+    <ProjectReference Include="..\Incursa.ProtocolLab.Model\Incursa.ProtocolLab.Model.csproj" />
+  </ItemGroup>
+
+</Project>

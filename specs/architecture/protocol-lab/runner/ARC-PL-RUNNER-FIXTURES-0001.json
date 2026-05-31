@@ -1,0 +1,71 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-RUNNER-FIXTURES-0001",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab Runner Contract Fixture Lab Architecture",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-RUNNER",
+    "WI-PL-RUNNER-FIXTURES-0001",
+    "VER-PL-RUNNER-FIXTURES-0001"
+  ],
+  "satisfies": [
+    "REQ-PL-RUNNER-0019",
+    "REQ-PL-RUNNER-0020",
+    "REQ-PL-RUNNER-0021",
+    "REQ-PL-RUNNER-0022",
+    "REQ-PL-RUNNER-0023",
+    "REQ-PL-RUNNER-0024",
+    "REQ-PL-RUNNER-0025"
+  ],
+  "purpose": "Describe the first-class dummy-only fixture lab that proves the Runner contract without adding real protocol behavior.",
+  "design_summary": "RunnerContractFixtureLab is a controlled harness layer above RunnerEngine. It seeds fake manifests, fake scenarios, fake suites, fake load tools, fake validators, and fake execution backends so the runner can exercise success, unsupported, incompatible, startup failure, readiness timeout, validation failure, load-tool failure, parse failure, artifact generation, and report generation. The fixture lab can be driven directly through RunnerEngine or through the CLI host, and it proves structured result and event behavior without depending on console-coupled internals.",
+  "key_components": [
+    "FixtureManifestCatalog: loads fake implementation, scenario, suite, load-tool, and network-profile manifests that describe deterministic outcomes.",
+    "FixtureSuiteResolver: expands fake suites and fixture labs into stable run cells covering success, unsupported, and incompatible cases.",
+    "FixtureExecutionBackend: returns deterministic startup, readiness, and cleanup outcomes without launching real protocol implementations.",
+    "FixtureTargetLifecycleCoordinator: models startup failure, readiness timeout, ready execution, and cleanup diagnostics.",
+    "FixtureValidationCoordinator: returns fixture validator pass, fail, and unsupported outcomes before benchmarking can proceed.",
+    "FixtureLoadToolCoordinator: simulates tool success, tool failure, parser success, parser failure, and raw stdout/stderr preservation.",
+    "FixtureArtifactCoordinator: writes deterministic run, cell, validation, target, load-tool, aggregate, and report artifacts.",
+    "FixtureResultAndEventHarness: exercises RunnerCommandResult, RunnerEvent, and IRunnerEventSink behavior without console coupling.",
+    "FixtureRunnerHostHarness: invokes RunnerEngine directly for contract tests and captures structured results from the host boundary.",
+    "FixtureCliSmokeHarness: executes the CLI surface so console rendering stays outside the runner while exit codes remain preserved.",
+    "FixtureDocumentationSurface: provides user-facing docs for overview, quickstart, contracts, layout, result model, and fixture usage."
+  ],
+  "data_and_state_considerations": "The fixture lab should keep fake manifest data, fixture run plans, structured events, cell results, artifacts, and report outputs separate so tests can assert on each layer independently. Fixture cells must be able to express supported, unsupported, incompatible, startup-failed, readiness-timeout, validation-failed, load-tool-failed, and parser-failed outcomes without requiring any real protocol code path.",
+  "edge_cases_and_constraints": [
+    "No fixture path may require a real Incursa protocol implementation assembly.",
+    "Raw stdout and stderr must survive parser failure and load-tool failure in fixture runs.",
+    "Direct host tests should assert on RunnerCommandResult and RunnerEvent, not on console text.",
+    "CLI smoke tests may render output, but they must continue to treat the runner exit code and artifacts as the source of truth.",
+    "Documentation should be sufficient for a user to understand the fixture lab without reading source files.",
+    "The fixture lab must not grow into real protocol behavior or adapter work."
+  ],
+  "alternatives_considered": [
+    "Embedding the fixture lab inside the core runner spec was rejected because the dummy lab is a separate proof surface with its own host and documentation needs.",
+    "Treating fixtures as implementation-specific protocol tests was rejected because the fixture lab exists to prove the generic runner contract without real protocol behavior.",
+    "Using live protocol implementations as fixture coverage was rejected because that would collapse the boundary this task is meant to prove."
+  ],
+  "risks": [
+    "Fixture naming could drift into protocol-specific vocabulary unless the dummy-only boundary is kept explicit.",
+    "Console assertions can creep back in unless the host/result boundary remains testable without stdout capture.",
+    "Artifact paths can become brittle unless fixture output stays deterministic and convention-driven."
+  ],
+  "supplemental_sections": [
+    {
+      "heading": "Outcome Matrix",
+      "content": "The fixture lab must cover successful cell execution, unsupported cells, incompatible cells, startup failure, readiness timeout, validation failure, load tool failure, metric parse failure with raw output preservation, artifact and report generation, and event/result contract behavior without console coupling."
+    },
+    {
+      "heading": "Host Paths",
+      "content": "Direct RunnerEngine host tests should exercise structured command results and event sinks. CLI smoke tests should prove that presentation remains in the CLI while the runner contract stays implementation-neutral."
+    },
+    {
+      "heading": "Documentation Boundary",
+      "content": "The fixture lab needs user-facing documentation for runner overview, quickstart, manifest reference, scenario contract, execution backend contract, load tool contract, artifact layout, result model, and fixture usage."
+    }
+  ]
+}

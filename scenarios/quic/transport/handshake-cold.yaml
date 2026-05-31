@@ -1,0 +1,73 @@
+schemaVersion: "1.0"
+title: QUIC Cold Handshake
+status: stable
+kind: protocolValidation
+layer: transport
+roles:
+  - server
+requires:
+  capabilities:
+    - quic.server
+  protocols:
+    - quic
+  roles:
+    - server
+trafficShape: bidirectional-stream
+id: quic.transport.handshake-cold
+name: QUIC Cold Handshake
+family: quic.transport
+description: Validate and benchmark cold QUIC connection setup once a raw QUIC validator and load generator exist.
+protocol: quic
+implementationRole: server
+requiredCapabilities:
+  - quicTransport
+  - quicHandshake
+quicTransport:
+  behavior: handshake-cold
+  connectionCount: 1
+  streamType: none
+  streamCount: 0
+  payloadDirection: none
+  openPattern: sequential
+  expectedBytes: 0
+validation:
+  required: true
+  checks:
+    - unsupported-until-quic-validator
+    - handshake-completes
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 0
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - qlog
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - quic.handshake.durationMs
+  - quic.connection.successCount
+artifactRequirements:
+  - load-tool.stdout.txt
+  - load-tool.stderr.txt
+  - qlog
+tags:
+  - phase6
+  - quic
+  - handshake

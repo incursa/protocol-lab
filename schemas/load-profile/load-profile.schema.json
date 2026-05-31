@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://protocol-lab.incursa.com/schemas/load-profile.schema.json",
+  "title": "ProtocolLab Load Profile v1",
+  "description": "Schema for ProtocolLab load profile definition files.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "title",
+    "status",
+    "purpose"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Schema version identifier (e.g., protocol-lab.load-profile.v1)",
+      "pattern": "^protocol-lab\\.load-profile\\.v[0-9]+$"
+    },
+    "id": {
+      "type": "string",
+      "description": "Stable load profile ID (e.g., smoke, local-comparison)",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable load profile title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the load profile"
+    },
+    "status": {
+      "type": "string",
+      "description": "Profile maturity status",
+      "enum": ["stable", "experimental", "deprecated"]
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Intended use of this profile",
+      "enum": ["smoke", "regression", "comparison", "stress", "soak", "publishable-benchmark"]
+    },
+    "durationSeconds": {
+      "type": "integer",
+      "description": "Benchmark duration in seconds",
+      "minimum": 1
+    },
+    "warmupSeconds": {
+      "type": "integer",
+      "description": "Warmup duration in seconds",
+      "minimum": 0
+    },
+    "cooldownSeconds": {
+      "type": "integer",
+      "description": "Cooldown wait between repetitions in seconds",
+      "minimum": 0
+    },
+    "repetitions": {
+      "type": "integer",
+      "description": "Number of repetitions",
+      "minimum": 1
+    },
+    "traffic": {
+      "type": "object",
+      "description": "Traffic-level settings",
+      "properties": {
+        "totalRequests": {
+          "type": "integer",
+          "description": "Total request count (null = duration-based)"
+        },
+        "requestRateLimit": {
+          "type": "integer",
+          "description": "Request rate limit per second (null = unlimited)"
+        }
+      }
+    },
+    "http": {
+      "type": "object",
+      "description": "HTTP/1.1 profile settings",
+      "properties": {
+        "connections": { "type": "integer" },
+        "concurrency": { "type": "integer" },
+        "requestTimeoutSeconds": { "type": "integer" }
+      }
+    },
+    "http2": {
+      "type": "object",
+      "description": "HTTP/2 profile settings",
+      "properties": {
+        "connections": { "type": "integer" },
+        "concurrency": { "type": "integer" },
+        "streamsPerConnection": { "type": "integer" },
+        "requestTimeoutSeconds": { "type": "integer" }
+      }
+    },
+    "http3": {
+      "type": "object",
+      "description": "HTTP/3 profile settings",
+      "properties": {
+        "connections": { "type": "integer" },
+        "concurrency": { "type": "integer" },
+        "streamsPerConnection": { "type": "integer" },
+        "requestTimeoutSeconds": { "type": "integer" }
+      }
+    },
+    "quic": {
+      "type": "object",
+      "description": "QUIC transport profile settings",
+      "properties": {
+        "connections": { "type": "integer" },
+        "streamsPerConnection": { "type": "integer" },
+        "streamBytes": { "type": "integer" },
+        "connectionTimeoutSeconds": { "type": "integer" },
+        "idleTimeoutSeconds": { "type": "integer" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Evidence tier requirements",
+      "properties": {
+        "minimumTier": {
+          "type": "string",
+          "enum": ["smoke", "local-regression", "local-comparison", "publishable"]
+        },
+        "publishable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Declared artifact paths",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "optional": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

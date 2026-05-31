@@ -31,7 +31,8 @@ diagnostic-only and that label should remain visible in the output.
 To publish the staged bundle into R2 and D1, use
 `scripts/publication/Publish-ProtocolLabReport.ps1`. The script expects the
 bundle to live under `.artifacts/publication/{runId}` and uploads it to
-`public/runs/{runId}/` through the R2 S3-compatible API.
+`public/runs/{runId}/` through the R2 S3-compatible API and writes the
+searchable metadata into D1 through the Cloudflare D1 REST API.
 
 ## Bundle Layout
 

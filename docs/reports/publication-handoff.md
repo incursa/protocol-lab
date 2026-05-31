@@ -72,7 +72,8 @@ The script performs these steps in order:
    - `public/registry/report-index.json`
    - `public/registry/latest.json`
 
-5. Writes searchable metadata into D1 through the `PROTOCOL_LAB_DB` binding.
+5. Writes searchable metadata into D1 through the Cloudflare D1 REST API using
+   `PROTOCOL_LAB_DB_ID`.
 
 The script fails closed on malformed JSON, mismatched run IDs, path escapes,
 private-path leaks, secret patterns, or missing Cloudflare credentials.

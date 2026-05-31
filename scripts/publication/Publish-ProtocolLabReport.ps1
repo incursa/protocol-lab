@@ -6,7 +6,7 @@ Promotes a completed ProtocolLab run to the public Cloudflare layout.
 Stages the public-safe bundle with the existing publish-report flow, uploads
 the bundle under public/runs/{runId}/ in the protocol-lab-reports R2 bucket
 through the S3-compatible API, refreshes the public registry objects, and
-indexes searchable metadata into D1 through the PROTOCOL_LAB_DB binding.
+indexes searchable metadata into D1 through the Cloudflare D1 REST API.
 
 The script fails closed on malformed bundle metadata, mismatched run IDs,
 private-path leaks, or artifact paths that escape the completed run root.
@@ -25,17 +25,8 @@ Staged publication bundle root. Defaults to .artifacts/publication/{runId}.
 .PARAMETER BucketName
 Cloudflare R2 bucket that stores the public bundle.
 
-.PARAMETER D1Binding
-D1 binding name used by the site. The default is PROTOCOL_LAB_DB.
-
 .PARAMETER D1DatabaseId
-Remote D1 database identifier used by Wrangler.
-
-.PARAMETER D1DatabaseName
-Wrangler database name. Defaults to protocol-lab-reports.
-
-.PARAMETER WranglerPath
-Path to wrangler or an equivalent executable.
+Remote D1 database identifier used by the Cloudflare API.
 
 .PARAMETER PythonPath
 Path to python or an equivalent executable that can run boto3.
@@ -54,10 +45,7 @@ param(
     [string]$RunRoot,
     [string]$BundleRoot,
     [string]$BucketName = "protocol-lab-reports",
-    [string]$D1Binding = "PROTOCOL_LAB_DB",
     [string]$D1DatabaseId,
-    [string]$D1DatabaseName = "protocol-lab-reports",
-    [string]$WranglerPath = "wrangler",
     [string]$PythonPath = "python",
     [switch]$AllowDiagnosticPublication,
     [switch]$DryRun
@@ -173,6 +161,166 @@ function Read-JsonFile {
     return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
 }
 
+function Get-HttpErrorBody {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.ErrorRecord]$ErrorRecord
+    )
+
+    $response = $ErrorRecord.Exception.Response
+    if ($null -eq $response) {
+        return $null
+    }
+
+    try {
+        if ($response -is [System.Net.Http.HttpResponseMessage]) {
+            return $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+        }
+
+        if ($response -is [System.Net.WebResponse]) {
+            $stream = $response.GetResponseStream()
+            if ($null -eq $stream) {
+                return $null
+            }
+
+            $reader = [System.IO.StreamReader]::new($stream)
+            try {
+                return $reader.ReadToEnd()
+            }
+            finally {
+                $reader.Dispose()
+                $stream.Dispose()
+            }
+        }
+
+        return $null
+    }
+    catch {
+        return $null
+    }
+}
+
+function Get-CloudflareErrorMessage {
+    param(
+        [AllowNull()]
+        [object]$ResponseBody
+    )
+
+    if ($null -eq $ResponseBody) {
+        return $null
+    }
+
+    $text = [string]$ResponseBody
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        return $null
+    }
+
+    try {
+        $json = $text | ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        return $text.Trim()
+    }
+
+    $messages = New-Object System.Collections.Generic.List[string]
+    foreach ($propertyName in @("errors", "messages")) {
+        $propertyValue = $json.$propertyName
+        if ($null -eq $propertyValue) {
+            continue
+        }
+
+        foreach ($item in @($propertyValue)) {
+            if ($null -ne $item.message -and -not [string]::IsNullOrWhiteSpace([string]$item.message)) {
+                $messages.Add([string]$item.message) | Out-Null
+            }
+        }
+    }
+
+    if ($messages.Count -gt 0) {
+        return ($messages -join "; ")
+    }
+
+    if ($null -ne $json.message -and -not [string]::IsNullOrWhiteSpace([string]$json.message)) {
+        return [string]$json.message
+    }
+
+    return $text.Trim()
+}
+
+function Invoke-CloudflareD1Sql {
+    param(
+        [Parameter(Mandatory = $true)][string]$AccountId,
+        [Parameter(Mandatory = $true)][string]$DatabaseId,
+        [Parameter(Mandatory = $true)][string]$ApiToken,
+        [Parameter(Mandatory = $true)][string]$Sql,
+        [Parameter(Mandatory = $true)][string]$Description
+    )
+
+    $uri = "https://api.cloudflare.com/client/v4/accounts/$AccountId/d1/database/$DatabaseId/query"
+    $headers = @{
+        Authorization = "Bearer $ApiToken"
+    }
+    $body = @{
+        sql = $Sql
+    } | ConvertTo-Json -Depth 20 -Compress
+
+    try {
+        $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $headers -ContentType "application/json" -Body $body
+    }
+    catch {
+        $bodyText = $null
+        if ($_.ErrorDetails -and -not [string]::IsNullOrWhiteSpace($_.ErrorDetails.Message)) {
+            $bodyText = $_.ErrorDetails.Message
+        }
+        if ([string]::IsNullOrWhiteSpace([string]$bodyText)) {
+            $bodyText = Get-HttpErrorBody -ErrorRecord $_
+        }
+
+        $message = Get-CloudflareErrorMessage -ResponseBody $bodyText
+        if ([string]::IsNullOrWhiteSpace([string]$message)) {
+            $message = $_.Exception.Message
+        }
+
+        throw "Failed to execute D1 $Description query: $message"
+    }
+
+    if ($null -eq $response) {
+        throw "D1 $Description query returned no response."
+    }
+
+    if ($response.success -ne $true) {
+        $message = Get-CloudflareErrorMessage -ResponseBody ($response | ConvertTo-Json -Depth 20)
+        if ([string]::IsNullOrWhiteSpace([string]$message)) {
+            $message = "Cloudflare returned success=false for the D1 $Description query."
+        }
+
+        throw $message
+    }
+
+    return $response
+}
+
+function Invoke-D1SqlFile {
+    param(
+        [Parameter(Mandatory = $true)][string]$AccountId,
+        [Parameter(Mandatory = $true)][string]$DatabaseId,
+        [Parameter(Mandatory = $true)][string]$ApiToken,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Description
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "D1 SQL file not found: $Path"
+    }
+
+    $sql = Get-Content -LiteralPath $Path -Raw
+    if ([string]::IsNullOrWhiteSpace($sql)) {
+        throw "D1 SQL file is empty: $Path"
+    }
+
+    Invoke-CloudflareD1Sql -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql $sql -Description $Description | Out-Null
+}
+
 function Get-ObjectContentType {
     param([Parameter(Mandatory = $true)][string]$RelativePath)
 
@@ -271,28 +419,6 @@ function Read-R2JsonObject {
             Remove-Item -LiteralPath $tempFile -Force
         }
     }
-}
-
-function Write-WranglerConfig {
-    param(
-        [Parameter(Mandatory = $true)][string]$ConfigPath,
-        [Parameter(Mandatory = $true)][string]$AccountId,
-        [Parameter(Mandatory = $true)][string]$DatabaseId,
-        [Parameter(Mandatory = $true)][string]$DatabaseName,
-        [Parameter(Mandatory = $true)][string]$Binding
-    )
-
-    $date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd")
-    @"
-name = "protocol-lab-publication"
-compatibility_date = "$date"
-account_id = "$AccountId"
-
-[[d1_databases]]
-binding = "$Binding"
-database_name = "$DatabaseName"
-database_id = "$DatabaseId"
-"@ | Set-Content -LiteralPath $ConfigPath -Encoding utf8NoBOM
 }
 
 function Parse-PublicationWarnings {
@@ -737,12 +863,17 @@ if (-not (Test-Path -LiteralPath $SchemaPath)) {
     throw "D1 schema file not found: $SchemaPath"
 }
 
+$D1DatabaseId = if ([string]::IsNullOrWhiteSpace($D1DatabaseId)) { $env:PROTOCOL_LAB_DB_ID } else { $D1DatabaseId }
+if ([string]::IsNullOrWhiteSpace($D1DatabaseId)) {
+    throw "D1 database id is required for the searchable metadata index."
+}
+
 Write-Host "ProtocolLab publication handoff"
 Write-Host "  run id: $RunId"
 Write-Host "  run root: $RunRoot"
 Write-Host "  bundle root: $BundleRoot"
 Write-Host "  R2 bucket: $BucketName"
-Write-Host "  D1 binding: $D1Binding"
+Write-Host "  D1 database id: $D1DatabaseId"
 
 $publishArgs = @(
     "run", "--project", $CliProject, "--",
@@ -770,17 +901,8 @@ if ($DryRun) {
     return
 }
 
-if (-not (Get-Command $WranglerPath -ErrorAction SilentlyContinue)) {
-    throw "wrangler was not found on PATH. Install Wrangler or pass -WranglerPath."
-}
-
 if (-not (Test-Path -LiteralPath $BundleRoot)) {
     throw "Publication bundle was not created: $BundleRoot"
-}
-
-$D1DatabaseId = if ([string]::IsNullOrWhiteSpace($D1DatabaseId)) { $env:PROTOCOL_LAB_DB_ID } else { $D1DatabaseId }
-if ([string]::IsNullOrWhiteSpace($D1DatabaseId)) {
-    throw "D1 database id is required for the searchable metadata index."
 }
 
 $cloudflareApiToken = $env:CLOUDFLARE_API_TOKEN
@@ -905,14 +1027,11 @@ try {
         Write-R2Object -ObjectKey "public/registry/latest.json" -FilePath $latestPath
     }
 
-    $configPath = Join-Path $tempRoot "wrangler.toml"
-    Write-WranglerConfig -ConfigPath $configPath -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -DatabaseName $D1DatabaseName -Binding $D1Binding
-
     $sqlPath = Join-Path $tempRoot "public-report-index.sql"
     Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $shouldUpdateLatest
 
-    Invoke-Tool -FilePath $WranglerPath -Arguments @("d1", "execute", $D1Binding, "--remote", "--yes", "--config", $configPath, "--file", $SchemaPath) -WorkingDirectory $RepoRoot
-    Invoke-Tool -FilePath $WranglerPath -Arguments @("d1", "execute", $D1Binding, "--remote", "--yes", "--config", $configPath, "--file", $sqlPath) -WorkingDirectory $RepoRoot
+    Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $SchemaPath -Description "schema"
+    Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $sqlPath -Description "metadata"
 }
 finally {
     if (Test-Path -LiteralPath $tempRoot) {

@@ -1,9 +1,10 @@
 # ProtocolLab Documentation
 
 ProtocolLab is a scenario-driven validation, benchmarking, and diagnostic lab
-for modern transport protocols. This documentation set covers the public /
-community surface of the project; hosted, attested, or commercial extensions
-are intentionally outside the public repo.
+for modern transport protocols. This documentation set covers the
+public/community surface of the project. Hosted, attested, or commercial
+extensions live in the sibling internal repository and must not be duplicated
+here as if they were public contracts.
 
 ## Getting Started
 
@@ -12,8 +13,8 @@ are intentionally outside the public repo.
 
 ## Project Direction
 
-- [Vision](protocol-lab/vision.md) - project purpose and principles
-- [Roadmap](protocol-lab/roadmap.md) - phased development plan
+- [Vision](protocol-lab/vision.md) - project purpose, public/community boundary, and operating principles
+- [Roadmap](protocol-lab/roadmap.md) - phased development plan and current implementation status
 - [Product Boundaries](protocol-lab/product-boundaries.md) - public/community versus internal boundary
 - [First Public Release Checklist](protocol-lab/first-public-release-checklist.md) - public release gate and verification checklist
 - [v1 Definition of Done](v1-definition-of-done.md) - v1 acceptance criteria
@@ -26,10 +27,16 @@ are intentionally outside the public repo.
 - [Adapter Model](architecture/adapter-model.md) - adapter control plane contract and lifecycle
 - [Load Model](architecture/load-model.md) - load tools, load shapes, load profiles
 - [Artifact Model](architecture/artifact-model.md) - deterministic layout, paths, and preservation
-- [Measurement Model](architecture/measurement-model.md) - execution profiles, measurement profiles, collectors, samples, comparability
-- [Report Model](architecture/report-model.md) - claim levels, environment manifest, report pipeline
-- [Architecture](architecture.md) - foundational architecture document (components, scope, boundaries)
+- [Measurement Model](architecture/measurement-model.md) - execution profile, effective load shape, provenance model, comparability
+- [Report Model](architecture/report-model.md) - claim levels, publishable gating, environment manifest, report pipeline
+- [Architecture](architecture.md) - foundational architecture summary and current implementation coverage
 - [Adapter Contract v1](architecture/adapter-contract-v1.md) - full control plane API specification
+
+## Reports
+
+- [Public Report Handoff](reports/publication-handoff.md) - local run to R2 and D1 publication path
+- [Public Report Publication Bundle](reports/publication-bundle.md) - staged bundle format and command flow
+- [Public Report Safety](reports/public-report-safety.md) - safety checks, labels, and exclusion rules
 
 ## Decisions
 
@@ -81,4 +88,5 @@ are intentionally outside the public repo.
 
 ## Analysis
 
-Public analysis reports are not published in this repository.
+Public analysis reports are not published in this repository. Public report
+publication bundles are documented separately under [Reports](#reports).

@@ -30,6 +30,7 @@ internal static class ProtocolLabCommand
                 "run" => await runner.RunBenchmarkAsync(root, options),
                 "check" or "doctor" => await runner.CheckAsync(root),
                 "report" => runner.Report(root, options),
+                "publish-report" => await runner.PublishReportAsync(root, options),
                 _ => Unknown(command)
             };
             RunnerConsoleRenderer.Render(result);
@@ -64,9 +65,10 @@ internal static class ProtocolLabCommand
           list network-profiles [--root <path>]
           list load-tools [--root <path>]
           check [--root <path>]
-          validate --implementations <ids> --scenarios <ids> [--base-url <url>] [--protocol <id>] [--target-mode process|docker|external] [--target-network-mode published-port|shared-docker-network] [--target-configuration <Debug|Release>] [--network-profile <id>]
-          run --implementations <ids> --scenarios <ids> [--base-url <url>] [--target-mode process|docker|external] [--target-network-mode published-port|shared-docker-network] [--target-configuration <Debug|Release>] [--target-docker-build] [--target-docker-image <image>] [--load-tool h2load|oha|managed-httpclient-h3-load] [--load-tool-mode process|docker|managed] [--disable-load-tool-qlog] [--capture-load-tool-metrics] [--load-tool-metrics-interval <seconds>] [--capture-target-container-metrics] [--target-container-metrics-interval <seconds>] [--network-profile <id>] [--output <path>]
+          validate --implementations <ids> --scenarios <ids> [--base-url <url>] [--protocol <id>] [--run-id <id>] [--execution-profile <id>] [--target-mode process|docker|external] [--target-network-mode published-port|shared-docker-network] [--target-configuration <Debug|Release>] [--network-profile <id>]
+          run --implementations <ids> --scenarios <ids> [--base-url <url>] [--run-id <id>] [--execution-profile <id>] [--target-mode process|docker|external] [--target-network-mode published-port|shared-docker-network] [--target-configuration <Debug|Release>] [--target-docker-build] [--target-docker-image <image>] [--load-profile <id>] [--load-tool h2load|oha|managed-httpclient-h3-load] [--load-tool-mode process|docker|managed] [--disable-load-tool-qlog] [--capture-load-tool-metrics] [--load-tool-metrics-interval <seconds>] [--capture-target-container-metrics] [--target-container-metrics-interval <seconds>] [--network-profile <id>] [--output <path>]
           report --run-id <id> [--output <path>]
+          publish-report --run <path> [--output <path>] [--visibility public] [--dry-run] [--allow-diagnostic-publication]
 """);
     }
 }

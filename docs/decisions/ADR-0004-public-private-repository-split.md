@@ -2,14 +2,15 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
-ProtocolLab currently lives in a private repository that contains both
-public-candidate material and internal-only material. The current tree already
-has a public seed, but it also includes content that should not be published as
-is:
+ProtocolLab now exists as a public/community repository with a sibling
+internal repository. The earlier monolithic tree contained both
+public-candidate material and internal-only material, and the split was
+required so the public repo could become the canonical community surface,
+including:
 
 - analysis and work-item artifacts
 - generated benchmark outputs
@@ -30,15 +31,14 @@ The split must satisfy these constraints:
 
 ## Decision
 
-ProtocolLab will be split into two repositories:
+ProtocolLab is split into two repositories:
 
 1. `Incursa.ProtocolLab` as the public canonical repository.
 2. `Incursa.ProtocolLab.Internal` as the private internal repository.
 
-The split will be implemented as a clean repository boundary, not as a hidden
-runtime mode.
+The split is a clean repository boundary, not a hidden runtime mode.
 
-The public repository will own the community-facing surfaces:
+The public repository owns the community-facing surfaces:
 
 - community contracts
 - schemas
@@ -49,7 +49,7 @@ The public repository will own the community-facing surfaces:
 - sample reports and examples
 - public docs and contribution guidance
 
-The internal repository will own the internal-only surfaces:
+The internal repository owns the internal-only surfaces:
 
 - extended scenarios
 - hosted execution
@@ -62,12 +62,12 @@ The internal repository will own the internal-only surfaces:
 - unreleased experimental work
 
 Shared contract surfaces such as the adapter contract, schema set, and public
-model types must remain public and versioned so that the internal repository can
-consume them without creating reverse dependencies.
+model types must remain public and versioned so that the internal repository
+can consume them without creating reverse dependencies.
 
-The initial public seed will be created from public-safe files only. Incursa
-HTTP/3 remains cleanup-gated and does not enter the initial public seed until
-its private sample dependency is removed or replaced.
+The initial public seed was created from public-safe files only. Incursa
+HTTP/3 remained cleanup-gated until its private sample dependency was removed
+or replaced.
 
 ## Consequences
 

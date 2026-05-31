@@ -2,10 +2,10 @@
 
 ProtocolLab is the public/community repository for a local validation and
 benchmarking harness for modern HTTP and transport protocol implementations.
-The runner is implementation-neutral: implementations are described through
-manifests and started as local processes, Docker targets, or external targets.
-The repo is meant for self-serve validation, regression checks, and local
-measurement, not for hosted or attested benchmark publication.
+It is the canonical community-facing surface. The sibling internal repository
+contains private operational extensions, hosted execution work, and
+unreleased diagnostics, but the public repo remains the source of truth for
+shared contracts, docs, and local validation behavior.
 
 ## What It Is
 
@@ -15,6 +15,8 @@ measurement, not for hosted or attested benchmark publication.
 - repo-owned adapters, manifests, scenarios, and target servers
 - local artifact capture with validation output, summaries, and aggregate JSON
 - support for process, Docker, and external-reference targets
+- public shared contracts that are also published as NuGet packages for
+  downstream/internal consumers
 
 ## What It Is Not
 
@@ -23,6 +25,7 @@ measurement, not for hosted or attested benchmark publication.
 - verified benchmark authority
 - production-grade hosted execution
 - a private or commercial backend hidden behind the public repo
+- a replacement for the internal operational repo
 
 ## Current Supported Scenarios
 
@@ -31,6 +34,7 @@ ProtocolLab v1 is locally operational. Current support includes:
 - Kestrel HTTP/1 validation
 - Kestrel HTTP/3 validation
 - Incursa HTTP/3 validation through the repo-owned adapter project and endpoint target
+- raw QUIC fixture-only adapter coverage for protocol-boundary work
 - managed-lab HTTP/3 comparison with `managed-httpclient-h3-load`
 - external-reference HTTP/3 comparison with the repo-owned Docker `h2load --h3` image
 - optional Docker target execution for Kestrel, Incursa, Caddy, and nginx
@@ -38,7 +42,8 @@ ProtocolLab v1 is locally operational. Current support includes:
 - qlog capture for Docker h2load when the image proves `--qlog-file-base`
 
 Local results are shared-host smoke or regression evidence. They are not
-publishable benchmark evidence.
+publishable benchmark evidence unless the execution profile, metadata, and
+claim-level gates are satisfied.
 
 ## Build and Validate
 
@@ -102,6 +107,29 @@ image:
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations kestrel-http3,incursa-http3 --scenarios http.core.plaintext,http.core.json --protocol h3 --load-tool h2load --load-tool-mode docker
 ```
 
+## Prepare a Public Report Bundle
+
+Use `publish-report` to prepare a public-safe bundle from a completed run.
+The command reads `aggregate-results.json` and `evidence-report-v1.json`,
+sanitizes the report, and writes a staged publication bundle. It does not
+upload to R2 by default.
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- publish-report --run .artifacts\runs\{runId} --output .artifacts\publication\{runId} --visibility public --dry-run
+```
+
+Use `--allow-diagnostic-publication` when the bundle is intentionally
+diagnostic-only and should remain labeled that way in the output.
+
+To complete the Cloudflare handoff, run
+`scripts\publication\Publish-ProtocolLabReport.ps1`. It stages the bundle if
+needed, uploads the public files to `public/runs/{runId}/` in the
+`protocol-lab-reports` bucket, refreshes the registry objects, and writes the
+searchable metadata into D1.
+
+See [docs/reports/publication-handoff.md](docs/reports/publication-handoff.md)
+for the exact layout and validation gates.
+
 ## Evidence And Measurement Limits
 
 - Validation must pass before benchmark results are accepted.
@@ -109,19 +137,29 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations kestre
   external-reference benchmark tool.
 - Docker target execution and local loopback certificates do not make a run
   isolated-host or publishable.
+- The runner records requested load shape, effective load shape, execution
+  profile, and report claim level separately. Those fields are not the same
+  thing and should be read independently.
 - Raw stdout, stderr, and artifact directories are preserved even when parsing
   fails.
 - Comparability warnings are part of the result and should be read before
   drawing conclusions.
+- `Benchmark` claims are gated. `Verified` remains reserved for future
+  controlled/private attestation. Public/community runs should not fabricate
+  controlled provenance or publishable status.
+- Public report publication bundles are derivatives of completed runs, not
+  canonical source material. They must not leak private paths, secrets, or
+  internal-only artifacts.
 
 See [docs/spec/validation-vs-benchmarking.md](docs/spec/validation-vs-benchmarking.md)
 for the detailed separation rules.
 
 ## Public And Internal Boundary
 
-This repository is the public/community surface. Any hosted, attested, or
-commercial benchmark service would be a separate layer and is not implied by
-this repo or its local results.
+This repository is the public/community surface. The sibling internal
+repository carries private operational workflows, hosted execution planning,
+and unreleased extensions. Public docs and contracts are authored here first;
+the internal repo consumes them instead of silently diverging.
 
 See [docs/protocol-lab/product-boundaries.md](docs/protocol-lab/product-boundaries.md)
 for the conceptual split.

@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -11,11 +11,10 @@ targets, a Docker Desktop installation with containerized targets, a CI
 pipeline with Docker-in-Docker, a remote process connected over SSH, and
 (eventually) a dedicated lab with bare-metal servers and isolated networking.
 
-Currently, the runner infers the execution environment from CLI arguments
-(`--target-mode process|docker`, `--target-network-mode`) and records the
-result in scattered `BenchmarkResult` fields (`DockerTargetMode`,
-`DockerNetworkMode`, etc.). There is no single, typed value that represents
-"where did this run execute."
+The runner now infers the execution environment from CLI arguments and host
+state, records the result in a typed `ExecutionProfile`, and carries that
+profile through `RunCell`, `RunMetadata`, `BenchmarkResult`, and report
+grouping.
 
 The absence of a formal execution profile causes several problems:
 
@@ -52,20 +51,18 @@ these values:
 Rules:
 
 1. The execution profile is determined once at the start of a run from the
-   combination of CLI arguments, host detection, and (in the future)
-   environment markers. It is recorded in `RunMetadata` and inherited by
-   every cell.
+   combination of CLI arguments, host detection, and explicit overrides. It
+   is recorded in `RunMetadata`, carried on each `RunCell`, and normalized
+   into reports and artifact identities.
 
-2. The execution profile gates which collectors are available. For example,
-   `dotnet-counters` is available for `LocalProcess` and `DedicatedLabBareMetal`
-   but not for `CiContainer` unless `dotnet-counters` is installed in the CI
-   image.
+2. The execution profile gates which collectors and controls are valid. For
+   example, Docker-specific resource limits and container stats are only
+   meaningful for Docker-based execution profiles.
 
-3. The execution profile is the primary input to evidence classification.
-   `DedicatedLabBareMetal` with all collectors active produces
-   `isolated-host` or `publishable` evidence. `LocalDockerBridge` with
-   published-port networking produces `local-lab` or
-   `external-reference-local` evidence.
+3. The execution profile is a primary input to evidence classification and
+   claim derivation. `DedicatedLabBareMetal` and `DedicatedLabContainer`
+   can support higher claims than `LocalProcess` or `LocalDockerBridge` when
+   the rest of the provenance is complete.
 
 4. Incoherent configurations (e.g., Docker resource limits with
    `LocalProcess` profile) must produce validation warnings or errors.

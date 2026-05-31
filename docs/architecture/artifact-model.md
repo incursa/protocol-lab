@@ -1,6 +1,6 @@
 # Architecture — Artifact Model
 
-**Status:** Implemented (deterministic layout, 60+ artifact path types, artifact generation complete)
+**Status:** Implemented (deterministic layout, collision-proof cell identity, 60+ artifact path types, artifact generation complete)
 
 ## Purpose
 
@@ -26,14 +26,23 @@ deterministic subdirectory:
   implementations/
     {implementationId}/
       {scenarioId}/
-        {protocol}/
-          c{connections}-s{streams}-r{repetition}/
+        {protocolId}/
+          {executionProfileId}/
+            {networkProfile}/
+              {loadProfileId}/
+                c{connections}-s{streams}-r{repetition}/
 ```
 
 This layout makes artifact paths predictable before execution and stable
 across runs. Tools that consume artifacts (report generators, analysis
 scripts, dashboards) can locate any artifact by constructing the path from
 run metadata.
+
+The path segments come from `RunCellIdentity`. The identity includes the
+implementation id, scenario id, normalized protocol id, execution profile id,
+network profile, load profile id, connection count, stream count, and
+repetition. Each segment is sanitized so file-system collisions do not occur
+when ids contain punctuation.
 
 ### Run-Level Artifacts
 
@@ -64,6 +73,11 @@ Each run cell directory contains:
 | `server-stdout.txt` | Target server stdout (when captured) |
 | `server-stderr.txt` | Target server stderr (when captured) |
 | `server-log.txt` | Target server log file (when exported) |
+
+There is no separate `cell.json` artifact today. The cell identity is already
+encoded in the directory structure and in the result payload. If a future
+`cell.json` is added, it should mirror `RunCellIdentity` rather than become a
+second identity source.
 
 ### Docker-Specific Artifacts
 
@@ -111,8 +125,7 @@ capture remains deferred until a target exports them.
 `ArtifactLayout` exposes static methods for constructing deterministic paths:
 
 ```csharp
-string baseDir = ArtifactLayout.CellDirectory(runId, implementationId,
-    scenarioId, protocol, connections, streams, repetition);
+string baseDir = ArtifactLayout.GetCellDirectory(outputRoot, runId, cell);
 ```
 
 Individual artifact paths are built by appending the artifact filename to
@@ -121,8 +134,9 @@ the cell directory.
 ## Principles
 
 1. **Determinism.** Artifact paths depend only on run parameters (run ID,
-   implementation ID, scenario ID, protocol, load shape, repetition). They
-   do not depend on execution timing, host state, or tool behavior.
+   implementation ID, scenario ID, protocol id, execution profile, network
+   profile, load profile, load shape, repetition). They do not depend on
+   execution timing, host state, or tool behavior.
 2. **Preservation.** Raw tool output is always preserved. Parsed metrics
    are supplementary, not a replacement.
 3. **Completeness.** Every artifact that can be captured has a defined path.

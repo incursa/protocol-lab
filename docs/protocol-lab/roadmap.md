@@ -1,6 +1,6 @@
 # ProtocolLab - Roadmap
 
-**Status:** Current (living document; phases reflect the public/community roadmap)
+**Status:** Current (living document; phases reflect the public/community roadmap and current implementation state)
 
 ## Phase Summary
 
@@ -54,8 +54,8 @@
 
 ## Phase 4: Incursa HTTP/3 Integration (Implemented)
 
-- Incursa HTTP/3 runs through the existing manifest contract and the sibling sample project
-- Custom metric artifact ingestion through manifest contracts remains proposed
+- Incursa HTTP/3 runs through the shared manifest and adapter contracts
+- Custom metric artifact ingestion through manifest contracts remains deferred
 - No special-casing in runner logic; Incursa stays behind the manifest boundary
 
 ## Phase 5: H3 Protocol Scenarios (Modeled)
@@ -102,7 +102,7 @@ These apply at every phase:
 ## Future Horizons (Proposed)
 
 Beyond the phased plan, the following capabilities are discussed but not
-scheduled:
+scheduled for the public/community repo:
 
 - **CI execution profile**: pre-configured matrix, artifact retention policy,
   and pipeline-friendly exit codes so ProtocolLab can run in GitHub Actions
@@ -117,7 +117,6 @@ scheduled:
   protocol-level traces, custom metric dashboards, and integration with
   private artifact stores.
 
-These are recorded here for direction only. None are commitments of the
-public/community repo. Any hosted or commercial benchmark service would live
-outside the public surface and should only be introduced by explicit design
-and release planning.
+These are recorded here for direction only. They are not commitments of the
+public/community repo. If they are built, they should land in the internal
+repository or a separate service boundary, not as hidden public behavior.

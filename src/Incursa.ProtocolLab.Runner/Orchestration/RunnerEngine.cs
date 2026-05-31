@@ -1242,6 +1242,11 @@ public sealed class RunnerEngine
             [new RunnerArtifactReference("summary", summaryPath)]);
     }
 
+    public Task<RunnerCommandResult> PublishReportAsync(string root, RunnerCommandOptions options, IRunnerEventSink? eventSink = null)
+    {
+        return ReportPublicationWorkflow.PublishAsync(root, options, eventSink);
+    }
+
     private static IReadOnlyList<RunCell> LoadCells(string root, RunnerCommandOptions options)
     {
         return new RunPlanBuilder().Build(root, options);

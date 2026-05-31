@@ -1,6 +1,6 @@
-# Architecture — Measurement Model
+# Architecture - Measurement Model
 
-**Status:** Implemented (per-cell metrics, evidence classification, and individual collectors exist; formal MeasurementProfile, ExecutionProfile, MeasurementSample, and ComparabilityClass types remain proposed)
+**Status:** Implemented (execution profile, effective load shape, per-cell metrics, and evidence classification exist; formal MeasurementProfile, MeasurementCollector, MeasurementSample, and ComparabilityClass types remain proposed)
 
 ## Purpose
 
@@ -10,33 +10,50 @@ Different execution environments and measurement intents produce data of
 different trust levels. The model establishes vocabulary and contracts so
 that consumers do not mistake a local smoke run for a controlled benchmark.
 
+Architecture Alignment v1 is not the full Measurement Foundation v1. It
+implements the execution-profile and effective-load-shape pieces first, while
+sample-level provenance remains a future layer.
+
 ## Core Concepts
 
 ### ExecutionProfile
 
-`ExecutionProfile` describes where and how a run executes. The profile
-determines which collectors are available and sets the baseline for evidence
-classification.
+`ExecutionProfile` describes where and how a run executes. The profile is
+implemented and recorded on `RunMetadata`, `RunCell`, `BenchmarkResult`, and
+report grouping. It determines which collectors and controls are meaningful
+and sets the baseline for evidence classification and claim derivation.
 
 | Profile | Current Code Presence | Description |
 |---------|----------------------|-------------|
 | `LocalProcess` | Implemented (default mode) | Runner and target on the same host, started as child processes |
 | `LocalDockerBridge` | Implemented (`target-mode docker`) | Target in Docker with published-port networking |
-| `LocalDockerHostNetwork` | Proposed | Target in Docker with host network mode |
-| `RemoteProcess` | Proposed | Runner and target on separate hosts, process-mode target |
-| `RemoteDocker` | Proposed | Runner and target on separate hosts, Docker-mode target |
-| `CiContainer` | Proposed | Runner inside a CI container (e.g., GitHub Actions), Docker-in-Docker or sibling |
-| `DedicatedLabBareMetal` | Proposed | Controlled lab environment, bare-metal target, no container overhead |
-| `DedicatedLabContainer` | Proposed | Controlled lab environment, containerized target with known resource constraints |
+| `LocalDockerHostNetwork` | Implemented as model | Target in Docker with host network mode |
+| `RemoteProcess` | Implemented as model | Runner and target on separate hosts, process-mode target |
+| `RemoteDocker` | Implemented as model | Runner and target on separate hosts, Docker-mode target |
+| `CiContainer` | Implemented as model | Runner inside a CI container (e.g., GitHub Actions), Docker-in-Docker or sibling |
+| `DedicatedLabBareMetal` | Implemented as model | Controlled lab environment, bare-metal target, no container overhead |
+| `DedicatedLabContainer` | Implemented as model | Controlled lab environment, containerized target with known resource constraints |
 
 **Design rule:** The execution profile is recorded once per run and applies
 to every cell in that run. Cells within a single run share the same profile.
 
-**Current implementation:** The runner does not have an `ExecutionProfile`
-enum yet. Execution mode is inferred from CLI arguments (`--target-mode`,
-`--target-network-mode`) and recorded in `BenchmarkResult` fields
-(`DockerTargetMode`, `DockerNetworkMode`, etc.). The `BenchmarkEvidenceEvaluator`
-uses these fields to determine evidence class.
+**Current implementation:** The runner has an `ExecutionProfile` enum and an
+`ExecutionProfiles.Infer(...)` helper. Execution mode is inferred from CLI
+arguments (`--target-mode`, `--target-network-mode`) and explicit overrides,
+then recorded in `RunMetadata`, `RunCell`, and `BenchmarkResult`. The
+`BenchmarkEvidenceEvaluator` and report claim derivation both use the
+profile.
+
+### Requested vs Effective Load Shape
+
+Requested load shape is what the user or scenario asked for. Effective load
+shape is what the selected load tool actually executed after it applied its
+own constraints. `LoadShapeSemantics` records the difference, including which
+fields were supported, ignored, derived, or unsupported, plus warnings.
+
+This is not cosmetic metadata. Different tools may interpret the same load
+profile differently, so the requested shape and the effective shape must be
+read independently.
 
 ### MeasurementProfile
 
@@ -80,7 +97,7 @@ records.
 - Declare its identity and version.
 - State whether it is available in the current execution profile.
 - Produce samples with collector identity attached.
-- Handle failure gracefully — unavailable collectors produce warnings, not
+- Handle failure gracefully - unavailable collectors produce warnings, not
   errors.
 
 **Current implementation:** Collectors exist as standalone static classes
@@ -174,34 +191,33 @@ Provenance is not optional. A metric without provenance is ambiguous.
 
 | Proposed Type | Relationship to Existing Code |
 |---------------|-------------------------------|
-| `ExecutionProfile` | Formalizes values currently inferred from CLI args and recorded in `BenchmarkResult` Docker/process fields |
-| `MeasurementProfile` | Adds collector selection and claim constraints to existing `LoadProfileDefinition` |
-| `MeasurementCollector` | Abstracts over existing static collectors (`ProcessMetricsCapture`, `DockerContainerMetricsCapture`, `RuntimeCounterCapture`) |
-| `MeasurementSample` | Unifies `ProcessMetricSample`, `DockerContainerMetricSample` into a common shape |
-| `ComparabilityClass` | Types the existing `BenchmarkComparabilityStatuses` string constants as an enum |
+| `ExecutionProfile` | Implemented and recorded on run metadata, cells, results, and reports |
+| `MeasurementProfile` | Proposed; adds collector selection and claim constraints to existing `LoadProfileDefinition` |
+| `MeasurementCollector` | Proposed; abstracts over existing static collectors (`ProcessMetricsCapture`, `DockerContainerMetricsCapture`, `RuntimeCounterCapture`) |
+| `MeasurementSample` | Proposed; would unify `ProcessMetricSample`, `DockerContainerMetricSample` into a common shape |
+| `ComparabilityClass` | Proposed; would type the existing `BenchmarkComparabilityStatuses` string constants as an enum |
 
 ## Proposed Future Types (Not Yet in Code)
 
-These types should be added to `Incursa.ProtocolLab.Model` when implementation
-begins:
+These types should be added to `Incursa.ProtocolLab.Model` when the remaining
+measurement-foundation work begins:
 
-- `ExecutionProfile` — enum with the eight values listed above
-- `MeasurementProfile` — enum with the five values listed above
-- `MeasurementCollector` — record or interface for collector identity and
+- `MeasurementProfile` - enum with the five values listed above
+- `MeasurementCollector` - record or interface for collector identity and
   lifecycle
-- `MeasurementSample` — record as described above
-- `ComparabilityClass` — enum with the five values listed above
+- `MeasurementSample` - record as described above
+- `ComparabilityClass` - enum with the five values listed above
 
-Implementation of these types should remain additive — existing code paths
+Implementation of these types should remain additive - existing code paths
 (`BenchmarkResult`, `BenchmarkEvidenceEvaluator`, individual collectors)
 should continue to work. The new types provide a vocabulary and a contract;
 refactoring existing code to use them is a separate step.
 
 ## Related Documents
 
-- [Report Model](report-model.md) — how measurements become reports
-- [Scenario Model](scenario-model.md) — how scenarios define measurement intents
-- [Load Model](load-model.md) — how load tools produce measurements
-- [Artifact Model](artifact-model.md) — how measurement artifacts are stored
-- [Product Boundaries](../protocol-lab/product-boundaries.md) — how measurement trust separates public-canonical from private/internal layers
+- [Report Model](report-model.md) - how measurements become reports
+- [Scenario Model](scenario-model.md) - how scenarios define measurement intents
+- [Load Model](load-model.md) - how load tools produce measurements
+- [Artifact Model](artifact-model.md) - how measurement artifacts are stored
+- [Product Boundaries](../protocol-lab/product-boundaries.md) - how measurement trust separates public-canonical from private/internal layers
 - [Architecture Overview](overview.md)

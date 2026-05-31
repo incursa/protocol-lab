@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -18,11 +18,12 @@ performance measurements. Consumers of these reports have different needs:
 - An external audience reviewing claims wants verified data — "can I trust
   these numbers?"
 
-Currently, the runner produces a `summary.md` and `aggregate-results.json`
-for every run, regardless of execution profile, measurement profile, or
-evidence completeness. Evidence classification (`BenchmarkEvidenceAssessment`)
-labels individual results, but there is no report-level claim that tells a
-consumer what kind of conclusion they can draw from the report as a whole.
+The runner now produces a `summary.md` and `aggregate-results.json` for
+every run, and it derives a report-level `ReportClaimLevel` from execution
+profile, repetition count, evidence completeness, and load-profile purpose.
+Evidence classification (`BenchmarkEvidenceAssessment`) still labels
+individual results, but the report now also states what the report is allowed
+to claim as a whole.
 
 A report from a 5-second smoke run on a developer laptop carries the same
 structural format as a report from a controlled lab benchmark. Without a
@@ -52,9 +53,9 @@ these values:
 
 Rules:
 
-1. The claim level is computed from the run's execution profile, measurement
-   profile, repetition count, evidence classification, and environment
-   metadata completeness.
+1. The claim level is computed from the run's execution profile, load-profile
+   purpose, repetition count, evidence classification, and metadata
+   completeness.
 
 2. The claim level is reported prominently — in the markdown summary header,
    the aggregate JSON root, and any future dashboard view.
@@ -67,9 +68,10 @@ Rules:
    underlying infrastructure improves. A `Regression` claim cannot be
    downgraded to `DiagnosticOnly` unless the data is found to be invalid.
 
-5. `Verified` is the highest claim level. It requires:
+5. `Verified` is the highest claim level and is reserved for future
+   controlled/private attestation. It requires:
    - Execution profile `DedicatedLabBareMetal` or `DedicatedLabContainer`
-   - Measurement profile `Benchmark` or `Soak`
+   - Load profile purpose `publishable-benchmark`
    - Complete environment manifest
    - Retained and accessible artifacts
    - Stable scenario catalog version
@@ -78,7 +80,11 @@ Rules:
    - Multiple stable repetitions
    - External attestation (signature, review record)
 
-### Derivation Logic (Proposed)
+6. `Benchmark` is the publishable claim level emitted by the current public
+   derivation path. `Verified` remains modeled for future internal/private
+   attestation.
+
+### Derivation Logic (Implemented)
 
 ```
 function DeriveClaimLevel(report):
@@ -86,19 +92,14 @@ function DeriveClaimLevel(report):
         return DiagnosticOnly
 
     if executionProfile is LocalProcess or LocalDockerBridge
-       or measurementProfile is Smoke:
+       or loadProfilePurpose is Smoke:
         maxClaim = Validation
     elif executionProfile is CiContainer or RemoteProcess
-         or measurementProfile is Diagnostic:
+         or loadProfilePurpose is Comparison:
         maxClaim = Regression
     elif executionProfile is DedicatedLabBareMetal or DedicatedLabContainer
-         and measurementProfile is Benchmark:
+         and loadProfilePurpose is PublishableBenchmark:
         maxClaim = Benchmark
-    elif executionProfile is DedicatedLabBareMetal or DedicatedLabContainer
-         and measurementProfile is Soak
-         and environment manifest is complete
-         and artifacts are retained and attested:
-        maxClaim = Verified
 
     if repetitions == 1 and maxClaim >= Regression:
         maxClaim = Validation  // single run cannot show stability
@@ -114,12 +115,12 @@ function DeriveClaimLevel(report):
   understand evidence classification to know what the report claims.
 - The gap between "I ran it on my laptop" and "this is a verified benchmark"
   is enforced by the type system, not just documentation.
-- The private/internal layer has a clear boundary: `Verified` is the
-  claim level that requires hosted infrastructure, retained artifacts, and
+- The private/internal layer has a clear boundary: `Verified` is the claim
+  level that requires hosted infrastructure, retained artifacts, and
   attestation.
-- Report rendering can adapt to claim level — `DiagnosticOnly` reports can
-  be terse; `Verified` reports can include full artifact links and
-  attestation details.
+- Report rendering can adapt to claim level. `DiagnosticOnly` reports can be
+  terse; `Verified` reports can include full artifact links and attestation
+  details.
 
 ### Negative
 
@@ -134,8 +135,8 @@ function DeriveClaimLevel(report):
 - `ReportClaimLevel` does not replace `BenchmarkEvidenceAssessment`. Evidence
   class and comparability operate at the per-result level; claim level
   operates at the report level. Both are necessary.
-- The derivation function can start conservative and become more permissive
-  as infrastructure improves.
+- The derivation function is intentionally conservative and can become more
+  permissive only when the controlled provenance actually exists.
 
 ## Related
 

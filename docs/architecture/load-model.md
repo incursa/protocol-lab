@@ -1,6 +1,6 @@
 # Architecture — Load Model
 
-**Status:** Implemented (h2load, oha, managed HttpClient adapters complete; custom H3 and QUIC load generators deferred)
+**Status:** Implemented (h2load, oha, managed HttpClient adapters complete; requested/effective load shape and semantics are implemented; custom H3 and QUIC load generators deferred)
 
 ## Purpose
 
@@ -30,7 +30,7 @@ Load tools are described by YAML manifests under `load-tools/`. Each manifest
 | Name | string | Human-readable name |
 | Kind | LoadToolKind | `Managed`, `Process`, or `Docker` |
 | Purpose | LoadToolPurpose | `Validation`, `Benchmark`, `Profile`, `Diagnostic` |
-| Protocols | string[] | Supported protocols (h3, h2, h1, quic) |
+| Protocols | string[] | Supported protocols (canonical ids `h1`, `h2`, `h3`, `quic`, `webtransport`, `masque` plus aliases where supported) |
 | TrafficShapes | TrafficShape[] | Supported traffic patterns |
 | Execution | object | Process command, Docker image, arguments |
 | Parser | object | Output parser kind and configuration |
@@ -56,6 +56,9 @@ Docker-mode load tools run in containers:
 - Docker resource limits (CPU, memory) can be applied.
 - Docker container metrics (CPU, memory, network) can be captured for
   saturation analysis.
+Different tools may accept the same requested load shape but produce a
+different effective load shape. That is expected and should be surfaced in
+artifacts and reports.
 
 ## Load Shapes
 
@@ -69,6 +72,8 @@ What the user or scenario requests:
 - Duration (seconds)
 - Warmup duration (seconds)
 - Traffic shape (unidirectional, bidirectional, request-response)
+- Repetition count
+- Request count when a profile constrains the run by total requests
 
 ### EffectiveLoadShape
 
@@ -77,11 +82,32 @@ What the load tool actually delivers after mapping:
   its capabilities.
 - `LoadShapeSemantics` documents which fields are supported, ignored, or
   derived for each tool.
+- `Notes` explain why the tool made a choice.
+- `Warnings` describe mismatches, limitations, or unsupported requests.
+
+### LoadShapeSemantics
+
+`LoadShapeSemantics` is the public explanation for how a tool interpreted a
+requested shape.
+
+| Field | Meaning |
+|-------|---------|
+| `Protocol` | Which protocol family the semantics apply to |
+| `LoadTool` | Which tool produced the semantics |
+| `SupportedFields` | Fields the tool can honor directly |
+| `IgnoredFields` | Fields the tool accepted but did not apply |
+| `DerivedFields` | Fields the tool computed from other inputs |
+| `UnsupportedFields` | Fields the tool could not honor |
+| `Warnings` | Human-readable notes about the interpretation |
+
+The same load profile name can produce different effective shapes across
+tools. That is not a bug; it is part of the contract and must be visible in
+artifacts and reports.
 
 ### Load Profile
 
-A `LoadProfileDefinition` (under `load-profiles/`) is a named preset of
-load shape defaults:
+A `LoadProfileDefinition` (under `load-profiles/`) is a named preset of load
+shape defaults and purpose metadata:
 
 | Profile | Purpose |
 |---------|---------|
@@ -89,7 +115,10 @@ load shape defaults:
 | `local-comparison` | Moderate load for local A/B comparison |
 | `local-regression` | Longer duration, multiple connections for regression |
 
-Profiles are applied as defaults; explicit CLI arguments override them.
+Profiles are applied as defaults; explicit CLI arguments override them. The
+model also records purpose (`Smoke`, `Regression`, `Comparison`, `Stress`,
+`Soak`, `PublishableBenchmark`) so report claim derivation can distinguish
+local-regression runs from publishable-benchmark intent.
 
 ## Load Tool Invocation
 
@@ -101,7 +130,7 @@ Profiles are applied as defaults; explicit CLI arguments override them.
    protocol and shape. For Docker tools, verify the image supports
    required flags (e.g., `h2load --h3`).
 3. **Command construction:** Build the command line or Docker arguments
-   from the load shape and tool manifest.
+   from the requested load shape, effective shape rules, and tool manifest.
 4. **Resource control:** Apply Docker resource limits if configured.
 5. **Execution:** Run the tool as a process or Docker container.
 6. **Capture:** Preserve raw stdout and stderr as artifacts.
@@ -133,6 +162,9 @@ runner process and produces:
 Results are marked `managed-lab`. They are useful local baselines and
 should not be directly ranked against external-reference tools (h2load,
 oha).
+The same managed-lab tool may also yield a different effective load shape
+than an external-reference tool for the same request, so requested/effective
+shape must be read alongside the metrics.
 
 ## Best-Effort Parsing
 

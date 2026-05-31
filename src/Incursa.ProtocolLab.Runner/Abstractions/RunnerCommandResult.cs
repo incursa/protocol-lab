@@ -9,7 +9,8 @@ public enum RunnerCommandKind
     List,
     Validate,
     Run,
-    Report
+    Report,
+    PublishReport
 }
 
 public enum RunnerMessageSeverity

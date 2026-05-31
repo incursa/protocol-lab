@@ -1,14 +1,14 @@
 # ProtocolLab - Vision
 
-**Status:** Current (v1 local operational; hosted/attested scope deferred)
+**Status:** Current (public/community canonical; internal/private extensions live in the sibling repo)
 
 ## Purpose
 
 ProtocolLab is a scenario-driven validation, benchmarking, and diagnostic lab
 for modern transport protocols including QUIC, HTTP/3, WebTransport, MASQUE,
-DNS over QUIC, and related extensions. It connects functional validation with
-repeatable performance measurement so that protocol implementors and operators
-can understand correctness, efficiency, scalability, and comparative behavior.
+and related extensions. It connects functional validation with repeatable
+performance measurement so that protocol implementors and operators can
+understand correctness, efficiency, scalability, and comparative behavior.
 
 The public repository is intended for self-serve local validation and
 measurement. It does not claim official certification, industry-standard
@@ -22,38 +22,40 @@ The lab is designed to support:
   isolated containers with resource controls and metrics capture.
 - **CI execution** - automated pipeline invocation producing deterministic
   artifact bundles.
-- **Controlled attested runs** (proposed) - hosted execution with retained
-  artifacts, provenance, and documented environment controls.
+- **Internal/private hosted execution** - controlled runs with retained
+  artifacts, provenance, and environment controls in the sibling internal
+  repository.
 
 ## Core Principles
 
 1. **The runner is implementation-neutral.** Targets are described through
-   manifests, processes, containers, ports, environment variables, and artifact
-   contracts. The runner does not reference protocol implementations directly.
-2. **Incursa HTTP/3 and Incursa QUIC are preferred canonical targets.**
-   They enter through the same manifest and execution contracts as every other
-   implementation.
+   manifests, processes, containers, ports, environment variables, and
+   artifact contracts. The runner does not reference protocol implementations
+   directly.
+2. **Public contracts are authored here first.** The internal repository
+   consumes public contracts instead of re-stating or redefining them.
 3. **Validation and benchmarking are related but separate concerns.**
-   Validation proves correctness. Benchmarking measures performance. Benchmark
-   data is accepted only after validation passes.
+   Validation proves correctness. Benchmarking measures performance.
+   Benchmark data is accepted only after validation passes.
 4. **Unsupported scenarios are explicit outcomes**, not silent skips.
 5. **Raw artifacts are preserved even when parsing fails.** Parsed metrics are
    best-effort and clearly marked.
-6. **Every result carries an evidence classification** (local-smoke,
-   local-lab, external-reference-local, isolated-host, publishable) so
-   consumers can distinguish informal from controlled data.
+6. **Execution profile, effective load shape, and claim level are separate
+   concepts.** A result must not collapse them into one field.
+7. **Public/community results must not fabricate controlled or publishable
+   provenance.** Claim gating is part of the model, not a documentation note.
 
 ## Workload Families
 
 | Family | Status | Description |
 |--------|--------|-------------|
 | `http.application` | Implemented | HTTP request/response benchmarks across HTTP/1.1, HTTP/2, HTTP/3 |
-| `h3.protocol` | Modeled | HTTP/3-specific protocol behavior (QPACK, cancellation, multiplexing). Load generation deferred |
-| `quic.transport` | Modeled | Raw QUIC transport behavior (handshake, streams, datagrams, loss recovery) |
-| `webtransport` | Modeled | WebTransport sessions. Validators and load generators deferred |
-| `masque` | Modeled | MASQUE CONNECT-UDP tunnels. Validators and load generators deferred |
+| `h3.protocol` | Modeled | HTTP/3-specific protocol behavior (QPACK, cancellation, multiplexing). Load generation remains deferred |
+| `quic.transport` | Implemented - fixture only | Raw QUIC transport behavior and fixture-only adapter coverage |
+| `webtransport` | Modeled | WebTransport sessions. Validators and load generators remain deferred |
+| `masque` | Modeled | MASQUE CONNECT-UDP tunnels. Validators and load generators remain deferred |
 
-## Execution Environments (Current and Proposed)
+## Execution Environments (Current and Future)
 
 **Implemented:**
 - Local process execution (targets start as child processes on the host)
@@ -62,9 +64,9 @@ The lab is designed to support:
 - Managed-lab HTTP/3 load generation (in-process HttpClient)
 - Optional `dotnet-counters` runtime diagnostics
 
-**Proposed / Future:**
+**Future or internal/private:**
 - Docker Compose or orchestrated multi-container topologies
-- CI execution profile (pre-configured matrix + artifact retention policy)
+- CI execution profile with private retention policy choices
 - Hosted execution backend (controlled environment, attested provenance)
 - Bare-metal and LXC backends
 - Network impairment through `docker-tc` and `ns3-simulator`
@@ -86,38 +88,35 @@ the detailed separation rules.
 ## Reporting and Provenance
 
 Reports distinguish local/self-run results from controlled/attested runs
-through evidence classification, comparability status, and metadata capture
-(host OS, Docker backend, git commit, runner PID). Local results from a
-shared-host environment are useful for regression and profiling but are not
-treated as publishable benchmark evidence.
+through evidence classification, comparability status, execution profile, and
+claim level. Local results from a shared-host environment are useful for
+regression and profiling but are not automatically publishable benchmark
+evidence.
 
-**Proposed:** A future reporting layer should mark controlled-run results with
-retained artifact links, environment attestations, and verification signatures
-so that consumers can distinguish self-serve public-candidate data from
-attested private/internal runs.
+The public repo now records requested load shape, effective load shape, and
+report claim level separately. That makes it explicit when a run is a local
+measurement versus when it is trying to support a controlled claim.
 
 ## Relationship to Incursa
 
 ProtocolLab is a standalone project. It does not require Incursa protocol
-assemblies to build or run. Incursa HTTP/3 and Incursa QUIC are canonical
+assemblies to build or run. Incursa HTTP/3 and Incursa QUIC remain canonical
 targets - their manifests, containers, and benchmarks are first-class - but
 the runner treats them through the same generic contracts as Kestrel, Caddy,
 nginx, and any future implementation.
 
-The public repo remains the community-facing surface. Any hosted or
-commercial service that extends ProtocolLab would be a separate layer and is
-not implied by this repository or its local results.
+The public repo remains the community-facing surface. The sibling internal
+repo carries hosted or commercial extensions, private diagnostics, and
+extended operational workflows. Those are separate layers and are not implied
+by this repository or its local results.
 
 ## Product Boundaries
 
 The public-canonical surface of ProtocolLab is designed to be useful on its
 own for local validation, local benchmarking, CI automation, and self-serve
-comparisons. That surface remains a public-candidate area and should be
-treated as subject to audit before any public release.
-
-A private/internal layer - if pursued as `Incursa.ProtocolLab.Internal` -
-would add hosted execution, attested provenance, retained artifact archives,
-extended scenarios, private CI integration, dashboards, and diagnostic
-analysis without removing or degrading the public-canonical surface.
+comparisons. The private/internal layer adds hosted execution, attested
+provenance, retained artifact archives, extended scenarios, private CI
+integration, dashboards, and diagnostic analysis without removing or
+degrading the public-canonical surface.
 
 See [Product Boundaries](product-boundaries.md).

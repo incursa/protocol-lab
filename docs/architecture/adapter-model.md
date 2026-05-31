@@ -1,6 +1,6 @@
 # Architecture — Adapter Model
 
-**Status:** Implemented (v1 control plane contract + conformance suite + Kestrel, Incursa HTTP/3, Incursa Raw QUIC, and MsQuic/.NET adapters complete; adapter discovery and broader adapter registry remain proposed)
+**Status:** Implemented (v1 control plane contract + conformance suite + Kestrel and Incursa HTTP/3 adapters complete; Incursa Raw QUIC and MsQuic/.NET remain fixture-only; adapter discovery and broader adapter registry remain proposed)
 
 ## Purpose
 

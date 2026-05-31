@@ -1,6 +1,6 @@
 # Architecture — Overview
 
-**Status:** Implemented (v1 core loop complete; many concerns remain deferred or modeled)
+**Status:** Implemented (v1 core loop complete; execution profile, effective load shape, collision-proof cell identity, and report claim levels are implemented; some provenance and hosted concerns remain deferred)
 
 ## Scope
 
@@ -30,7 +30,7 @@ CLI Host (Incursa.ProtocolLab.Cli)
   |
   v
 Runner Engine (Incursa.ProtocolLab.Runner)
-  |-- Orchestration (RunnerEngine, RunPlanBuilder)
+  |-- Orchestration (RunnerEngine, RunPlanBuilder, ReportPublicationWorkflow)
   |-- Compatibility (CompatibilityClassifier)
   |-- Lifecycle (TargetOrchestrator, AdapterSessionOrchestrator)
   |-- Validation (HttpScenarioValidator, ProtocolProofValidator)
@@ -41,10 +41,11 @@ Runner Engine (Incursa.ProtocolLab.Runner)
   v
 Model (Incursa.ProtocolLab.Model)
   |-- Scenarios, Manifests, Load Tools, Load Profiles
-  |-- Matrix Expansion, Run Cells
-  |-- Results, Reports, Aggregates
-  |-- Artifact Layout, Artifact Paths
-  |-- Network Profiles, Suites
+  |-- Matrix Expansion, Run Cells, Execution Profiles
+  |-- Requested/Effective Load Shape, Load Shape Semantics
+  |-- Results, Reports, Aggregates, Claim Levels
+  |-- Artifact Layout, Artifact Paths, RunCellIdentity
+  |-- Network Profiles, Suites, Canonical Protocol IDs
 ```
 
 ## Data Flow
@@ -90,25 +91,35 @@ Suites (YAML) -------------+              Target Lifecycle (start/ready)
    validation status is `passed`. Unsupported, failed, or not-run validation
    results produce explicit outcomes with reasons.
 
-3. **Evidence classification.** Every result is classified with an evidence
-   class (`local-smoke` through `publishable`) and a comparability status.
-   Results from different evidence classes or incompatible execution
-   environments are not directly ranked together.
+3. **Canonical protocol identifiers.** The model normalizes common aliases to
+   short, stable ids (`h1`, `h2`, `h3`, `quic`, `webtransport`, `masque`) so
+   reports, artifacts, and compatibility checks use one vocabulary.
 
-4. **Deterministic artifact layout.** Artifacts follow
-   `.artifacts/runs/{runId}/implementations/{impl}/{scenario}/{protocol}/c{conn}-s{stream}-r{rep}/`.
-   This makes artifact paths predictable and stable across runs.
+4. **Requested and effective load shape are separate.** The runner records the
+   requested shape, the effective shape, and the semantics that explain any
+   ignored, derived, or unsupported fields.
 
-5. **Adapter control plane separation.** The adapter control plane (HTTP/1.1
+5. **Collision-proof artifact layout.** Artifacts follow a deterministic run
+   cell identity built from implementation, scenario, protocol, execution
+   profile, network profile, load profile, connections, streams, and
+   repetition.
+
+6. **Evidence classification and claim levels.** Every result is classified
+   with an evidence class (`local-smoke` through `publishable`) and a
+   comparability status, and every report carries a claim level. Results from
+   different evidence classes or incompatible execution environments are not
+   directly ranked together.
+
+7. **Adapter control plane separation.** The adapter control plane (HTTP/1.1
    JSON at `/protocol-lab/adapter/v1`) is separate from the protocol endpoint
    under test. The control plane manages lifecycle; the endpoint carries
    protocol traffic.
 
-6. **Best-effort parsing.** Load-tool output is parsed best-effort. If parsing
+8. **Best-effort parsing.** Load-tool output is parsed best-effort. If parsing
    fails, the raw artifacts are preserved and `parsedMetricsAvailable` is set
    to `false`. No metrics are fabricated.
 
-7. **Separation of concerns.** The CLI owns command parsing and console
+9. **Separation of concerns.** The CLI owns command parsing and console
    rendering. The runner owns orchestration and execution logic. The model
    owns shared types. Adapter contracts own the control-plane surface. Server
    implementations own protocol behavior.
@@ -128,19 +139,21 @@ Suites (YAML) -------------+              Target Lifecycle (start/ready)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Runner engine | Implemented | `validate`, `run`, `list`, `check`, `report` commands |
+| Runner engine | Implemented | `validate`, `run`, `list`, `check`, `report`, `publish-report` commands |
 | Scenario model | Implemented | HTTP application scenarios plus modeled H3/QUIC/WebTransport/MASQUE families |
-| Load profiles | Implemented | `smoke`, `local-comparison`, `local-regression` presets |
+| Load profiles | Implemented | `smoke`, `local-comparison`, `local-regression` presets with explicit purpose/evidence metadata |
+| Execution profile | Implemented | `ExecutionProfile` recorded per run/cell and normalized from CLI/host state |
+| Load shape semantics | Implemented | Requested vs effective shape plus warnings for ignored/derived/unsupported fields |
 | Matrix expansion | Implemented | Cartesian product of impl × scenario × protocol × load shape |
 | Target lifecycle | Implemented | Process, Docker, and external modes; readiness probing |
 | Validation | Implemented | HTTP endpoint validation + H3 protocol proof |
 | Load tools | Implemented | h2load (process + Docker), oha, managed HttpClient H3 |
 | Artifact layout | Implemented | Deterministic paths, 60+ artifact types |
 | Evidence classification | Implemented | 5-class system with comparability gates |
-| Reporting | Implemented | Markdown summaries, aggregate JSON, run index |
-| Adapter control plane | Implemented | v1 contract + conformance suite; Kestrel, Incursa HTTP/3, Incursa Raw QUIC, and MsQuic/.NET adapters |
+| Reporting | Implemented | Markdown summaries, aggregate JSON, claim levels, run index, public publication bundles |
+| Adapter control plane | Implemented | v1 contract + conformance suite; Kestrel, Incursa HTTP/3, Incursa Raw QUIC fixture, and MsQuic/.NET fixture adapters |
 | Network impairment | Modeled | Provider model exists; execution is deferred |
 | WebTransport/MASQUE | Modeled | Scenario families are modeled; validators and load generators are deferred |
 | Raw QUIC | Implemented - fixture only | Fixture adapter-backed QUIC scenarios and adapters exist; real QUIC traffic remains deferred |
-| Hosted execution | Deferred | Not implemented |
-| CI execution profile | Deferred | Not implemented |
+| Hosted execution | Deferred | Not implemented in the public repo; handled as private/internal work |
+| CI execution profile | Implemented as model | The enum exists, but execution wiring remains deferred |

@@ -1,7 +1,8 @@
 # Quickstart
 
 This quickstart gets you from a clean clone to build, validation, and a basic
-local benchmark.
+local benchmark. The commands below exercise the public/community repo only;
+they do not require the sibling internal repository.
 
 ## 1. Clone
 
@@ -57,6 +58,10 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations kestre
 
 The managed load tool is a local-lab measurement path. It is not the same as
 the external-reference Docker `h2load --h3` path.
+
+The output records execution profile, requested load shape, effective load
+shape, and claim level separately. Local results are useful for validation and
+regression, but they are not publishable benchmark evidence by default.
 
 ## 6. Optional Docker Image Builds
 

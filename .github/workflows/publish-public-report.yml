@@ -1,0 +1,104 @@
+name: Publish Public Report
+
+on:
+  workflow_call:
+    inputs:
+      run-id-prefix:
+        description: Prefix used for the generated run ID.
+        required: false
+        type: string
+        default: public-report
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
+      PROTOCOL_LAB_DB_ID:
+        required: true
+
+jobs:
+  publish-public-report:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: protocol-lab-public-reports
+      cancel-in-progress: false
+    env:
+      RUN_ID_PREFIX: ${{ inputs.run-id-prefix }}
+      RUN_ID: ${{ inputs.run-id-prefix }}-${{ github.run_id }}-${{ github.run_attempt }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PROTOCOL_LAB_DB_ID: ${{ secrets.PROTOCOL_LAB_DB_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          npm install --global wrangler@3 --no-fund --no-audit
+          wrangler --version
+
+      - name: Restore .NET tools
+        shell: pwsh
+        run: dotnet tool restore
+
+      - name: Run benchmark
+        id: run
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runId = $env:RUN_ID
+          $runRoot = Join-Path $env:GITHUB_WORKSPACE ".artifacts\runs\$runId"
+          Write-Host "Run ID: $runId"
+          Write-Host "Run root: $runRoot"
+
+          dotnet run --project src\Incursa.ProtocolLab.Cli -c Release -- run `
+            --run-id $runId `
+            --output .artifacts\runs `
+            --execution-profile ci-container `
+            --target-configuration Release `
+            --implementations kestrel-http3 `
+            --scenarios http.core.plaintext,http.core.json `
+            --protocol h3 `
+            --load-tool managed-httpclient-h3-load `
+            --load-profile local-regression
+
+          $exitCode = $LASTEXITCODE
+          "exit_code=$exitCode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8NoBOM
+          Write-Host "Benchmark exit code: $exitCode"
+
+      - name: Publish report
+        id: publish
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runId = $env:RUN_ID
+          $runRoot = Join-Path $env:GITHUB_WORKSPACE ".artifacts\runs\$runId"
+          & .\scripts\publication\Publish-ProtocolLabReport.ps1 `
+            -RunId $runId `
+            -RunRoot $runRoot `
+            -AllowDiagnosticPublication `
+            -D1DatabaseId $env:PROTOCOL_LAB_DB_ID
+
+      - name: Fail if benchmark run failed
+        if: always() && steps.publish.outcome == 'success' && steps.run.outputs.exit_code != '0'
+        shell: pwsh
+        run: |
+          throw "Benchmark run exited with code ${{ steps.run.outputs.exit_code }} after the report was published."

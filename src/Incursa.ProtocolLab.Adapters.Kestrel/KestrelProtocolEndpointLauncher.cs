@@ -38,6 +38,7 @@ internal static class KestrelProtocolEndpointLauncher
         };
 
         startInfo.ArgumentList.Add("run");
+        startInfo.ArgumentList.Add("--no-build");
         startInfo.ArgumentList.Add("--no-restore");
         startInfo.ArgumentList.Add("--no-launch-profile");
         startInfo.ArgumentList.Add("--project");

@@ -345,7 +345,7 @@ public sealed class LoadProfileContractV1Tests
             Path.Combine(TestPaths.RepoRoot, "load-profiles", fileName));
     }
 
-    private static RunCell NewCell(string loadProfileId = null)
+    private static RunCell NewCell(string? loadProfileId = null)
     {
         return new RunCell(
             new ImplementationManifest

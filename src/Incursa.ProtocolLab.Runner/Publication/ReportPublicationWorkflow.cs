@@ -420,6 +420,27 @@ internal static class ReportPublicationWorkflow
                 }
 
                 var sourceText = await File.ReadAllTextAsync(sourcePath);
+                if (string.Equals(file.Name, "h2load-output.json", StringComparison.OrdinalIgnoreCase) &&
+                    string.IsNullOrWhiteSpace(sourceText))
+                {
+                    // h2load leaves this placeholder empty when it does not emit structured output.
+                    skipped.Add(new PublicReportPublicationSkippedArtifact
+                    {
+                        CellKey = entry.CellKey,
+                        Name = file.Name,
+                        Reason = "missing optional artifact"
+                    });
+                    skippedCount++;
+                    publicFiles.Add(new EvidenceReportArtifactFile
+                    {
+                        Name = file.Name,
+                        Path = "",
+                        Exists = false
+                    });
+                    files.Add(new PreparedArtifactFile(file.Name, "", false, "missing optional artifact"));
+                    continue;
+                }
+
                 if (ContainsForbiddenContent(sourceText, out var leak))
                 {
                     return PreparedArtifactPlan.Fail($"Artifact '{file.Name}' in cell '{entry.CellKey}' contains forbidden content: {leak}");

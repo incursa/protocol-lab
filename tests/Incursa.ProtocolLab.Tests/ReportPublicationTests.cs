@@ -156,6 +156,29 @@ public sealed class ReportPublicationTests
     }
 
     [Fact]
+    public async Task Writes_skipped_artifact_entries_when_h2load_output_placeholder_is_empty()
+    {
+        var tempRoot = CreateTempRoot();
+
+        try
+        {
+            var sample = await CreateSampleRunAsync(tempRoot, blankOptionalArtifact: true);
+            var result = await new RunnerEngine().PublishReportAsync(
+                TestPaths.RepoRoot,
+                CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
+
+            Assert.Equal(0, result.ExitCode);
+            var skipped = await File.ReadAllTextAsync(Path.Combine(sample.OutputRoot, "publication-skipped.md"));
+            Assert.Contains("missing optional artifact", skipped, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("h2load-output.json", skipped, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
     public async Task DiagnosticOnly_publication_requires_explicit_flag()
     {
         var tempRoot = CreateTempRoot();
@@ -474,6 +497,7 @@ public sealed class ReportPublicationTests
         string tempRoot,
         bool leakInManifest = false,
         bool omitOptionalArtifact = false,
+        bool blankOptionalArtifact = false,
         ReportClaimLevel? overrideClaimLevel = null)
     {
         var runId = "sample-run";
@@ -510,7 +534,7 @@ public sealed class ReportPublicationTests
             var cell = cells[index];
             var paths = ArtifactLayout.GetCellPaths(runArtifactsRoot, runId, cell);
             Directory.CreateDirectory(paths.CellDirectory);
-            await WriteSafeArtifactsAsync(paths, leakInManifest && index == 0, omitOptionalArtifact && index == 1);
+            await WriteSafeArtifactsAsync(paths, leakInManifest && index == 0, omitOptionalArtifact && index == 1, blankOptionalArtifact && index == 1);
             var result = CreateResult(runId, cell, paths, repetition: cell.Repetition, omitOptionalArtifact: omitOptionalArtifact && index == 1);
             results.Add(result);
         }
@@ -620,7 +644,7 @@ public sealed class ReportPublicationTests
         ];
     }
 
-    private static async Task WriteSafeArtifactsAsync(ArtifactPaths paths, bool leakInManifest, bool omitOptionalArtifact)
+    private static async Task WriteSafeArtifactsAsync(ArtifactPaths paths, bool leakInManifest, bool omitOptionalArtifact, bool blankOptionalArtifact)
     {
         await File.WriteAllTextAsync(paths.ManifestSnapshotJson, leakInManifest
             ? """
@@ -661,7 +685,11 @@ public sealed class ReportPublicationTests
 
         await File.WriteAllTextAsync(paths.LoadToolVersion, "oha 1.0.0");
 
-        if (!omitOptionalArtifact)
+        if (blankOptionalArtifact)
+        {
+            await File.WriteAllTextAsync(paths.H2loadOutputJson, "");
+        }
+        else if (!omitOptionalArtifact)
         {
             await File.WriteAllTextAsync(paths.H2loadOutputJson, """
                 {

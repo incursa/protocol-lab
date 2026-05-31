@@ -335,7 +335,7 @@ function Parse-PublicationWarnings {
 
 function Build-RegistryMerge {
     param(
-        [Parameter(Mandatory = $true)]$ExistingRegistry,
+        [AllowNull()]$ExistingRegistry,
         [Parameter(Mandatory = $true)]$CurrentEntry
     )
 

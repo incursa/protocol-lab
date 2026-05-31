@@ -284,13 +284,19 @@ function Parse-PublicationWarnings {
             continue
         }
 
-        if ($line -match '^\- \[(?<code>[^\]]+)\]\s+(?<message>.+)$') {
-            $source = if ($Matches.code.StartsWith("report:", [System.StringComparison]::OrdinalIgnoreCase)) { "report" } else { "plan" }
-            $warnings.Add([ordered]@{
-                warningSource = $source
-                warningCode = $Matches.code
-                warningMessage = $Matches.message
-            }) | Out-Null
+        if (-not [string]::IsNullOrWhiteSpace($line) -and $line.StartsWith("- [", [System.StringComparison]::OrdinalIgnoreCase)) {
+            $closingBracket = $line.IndexOf(']')
+            $messageSeparator = $line.IndexOf('] ', [System.StringComparison]::OrdinalIgnoreCase)
+            if ($closingBracket -gt 3 -and $messageSeparator -gt $closingBracket) {
+                $code = $line.Substring(3, $closingBracket - 3)
+                $message = $line.Substring($messageSeparator + 2)
+                $source = if ($code -like "report:*") { "report" } else { "plan" }
+                $warnings.Add([ordered]@{
+                    warningSource = $source
+                    warningCode = $code
+                    warningMessage = $message
+                }) | Out-Null
+            }
         }
     }
 

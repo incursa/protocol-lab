@@ -1,7 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Incursa.ProtocolLab.Model</PackageId>
+    <Description>Shared ProtocolLab domain models, artifact layout types, and report serialization helpers.</Description>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="YamlDotNet" Version="18.0.0" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
 </Project>

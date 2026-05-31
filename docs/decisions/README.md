@@ -52,7 +52,7 @@ Decisions currently documented elsewhere:
 | Deterministic artifact layout | [Artifact Model](../architecture/artifact-model.md) |
 | Best-effort parsing | [Load Model](../architecture/load-model.md) |
 | Public/canonical vs private/internal layer separation | [Product Boundaries](../protocol-lab/product-boundaries.md) |
-| Public/private repository split | [Repository Split Plan](../protocol-lab/repository-split-plan.md), [ADR-0004](ADR-0004-public-private-repository-split.md) |
+| Public/private repository split | [Public Seed Readiness](../protocol-lab/public-seed-readiness.md), [Product Boundaries](../protocol-lab/product-boundaries.md), [ADR-0004](ADR-0004-public-private-repository-split.md) |
 | Deferred workload families (WebTransport, MASQUE) | [Future Workload Families](../spec/future-workload-families.md) |
 | Database workloads out of scope for v1 | [Database Workloads Decision](../spec/database-workloads-decision.md) |
 
@@ -63,7 +63,7 @@ Decisions currently documented elsewhere:
 | Adapter discovery and broader adapter registry | [Adapter Model](../architecture/adapter-model.md), [Runner Model](../architecture/runner-model.md) |
 | Load tool registry and streaming metrics | [Load Model](../architecture/load-model.md) |
 | Hosted execution backend and CI execution profile | [Runner Model](../architecture/runner-model.md), [Product Boundaries](../protocol-lab/product-boundaries.md) |
-| Public validation matrix artifact publication policy | [Repository Split Plan](../protocol-lab/repository-split-plan.md), [Product Boundaries](../protocol-lab/product-boundaries.md) |
+| Public validation matrix artifact publication policy | [Public Seed Readiness](../protocol-lab/public-seed-readiness.md), [Product Boundaries](../protocol-lab/product-boundaries.md) |
 
 ## Conventions
 

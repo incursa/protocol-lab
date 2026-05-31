@@ -1,0 +1,79 @@
+name: Publish NuGet Packages
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish, for example 1.0.6
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: publish-packages-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Validate NuGet credentials
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+            throw "NUGET_API_KEY secret is required to publish packages."
+          }
+
+      - name: Resolve package version
+        id: version
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          if (-not [string]::IsNullOrWhiteSpace($env:MANUAL_VERSION)) {
+            $version = $env:MANUAL_VERSION.Trim().TrimStart("v")
+          }
+          elseif ($env:RELEASE_TAG.StartsWith("v", [System.StringComparison]::OrdinalIgnoreCase)) {
+            $version = $env:RELEASE_TAG.Substring(1)
+          }
+          else {
+            throw "A version is required when the workflow is not triggered by a version tag."
+          }
+
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8NoBOM
+
+      - name: Restore
+        run: dotnet restore Incursa.ProtocolLab.sln
+
+      - name: Build
+        run: dotnet build Incursa.ProtocolLab.sln --no-restore --configuration Release -p:Version=${{ steps.version.outputs.version }} -p:ContinuousIntegrationBuild=true
+
+      - name: Pack packages
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/packages | Out-Null
+          dotnet pack src/Incursa.ProtocolLab.Model/Incursa.ProtocolLab.Model.csproj --configuration Release --no-build --output artifacts/packages --include-symbols --include-source /p:Version=${{ steps.version.outputs.version }} /p:ContinuousIntegrationBuild=true
+          dotnet pack src/Incursa.ProtocolLab.Adapter.Contracts/Incursa.ProtocolLab.Adapter.Contracts.csproj --configuration Release --no-build --output artifacts/packages --include-symbols --include-source /p:Version=${{ steps.version.outputs.version }} /p:ContinuousIntegrationBuild=true
+          dotnet pack src/Incursa.ProtocolLab.Adapter.Conformance/Incursa.ProtocolLab.Adapter.Conformance.csproj --configuration Release --no-build --output artifacts/packages --include-symbols --include-source /p:Version=${{ steps.version.outputs.version }} /p:ContinuousIntegrationBuild=true
+
+      - name: Push to NuGet
+        run: |
+          dotnet nuget push artifacts/packages/*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push artifacts/packages/*.snupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

@@ -1,11 +1,11 @@
-# ProtocolLab — Product Boundaries
+# ProtocolLab - Product Boundaries
 
-**Status:** Planning (conceptual boundary model; no public/internal split implemented)
+**Status:** Current (conceptual public/community boundary model; no hosted/commercial split implemented)
 
 ## Overview
 
 ProtocolLab is designed with a layered architecture that separates a
-public-candidate, auditable canonical surface from a potential private/internal
+public/community canonical surface from a potential private/internal/commercial
 extension layer. This document defines the conceptual split. No code-level
 public/internal repo split exists yet; this is captured here for design
 direction.
@@ -14,21 +14,21 @@ direction.
 
 ```
 +--------------------------------------------------+
-| Private / Internal Layer (proposed)               |
-| Hosted execution, attested provenance,            |
-| retained artifacts, extended scenarios,           |
-| dashboards, private CI, diagnostic analysis       |
+| Private / Internal / Commercial Layer (proposed) |
+| Hosted execution, attested provenance,           |
+| retained artifacts, extended scenarios,          |
+| dashboards, private CI, diagnostic analysis      |
 +--------------------------------------------------+
-| Public / Canonical Layer (public-candidate)       |
-| Local validation, local benchmarking,             |
-| Docker execution, CI automation,                  |
-| self-serve comparisons, open artifact format      |
+| Public / Canonical Layer (public/community)      |
+| Local validation, local benchmarking,            |
+| Docker execution, CI automation,                 |
+| self-serve comparisons, open artifact format     |
 +--------------------------------------------------+
 ```
 
 ## Public / Canonical Layer
 
-The public-canonical layer is the public-candidate surface of ProtocolLab.
+The public-canonical layer is the public/community surface of ProtocolLab.
 It is designed to be complete and useful on its own after audit.
 
 **Implemented capabilities:**
@@ -51,14 +51,16 @@ It is designed to be complete and useful on its own after audit.
 **Public-canonical layer invariant:** Every capability in the public-canonical
 layer must work without a private/internal backend, authentication, or hosted
 service dependency. Public-canonical results are marked as local evidence and
-never imply attested provenance.
+never imply attested provenance. If a commercial hosted benchmark service is
+ever introduced, it must live outside the public repo and must not be implied
+by public/community outputs.
 
-## Private / Internal Layer (Proposed)
+## Private / Internal / Commercial Layer (Proposed)
 
 The private/internal layer is a conceptual extension that would add
 capabilities relevant to organizations needing controlled, attested, and
 retained protocol benchmark data. It is not implemented and no commitment is
-made to build it.
+made to build it in this repository.
 
 **Proposed private/internal capabilities:**
 - **Hosted execution:** ProtocolLab runs in a controlled, attested
@@ -85,7 +87,8 @@ never be blocked from capabilities because a private/internal feature exists.
 
 ## Boundary Enforcement
 
-The following constraints ensure the public-canonical layer remains independent:
+The following constraints ensure the public-canonical layer remains
+independent:
 
 1. **No private/internal-only code paths in the runner.** The runner must
    not contain conditional logic that branches on whether a private/internal
@@ -102,6 +105,9 @@ The following constraints ensure the public-canonical layer remains independent:
 5. **Contract-first integration.** If the private/internal layer adds hosted
    execution, it does so through documented contracts (REST API, artifact
    format, evidence schema) that the public runner already supports.
+6. **No implied commercial service.** Public documentation, templates, and
+   result artifacts must not imply that a hosted or commercial benchmark
+   service is part of the public repo.
 
 ## Repository Split (Future Consideration)
 
@@ -128,9 +134,9 @@ The current repository contains public-candidate areas subject to audit:
 - Scenarios, manifests, load tools, load profiles, suites
 - Scripts, schemas, specs, and tests
 
-These areas are candidates for the public-canonical surface. If a private/internal
-layer is added, it would live outside this repository and consume the public
-surface through its documented contracts.
+These areas are candidates for the public-canonical surface. If a
+private/internal layer is added, it would live outside this repository and
+consume the public surface through its documented contracts.
 
 ## Evidence Classification and Boundaries
 
@@ -142,8 +148,8 @@ the boundary between self-serve and controlled data:
 | `local-smoke` | Public / Canonical | Quick functional check, no load measurement |
 | `local-lab` | Public / Canonical | Local benchmark on shared host, useful for regression |
 | `external-reference-local` | Public / Canonical | External tool (h2load) on shared host, useful for comparison |
-| `isolated-host` | Private / Internal | Controlled environment, single-tenant host |
-| `publishable` | Private / Internal | Attested, verified, retained, reproducible |
+| `isolated-host` | Private / Internal / Commercial | Controlled environment, single-tenant host |
+| `publishable` | Private / Internal / Commercial | Attested, verified, retained, reproducible |
 
 The public-canonical layer produces `local-smoke`, `local-lab`, and
 `external-reference-local` results. `isolated-host` and `publishable` are
@@ -152,8 +158,8 @@ current implementation.
 
 ## Related Documents
 
-- [Measurement Model](../architecture/measurement-model.md) — how provenance and collectors separate trust levels
-- [Report Model](../architecture/report-model.md) — how claim levels and environment manifests describe results
-- [Artifact Model](../architecture/artifact-model.md) — how artifact paths and preservation support auditability
-- [Vision](vision.md) — higher-level project intent and protocol boundaries
-- [Architecture Overview](../architecture/overview.md) — current component map and implementation coverage
+- [Measurement Model](../architecture/measurement-model.md) - how provenance and collectors separate trust levels
+- [Report Model](../architecture/report-model.md) - how claim levels and environment manifests describe results
+- [Artifact Model](../architecture/artifact-model.md) - how artifact paths and preservation support auditability
+- [Vision](vision.md) - higher-level project intent and protocol boundaries
+- [Architecture Overview](../architecture/overview.md) - current component map and implementation coverage

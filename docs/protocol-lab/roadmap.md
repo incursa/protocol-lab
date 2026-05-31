@@ -1,6 +1,6 @@
-# ProtocolLab — Roadmap
+# ProtocolLab - Roadmap
 
-**Status:** Planning (living document; phases reflect current schedule)
+**Status:** Current (living document; phases reflect the public/community roadmap)
 
 ## Phase Summary
 
@@ -117,4 +117,7 @@ scheduled:
   protocol-level traces, custom metric dashboards, and integration with
   private artifact stores.
 
-These are recorded here for direction only. None are committed to a phase.
+These are recorded here for direction only. None are commitments of the
+public/community repo. Any hosted or commercial benchmark service would live
+outside the public surface and should only be introduced by explicit design
+and release planning.

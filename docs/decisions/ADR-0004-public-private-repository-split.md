@@ -98,12 +98,12 @@ its private sample dependency is removed or replaced.
 
 ## Related
 
-- [Public / Private Repository Candidate Inventory](../protocol-lab/public-private-inventory.md)
-- [Repository Split Plan](../protocol-lab/repository-split-plan.md)
+- [Public Seed Readiness](../protocol-lab/public-seed-readiness.md)
 - [Product Boundaries](../protocol-lab/product-boundaries.md)
+- [Vision](../protocol-lab/vision.md)
+- [Roadmap](../protocol-lab/roadmap.md)
 - [Architecture Decision Records](README.md)
 - [Adapter Contract v1](../architecture/adapter-contract-v1.md)
 - [Artifact Model](../architecture/artifact-model.md)
 - [Measurement Model](../architecture/measurement-model.md)
 - [Report Model](../architecture/report-model.md)
-

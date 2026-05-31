@@ -8,9 +8,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Incursa.ProtocolLab.Adapter.Contracts\Incursa.ProtocolLab.Adapter.Contracts.csproj" />
     <ProjectReference Include="..\Incursa.ProtocolLab.Model\Incursa.ProtocolLab.Model.csproj" />
-    <PackageReference Include="Incursa.Qpack" Version="$(IncursaQpackVersion)" />
-    <PackageReference Include="Incursa.Quic" Version="$(IncursaQuicVersion)" />
-    <PackageReference Include="Incursa.Quic.Http3" Version="$(IncursaQuicHttp3Version)" />
+    <PackageReference Include="Incursa.Qpack" />
+    <PackageReference Include="Incursa.Quic" />
+    <PackageReference Include="Incursa.Quic.Http3" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Incursa.ProtocolLab.Adapter.Conformance</PackageId>
+    <Description>Shared ProtocolLab adapter conformance helpers and validation utilities.</Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Incursa.ProtocolLab.Adapter.Contracts\Incursa.ProtocolLab.Adapter.Contracts.csproj" />
     <ProjectReference Include="..\Incursa.ProtocolLab.Model\Incursa.ProtocolLab.Model.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NJsonSchema" Version="11.6.1" />
+    <PackageReference Include="NJsonSchema" />
   </ItemGroup>
 
 </Project>

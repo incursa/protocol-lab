@@ -209,7 +209,7 @@ function Read-R2JsonObject {
     try {
         Push-Location $RepoRoot
         try {
-            $commandOutput = & $WranglerPath @("r2", "object", "get", "$Bucket/$ObjectKey", "--file", $tempFile, "--remote") 2>&1
+            $commandOutput = & $WranglerPath @("r2", "object", "get", "$Bucket/$ObjectKey", "--file", $tempFile) 2>&1
             $exitCode = $LASTEXITCODE
         }
         finally {
@@ -396,8 +396,6 @@ function Write-R2Object {
     Invoke-Tool -FilePath $WranglerPath -Arguments @(
         "r2", "object", "put", "$BucketName/$ObjectKey",
         "--file", $FilePath,
-        "--remote",
-        "--force",
         "--content-type", $contentType,
         "--cache-control", $cacheControl
     ) -WorkingDirectory $RepoRoot

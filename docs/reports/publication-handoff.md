@@ -67,12 +67,15 @@ The script performs these steps in order:
    public/runs/{runId}/
    ```
 
-4. Refreshes these R2 registry objects:
+4. Verifies the uploaded run prefix and required metadata objects before the
+   publication can advance.
+
+5. Refreshes these R2 registry objects:
 
    - `public/registry/report-index.json`
    - `public/registry/latest.json`
 
-5. Writes searchable metadata into D1 through the Cloudflare D1 REST API using
+6. Writes searchable metadata into D1 through the Cloudflare D1 REST API using
    `PROTOCOL_LAB_DB_ID`.
 
 The script fails closed on malformed JSON, mismatched run IDs, path escapes,
@@ -120,6 +123,10 @@ The site reads these objects from the run prefix:
 
 The registry objects stay separate under `public/registry/`.
 
+The handoff workflow only treats the run as published after the run-prefix
+objects are verified, the registry objects are refreshed, and D1 has been
+updated successfully.
+
 ## D1 Metadata
 
 The D1 index stores searchable metadata only. It does not store the full report
@@ -141,6 +148,11 @@ Indexed metadata includes:
 - artifact reference keys
 - latest-pointer metadata when applicable
 
+The D1 side also stores the object-key mapping rows for each published run in
+`public_report_run_object_keys`, and the singleton latest pointer in
+`public_report_latest`. Those rows are the public index contract that the
+verification step scans against R2.
+
 ## Validation Gates
 
 Before any upload or indexing step, the handoff validates:
@@ -150,5 +162,8 @@ Before any upload or indexing step, the handoff validates:
 - artifact references stay under the run root
 - claim-level and execution-profile compatibility
 - forbidden paths and secret patterns in the staged bundle
+- uploaded R2 objects still exist and parse where applicable
+- D1 object-key rows match the required run-prefix payload set before the
+  latest pointer is advanced or the run is considered published
 
 Missing optional artifacts remain visible in `publication-skipped.md`.

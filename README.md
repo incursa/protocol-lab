@@ -124,9 +124,9 @@ diagnostic-only and should remain labeled that way in the output.
 To complete the Cloudflare handoff, run
 `scripts\publication\Publish-ProtocolLabReport.ps1`. It stages the bundle if
 needed, uploads the public files to `public/runs/{runId}/` in the
-`protocol-lab-reports` bucket through the R2 S3 API, refreshes the registry
-objects, and writes the searchable metadata into D1 through the Cloudflare
-D1 REST API.
+`protocol-lab-reports` bucket through the R2 S3 API, verifies the uploaded
+payload before advancing the registry/latest pointers, and writes the
+searchable metadata into D1 through the Cloudflare D1 REST API.
 
 The workflow consumes these GitHub secrets:
 

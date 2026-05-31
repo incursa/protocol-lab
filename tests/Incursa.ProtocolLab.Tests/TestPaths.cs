@@ -1,11 +1,20 @@
 // Copyright (c) 2026 Incursa LLC.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using Incursa.ProtocolLab.Model;
+
 namespace Incursa.ProtocolLab.Tests;
 
 internal static class TestPaths
 {
     public static string RepoRoot { get; } = FindRepoRoot();
+
+    public static ExecutionProfile ExpectedExecutionProfile =>
+        string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase)
+            ? ExecutionProfile.CiContainer
+            : ExecutionProfile.LocalProcess;
+
+    public static string ExecutionProfileId => ExecutionProfiles.ToId(ExpectedExecutionProfile);
 
     private static string FindRepoRoot()
     {

@@ -106,7 +106,7 @@ public sealed class RunnerBoundaryTests
                 "kestrel-http3",
                 "http.core.plaintext",
                 "h1",
-                "local-process",
+                TestPaths.ExecutionProfileId,
                 "clean",
                 "no-load-profile",
                 "c1-s1-r1",
@@ -196,7 +196,10 @@ public sealed class RunnerBoundaryTests
             1,
             30,
             5,
-            "clean");
+            "clean")
+        {
+            ExecutionProfile = TestPaths.ExpectedExecutionProfile
+        };
     }
 
     private static ImplementationManifest NewImplementation(

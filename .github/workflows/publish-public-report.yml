@@ -86,7 +86,7 @@ jobs:
           "exit_code=$exitCode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8NoBOM
           Write-Host "Benchmark exit code: $exitCode"
 
-      - name: Publish report
+      - name: Publish and verify report
         id: publish
         if: always()
         shell: pwsh
@@ -98,6 +98,7 @@ jobs:
             -RunId $runId `
             -RunRoot $runRoot `
             -AllowDiagnosticPublication `
+            -VerifyPublishedRuns `
             -D1DatabaseId $env:PROTOCOL_LAB_DB_ID
 
       - name: Fail if benchmark run failed

@@ -71,10 +71,25 @@ def _get(bucket: str, key: str, file_path: str) -> int:
     return 0
 
 
+def _head(bucket: str, key: str) -> int:
+    client = _client()
+    try:
+        client.head_object(Bucket=bucket, Key=key)
+    except ClientError as exc:
+        error = exc.response.get("Error", {})
+        code = str(error.get("Code", ""))
+        status = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+        if code in {"NoSuchKey", "NotFound", "404"} or status == 404:
+            return 2
+        raise
+
+    return 0
+
+
 def main(argv: Sequence[str]) -> int:
     if len(argv) < 5:
         raise SystemExit(
-            "Usage: r2_s3_helper.py <put|get> <bucket> <key> <file> [content_type] [cache_control]"
+            "Usage: r2_s3_helper.py <put|get|head> <bucket> <key> <file> [content_type] [cache_control]"
         )
 
     operation = argv[1]
@@ -89,6 +104,9 @@ def main(argv: Sequence[str]) -> int:
 
     if operation == "get":
         return _get(bucket, key, file_path)
+
+    if operation == "head":
+        return _head(bucket, key)
 
     raise SystemExit(f"Unsupported operation: {operation}")
 

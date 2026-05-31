@@ -336,7 +336,10 @@ public sealed class RunnerContractFixtureLabTests
             repetition,
             1,
             0,
-            "clean");
+            "clean")
+        {
+            ExecutionProfile = TestPaths.ExpectedExecutionProfile
+        };
 
         return ArtifactLayout.GetCellPaths(output, runId, cell);
     }

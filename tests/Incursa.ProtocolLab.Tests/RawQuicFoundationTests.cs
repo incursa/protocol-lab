@@ -373,7 +373,10 @@ public sealed class RawQuicFoundationTests
             repetition,
             1,
             0,
-            "clean");
+            "clean")
+        {
+            ExecutionProfile = TestPaths.ExpectedExecutionProfile
+        };
 
         return ArtifactLayout.GetCellPaths(output, runId, cell);
     }

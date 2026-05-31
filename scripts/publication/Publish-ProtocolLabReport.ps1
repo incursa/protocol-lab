@@ -5,8 +5,9 @@ Promotes a completed ProtocolLab run to the public Cloudflare layout.
 .DESCRIPTION
 Stages the public-safe bundle with the existing publish-report flow, uploads
 the bundle under public/runs/{runId}/ in the protocol-lab-reports R2 bucket
-through the S3-compatible API, refreshes the public registry objects, and
-indexes searchable metadata into D1 through the Cloudflare D1 REST API.
+through the S3-compatible API, verifies the uploaded payload before advancing
+the public registry objects, and indexes searchable metadata into D1 through
+the Cloudflare D1 REST API.
 
 The script fails closed on malformed bundle metadata, mismatched run IDs,
 private-path leaks, or artifact paths that escape the completed run root.
@@ -38,6 +39,10 @@ explicitly labeled diagnostic-only.
 .PARAMETER DryRun
 Validate the handoff and print the planned object layout without uploading to
 R2 or indexing D1.
+
+.PARAMETER VerifyPublishedRuns
+After the metadata write completes, scan the published D1 rows and confirm that
+each published run still has its full R2 payload set.
 #>
 [CmdletBinding()]
 param(
@@ -48,7 +53,8 @@ param(
     [string]$D1DatabaseId,
     [string]$PythonPath = "python",
     [switch]$AllowDiagnosticPublication,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$VerifyPublishedRuns
 )
 
 $ErrorActionPreference = "Stop"
@@ -253,6 +259,7 @@ function Invoke-CloudflareD1Sql {
         [Parameter(Mandatory = $true)][string]$DatabaseId,
         [Parameter(Mandatory = $true)][string]$ApiToken,
         [Parameter(Mandatory = $true)][string]$Sql,
+        [string[]]$Params,
         [Parameter(Mandatory = $true)][string]$Description
     )
 
@@ -262,7 +269,12 @@ function Invoke-CloudflareD1Sql {
     }
     $body = @{
         sql = $Sql
-    } | ConvertTo-Json -Depth 20 -Compress
+    }
+    if ($null -ne $Params -and $Params.Count -gt 0) {
+        $body.params = @($Params)
+    }
+
+    $body = $body | ConvertTo-Json -Depth 20 -Compress
 
     try {
         $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $headers -ContentType "application/json" -Body $body
@@ -298,6 +310,29 @@ function Invoke-CloudflareD1Sql {
     }
 
     return $response
+}
+
+function Invoke-CloudflareD1QueryRows {
+    param(
+        [Parameter(Mandatory = $true)][string]$AccountId,
+        [Parameter(Mandatory = $true)][string]$DatabaseId,
+        [Parameter(Mandatory = $true)][string]$ApiToken,
+        [Parameter(Mandatory = $true)][string]$Sql,
+        [string[]]$Params,
+        [Parameter(Mandatory = $true)][string]$Description
+    )
+
+    $response = Invoke-CloudflareD1Sql -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql $Sql -Params $Params -Description $Description
+    if ($null -eq $response.result -or $response.result.Count -lt 1) {
+        return @()
+    }
+
+    $rows = $response.result[0].results
+    if ($null -eq $rows) {
+        return @()
+    }
+
+    return @($rows)
 }
 
 function Invoke-D1SqlFile {
@@ -413,6 +448,42 @@ function Read-R2JsonObject {
     }
     catch {
         throw
+    }
+    finally {
+        if (Test-Path -LiteralPath $tempFile) {
+            Remove-Item -LiteralPath $tempFile -Force
+        }
+    }
+}
+
+function Test-R2ObjectExists {
+    param(
+        [Parameter(Mandatory = $true)][string]$Bucket,
+        [Parameter(Mandatory = $true)][string]$ObjectKey
+    )
+
+    $tempFile = Join-Path $env:TEMP ([System.IO.Path]::GetRandomFileName())
+    try {
+        $helperScript = Join-Path $PSScriptRoot "r2_s3_helper.py"
+        if (-not (Test-Path -LiteralPath $helperScript)) {
+            throw "R2 helper script not found: $helperScript"
+        }
+
+        $commandOutput = & $PythonPath $helperScript "head" $Bucket $ObjectKey $tempFile 2>&1
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 0) {
+            return $true
+        }
+
+        $message = (($commandOutput | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine).Trim()
+        if ($exitCode -eq 2 -or
+            $message -match '(?i)\b404\b' -or
+            $message -match '(?i)\bnot found\b' -or
+            $message -match '(?i)\bno such object\b') {
+            return $false
+        }
+
+        throw "Failed to check R2 object '$Bucket/$ObjectKey': $message"
     }
     finally {
         if (Test-Path -LiteralPath $tempFile) {
@@ -538,6 +609,392 @@ function Build-LatestObject {
         implementations = @($Entry.implementations)
         scenarios = @($Entry.scenarios)
         protocols = @($Entry.protocols)
+    }
+}
+
+function Assert-UploadedRunBundleComplete {
+    param(
+        [Parameter(Mandatory = $true)][string]$Bucket,
+        [Parameter(Mandatory = $true)][string]$RunId,
+        [Parameter(Mandatory = $true)][string]$BundleRoot,
+        [Parameter(Mandatory = $true)][string]$TempDirectory
+    )
+
+    $bundleFiles = @(Get-ChildItem -LiteralPath $BundleRoot -File -Recurse | Sort-Object FullName)
+    foreach ($file in $bundleFiles) {
+        $relativePath = [System.IO.Path]::GetRelativePath($BundleRoot, $file.FullName)
+        $objectKey = "public/runs/$RunId/" + ($relativePath -replace '\\', '/')
+
+        if ($file.Extension -ieq ".json") {
+            $remoteJson = Read-R2JsonObject -Bucket $Bucket -ObjectKey $objectKey -TempDirectory $TempDirectory
+            if ($null -eq $remoteJson) {
+                throw "Uploaded R2 object '$objectKey' is missing or malformed JSON."
+            }
+
+            if ($file.Name -eq "report-index.json") {
+                $currentEntry = @($remoteJson.entries | Where-Object { $_.runId -and [string]::Equals([string]$_.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
+                if ($currentEntry.Count -lt 1) {
+                    throw "Uploaded registry bundle '$objectKey' does not include the current run entry."
+                }
+            }
+            elseif ($remoteJson.PSObject.Properties.Name -contains "runId" -and
+                -not [string]::IsNullOrWhiteSpace([string]$remoteJson.runId) -and
+                -not [string]::Equals([string]$remoteJson.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase)) {
+                throw "Uploaded R2 object '$objectKey' has mismatched run id '$($remoteJson.runId)'."
+            }
+
+            if ($file.Name -eq "report-index-entry.json") {
+                $expectedPrefix = "public/runs/$RunId/"
+                if ($remoteJson.PSObject.Properties.Name -contains "bundlePrefix" -and
+                    -not [string]::Equals([string]$remoteJson.bundlePrefix, $expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    throw "Uploaded registry entry '$objectKey' has mismatched bundle prefix '$($remoteJson.bundlePrefix)'."
+                }
+            }
+        }
+        else {
+            if (-not (Test-R2ObjectExists -Bucket $Bucket -ObjectKey $objectKey)) {
+                throw "Uploaded R2 object '$objectKey' was not found."
+            }
+        }
+    }
+}
+
+function Assert-UploadedRegistryObjectsComplete {
+    param(
+        [Parameter(Mandatory = $true)][string]$Bucket,
+        [Parameter(Mandatory = $true)][string]$RunId,
+        [Parameter(Mandatory = $true)][string]$TempDirectory,
+        [Parameter(Mandatory = $true)][bool]$ShouldUpdateLatest
+    )
+
+    $registryObject = Read-R2JsonObject -Bucket $Bucket -ObjectKey "public/registry/report-index.json" -TempDirectory $TempDirectory
+    if ($null -eq $registryObject) {
+        throw "Uploaded registry object 'public/registry/report-index.json' is missing or malformed JSON."
+    }
+
+    $currentEntry = @($registryObject.entries | Where-Object { $_.runId -and [string]::Equals([string]$_.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
+    if ($currentEntry.Count -lt 1) {
+        throw "Uploaded registry object 'public/registry/report-index.json' does not include run '$RunId'."
+    }
+
+    if ($ShouldUpdateLatest) {
+        $latestJson = Read-R2JsonObject -Bucket $Bucket -ObjectKey "public/registry/latest.json" -TempDirectory $TempDirectory
+        if ($null -eq $latestJson) {
+            throw "Uploaded registry object 'public/registry/latest.json' is missing or malformed JSON."
+        }
+
+        if ($latestJson.PSObject.Properties.Name -contains "runId" -and
+            -not [string]::Equals([string]$latestJson.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Uploaded registry object 'public/registry/latest.json' points at run '$($latestJson.runId)' instead of '$RunId'."
+        }
+    }
+}
+
+function Assert-PublishedRunsComplete {
+    param(
+        [Parameter(Mandatory = $true)][string]$Bucket,
+        [Parameter(Mandatory = $true)][string]$AccountId,
+        [Parameter(Mandatory = $true)][string]$DatabaseId,
+        [Parameter(Mandatory = $true)][string]$ApiToken,
+        [Parameter(Mandatory = $true)][string]$TempDirectory
+    )
+
+    $runRows = @(Invoke-CloudflareD1QueryRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql @"
+SELECT
+  run_id,
+  generated_at,
+  published_at,
+  claim_level,
+  publishable,
+  diagnostic_only,
+  execution_profile,
+  visibility,
+  source_kind,
+  artifact_root_key,
+  bundle_prefix,
+  evidence_report_json_key,
+  evidence_report_markdown_key,
+  artifacts_index_key,
+  publication_manifest_key,
+  publication_warnings_key,
+  publication_skipped_key,
+  report_index_entry_key,
+  report_index_key
+FROM public_report_runs
+ORDER BY generated_at DESC
+"@ -Description "published runs")
+
+    if ($runRows.Count -lt 1) {
+        throw "D1 published run scan returned no runs."
+    }
+
+    $objectKeyRows = @(Invoke-CloudflareD1QueryRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql @"
+SELECT
+  run_id,
+  object_kind,
+  object_key
+FROM public_report_run_object_keys
+ORDER BY run_id, object_kind
+"@ -Description "run object keys")
+
+    $objectKeysByRun = @{}
+    foreach ($row in $objectKeyRows) {
+        $runId = [string]$row.run_id
+        if ([string]::IsNullOrWhiteSpace($runId)) {
+            continue
+        }
+
+        if (-not $objectKeysByRun.ContainsKey($runId)) {
+            $objectKeysByRun[$runId] = @{}
+        }
+
+        $objectKeysByRun[$runId][[string]$row.object_kind] = [string]$row.object_key
+    }
+
+    $requiredObjectKinds = @(
+        "evidence-report-v1.json",
+        "evidence-report-v1.md",
+        "artifacts-index.json",
+        "publication-manifest.json",
+        "publication-warnings.md",
+        "publication-skipped.md",
+        "report-index-entry.json",
+        "report-index.json"
+    )
+
+    $objectKindColumns = @{
+        "evidence-report-v1.json" = "evidence_report_json_key"
+        "evidence-report-v1.md" = "evidence_report_markdown_key"
+        "artifacts-index.json" = "artifacts_index_key"
+        "publication-manifest.json" = "publication_manifest_key"
+        "publication-warnings.md" = "publication_warnings_key"
+        "publication-skipped.md" = "publication_skipped_key"
+        "report-index-entry.json" = "report_index_entry_key"
+        "report-index.json" = "report_index_key"
+    }
+
+    foreach ($run in $runRows) {
+        $runId = [string]$run.run_id
+        if ([string]::IsNullOrWhiteSpace($runId)) {
+            throw "D1 published run row is missing a run id."
+        }
+
+        if ($run.PSObject.Properties.Name -contains "bundle_prefix" -and
+            -not [string]::Equals([string]$run.bundle_prefix, "public/runs/$runId/", [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "D1 published run '$runId' has a mismatched bundle prefix '$($run.bundle_prefix)'."
+        }
+
+        if ($run.PSObject.Properties.Name -contains "artifact_root_key" -and
+            -not [string]::Equals([string]$run.artifact_root_key, "artifacts", [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "D1 published run '$runId' has a mismatched artifact root key '$($run.artifact_root_key)'."
+        }
+
+        if (-not $objectKeysByRun.ContainsKey($runId)) {
+            throw "D1 published run '$runId' has no object key rows."
+        }
+
+        $expectedKeys = $objectKeysByRun[$runId]
+        foreach ($objectKind in $requiredObjectKinds) {
+            if (-not $expectedKeys.ContainsKey($objectKind)) {
+                throw "D1 published run '$runId' is missing object kind '$objectKind'."
+            }
+
+            $objectKey = [string]$expectedKeys[$objectKind]
+            if ([string]::IsNullOrWhiteSpace($objectKey)) {
+                throw "D1 published run '$runId' has an empty object key for '$objectKind'."
+            }
+
+            $expectedColumn = $objectKindColumns[$objectKind]
+            if ($run.PSObject.Properties.Name -notcontains $expectedColumn) {
+                throw "D1 published run '$runId' does not expose the '$expectedColumn' column."
+            }
+
+            $runColumnValue = [string]$run.$expectedColumn
+            if (-not [string]::Equals($runColumnValue, $objectKey, [System.StringComparison]::OrdinalIgnoreCase)) {
+                throw "D1 published run '$runId' has mismatched object key '$objectKey' for '$objectKind' (expected '$runColumnValue')."
+            }
+
+            if ($objectKind -like "*.json") {
+                $remoteJson = Read-R2JsonObject -Bucket $Bucket -ObjectKey $objectKey -TempDirectory $TempDirectory
+                if ($null -eq $remoteJson) {
+                    throw "D1 published run '$runId' references missing or malformed JSON object '$objectKey'."
+                }
+
+                if ($remoteJson.PSObject.Properties.Name -contains "runId" -and
+                    -not [string]::IsNullOrWhiteSpace([string]$remoteJson.runId) -and
+                    -not [string]::Equals([string]$remoteJson.runId, $runId, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    throw "D1 published run '$runId' references JSON object '$objectKey' with mismatched run id '$($remoteJson.runId)'."
+                }
+
+                if ($objectKind -eq "report-index-entry.json") {
+                    $expectedPrefix = [string]$run.bundle_prefix
+                    if ($remoteJson.PSObject.Properties.Name -contains "bundlePrefix" -and
+                        -not [string]::Equals([string]$remoteJson.bundlePrefix, $expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+                        throw "D1 published run '$runId' has a mismatched bundle prefix in '$objectKey'."
+                    }
+                }
+            }
+            elseif (-not (Test-R2ObjectExists -Bucket $Bucket -ObjectKey $objectKey)) {
+                throw "D1 published run '$runId' references missing R2 object '$objectKey'."
+            }
+        }
+
+        $artifactsIndexKey = [string]$run.artifacts_index_key
+        $artifactsIndex = Read-R2JsonObject -Bucket $Bucket -ObjectKey $artifactsIndexKey -TempDirectory $TempDirectory
+        if ($null -eq $artifactsIndex) {
+            throw "D1 published run '$runId' references missing or malformed artifacts index '$artifactsIndexKey'."
+        }
+
+        if ($artifactsIndex.PSObject.Properties.Name -contains "runId" -and
+            -not [string]::IsNullOrWhiteSpace([string]$artifactsIndex.runId) -and
+            -not [string]::Equals([string]$artifactsIndex.runId, $runId, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "D1 published run '$runId' has an artifacts index with mismatched run id '$($artifactsIndex.runId)'."
+        }
+
+        foreach ($cell in @($artifactsIndex.cells)) {
+            foreach ($file in @($cell.files)) {
+                if ($file.exists -ne $true) {
+                    continue
+                }
+
+                $artifactPath = [string]$file.path
+                if ([string]::IsNullOrWhiteSpace($artifactPath)) {
+                    throw "D1 published run '$runId' includes a copied artifact with a blank path."
+                }
+
+                $artifactKey = "public/runs/$runId/$artifactPath"
+                if (-not (Test-R2ObjectExists -Bucket $Bucket -ObjectKey $artifactKey)) {
+                    throw "D1 published run '$runId' references missing copied artifact '$artifactKey'."
+                }
+            }
+        }
+    }
+
+    $latestRows = @(Invoke-CloudflareD1QueryRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql @"
+SELECT
+  run_id,
+  generated_at,
+  published_at,
+  claim_level,
+  publishable,
+  diagnostic_only,
+  execution_profile,
+  visibility,
+  source_kind,
+  evidence_warning_count,
+  publication_warning_count,
+  copied_artifact_count,
+  skipped_artifact_count,
+  implementation_count,
+  scenario_count,
+  protocol_count,
+  validation_passed,
+  validation_failed,
+  validation_unsupported,
+  validation_not_applicable,
+  validation_inconclusive,
+  validation_infrastructure_failure,
+  benchmark_accepted,
+  benchmark_rejected,
+  benchmark_not_run_validation_failed,
+  benchmark_not_run_unsupported,
+  benchmark_not_run_load_tool_failed,
+  benchmark_not_run_parser_failed,
+  artifact_root_key,
+  bundle_prefix,
+  evidence_report_json_key,
+  evidence_report_markdown_key,
+  artifacts_index_key,
+  publication_manifest_key,
+  publication_warnings_key,
+  publication_skipped_key,
+  report_index_entry_key,
+  report_index_key,
+  registry_key,
+  latest_key
+FROM public_report_latest
+LIMIT 1
+"@ -Description "latest publication")
+
+    if ($latestRows.Count -lt 1) {
+        throw "D1 latest publication row is missing."
+    }
+
+    $latestRow = $latestRows[0]
+    $latestRunId = [string]$latestRow.run_id
+    if ([string]::IsNullOrWhiteSpace($latestRunId)) {
+        throw "D1 latest publication row is missing a run id."
+    }
+
+    if (-not ($runRows | Where-Object { [string]::Equals([string]$_.run_id, $latestRunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)) {
+        throw "D1 latest publication row references run '$latestRunId', but no such run exists in public_report_runs."
+    }
+
+    if ($latestRow.PSObject.Properties.Name -contains "registry_key" -and
+        -not [string]::Equals([string]$latestRow.registry_key, "public/registry/report-index.json", [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "D1 latest publication row has a mismatched registry key '$($latestRow.registry_key)'."
+    }
+
+    if ($latestRow.PSObject.Properties.Name -contains "latest_key" -and
+        -not [string]::Equals([string]$latestRow.latest_key, "public/registry/latest.json", [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "D1 latest publication row has a mismatched latest key '$($latestRow.latest_key)'."
+    }
+
+    if ([string]::IsNullOrWhiteSpace([string]$latestRow.registry_key)) {
+        throw "D1 latest publication row has a blank registry key."
+    }
+
+    if ([string]::IsNullOrWhiteSpace([string]$latestRow.latest_key)) {
+        throw "D1 latest publication row has a blank latest key."
+    }
+
+    if (-not (Test-R2ObjectExists -Bucket $Bucket -ObjectKey ([string]$latestRow.registry_key))) {
+        throw "D1 latest publication row references missing registry object '$($latestRow.registry_key)'."
+    }
+
+    if (-not (Test-R2ObjectExists -Bucket $Bucket -ObjectKey ([string]$latestRow.latest_key))) {
+        throw "D1 latest publication row references missing latest object '$($latestRow.latest_key)'."
+    }
+
+    $registryObject = Read-R2JsonObject -Bucket $Bucket -ObjectKey ([string]$latestRow.registry_key) -TempDirectory $TempDirectory
+    if ($null -eq $registryObject) {
+        throw "D1 latest publication row references a malformed registry object '$($latestRow.registry_key)'."
+    }
+
+    if (-not ($registryObject.entries | Where-Object { [string]::Equals([string]$_.runId, $latestRunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)) {
+        throw "D1 latest publication registry '$($latestRow.registry_key)' does not include run '$latestRunId'."
+    }
+
+    $publishedRunIds = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($run in $runRows) {
+        [void]$publishedRunIds.Add([string]$run.run_id)
+    }
+
+    foreach ($registryEntry in @($registryObject.entries)) {
+        $registryRunId = [string]$registryEntry.runId
+        if ([string]::IsNullOrWhiteSpace($registryRunId)) {
+            throw "D1 latest publication registry '$($latestRow.registry_key)' contains a blank run id."
+        }
+
+        if (-not $publishedRunIds.Contains($registryRunId)) {
+            throw "D1 latest publication registry '$($latestRow.registry_key)' references stale run '$registryRunId' that is absent from public_report_runs."
+        }
+    }
+
+    foreach ($publishedRunId in $publishedRunIds) {
+        if (-not ($registryObject.entries | Where-Object { [string]::Equals([string]$_.runId, $publishedRunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)) {
+            throw "D1 latest publication registry '$($latestRow.registry_key)' is missing published run '$publishedRunId'."
+        }
+    }
+
+    $latestObject = Read-R2JsonObject -Bucket $Bucket -ObjectKey ([string]$latestRow.latest_key) -TempDirectory $TempDirectory
+    if ($null -eq $latestObject) {
+        throw "D1 latest publication row references a malformed latest object '$($latestRow.latest_key)'."
+    }
+
+    if ($latestObject.PSObject.Properties.Name -contains "runId" -and
+        -not [string]::Equals([string]$latestObject.runId, $latestRunId, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "D1 latest publication latest object '$($latestRow.latest_key)' points at run '$($latestObject.runId)' instead of '$latestRunId'."
     }
 }
 
@@ -689,6 +1146,7 @@ function Write-D1SqlFile {
     $objectKeyRows = @($objectKeys | ForEach-Object { New-SqlTuple @($Entry.runId, $_.objectKind, $_.objectKey) })
 
     $statements = New-Object System.Collections.Generic.List[string]
+    $statements.Add("BEGIN IMMEDIATE;") | Out-Null
     $statements.Add(("INSERT INTO public_report_runs (" + ($runColumns -join ", ") + ") VALUES " + (New-SqlTuple $runValues) + " ON CONFLICT(run_id) DO UPDATE SET " + ($runAssignments -join ", ") + ";")) | Out-Null
 
     if ($implementationRows.Count -gt 0) {
@@ -806,6 +1264,8 @@ function Write-D1SqlFile {
         $statements.Add("DELETE FROM public_report_latest;") | Out-Null
         $statements.Add(("INSERT INTO public_report_latest (" + ($latestColumns -join ", ") + ") VALUES " + (New-SqlTuple $latestValues) + ";")) | Out-Null
     }
+
+    $statements.Add("COMMIT;") | Out-Null
 
     Set-Content -LiteralPath $SqlPath -Value ($statements -join "`n") -Encoding utf8NoBOM
 }
@@ -999,6 +1459,8 @@ try {
         Write-R2Object -ObjectKey $objectKey -FilePath $file.FullName
     }
 
+    Assert-UploadedRunBundleComplete -Bucket $BucketName -RunId $RunId -BundleRoot $BundleRoot -TempDirectory $tempRoot
+
     $registryObject = Read-R2JsonObject -Bucket $BucketName -ObjectKey "public/registry/report-index.json" -TempDirectory $tempRoot
     $mergedRegistry = Build-RegistryMerge -ExistingRegistry $registryObject -CurrentEntry $entry
     $registryPath = Join-Path $tempRoot "report-index.json"
@@ -1025,11 +1487,17 @@ try {
         Write-R2Object -ObjectKey "public/registry/latest.json" -FilePath $latestPath
     }
 
+    Assert-UploadedRegistryObjectsComplete -Bucket $BucketName -RunId $RunId -TempDirectory $tempRoot -ShouldUpdateLatest $shouldUpdateLatest
+
     $sqlPath = Join-Path $tempRoot "public-report-index.sql"
     Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $shouldUpdateLatest
 
     Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $SchemaPath -Description "schema"
     Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $sqlPath -Description "metadata"
+
+    if ($VerifyPublishedRuns) {
+        Assert-PublishedRunsComplete -Bucket $BucketName -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -TempDirectory $tempRoot
+    }
 }
 finally {
     if (Test-Path -LiteralPath $tempRoot) {

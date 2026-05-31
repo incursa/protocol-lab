@@ -359,6 +359,70 @@ public sealed class ReportPublicationTests
     }
 
     [Fact]
+    public async Task Skips_missing_allowlisted_artifacts_when_the_report_still_points_to_them()
+    {
+        var tempRoot = CreateTempRoot();
+
+        try
+        {
+            var sample = await CreateSampleRunAsync(tempRoot);
+            var evidenceReportPath = Path.Combine(sample.RunRoot, "evidence-report.json");
+            var evidenceReport = ResultJson.Deserialize<EvidenceReport>(await File.ReadAllTextAsync(evidenceReportPath));
+            Assert.NotNull(evidenceReport);
+
+            var targetCell = evidenceReport!.ArtifactIndex[0];
+            var targetFileIndex = -1;
+            for (var i = 0; i < targetCell.Files.Count; i++)
+            {
+                if (string.Equals(targetCell.Files[i].Name, "docker-inspect.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    targetFileIndex = i;
+                    break;
+                }
+            }
+
+            Assert.True(targetFileIndex >= 0);
+
+            var absoluteDockerInspectPath = targetCell.Files[targetFileIndex].Path;
+            var repositoryRelativeDockerInspectPath = Path.GetRelativePath(tempRoot, absoluteDockerInspectPath);
+            File.Delete(absoluteDockerInspectPath);
+
+            evidenceReport = evidenceReport with
+            {
+                ArtifactIndex = evidenceReport.ArtifactIndex.Select((cell, index) =>
+                    index == 0
+                        ? cell with
+                        {
+                            Files = cell.Files.Select((file, fileIndex) =>
+                                fileIndex == targetFileIndex
+                                    ? file with
+                                    {
+                                        Path = repositoryRelativeDockerInspectPath,
+                                        Exists = true
+                                    }
+                                    : file).ToArray()
+                        }
+                        : cell).ToArray()
+            };
+
+            await File.WriteAllTextAsync(evidenceReportPath, ResultJson.Serialize(evidenceReport));
+
+            var result = await new RunnerEngine().PublishReportAsync(
+                tempRoot,
+                CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
+
+            Assert.Equal(0, result.ExitCode);
+            var skipped = await File.ReadAllTextAsync(Path.Combine(sample.OutputRoot, "publication-skipped.md"));
+            Assert.Contains("docker-inspect.json", skipped, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("missing optional artifact", skipped, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
     public async Task Fails_for_malformed_aggregate_report()
     {
         var tempRoot = CreateTempRoot();

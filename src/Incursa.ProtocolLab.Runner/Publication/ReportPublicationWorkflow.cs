@@ -402,11 +402,6 @@ internal static class ReportPublicationWorkflow
 
                 if (!File.Exists(sourcePath))
                 {
-                    if (file.Exists)
-                    {
-                        return PreparedArtifactPlan.Fail($"Artifact '{file.Name}' in cell '{entry.CellKey}' is marked present but is missing from the run tree: {file.Path}");
-                    }
-
                     skipped.Add(new PublicReportPublicationSkippedArtifact
                     {
                         CellKey = entry.CellKey,

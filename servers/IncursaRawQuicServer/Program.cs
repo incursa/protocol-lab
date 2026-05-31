@@ -4,8 +4,13 @@
 using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+
+[assembly: SupportedOSPlatform("windows")]
+[assembly: SupportedOSPlatform("linux")]
+[assembly: SupportedOSPlatform("macos")]
 
 var port = args.Length > 0 && int.TryParse(args[0], out var parsedPort) ? parsedPort : 0;
 var alpn = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_RAW_QUIC_ALPN") ?? "plab-raw-quic";

@@ -297,6 +297,68 @@ public sealed class ReportPublicationTests
     }
 
     [Fact]
+    public async Task Resolves_repo_relative_artifact_paths_against_the_repository_root()
+    {
+        var tempRoot = CreateTempRoot();
+
+        try
+        {
+            var sample = await CreateSampleRunAsync(tempRoot);
+            var evidenceReportPath = Path.Combine(sample.RunRoot, "evidence-report.json");
+            var evidenceReport = ResultJson.Deserialize<EvidenceReport>(await File.ReadAllTextAsync(evidenceReportPath));
+            Assert.NotNull(evidenceReport);
+
+            var targetCell = evidenceReport!.ArtifactIndex[0];
+            var targetFileIndex = -1;
+            for (var i = 0; i < targetCell.Files.Count; i++)
+            {
+                if (string.Equals(targetCell.Files[i].Name, "manifest.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    targetFileIndex = i;
+                    break;
+                }
+            }
+
+            Assert.True(targetFileIndex >= 0);
+
+            var absoluteManifestPath = targetCell.Files[targetFileIndex].Path;
+            var repositoryRelativeManifestPath = Path.GetRelativePath(tempRoot, absoluteManifestPath);
+            Assert.StartsWith(".artifacts", repositoryRelativeManifestPath, StringComparison.OrdinalIgnoreCase);
+
+            evidenceReport = evidenceReport with
+            {
+                ArtifactIndex = evidenceReport.ArtifactIndex.Select((cell, index) =>
+                    index == 0
+                        ? cell with
+                        {
+                            Files = cell.Files.Select((file, fileIndex) =>
+                                fileIndex == targetFileIndex
+                                    ? file with
+                                    {
+                                        Path = repositoryRelativeManifestPath,
+                                        Exists = true
+                                    }
+                                    : file).ToArray()
+                        }
+                        : cell).ToArray()
+            };
+
+            await File.WriteAllTextAsync(evidenceReportPath, ResultJson.Serialize(evidenceReport));
+
+            var result = await new RunnerEngine().PublishReportAsync(
+                tempRoot,
+                CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
+
+            Assert.Equal(0, result.ExitCode);
+            Assert.True(File.Exists(Path.Combine(sample.OutputRoot, "artifacts", "kestrel-http3", "http.core.plaintext", "h3", "c1-s1-r1", "manifest.json")));
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
     public async Task Fails_for_malformed_aggregate_report()
     {
         var tempRoot = CreateTempRoot();

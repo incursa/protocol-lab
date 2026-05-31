@@ -204,7 +204,7 @@ internal static class ReportPublicationWorkflow
             Directory.CreateDirectory(outputRoot);
         }
 
-        var plan = await PrepareArtifactsAsync(sourceRunRoot, outputRoot, evidenceReport.ArtifactIndex, dryRun);
+        var plan = await PrepareArtifactsAsync(repositoryRoot, sourceRunRoot, outputRoot, evidenceReport.ArtifactIndex, dryRun);
         foreach (var warning in plan.Warnings)
         {
             output.WriteWarning(warning.Message);
@@ -327,6 +327,7 @@ internal static class ReportPublicationWorkflow
     }
 
     private static async Task<PreparedArtifactPlan> PrepareArtifactsAsync(
+        string repositoryRoot,
         string sourceRunRoot,
         string outputRoot,
         IReadOnlyList<EvidenceReportArtifactEntry> artifactIndex,
@@ -394,10 +395,9 @@ internal static class ReportPublicationWorkflow
                     continue;
                 }
 
-                var sourcePath = Path.GetFullPath(file.Path, sourceRunRoot);
-                if (!IsUnderRoot(sourceRunRoot, sourcePath))
+                if (!TryResolveArtifactSourcePath(repositoryRoot, sourceRunRoot, file.Path, out var sourcePath, out var resolveError))
                 {
-                    return PreparedArtifactPlan.Fail($"Artifact path escapes the run root: {file.Path}");
+                    return PreparedArtifactPlan.Fail(resolveError);
                 }
 
                 if (!File.Exists(sourcePath))
@@ -917,6 +917,37 @@ internal static class ReportPublicationWorkflow
             Path.DirectorySeparatorChar;
         var candidateFull = Path.GetFullPath(path);
         return candidateFull.StartsWith(rootFull, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryResolveArtifactSourcePath(
+        string repositoryRoot,
+        string sourceRunRoot,
+        string artifactPath,
+        out string sourcePath,
+        out string error)
+    {
+        var repositoryRootFull = Path.GetFullPath(repositoryRoot);
+        var sourceRunRootFull = Path.GetFullPath(sourceRunRoot);
+        var candidates = new[]
+        {
+            Path.GetFullPath(artifactPath, repositoryRootFull),
+            Path.GetFullPath(artifactPath, sourceRunRootFull)
+        };
+
+        var allowedCandidates = candidates
+            .Where(candidate => IsUnderRoot(sourceRunRootFull, candidate))
+            .ToArray();
+
+        if (allowedCandidates.Length == 0)
+        {
+            sourcePath = "";
+            error = $"Artifact path escapes the run root: {artifactPath}";
+            return false;
+        }
+
+        sourcePath = allowedCandidates.FirstOrDefault(File.Exists) ?? allowedCandidates[0];
+        error = "";
+        return true;
     }
 
     private static string CombinePublicPath(params string[] segments)

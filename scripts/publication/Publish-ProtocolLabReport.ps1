@@ -1157,7 +1157,8 @@ function Assert-PublishedRunsComplete {
         [Parameter(Mandatory = $true)][string]$AccountId,
         [Parameter(Mandatory = $true)][string]$DatabaseId,
         [Parameter(Mandatory = $true)][string]$ApiToken,
-        [Parameter(Mandatory = $true)][string]$TempDirectory
+        [Parameter(Mandatory = $true)][string]$TempDirectory,
+        [switch]$SkipRegistryValidation
     )
 
     $runRows = @(Invoke-CloudflareD1QueryRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql @"
@@ -1329,6 +1330,10 @@ ORDER BY run_id, object_kind
                 }
             }
         }
+    }
+
+    if ($SkipRegistryValidation) {
+        return
     }
 
     $latestRows = @(Invoke-CloudflareD1QueryRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql @"
@@ -1924,13 +1929,17 @@ try {
 
     $existingLatestRow = Get-D1LatestPublicationRow -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken
     $shouldUpdateLatest = Test-D1RunShouldUpdateLatest -LatestRow $existingLatestRow -Entry $entry
-    Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $shouldUpdateLatest
+    Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $false
 
     Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $sqlPath -Description "metadata"
 
     $publishedRunRows = @(Wait-D1PublishedRunRows -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -RunId $RunId -CurrentEntry $entry)
     if ($publishedRunRows.Count -lt 1) {
         throw "D1 published run scan returned no runs after metadata indexing."
+    }
+
+    if ($VerifyPublishedRuns) {
+        Assert-PublishedRunsComplete -Bucket $BucketName -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -TempDirectory $tempRoot -SkipRegistryValidation
     }
 
     $registryEntries = @(Get-D1BackedRegistryEntries -RunRows $publishedRunRows -CurrentEntry $entry -Bucket $BucketName -TempDirectory $tempRoot)
@@ -1941,6 +1950,11 @@ try {
     $registryPath = Join-Path $tempRoot "report-index.json"
     $mergedRegistry | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $registryPath -Encoding utf8NoBOM
     Write-R2Object -ObjectKey "public/registry/report-index.json" -FilePath $registryPath
+
+    if ($shouldUpdateLatest) {
+        Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $true
+        Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $sqlPath -Description "latest metadata"
+    }
 
     $latestRow = Get-D1LatestPublicationRow -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken
     if ($null -eq $latestRow -or [string]::IsNullOrWhiteSpace([string]$latestRow.run_id)) {
@@ -1959,10 +1973,6 @@ try {
     Write-R2Object -ObjectKey "public/registry/latest.json" -FilePath $latestPath
 
     Assert-UploadedRegistryObjectsComplete -Bucket $BucketName -RunId $RunId -TempDirectory $tempRoot -ExpectedLatestRunId $latestRunId
-
-    if ($VerifyPublishedRuns) {
-        Assert-PublishedRunsComplete -Bucket $BucketName -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -TempDirectory $tempRoot
-    }
 }
 finally {
     if (Test-Path -LiteralPath $tempRoot) {

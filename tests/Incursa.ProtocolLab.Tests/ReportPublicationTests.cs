@@ -468,6 +468,20 @@ public sealed class ReportPublicationTests
         }
     }
 
+    [Fact]
+    public void Publish_workflow_verifies_published_runs_before_advancing_the_latest_pointer()
+    {
+        var scriptPath = Path.Combine(TestPaths.RepoRoot, "scripts", "publication", "Publish-ProtocolLabReport.ps1");
+        var script = File.ReadAllText(scriptPath);
+
+        var verifyIndex = script.IndexOf("Assert-PublishedRunsComplete -Bucket $BucketName -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -TempDirectory $tempRoot -SkipRegistryValidation", StringComparison.Ordinal);
+        var latestWriteIndex = script.IndexOf("Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $true", StringComparison.Ordinal);
+
+        Assert.True(verifyIndex >= 0, "Expected the publication workflow to verify published runs before advancing the latest pointer.");
+        Assert.True(latestWriteIndex >= 0, "Expected the publication workflow to advance the latest pointer in a second D1 write.");
+        Assert.True(verifyIndex < latestWriteIndex, "Published-run verification must happen before the latest pointer update.");
+    }
+
     private static RunnerCommandOptions CreatePublishOptions(string runRoot, string outputRoot, bool dryRun = false, bool allowDiagnosticPublication = false)
     {
         return new RunnerCommandOptions(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

@@ -57,10 +57,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\Publish-
 ```
 
 For production and CI publication, pass `-VerifyPublishedRuns` so the script
-re-scans D1 after the publish and fails if any published run is missing its
-R2 payload set. The prepublish gate also checks the required run-prefix root
-objects and every referenced artifact-index object before registry/latest can
-advance.
+re-scans D1 after metadata indexing and fails before the latest pointer is
+advanced if any published run is missing its R2 payload set. The prepublish
+gate also checks the required run-prefix root objects and every referenced
+artifact-index object before registry/latest can advance.
 
 The script performs these steps in order:
 

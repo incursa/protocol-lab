@@ -593,6 +593,23 @@ function Build-RegistryFromEntries {
     }
 }
 
+function Assert-RegistryIncludesRun {
+    param(
+        [Parameter(Mandatory = $true)]$Registry,
+        [Parameter(Mandatory = $true)][string]$RunId,
+        [Parameter(Mandatory = $true)][string]$Description
+    )
+
+    if ($null -eq $Registry -or $null -eq $Registry.entries) {
+        throw "$Description is missing an entries collection."
+    }
+
+    $currentEntry = @($Registry.entries | Where-Object { $_.runId -and [string]::Equals([string]$_.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
+    if ($currentEntry.Count -lt 1) {
+        throw "$Description does not include run '$RunId'."
+    }
+}
+
 function Get-D1PublishedRunRows {
     param(
         [Parameter(Mandatory = $true)][string]$AccountId,
@@ -643,6 +660,67 @@ SELECT
 FROM public_report_runs
 ORDER BY generated_at DESC, run_id ASC
 "@ -Description "published runs")
+}
+
+function Get-D1PublishedRunRow {
+    param(
+        [Parameter(Mandatory = $true)][string]$AccountId,
+        [Parameter(Mandatory = $true)][string]$DatabaseId,
+        [Parameter(Mandatory = $true)][string]$ApiToken,
+        [Parameter(Mandatory = $true)][string]$RunId
+    )
+
+    $runIdLiteral = ConvertTo-SqlLiteral $RunId
+    $rows = @(Invoke-CloudflareD1QueryRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql @"
+SELECT
+  run_id,
+  generated_at,
+  published_at,
+  claim_level,
+  publishable,
+  diagnostic_only,
+  execution_profile,
+  visibility,
+  source_kind,
+  evidence_warning_count,
+  publication_warning_count,
+  copied_artifact_count,
+  skipped_artifact_count,
+  implementation_count,
+  scenario_count,
+  protocol_count,
+  validation_passed,
+  validation_failed,
+  validation_unsupported,
+  validation_not_applicable,
+  validation_inconclusive,
+  validation_infrastructure_failure,
+  benchmark_accepted,
+  benchmark_rejected,
+  benchmark_not_run_validation_failed,
+  benchmark_not_run_unsupported,
+  benchmark_not_run_load_tool_failed,
+  benchmark_not_run_parser_failed,
+  artifact_root_key,
+  bundle_prefix,
+  evidence_report_json_key,
+  evidence_report_markdown_key,
+  artifacts_index_key,
+  publication_manifest_key,
+  publication_warnings_key,
+  publication_skipped_key,
+  report_index_entry_key,
+  report_index_key
+FROM public_report_runs
+WHERE run_id = $runIdLiteral
+LIMIT 1
+"@ -Description "published run '$RunId'")
+
+    if ($rows.Count -lt 1) {
+        return $null
+    }
+
+    return $rows[0]
 }
 
 function Get-D1LatestPublicationRow {
@@ -788,6 +866,46 @@ function Assert-RegistryEntryMatchesD1Run {
     if (@($Entry.protocols).Count -ne (ConvertFrom-D1Integer $Row.protocol_count)) {
         throw "D1 published run '$runId' has mismatched protocol count."
     }
+}
+
+function Wait-D1PublishedRunRows {
+    param(
+        [Parameter(Mandatory = $true)][string]$AccountId,
+        [Parameter(Mandatory = $true)][string]$DatabaseId,
+        [Parameter(Mandatory = $true)][string]$ApiToken,
+        [Parameter(Mandatory = $true)][string]$RunId,
+        [Parameter(Mandatory = $true)]$CurrentEntry,
+        [int]$MaxAttempts = 12,
+        [int]$DelaySeconds = 5
+    )
+
+    $lastRowCount = 0
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $publishedRunRows = @(Get-D1PublishedRunRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken)
+        $lastRowCount = $publishedRunRows.Count
+        $currentRow = @($publishedRunRows | Where-Object { [string]::Equals([string]$_.run_id, $RunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
+
+        if ($currentRow.Count -lt 1) {
+            $directRow = Get-D1PublishedRunRow -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -RunId $RunId
+            if ($null -ne $directRow) {
+                Assert-RegistryEntryMatchesD1Run -Entry $CurrentEntry -Row $directRow
+                Write-Host "D1 current run '$RunId' was visible by direct lookup on attempt $attempt; merging it into the registry scan."
+                return @($publishedRunRows + $directRow)
+            }
+        }
+        else {
+            Assert-RegistryEntryMatchesD1Run -Entry $CurrentEntry -Row $currentRow[0]
+            Write-Host "D1 published run scan returned $($publishedRunRows.Count) run(s); current run '$RunId' visible on attempt $attempt."
+            return $publishedRunRows
+        }
+
+        if ($attempt -lt $MaxAttempts) {
+            Write-Host "D1 published run scan returned $lastRowCount run(s) but not '$RunId'; retrying in $DelaySeconds second(s)."
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+
+    throw "D1 published run scan did not expose current run '$RunId' after $MaxAttempts attempt(s); refusing to refresh public registry objects."
 }
 
 function Get-D1BackedRegistryEntries {
@@ -988,10 +1106,7 @@ function Assert-UploadedRegistryObjectsComplete {
         throw "Uploaded registry object 'public/registry/report-index.json' is missing or malformed JSON."
     }
 
-    $currentEntry = @($registryObject.entries | Where-Object { $_.runId -and [string]::Equals([string]$_.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
-    if ($currentEntry.Count -lt 1) {
-        throw "Uploaded registry object 'public/registry/report-index.json' does not include run '$RunId'."
-    }
+    Assert-RegistryIncludesRun -Registry $registryObject -RunId $RunId -Description "Uploaded registry object 'public/registry/report-index.json'"
 
     $latestJson = Read-R2JsonObject -Bucket $Bucket -ObjectKey "public/registry/latest.json" -TempDirectory $TempDirectory
     if ($null -eq $latestJson) {
@@ -1781,13 +1896,14 @@ try {
 
     Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $sqlPath -Description "metadata"
 
-    $publishedRunRows = @(Get-D1PublishedRunRows -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken)
+    $publishedRunRows = @(Wait-D1PublishedRunRows -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -RunId $RunId -CurrentEntry $entry)
     if ($publishedRunRows.Count -lt 1) {
         throw "D1 published run scan returned no runs after metadata indexing."
     }
 
     $registryEntries = @(Get-D1BackedRegistryEntries -RunRows $publishedRunRows -CurrentEntry $entry -Bucket $BucketName -TempDirectory $tempRoot)
     $mergedRegistry = Build-RegistryFromEntries -Entries $registryEntries
+    Assert-RegistryIncludesRun -Registry $mergedRegistry -RunId $RunId -Description "Rebuilt public registry"
     $registryPath = Join-Path $tempRoot "report-index.json"
     $mergedRegistry | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $registryPath -Encoding utf8NoBOM
     Write-R2Object -ObjectKey "public/registry/report-index.json" -FilePath $registryPath

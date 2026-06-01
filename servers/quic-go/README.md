@@ -1,21 +1,26 @@
-# quic-go Placeholder
+# quic-go HTTP/3 Target
 
-This directory reserves future quic-go benchmark targets.
+The runnable quic-go HTTP/3 target now lives in
+`src/Incursa.ProtocolLab.Adapters.QuicGo`.
 
-The current placeholder covers only the HTTP/3 reservation manifest at
-`implementations/quic-go-http3.yaml`. It does not define a runnable server,
-does not claim HTTP/3 or raw QUIC support, and does not provide benchmark
-evidence. The manifest intentionally has empty protocol, workload-family, and
-capability lists so current runner flows classify scenarios as unsupported
-instead of producing fake validation or benchmark results.
+This directory is retained as a compatibility pointer for older docs and
+requirement traces that still reference `servers/quic-go`.
 
-Before this target can be enabled, a future slice must add:
+The target serves the expanded local comparison endpoints over HTTP/3:
 
-- the concrete quic-go server or load-generator source and image contract
-- TLS and certificate material handling
-- endpoint mappings or raw QUIC scenario behavior, depending on the scheduled
-  workload family
-- readiness behavior
-- raw stdout and stderr preservation
-- any qlog, SSL key log, or protocol metric export contract that can be
-  collected honestly
+- `GET /plaintext`
+- `GET /json`
+- `GET /status`
+- `GET /bytes/{size}`
+- `GET /stream/bytes`
+- `POST /sink`
+- `POST /hash`
+- `POST /echo`
+- `GET /headers/response`
+- `GET /inspect/headers`
+
+Build the local image with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build\Build-QuicGoBenchServerImage.ps1
+```

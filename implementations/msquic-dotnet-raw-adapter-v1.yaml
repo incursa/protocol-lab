@@ -22,6 +22,7 @@ supportedProtocols:
   - quic
 supportedWorkloadFamilies:
   - fixture.quic
+  - quic.transport
 ports:
   - name: control-plane
     containerPort: 53381
@@ -40,6 +41,8 @@ capabilities:
   - quicTransport
   - quicHandshake
   - quicStreams
+  - quicMultiplexing
+  - quicDuplex
 artifactExports:
   - server.stdout.txt
   - server.stderr.txt

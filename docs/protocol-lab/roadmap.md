@@ -14,7 +14,7 @@
 | 5 | H3 Protocol Scenarios | Modeled | QPACK, cancellation, and multiplexing scenarios with H3-specific metrics; validators and load generators remain deferred |
 | 6 | Raw QUIC Transport | Implemented - fixture only | Fixture QUIC adapters and scenarios for handshake, stream, multiplexing, churn, and duplex coverage; real QUIC traffic remains deferred |
 | 7 | Network Simulation | Deferred | Network profile execution through impairment providers such as `docker-tc` and `ns3-simulator` |
-| 8 | Additional Implementations and Future Families | Proposed | quic-go, WebTransport, MASQUE, and database workloads |
+| 8 | Additional Implementations and Future Families | Partial | quic-go runnable Docker target; WebTransport, MASQUE, and database workloads remain proposed |
 
 ## Phase 0: Planning and Traceability (Implemented)
 
@@ -82,7 +82,7 @@
 - `ns3-simulator` provider for advanced topologies
 - Network profile catalog is already separate from the scenario catalog; execution remains deferred
 
-## Phase 8: Additional Implementations and Future Families (Proposed)
+## Phase 8: Additional Implementations and Future Families (Partial)
 
 - quic-go as a runnable Docker target
 - WebTransport session scenarios with real validators and load generators

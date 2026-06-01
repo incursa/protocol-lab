@@ -36,7 +36,7 @@ public sealed record MsQuicDotNetAdapterOptions
     public string ContractVersion { get; init; } = "v1";
 
     public string SupportedScenarioSelectorExpression { get; init; } =
-        "fixture.quic.handshake|fixture.quic.bidirectional-echo|fixture.quic.bidirectional-bulk";
+        "fixture.quic.handshake|fixture.quic.bidirectional-echo|fixture.quic.bidirectional-bulk|quic.transport.handshake-cold|quic.transport.stream-throughput.1mb|quic.transport.connection-churn|quic.transport.multiplex.100x64kb|quic.transport.duplex-streams";
 
     public int QuicPort { get; init; }
 
@@ -799,6 +799,18 @@ public sealed class MsQuicDotNetAdapterRuntime
                 Id = "quicStreams",
                 Status = quicStatus,
                 Description = "QUIC bidirectional stream support."
+            },
+            new AdapterCapability
+            {
+                Id = "quicMultiplexing",
+                Status = quicStatus,
+                Description = "QUIC multiplexed stream fan-out support."
+            },
+            new AdapterCapability
+            {
+                Id = "quicDuplex",
+                Status = quicStatus,
+                Description = "QUIC bidirectional stream payload support."
             }
         ];
     }
@@ -818,9 +830,10 @@ public sealed class MsQuicDotNetAdapterRuntime
             return MsQuicDotNetScenarioSupport.Unsupported("The MSQuic/.NET adapter only supports server scenarios.", warnings);
         }
 
-        if (!string.Equals(scenario.Family, "fixture.quic", StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(scenario.Family, "fixture.quic", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(scenario.Family, "quic.transport", StringComparison.OrdinalIgnoreCase))
         {
-            return MsQuicDotNetScenarioSupport.Unsupported("The MSQuic/.NET adapter only supports 'fixture.quic' family scenarios.", warnings);
+            return MsQuicDotNetScenarioSupport.Unsupported("The MSQuic/.NET adapter only supports 'fixture.quic' and 'quic.transport' family scenarios.", warnings);
         }
 
         if (!IsSupportedScenario(scenario.Id))
@@ -1109,14 +1122,21 @@ public sealed class MsQuicDotNetAdapterRuntime
     {
         "fixture.quic.handshake",
         "fixture.quic.bidirectional-echo",
-        "fixture.quic.bidirectional-bulk"
+        "fixture.quic.bidirectional-bulk",
+        "quic.transport.handshake-cold",
+        "quic.transport.stream-throughput.1mb",
+        "quic.transport.connection-churn",
+        "quic.transport.multiplex.100x64kb",
+        "quic.transport.duplex-streams"
     };
 
     private static readonly HashSet<string> SupportedCapabilities = new(StringComparer.OrdinalIgnoreCase)
     {
         "quicTransport",
         "quicHandshake",
-        "quicStreams"
+        "quicStreams",
+        "quicMultiplexing",
+        "quicDuplex"
     };
 }
 

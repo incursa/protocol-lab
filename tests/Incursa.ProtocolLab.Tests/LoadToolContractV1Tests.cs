@@ -63,6 +63,33 @@ public sealed class LoadToolContractV1Tests
     }
 
     [Fact]
+    public void Parses_quic_go_raw_quic_v1_manifest()
+    {
+        var tool = LoadYaml("quic-go-raw-load.yaml");
+
+        Assert.Equal("protocol-lab.load-tool.v1", tool.SchemaVersion);
+        Assert.Equal("quic-go-raw-load", tool.Id);
+        Assert.Equal("quic-go Raw QUIC Load", tool.Title);
+        Assert.Equal("process", tool.Kind);
+        Assert.Equal("managed-lab", tool.Category);
+        Assert.Contains("quic", tool.GetEffectiveProtocols());
+        Assert.Contains("quic.transport", tool.SupportedScenarioFamilies);
+        Assert.Contains("bidirectional-stream", tool.GetEffectiveTrafficShapes());
+        Assert.Contains("client", tool.GetEffectiveRoles());
+        Assert.Contains("requestsPerSecond", tool.GetEffectivePrimaryMetrics());
+        Assert.Contains("throughputBytesPerSecond", tool.GetEffectivePrimaryMetrics());
+        Assert.Contains("latencyP50", tool.GetEffectivePrimaryMetrics());
+        Assert.Equal("raw-quic-json", tool.GetEffectiveParserType());
+        Assert.True(tool.PreservesRawOutput);
+        Assert.Equal("go", tool.Executable);
+        Assert.Contains("-C", tool.DefaultArguments);
+        Assert.Contains("src/Incursa.ProtocolLab.Adapters.QuicGo", tool.DefaultArguments);
+        Assert.Contains("run", tool.DefaultArguments);
+        Assert.Contains("./cmd/quic-go-raw-load", tool.DefaultArguments);
+        Assert.Contains("Go-backed raw QUIC load generator", tool.Notes, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Parses_oha_v1_manifest()
     {
         var tool = LoadYaml("oha.yaml");
@@ -87,6 +114,7 @@ public sealed class LoadToolContractV1Tests
 
         Assert.Contains(tools, t => t.Id == "h2load");
         Assert.Contains(tools, t => t.Id == "managed-httpclient-h3-load");
+        Assert.Contains(tools, t => t.Id == "quic-go-raw-load");
         Assert.Contains(tools, t => t.Id == "oha");
 
         foreach (var tool in tools)
@@ -233,6 +261,94 @@ public sealed class LoadToolContractV1Tests
         Assert.False(incompatibleResolution.CanExecute, $"Expected incompatible but got {incompatibleResolution.Result.Status}");
     }
 
+    [Fact]
+    public void Load_tool_resolver_accepts_quic_go_raw_quic_transport_cells()
+    {
+        var quicGoRawLoad = new LoadToolManifest
+        {
+            Id = "quic-go-raw-load",
+            Kind = LoadToolKinds.Process,
+            Category = LoadToolCategories.ManagedLab,
+            SupportedProtocols = ["quic"],
+            SupportedScenarioFamilies = ["quic.transport"],
+            SupportedTrafficShapes = ["bidirectional-stream"],
+            SupportedRoles = ["client"],
+            Executable = "go",
+            DefaultArguments = ["-C", "src/Incursa.ProtocolLab.Adapters.QuicGo", "run", "./cmd/quic-go-raw-load"]
+        };
+
+        var compatibleCell = new RunCell(
+            new ImplementationManifest
+            {
+                Id = "msquic-dotnet-raw",
+                Name = "MSQuic/.NET Raw QUIC",
+                SupportedProtocols = ["quic"],
+                SupportedWorkloadFamilies = ["quic.transport"],
+                Roles = ["server"]
+            },
+            new ScenarioDefinition
+            {
+                Id = "quic.transport.handshake-cold",
+                Name = "QUIC Cold Handshake",
+                Family = "quic.transport",
+                Protocol = "quic",
+                TrafficShape = "bidirectional-stream",
+                ImplementationRole = "server",
+                QuicTransport = new QuicTransportSpec
+                {
+                    Behavior = "handshake-cold",
+                    ConnectionCount = 1,
+                    StreamType = "none",
+                    StreamCount = 0,
+                    PayloadDirection = "none",
+                    OpenPattern = "sequential",
+                    ExpectedBytes = 0
+                }
+            },
+            "quic",
+            1,
+            0,
+            1,
+            30,
+            5,
+            "clean");
+
+        var incompatibleCell = new RunCell(
+            compatibleCell.Implementation,
+            new ScenarioDefinition
+            {
+                Id = "quic.transport.handshake-cold",
+                Name = "QUIC Cold Handshake",
+                Family = "quic.transport",
+                Protocol = "quic",
+                TrafficShape = "request-response",
+                ImplementationRole = "server",
+                QuicTransport = new QuicTransportSpec
+                {
+                    Behavior = "handshake-cold",
+                    ConnectionCount = 1,
+                    StreamType = "none",
+                    StreamCount = 0,
+                    PayloadDirection = "none",
+                    OpenPattern = "sequential",
+                    ExpectedBytes = 0
+                }
+            },
+            "quic",
+            1,
+            0,
+            1,
+            30,
+            5,
+            "clean");
+
+        var compatibleResolution = LoadToolInvoker.Resolve([quicGoRawLoad], compatibleCell, requestedTool: null, requestedMode: null);
+        var incompatibleResolution = LoadToolInvoker.Resolve([quicGoRawLoad], incompatibleCell, requestedTool: null, requestedMode: null);
+
+        Assert.True(compatibleResolution.CanExecute, $"Expected compatible but got {compatibleResolution.Result.Status}: {string.Join(", ", compatibleResolution.Result.Errors)}");
+        Assert.False(incompatibleResolution.CanExecute, $"Expected incompatible but got {incompatibleResolution.Result.Status}");
+    }
+
     // ── Parser Failure and Raw Output Preservation ──────────────────────────
 
     [Fact]
@@ -293,6 +409,57 @@ public sealed class LoadToolContractV1Tests
         var parsed = LoadToolInvoker.Parse(manifest, output, "");
 
         Assert.True(parsed.ParsedMetricsAvailable);
+    }
+
+    [Fact]
+    public void Raw_quic_json_parser_extracts_metrics_and_warnings()
+    {
+        var manifest = new LoadToolManifest
+        {
+            Id = "quic-go-raw-load",
+            OutputParserId = "raw-quic-json"
+        };
+
+        var output = """
+        {
+          "tool": "quic-go-raw-load",
+          "category": "managed-lab",
+          "metrics": {
+            "requestsPerSecond": 123.4,
+            "totalRequests": 12,
+            "successfulRequests": 12,
+            "failedRequests": 0,
+            "timeoutRequests": 0,
+            "bytesReceived": 4096,
+            "bytesSent": 4096,
+            "throughputBytesPerSecond": 8192.0,
+            "latencyMinMs": 0.4,
+            "latencyMeanMs": 0.8,
+            "latencyP50Ms": 0.7,
+            "latencyP95Ms": 1.1,
+            "latencyP99Ms": 1.3,
+            "latencyMaxMs": 1.5,
+            "connectTimeMeanMs": 0.2,
+            "timeToFirstByteMeanMs": 0.9
+          },
+          "warnings": ["loopback certificate bypass"],
+          "errors": []
+        }
+        """;
+
+        var parsed = LoadToolInvoker.Parse(manifest, output, "");
+
+        Assert.True(parsed.ParsedMetricsAvailable);
+        Assert.Equal(123.4, parsed.Metrics.RequestsPerSecond);
+        Assert.Equal(12, parsed.Metrics.TotalRequests);
+        Assert.Equal(4096, parsed.Metrics.BytesReceived);
+        Assert.Equal(4096, parsed.Metrics.BytesSent);
+        Assert.Equal(8192d, parsed.Metrics.ThroughputBytesPerSecond);
+        Assert.Equal(0.7, parsed.Metrics.LatencyP50Ms);
+        Assert.Equal(1.1, parsed.Metrics.LatencyP95Ms);
+        Assert.Equal(1.5d, parsed.Metrics.LatencyMaxMs);
+        Assert.Equal(0.2d, parsed.Metrics.ConnectTimeMeanMs);
+        Assert.Contains(parsed.Warnings, warning => warning.Contains("loopback certificate bypass", StringComparison.OrdinalIgnoreCase));
     }
 
     // ── LoadToolDefinition / ToManifest Conversion ──────────────────────────

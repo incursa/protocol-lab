@@ -1,0 +1,36 @@
+id: h3-local-v1-comparison
+name: ProtocolLab full stable local HTTP/3 comparison suite
+description: Documentation/input suite for the full stable local HTTP/3 comparison coverage across core, payload, headers, and upload scenarios.
+loadProfileId: local-comparison
+implementations:
+  - kestrel-http3
+  - incursa-http3
+  - quic-go-http3
+scenarios:
+  - http.core.plaintext
+  - http.core.json
+  - http.core.status
+  - http.payload.bytes.1kb
+  - http.payload.bytes.64kb
+  - http.payload.bytes.1mb
+  - http.payload.stream.100x16kb
+  - http.headers.inspect-request
+  - http.headers.response.50x32
+  - http.upload.echo.64kb
+  - http.upload.hash.1mb
+  - http.upload.sink.1mb
+protocol: h3
+loadTools:
+  - id: managed-httpclient-h3-load
+    mode: managed
+    category: managed-lab
+defaults:
+  durationSeconds: 30
+  warmupSeconds: 10
+  repetitions: 3
+  connections: 128
+  streamsPerConnection: 100
+counterCapture:
+  enabledByDefault: false
+  tool: dotnet-counters
+notes: Full stable local comparison input. It covers the stable HTTP/3 app matrix for Kestrel, Incursa, and quic-go while keeping the managed local comparison load profile consistent across the three runnable HTTP/3 targets.

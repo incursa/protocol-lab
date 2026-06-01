@@ -21,8 +21,10 @@ performance optimization.
 - Kestrel HTTP/3 validation for `http.core.plaintext` and `http.core.json`.
 - Incursa HTTP/3 validation through the repo-owned Incursa HTTP/3 adapter and
   manifest.
-- Managed-lab HTTP/3 comparison for Kestrel and Incursa.
+- Managed-lab HTTP/3 comparison for Kestrel, Incursa, and quic-go.
 - Docker h2load external-reference HTTP/3 comparison for Kestrel and Incursa.
+- Optional quic-go HTTP/3 Docker target support for the expanded local
+  comparison suite.
 - Counter-enabled Docker h2load HTTP/3 comparison when `dotnet-counters` is
   restored and available.
 - Consolidated markdown run index under `.artifacts\runs\index.md`.
@@ -83,8 +85,7 @@ capture, and non-isolated resources.
 - WebTransport.
 - MASQUE.
 - Database workloads.
-- nginx, Caddy, and quic-go target execution.
-- Target Docker execution.
+- nginx target execution.
 - Network impairment.
 - Publishable isolated-host benchmark automation.
 - Incursa optimization work.

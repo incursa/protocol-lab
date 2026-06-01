@@ -1,27 +1,52 @@
 id: quic-go-http3
-name: quic-go HTTP/3 Placeholder
-description: Reserved manifest for a future quic-go HTTP/3 benchmark target.
-image: incursa/protocol-lab-quic-go-http3:future
+name: quic-go HTTP/3
+description: Go-based quic-go HTTP/3 Docker benchmark target for ProtocolLab local comparisons.
+image: incursa/protocol-lab-quic-go-bench-server:local
+targetKind: docker
+dockerfile: src/Incursa.ProtocolLab.Adapters.QuicGo/Dockerfile
+buildContext: src/Incursa.ProtocolLab.Adapters.QuicGo
+dockerNetworkMode: published-port
+dockerBaseUrl: https://localhost:5447
+dockerProtocolBaseUrls:
+  h3: https://localhost:5447
+baseUrl: https://localhost:5447
+protocolBaseUrls:
+  h3: https://localhost:5447
+certificateMode: quic-go-self-signed-loopback-certificate
 roles:
   - server
-supportedProtocols: []
-supportedWorkloadFamilies: []
+supportedProtocols:
+  - h3
+supportedWorkloadFamilies:
+  - http.application
 ports:
-  - name: https
+  - name: https-h3
     containerPort: 8443
-    protocol: tcp
+    hostPort: 5447
+    protocol: tcp+udp
 environment:
   PROTOCOL_LAB_IMPLEMENTATION: quic-go-http3
+dockerEnvironment:
+  PROTOCOL_LAB_IMPLEMENTATION: quic-go-http3
 commandArguments: []
+dockerCommandArguments: []
 readinessCheck:
-  type: none
-  url: ""
+  type: http
+  url: /plaintext
   timeoutSeconds: 30
-shutdownBehavior: process-exit
-capabilities: []
+  startupDelayMilliseconds: 1000
+shutdownBehavior: docker-stop
+capabilities:
+  - httpPlaintext
+  - httpJson
+  - httpStatus
+  - httpBytes
+  - httpStreaming
+  - httpUpload
+  - httpHeaders
 artifactExports:
   - server.stdout.txt
   - server.stderr.txt
 qlogSupport: false
 sslKeyLogSupport: false
-notes: Placeholder only. This manifest reserves the quic-go HTTP/3 position but intentionally advertises no runnable protocol, workload family, or endpoint capability until a server image, configuration, TLS policy, and validation contract are scheduled.
+notes: Go-based quic-go HTTP/3 Docker target. The server lives in src/Incursa.ProtocolLab.Adapters.QuicGo, generates a runtime self-signed localhost certificate, and serves the HTTP/3 endpoints used by the expanded local comparison suite across core, header, payload, and upload scenarios.

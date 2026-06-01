@@ -32,8 +32,7 @@ internal static class HttpScenarioValidator
 
         if (cell.Scenario.QuicTransport is not null)
         {
-            return CreateResult(cell, ValidationStatus.Unsupported,
-                "QUIC transport validation is modeled, but no raw QUIC validator or load generator is implemented yet.");
+            return await QuicTransportValidator.ValidateAsync(cell, baseUrl, paths, certificateMode);
         }
 
         if (cell.Scenario.WebTransport is not null)

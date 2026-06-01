@@ -247,6 +247,173 @@ public sealed class EvidenceReportTests
     }
 
     [Fact]
+    public void Full_stable_local_comparison_suite_produces_comparison_groups()
+    {
+        var results = new List<BenchmarkResult>();
+        var scenarios = new[]
+        {
+            ("http.core.plaintext", "HTTP Plaintext", 5200d, 2.20d, 3.00d, 3.80d, 2.50d, 104000d),
+            ("http.core.json", "HTTP JSON", 4900d, 2.30d, 3.10d, 3.90d, 2.60d, 98000d),
+            ("http.core.status", "HTTP Status", 4700d, 2.35d, 3.15d, 3.95d, 2.65d, 96000d),
+            ("http.payload.bytes.1kb", "HTTP Bytes 1KB", 4550d, 2.40d, 3.20d, 4.00d, 2.70d, 94000d),
+            ("http.headers.inspect-request", "HTTP Inspect Request Headers", 4300d, 2.40d, 3.20d, 4.00d, 2.70d, 92000d),
+            ("http.headers.response.50x32", "HTTP Response Headers 50x32", 4150d, 2.50d, 3.30d, 4.10d, 2.80d, 89000d),
+            ("http.payload.bytes.64kb", "HTTP Bytes 64KB", 3900d, 2.60d, 3.40d, 4.20d, 2.90d, 86000d),
+            ("http.payload.bytes.1mb", "HTTP Bytes 1MB", 3600d, 2.70d, 3.50d, 4.30d, 3.00d, 82000d),
+            ("http.payload.stream.100x16kb", "HTTP Stream 100x16KB", 3400d, 2.78d, 3.58d, 4.38d, 3.08d, 80000d),
+            ("http.upload.echo.64kb", "HTTP Upload Echo 64KB", 3600d, 2.70d, 3.50d, 4.30d, 3.00d, 82000d),
+            ("http.upload.hash.1mb", "HTTP Upload Hash 1MB", 3250d, 2.82d, 3.62d, 4.42d, 3.12d, 77000d),
+            ("http.upload.sink.1mb", "HTTP Upload Sink 1MB", 3150d, 2.88d, 3.68d, 4.48d, 3.18d, 76000d),
+        };
+
+        foreach (var (scenarioId, scenarioName, kestrelRps, kestrelP50, kestrelP95, kestrelP99, kestrelMean, kestrelThroughput) in scenarios)
+        {
+            AddManagedComparisonResults(
+                results,
+                "kestrel-http3",
+                "Kestrel HTTP/3",
+                scenarioId,
+                scenarioName,
+                kestrelRps,
+                kestrelP50,
+                kestrelP95,
+                kestrelP99,
+                kestrelMean,
+                kestrelThroughput);
+
+            AddManagedComparisonResults(
+                results,
+                "incursa-http3",
+                "Incursa HTTP/3",
+                scenarioId,
+                scenarioName,
+                kestrelRps - 175d,
+                kestrelP50 + 0.08d,
+                kestrelP95 + 0.08d,
+                kestrelP99 + 0.08d,
+                kestrelMean + 0.08d,
+                kestrelThroughput - 4500d);
+
+            AddManagedComparisonResults(
+                results,
+                "quic-go-http3",
+                "quic-go HTTP/3",
+                scenarioId,
+                scenarioName,
+                kestrelRps - 260d,
+                kestrelP50 + 0.14d,
+                kestrelP95 + 0.14d,
+                kestrelP99 + 0.14d,
+                kestrelMean + 0.14d,
+                kestrelThroughput - 6200d);
+        }
+
+        var report = EvidenceReportBuilder.Build(
+            "run",
+            DateTimeOffset.UtcNow,
+            null,
+            "h3-local-v1-comparison",
+            "Full Stable Local HTTP/3 Comparison",
+            [],
+            [],
+            results);
+
+        Assert.Equal(12, report.ComparisonGroups.Count);
+        Assert.All(report.ComparisonGroups, group =>
+        {
+            Assert.Equal("local-comparison", group.LoadProfileId);
+            Assert.Equal("Local Comparison", group.LoadProfileTitle);
+            Assert.Equal(BenchmarkEvidenceClasses.LocalLab, group.EvidenceTier);
+            Assert.Equal(3, group.Entries.Count);
+            Assert.Contains(group.Entries, entry => entry.ImplementationId == "quic-go-http3");
+            Assert.All(group.Entries, entry =>
+            {
+                Assert.Equal(3, entry.Repetitions);
+                Assert.Equal(BenchmarkEvidenceClasses.LocalLab, entry.EvidenceClass);
+                Assert.Equal(BenchmarkComparabilityStatuses.ComparableLocal, entry.ComparabilityStatus);
+            });
+        });
+
+        var markdown = EvidenceReportMarkdownWriter.Write(report);
+        Assert.Contains("http.upload.echo.64kb", markdown);
+        Assert.Contains("Local Comparison", markdown);
+        Assert.Contains("Full Stable Local HTTP/3 Comparison", markdown);
+    }
+
+    [Fact]
+    public void Full_stable_raw_quic_comparison_suite_produces_comparison_groups()
+    {
+        var results = new List<BenchmarkResult>();
+        var scenarios = new[]
+        {
+            ("quic.transport.handshake-cold", "QUIC Handshake Cold", 2100d, 2.15d, 2.95d, 3.75d, 2.45d, 52000d),
+            ("quic.transport.stream-throughput.1mb", "QUIC Stream Throughput 1MB", 1950d, 2.25d, 3.05d, 3.85d, 2.55d, 49000d),
+            ("quic.transport.multiplex.100x64kb", "QUIC Multiplex 100x64KB", 1825d, 2.35d, 3.15d, 3.95d, 2.65d, 47000d),
+            ("quic.transport.connection-churn", "QUIC Connection Churn", 1700d, 2.45d, 3.25d, 4.05d, 2.75d, 45000d),
+            ("quic.transport.duplex-streams", "QUIC Duplex Streams", 1600d, 2.55d, 3.35d, 4.15d, 2.85d, 43000d),
+        };
+
+        foreach (var (scenarioId, scenarioName, rps, p50, p95, p99, mean, throughput) in scenarios)
+        {
+            AddRawQuicComparisonResults(
+                results,
+                "incursa-raw-quic-adapter-v1",
+                "Incursa Raw QUIC",
+                scenarioId,
+                scenarioName,
+                rps,
+                p50,
+                p95,
+                p99,
+                mean,
+                throughput);
+
+            AddRawQuicComparisonResults(
+                results,
+                "msquic-dotnet-raw-adapter-v1",
+                "MSQuic .NET Raw QUIC",
+                scenarioId,
+                scenarioName,
+                rps - 75d,
+                p50 + 0.05d,
+                p95 + 0.05d,
+                p99 + 0.05d,
+                mean + 0.05d,
+                throughput - 2500d);
+        }
+
+        var report = EvidenceReportBuilder.Build(
+            "run",
+            DateTimeOffset.UtcNow,
+            null,
+            "quic-transport-v1-comparison",
+            "Stable Raw QUIC Transport Comparison",
+            [],
+            [],
+            results);
+
+        Assert.Equal(5, report.ComparisonGroups.Count);
+        Assert.All(report.ComparisonGroups, group =>
+        {
+            Assert.Equal("local-comparison", group.LoadProfileId);
+            Assert.Equal("Local Comparison", group.LoadProfileTitle);
+            Assert.Equal("quic", group.Protocol);
+            Assert.Equal("quic-go-raw-load", group.LoadTool);
+            Assert.Equal(2, group.Entries.Count);
+            Assert.All(group.Entries, entry =>
+            {
+                Assert.Equal(3, entry.Repetitions);
+                Assert.Equal(BenchmarkEvidenceClasses.LocalLab, entry.EvidenceClass);
+                Assert.Equal(BenchmarkComparabilityStatuses.ComparableLocal, entry.ComparabilityStatus);
+            });
+        });
+
+        var markdown = EvidenceReportMarkdownWriter.Write(report);
+        Assert.Contains("quic.transport.duplex-streams", markdown);
+        Assert.Contains("Stable Raw QUIC Transport Comparison", markdown);
+    }
+
+    [Fact]
     public void Comparison_groups_require_at_least_two_implementations()
     {
         var results = new List<BenchmarkResult>
@@ -543,6 +710,108 @@ public sealed class EvidenceReportTests
             ValidationStatus.Passed, LoadToolExecutionStatuses.Succeeded, true,
             requestsPerSecond, p50, p95, p99, mean, throughput,
             implementationName, scenarioId);
+    }
+
+    private static void AddManagedComparisonResults(
+        ICollection<BenchmarkResult> results,
+        string implementationId,
+        string implementationName,
+        string scenarioId,
+        string scenarioName,
+        double requestsPerSecond,
+        double p50,
+        double p95,
+        double p99,
+        double mean,
+        double throughput)
+    {
+        for (var repetition = 1; repetition <= 3; repetition++)
+        {
+            var repetitionShift = repetition - 2;
+            var result = CreateAcceptedResult(
+                implementationId,
+                implementationName,
+                scenarioId,
+                scenarioName,
+                "h3",
+                128,
+                100,
+                repetition,
+                requestsPerSecond + (repetitionShift * 25d),
+                p50 + (repetitionShift * 0.03d),
+                p95 + (repetitionShift * 0.03d),
+                p99 + (repetitionShift * 0.03d),
+                mean + (repetitionShift * 0.03d),
+                throughput + (repetitionShift * 750d));
+
+            results.Add(result with
+            {
+                LoadProfileId = "local-comparison",
+                LoadProfileTitle = "Local Comparison",
+                LoadProfilePurpose = "comparison",
+                LoadTool = "managed-httpclient-h3-load",
+                LoadToolMode = TargetKinds.Process,
+                LoadToolCategory = LoadToolCategories.ManagedLab,
+                Evidence = new BenchmarkEvidenceAssessment
+                {
+                    EvidenceClass = BenchmarkEvidenceClasses.LocalLab,
+                    EvidenceReasons = [BenchmarkEvidenceReasons.ManagedLabLoadTool],
+                    ComparabilityStatus = BenchmarkComparabilityStatuses.ComparableLocal
+                }
+            });
+        }
+    }
+
+    private static void AddRawQuicComparisonResults(
+        ICollection<BenchmarkResult> results,
+        string implementationId,
+        string implementationName,
+        string scenarioId,
+        string scenarioName,
+        double requestsPerSecond,
+        double p50,
+        double p95,
+        double p99,
+        double mean,
+        double throughput)
+    {
+        for (var repetition = 1; repetition <= 3; repetition++)
+        {
+            var repetitionShift = repetition - 2;
+            var result = CreateAcceptedResult(
+                implementationId,
+                implementationName,
+                scenarioId,
+                scenarioName,
+                "quic",
+                32,
+                16,
+                repetition,
+                requestsPerSecond + (repetitionShift * 18d),
+                p50 + (repetitionShift * 0.04d),
+                p95 + (repetitionShift * 0.04d),
+                p99 + (repetitionShift * 0.04d),
+                mean + (repetitionShift * 0.04d),
+                throughput + (repetitionShift * 650d))
+            with
+            {
+                Family = "quic.transport",
+                LoadProfileId = "local-comparison",
+                LoadProfileTitle = "Local Comparison",
+                LoadProfilePurpose = "comparison",
+                LoadTool = "quic-go-raw-load",
+                LoadToolMode = TargetKinds.Process,
+                LoadToolCategory = LoadToolCategories.ManagedLab,
+                Evidence = new BenchmarkEvidenceAssessment
+                {
+                    EvidenceClass = BenchmarkEvidenceClasses.LocalLab,
+                    EvidenceReasons = [BenchmarkEvidenceReasons.ManagedLabLoadTool],
+                    ComparabilityStatus = BenchmarkComparabilityStatuses.ComparableLocal
+                }
+            };
+
+            results.Add(result);
+        }
     }
 
     private static BenchmarkResult CreateAcceptedResultBase(

@@ -35,9 +35,9 @@ ProtocolLab v1 is locally operational. Current support includes:
 - Kestrel HTTP/3 validation
 - Incursa HTTP/3 validation through the repo-owned adapter project and endpoint target
 - raw QUIC fixture-only adapter coverage for protocol-boundary work
-- managed-lab HTTP/3 comparison with `managed-httpclient-h3-load`
+- managed-lab HTTP/3 comparison with `managed-httpclient-h3-load`, including the full stable local comparison suite across core, payload, headers, and upload scenarios
 - external-reference HTTP/3 comparison with the repo-owned Docker `h2load --h3` image
-- optional Docker target execution for Kestrel, Incursa, Caddy, and nginx
+- optional Docker target execution for Kestrel, Incursa, Caddy, nginx, and quic-go
 - optional `dotnet-counters` diagnostics and Docker container metrics
 - qlog capture for Docker h2load when the image proves `--qlog-file-base`
 
@@ -106,6 +106,8 @@ image:
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations kestrel-http3,incursa-http3 --scenarios http.core.plaintext,http.core.json --protocol h3 --load-tool h2load --load-tool-mode docker
 ```
+
+For broader local comparison coverage, use `suites/h3-local-v1-comparison.yaml` with `--load-profile local-comparison`; it now includes quic-go alongside Kestrel and Incursa while covering the full stable H3 app matrix across core, payload, headers, and upload scenarios.
 
 ## Prepare a Public Report Bundle
 

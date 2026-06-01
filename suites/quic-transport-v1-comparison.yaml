@@ -1,0 +1,30 @@
+id: quic-transport-v1-comparison
+name: ProtocolLab stable raw QUIC transport comparison suite
+description: Documentation/input suite for the stable quic.transport comparison coverage across handshake, throughput, multiplexing, churn, and duplex scenarios.
+loadProfileId: local-comparison
+targetMode: process
+targetNetworkMode: published-port
+implementations:
+  - incursa-raw-quic-adapter-v1
+  - msquic-dotnet-raw-adapter-v1
+scenarios:
+  - quic.transport.handshake-cold
+  - quic.transport.stream-throughput.1mb
+  - quic.transport.multiplex.100x64kb
+  - quic.transport.connection-churn
+  - quic.transport.duplex-streams
+protocol: quic
+loadTools:
+  - id: quic-go-raw-load
+    mode: process
+    category: managed-lab
+defaults:
+  durationSeconds: 30
+  warmupSeconds: 10
+  repetitions: 3
+  connections: 32
+  streamsPerConnection: 16
+counterCapture:
+  enabledByDefault: false
+  tool: dotnet-counters
+notes: Stable raw QUIC comparison input. It reuses the local-comparison load profile for the quic.transport scenario family and keeps the benchmark evidence local-lab only.

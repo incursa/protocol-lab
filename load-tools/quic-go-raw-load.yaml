@@ -1,0 +1,89 @@
+# Load Tool Contract v1
+schemaVersion: protocol-lab.load-tool.v1
+
+id: quic-go-raw-load
+title: quic-go Raw QUIC Load
+name: quic-go Raw QUIC Load
+description: Go-backed raw QUIC transport load generator using quic-go for local benchmark runs.
+kind: process
+category: managed-lab
+
+supports:
+  protocols:
+    - quic
+  trafficShapes:
+    - bidirectional-stream
+  roles:
+    - client
+
+metrics:
+  primary:
+    - requestsPerSecond
+    - throughputBytesPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+  secondary:
+    - bytesReceived
+    - bytesSent
+    - totalRequests
+    - successfulRequests
+    - failedRequests
+    - timeoutRequests
+    - latencyMean
+    - latencyMin
+    - latencyMax
+    - connectTimeMean
+    - timeToFirstByteMean
+
+execution:
+  process:
+    executable: go
+    defaultArguments:
+      - -C
+      - src/Incursa.ProtocolLab.Adapters.QuicGo
+      - run
+      - ./cmd/quic-go-raw-load
+    versionCommand:
+      - version
+    availabilityCheck: path
+
+parser:
+  type: raw-quic-json
+  id: raw-quic-json
+  preservesRawOutput: true
+
+artifacts:
+  required:
+    - load.stdout.log
+    - load.stderr.log
+  optional:
+    - load.metrics.json
+
+purposes:
+  - validation
+  - benchmark
+
+limitations:
+  - Requires Go 1.26+ on PATH
+  - Benchmark evidence stays local-lab
+  - qlog capture is not enabled yet
+
+# Legacy fields
+supportedProtocols:
+  - quic
+supportedScenarioFamilies:
+  - quic.transport
+executable: go
+dockerImage: ""
+defaultArguments:
+  - -C
+  - src/Incursa.ProtocolLab.Adapters.QuicGo
+  - run
+  - ./cmd/quic-go-raw-load
+versionCommand:
+  - version
+availabilityCheck: path
+outputParserId: raw-quic-json
+notes: Go-backed raw QUIC load generator for ProtocolLab local benchmarks. The runner launches it with go -C src/Incursa.ProtocolLab.Adapters.QuicGo run ./cmd/quic-go-raw-load so the repo can benchmark real quic-go transport clients without a separate compiled binary.

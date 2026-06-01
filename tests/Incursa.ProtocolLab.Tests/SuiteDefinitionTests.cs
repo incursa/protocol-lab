@@ -28,6 +28,65 @@ public sealed class SuiteDefinitionTests
     }
 
     [Fact]
+    public void Parses_h3_local_v1_comparison_suite_with_runnable_quic_go_target()
+    {
+        var suite = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "h3-local-v1-comparison.yaml"));
+
+        Assert.Equal("h3-local-v1-comparison", suite.Id);
+        Assert.Equal("local-comparison", suite.LoadProfileId);
+        Assert.Contains("kestrel-http3", suite.Implementations);
+        Assert.Contains("incursa-http3", suite.Implementations);
+        Assert.Contains("quic-go-http3", suite.Implementations);
+        Assert.Empty(suite.UnsupportedImplementations);
+        Assert.Equal(12, suite.Scenarios.Count);
+        Assert.Contains("http.headers.inspect-request", suite.Scenarios);
+        Assert.Contains("http.headers.response.50x32", suite.Scenarios);
+        Assert.Contains("http.core.status", suite.Scenarios);
+        Assert.Contains("http.payload.bytes.1kb", suite.Scenarios);
+        Assert.Contains("http.payload.bytes.64kb", suite.Scenarios);
+        Assert.Contains("http.payload.bytes.1mb", suite.Scenarios);
+        Assert.Contains("http.payload.stream.100x16kb", suite.Scenarios);
+        Assert.Contains("http.upload.echo.64kb", suite.Scenarios);
+        Assert.Contains("http.upload.hash.1mb", suite.Scenarios);
+        Assert.Contains("http.upload.sink.1mb", suite.Scenarios);
+        Assert.Contains(suite.LoadTools, tool => tool.Id == "managed-httpclient-h3-load" && tool.Mode == "managed" && tool.Category == "managed-lab");
+        Assert.Equal(30, suite.Defaults.DurationSeconds);
+        Assert.Equal(10, suite.Defaults.WarmupSeconds);
+        Assert.Equal(3, suite.Defaults.Repetitions);
+        Assert.Equal(128, suite.Defaults.Connections);
+        Assert.Equal(100, suite.Defaults.StreamsPerConnection);
+        Assert.Contains("quic-go", suite.Notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("full stable", suite.Notes, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Parses_quic_transport_v1_comparison_suite_with_raw_quic_targets()
+    {
+        var suite = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "quic-transport-v1-comparison.yaml"));
+
+        Assert.Equal("quic-transport-v1-comparison", suite.Id);
+        Assert.Equal("quic", suite.Protocol);
+        Assert.Equal("local-comparison", suite.LoadProfileId);
+        Assert.Equal("process", suite.TargetMode);
+        Assert.Equal("published-port", suite.TargetNetworkMode);
+        Assert.Contains("incursa-raw-quic-adapter-v1", suite.Implementations);
+        Assert.Contains("msquic-dotnet-raw-adapter-v1", suite.Implementations);
+        Assert.Equal(5, suite.Scenarios.Count);
+        Assert.Contains("quic.transport.handshake-cold", suite.Scenarios);
+        Assert.Contains("quic.transport.stream-throughput.1mb", suite.Scenarios);
+        Assert.Contains("quic.transport.multiplex.100x64kb", suite.Scenarios);
+        Assert.Contains("quic.transport.connection-churn", suite.Scenarios);
+        Assert.Contains("quic.transport.duplex-streams", suite.Scenarios);
+        Assert.Contains(suite.LoadTools, tool => tool.Id == "quic-go-raw-load" && tool.Mode == "process" && tool.Category == "managed-lab");
+        Assert.Equal(30, suite.Defaults.DurationSeconds);
+        Assert.Equal(10, suite.Defaults.WarmupSeconds);
+        Assert.Equal(3, suite.Defaults.Repetitions);
+        Assert.Equal(32, suite.Defaults.Connections);
+        Assert.Equal(16, suite.Defaults.StreamsPerConnection);
+        Assert.Contains("raw QUIC", suite.Notes, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Parses_h3_local_v1_docker_target_suite()
     {
         var suite = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "h3-local-v1-docker-target.yaml"));

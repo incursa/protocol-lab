@@ -830,9 +830,9 @@ Initial scope: add WebTransport and MASQUE scenario/model stubs only.
 Validation and benchmark execution remain unsupported until validators, load
 generators, and target implementations are scheduled.
 
-Current exit state: quic-go placeholder manifests/config folders are present;
-Caddy moved into optional Phase 3G Docker-only HTTP/3 target support; nginx
-moved into optional Phase 3H Docker-only HTTP/3 target support with required
-HTTP/3 module proof; WebTransport and MASQUE scenario/model stubs are present;
-future-family validation returns explicit unsupported outcomes; and database
-workloads are deferred in a decision record.
+Current exit state: quic-go runnable Docker target manifests/configs are
+present; Caddy moved into optional Phase 3G Docker-only HTTP/3 target support;
+nginx moved into optional Phase 3H Docker-only HTTP/3 target support with
+required HTTP/3 module proof; WebTransport and MASQUE scenario/model stubs are
+present; future-family validation returns explicit unsupported outcomes; and
+database workloads are deferred in a decision record.

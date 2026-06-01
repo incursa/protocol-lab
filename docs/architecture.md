@@ -161,10 +161,10 @@ Caddy is the first optional non-.NET Docker HTTP/3 target and is documented
 in `docs/spec/caddy-http3-target.md`. nginx is the next optional Docker-only
 HTTP/3 target and is documented in `docs/spec/nginx-http3-target.md`; its
 image must prove HTTP/3 module support before validation or benchmarking.
-quic-go folders and manifests remain placeholders until their runnable
-containers, endpoint mappings, and validation contracts are scheduled.
-Placeholder manifests must not advertise protocols or capabilities before
-support is real.
+quic-go now lives as a runnable Go-based Docker HTTP/3 target in the adapter
+source tree so the expanded local comparison suite can include it without
+relying on placeholder-only manifests. Placeholder manifests must not
+advertise protocols or capabilities before support is real.
 
 ### Network Profiles
 

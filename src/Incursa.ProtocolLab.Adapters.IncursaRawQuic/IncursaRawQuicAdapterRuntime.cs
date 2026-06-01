@@ -24,7 +24,7 @@ public sealed record IncursaRawQuicAdapterOptions
     public string ImplementationVersion { get; init; } = "1.0.0";
     public string ImplementationImage { get; init; } = "";
     public string ContractVersion { get; init; } = "v1";
-    public string SupportedScenarioSelectorExpression { get; init; } = "fixture.quic.handshake|fixture.quic.bidirectional-echo|fixture.quic.bidirectional-bulk";
+    public string SupportedScenarioSelectorExpression { get; init; } = "fixture.quic.handshake|fixture.quic.bidirectional-echo|fixture.quic.bidirectional-bulk|quic.transport.handshake-cold|quic.transport.stream-throughput.1mb|quic.transport.connection-churn|quic.transport.multiplex.100x64kb|quic.transport.duplex-streams";
     public int QuicPort { get; init; }
     public string QuicAlpn { get; init; } = "plab-raw-quic";
     public string CertificateSubject { get; init; } = "CN=Incursa-RawQuic-Local";
@@ -238,13 +238,13 @@ public sealed class IncursaRawQuicAdapterRuntime
     private AdapterIdentity CreateImplementationIdentity() => new() { Id = options.ImplementationId, Name = options.ImplementationName, Version = options.ImplementationVersion, Image = options.ImplementationImage };
     private AdapterVersionCompatibility CreateCompatibility() => new() { ContractVersion = options.ContractVersion, CompatibleContractVersions = [options.ContractVersion] };
 
-    private IReadOnlyList<AdapterCapability> CreateCapabilities() => [new AdapterCapability { Id = "adapter-control-plane", Status = AdapterCapabilityStatus.Supported, Description = "ProtocolLab Adapter Contract v1 control plane." }, new AdapterCapability { Id = "quic.server", Status = AdapterCapabilityStatus.Supported, Description = "Raw QUIC server endpoint using Incursa raw QUIC server process." }, new AdapterCapability { Id = "quicTransport", Status = AdapterCapabilityStatus.Supported, Description = "Raw QUIC transport support." }, new AdapterCapability { Id = "quicHandshake", Status = AdapterCapabilityStatus.Supported, Description = "QUIC connection handshake support." }, new AdapterCapability { Id = "quicStreams", Status = AdapterCapabilityStatus.Supported, Description = "QUIC bidirectional stream support." }];
+    private IReadOnlyList<AdapterCapability> CreateCapabilities() => [new AdapterCapability { Id = "adapter-control-plane", Status = AdapterCapabilityStatus.Supported, Description = "ProtocolLab Adapter Contract v1 control plane." }, new AdapterCapability { Id = "quic.server", Status = AdapterCapabilityStatus.Supported, Description = "Raw QUIC server endpoint using Incursa raw QUIC server process." }, new AdapterCapability { Id = "quicTransport", Status = AdapterCapabilityStatus.Supported, Description = "Raw QUIC transport support." }, new AdapterCapability { Id = "quicHandshake", Status = AdapterCapabilityStatus.Supported, Description = "QUIC connection handshake support." }, new AdapterCapability { Id = "quicStreams", Status = AdapterCapabilityStatus.Supported, Description = "QUIC bidirectional stream support." }, new AdapterCapability { Id = "quicMultiplexing", Status = AdapterCapabilityStatus.Supported, Description = "QUIC multiplexed stream fan-out support." }, new AdapterCapability { Id = "quicDuplex", Status = AdapterCapabilityStatus.Supported, Description = "QUIC bidirectional stream payload support." }];
 
     private IncursaRawQuicScenarioSupport EvaluateSupport(ScenarioDefinition scenario, string requestedProtocol)
     {
         var warnings = new List<string>();
         if (!string.Equals(scenario.ImplementationRole, "server", StringComparison.OrdinalIgnoreCase)) return IncursaRawQuicScenarioSupport.Unsupported("Only server scenarios are supported.", warnings);
-        if (!string.Equals(scenario.Family, "fixture.quic", StringComparison.OrdinalIgnoreCase)) return IncursaRawQuicScenarioSupport.Unsupported("Only 'fixture.quic' family scenarios are supported.", warnings);
+        if (!string.Equals(scenario.Family, "fixture.quic", StringComparison.OrdinalIgnoreCase) && !string.Equals(scenario.Family, "quic.transport", StringComparison.OrdinalIgnoreCase)) return IncursaRawQuicScenarioSupport.Unsupported("Only 'fixture.quic' and 'quic.transport' family scenarios are supported.", warnings);
         if (!IsSupportedScenario(scenario.Id)) return IncursaRawQuicScenarioSupport.Unsupported($"Scenario '{scenario.Id}' is not supported.", warnings);
         if (!string.Equals(requestedProtocol, "quic", StringComparison.OrdinalIgnoreCase)) return IncursaRawQuicScenarioSupport.Unsupported($"Protocol '{requestedProtocol}' is not supported.", warnings);
         foreach (var c in scenario.RequiredCapabilities) { if (!SupportedCapabilities.Contains(c)) return IncursaRawQuicScenarioSupport.Unsupported($"Capability '{c}' is not supported.", warnings); }
@@ -252,8 +252,8 @@ public sealed class IncursaRawQuicAdapterRuntime
     }
 
     private static bool IsSupportedScenario(string id) => SupportedScenarios.Contains(id);
-    private static readonly HashSet<string> SupportedScenarios = new(StringComparer.OrdinalIgnoreCase) { "fixture.quic.handshake", "fixture.quic.bidirectional-echo", "fixture.quic.bidirectional-bulk" };
-    private static readonly HashSet<string> SupportedCapabilities = new(StringComparer.OrdinalIgnoreCase) { "quicTransport", "quicHandshake", "quicStreams" };
+    private static readonly HashSet<string> SupportedScenarios = new(StringComparer.OrdinalIgnoreCase) { "fixture.quic.handshake", "fixture.quic.bidirectional-echo", "fixture.quic.bidirectional-bulk", "quic.transport.handshake-cold", "quic.transport.stream-throughput.1mb", "quic.transport.connection-churn", "quic.transport.multiplex.100x64kb", "quic.transport.duplex-streams" };
+    private static readonly HashSet<string> SupportedCapabilities = new(StringComparer.OrdinalIgnoreCase) { "quicTransport", "quicHandshake", "quicStreams", "quicMultiplexing", "quicDuplex" };
 
     private async Task<IncursaRawQuicReadinessResult> WaitForReadinessAsync(IncursaRawQuicSession session, IncursaRawQuicEndpointProcess ep)
     {

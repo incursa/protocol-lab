@@ -133,6 +133,50 @@ public sealed class ValidationModelTests
     }
 
     [Fact]
+    public void Quic_go_manifest_supports_the_expanded_local_comparison_scenarios()
+    {
+        var manifest = new ImplementationManifest
+        {
+            Id = "quic-go-http3",
+            Roles = ["server"],
+            SupportedProtocols = ["h3"],
+            SupportedWorkloadFamilies = ["http.application"],
+            Capabilities = ["httpPlaintext", "httpJson", "httpHeaders", "httpBytes", "httpUpload"]
+        };
+
+        var headerScenario = new ScenarioDefinition
+        {
+            Id = "http.headers.inspect-request",
+            Family = "http.application",
+            Protocol = "h3",
+            ImplementationRole = "server",
+            RequiredCapabilities = ["httpHeaders"]
+        };
+
+        var payloadScenario = new ScenarioDefinition
+        {
+            Id = "http.payload.bytes.64kb",
+            Family = "http.application",
+            Protocol = "h3",
+            ImplementationRole = "server",
+            RequiredCapabilities = ["httpBytes"]
+        };
+
+        var uploadScenario = new ScenarioDefinition
+        {
+            Id = "http.upload.echo.64kb",
+            Family = "http.application",
+            Protocol = "h3",
+            ImplementationRole = "server",
+            RequiredCapabilities = ["httpUpload"]
+        };
+
+        Assert.True(ScenarioSupport.Evaluate(manifest, headerScenario, "h3").IsSupported);
+        Assert.True(ScenarioSupport.Evaluate(manifest, payloadScenario, "h3").IsSupported);
+        Assert.True(ScenarioSupport.Evaluate(manifest, uploadScenario, "h3").IsSupported);
+    }
+
+    [Fact]
     public async Task H3_protocol_scenario_remains_unsupported_until_validator_exists()
     {
         var cell = new RunCell(
@@ -170,7 +214,7 @@ public sealed class ValidationModelTests
     }
 
     [Fact]
-    public async Task Quic_transport_scenario_remains_unsupported_until_validator_exists()
+    public async Task Quic_transport_scenario_is_validated_for_quic_endpoints()
     {
         var cell = new RunCell(
             new ImplementationManifest
@@ -195,15 +239,15 @@ public sealed class ValidationModelTests
             1,
             1,
             1,
-            30,
+                30,
             5,
             "clean");
 
-        var validation = await HttpScenarioValidator.ValidateAsync(cell, baseUrl: null);
+        var validation = await HttpScenarioValidator.ValidateAsync(cell, baseUrl: "quic://127.0.0.1:4433");
 
-        Assert.Equal(ValidationStatus.Unsupported, validation.Status);
-        Assert.Contains("no raw QUIC validator", validation.Summary);
-        Assert.False(validation.AllowsBenchmark);
+        Assert.Equal(ValidationStatus.Passed, validation.Status);
+        Assert.Contains("QUIC transport endpoint", validation.Summary, StringComparison.OrdinalIgnoreCase);
+        Assert.True(validation.AllowsBenchmark);
     }
 
     [Fact]

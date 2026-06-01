@@ -237,25 +237,40 @@ public sealed class ManifestParsingTests
         Assert.Contains("not publishable", manifest.Notes);
     }
 
-    [Theory]
-    [InlineData("quic-go-http3.yaml", "quic-go-http3")]
-    public void Parses_deferred_placeholder_manifests_without_claiming_support(
-        string fileName,
-        string implementationId)
+    [Fact]
+    public void Parses_quic_go_http3_docker_target_manifest()
     {
         var manifest = YamlFile.Load<ImplementationManifest>(
-            Path.Combine(TestPaths.RepoRoot, "implementations", fileName));
+            Path.Combine(TestPaths.RepoRoot, "implementations", "quic-go-http3.yaml"));
 
-        Assert.Equal(implementationId, manifest.Id);
+        Assert.Equal("quic-go-http3", manifest.Id);
+        Assert.Equal("quic-go HTTP/3", manifest.Name);
+        Assert.Equal("docker", manifest.TargetKind);
+        Assert.Equal("src/Incursa.ProtocolLab.Adapters.QuicGo/Dockerfile", manifest.Dockerfile);
+        Assert.Equal("src/Incursa.ProtocolLab.Adapters.QuicGo", manifest.BuildContext);
+        Assert.Equal("https://localhost:5447", manifest.DockerBaseUrl);
+        Assert.Equal("https://localhost:5447", manifest.BaseUrl);
+        Assert.Equal("quic-go-self-signed-loopback-certificate", manifest.CertificateMode);
         Assert.Contains("server", manifest.Roles);
-        Assert.Empty(manifest.SupportedProtocols);
-        Assert.Empty(manifest.SupportedWorkloadFamilies);
-        Assert.Empty(manifest.Capabilities);
+        Assert.Contains("h3", manifest.SupportedProtocols);
+        Assert.Contains("http.application", manifest.SupportedWorkloadFamilies);
+        Assert.Contains("httpPlaintext", manifest.Capabilities);
+        Assert.Contains("httpJson", manifest.Capabilities);
+        Assert.Contains("httpHeaders", manifest.Capabilities);
+        Assert.Contains("httpBytes", manifest.Capabilities);
+        Assert.Contains("httpUpload", manifest.Capabilities);
+        Assert.Equal("tcp+udp", manifest.Ports.Single().Protocol);
+        Assert.Equal(8443, manifest.Ports.Single().ContainerPort);
+        Assert.Equal(5447, manifest.Ports.Single().HostPort);
+        Assert.Equal("http", manifest.ReadinessCheck.Type);
+        Assert.Equal("/plaintext", manifest.ReadinessCheck.Url);
+        Assert.Equal("docker-stop", manifest.ShutdownBehavior);
         Assert.Contains("server.stdout.txt", manifest.ArtifactExports);
         Assert.Contains("server.stderr.txt", manifest.ArtifactExports);
         Assert.False(manifest.QlogSupport);
         Assert.False(manifest.SslKeyLogSupport);
-        Assert.Contains("Placeholder only", manifest.Notes);
+        Assert.Contains("quic-go", manifest.Notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("full stable local comparison suite", manifest.Notes, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

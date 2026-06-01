@@ -1560,16 +1560,7 @@ public sealed class RunnerEngine
 
         if (string.Equals(uri.Scheme, "quic", StringComparison.OrdinalIgnoreCase))
         {
-            return new ScenarioValidationResult
-            {
-                ScenarioId = cell.Scenario.Id,
-                TargetId = cell.Implementation.Id,
-                AdapterId = "",
-                Protocol = cell.Protocol,
-                Status = ValidationStatus.Passed,
-                Summary = "Fixture raw QUIC validation passed.",
-                Warnings = [BenchmarkEvidenceReasons.AdapterBackedTarget]
-            };
+            return await QuicTransportValidator.ValidateAsync(cell, targetBaseUrl, paths, cell.Implementation.CertificateMode);
         }
 
         return await HttpScenarioValidator.ValidateAsync(cell, targetBaseUrl, paths, cell.Implementation.CertificateMode);
@@ -1946,10 +1937,14 @@ public sealed class RunnerEngine
 
     private static RequestedLoadShape BuildRequestedLoadShape(RunCell cell)
     {
+        var concurrency = ProtocolIds.IsQuic(cell.Protocol)
+            ? cell.Connections * Math.Max(1, cell.StreamsPerConnection)
+            : cell.Connections;
+
         return new RequestedLoadShape
         {
             Connections = cell.Connections,
-            Concurrency = cell.Connections,
+            Concurrency = concurrency,
             StreamsPerConnection = cell.StreamsPerConnection,
             DurationSeconds = cell.DurationSeconds,
             WarmupSeconds = cell.WarmupSeconds,
@@ -1968,7 +1963,9 @@ public sealed class RunnerEngine
         return new EffectiveLoadShape
         {
             Connections = cell.Connections,
-            Concurrency = cell.Connections,
+            Concurrency = ProtocolIds.IsQuic(cell.Protocol)
+                ? cell.Connections * Math.Max(1, cell.StreamsPerConnection)
+                : cell.Connections,
             StreamsPerConnection = ProtocolIds.IsHttp1(cell.Protocol) ? 1 : cell.StreamsPerConnection,
             DurationSeconds = cell.DurationSeconds,
             WarmupSeconds = cell.WarmupSeconds,

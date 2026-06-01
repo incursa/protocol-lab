@@ -270,7 +270,7 @@ public sealed class ManifestParsingTests
         Assert.False(manifest.QlogSupport);
         Assert.False(manifest.SslKeyLogSupport);
         Assert.Contains("quic-go", manifest.Notes, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("full stable local comparison suite", manifest.Notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("expanded local comparison suite", manifest.Notes, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

@@ -568,7 +568,7 @@ function Build-RegistryFromEntries {
         [Parameter(Mandatory = $true)][object[]]$Entries
     )
 
-    $entries = New-Object System.Collections.ArrayList
+    $entryList = New-Object System.Collections.ArrayList
     $seenRunIds = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($entry in @($Entries)) {
         $runId = [string]$entry.runId
@@ -580,10 +580,10 @@ function Build-RegistryFromEntries {
             throw "Registry contains duplicate run id '$runId'."
         }
 
-        $entries.Add($entry) | Out-Null
+        $entryList.Add($entry) | Out-Null
     }
 
-    $sorted = @($entries | Sort-Object `
+    $sorted = @($entryList | Sort-Object `
         @{ Expression = { $_.generatedAt }; Descending = $true }, `
         @{ Expression = { $_.runId }; Descending = $false })
 
@@ -604,9 +604,12 @@ function Assert-RegistryIncludesRun {
         throw "$Description is missing an entries collection."
     }
 
-    $currentEntry = @($Registry.entries | Where-Object { $_.runId -and [string]::Equals([string]$_.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
+    $entries = @($Registry.entries)
+    $currentEntry = @($entries | Where-Object { $_.runId -and [string]::Equals([string]$_.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
     if ($currentEntry.Count -lt 1) {
-        throw "$Description does not include run '$RunId'."
+        $entryIds = @($entries | ForEach-Object { [string]$_.runId } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        $entryList = if ($entryIds.Count -gt 0) { $entryIds -join ", " } else { "<none>" }
+        throw "$Description does not include run '$RunId'. Entries: $entryList"
     }
 }
 
@@ -943,6 +946,35 @@ function Get-D1BackedRegistryEntries {
     }
 
     return @($entries)
+}
+
+function Merge-ConfirmedCurrentRegistryEntry {
+    param(
+        [Parameter(Mandatory = $true)][object[]]$Entries,
+        [Parameter(Mandatory = $true)]$CurrentEntry
+    )
+
+    $currentRunId = [string]$CurrentEntry.runId
+    if ([string]::IsNullOrWhiteSpace($currentRunId)) {
+        throw "Current registry entry is missing a run id."
+    }
+
+    $merged = New-Object System.Collections.ArrayList
+    foreach ($entry in @($Entries)) {
+        $runId = [string]$entry.runId
+        if ([string]::IsNullOrWhiteSpace($runId)) {
+            throw "Registry entry is missing a run id."
+        }
+
+        if ([string]::Equals($runId, $currentRunId, [System.StringComparison]::OrdinalIgnoreCase)) {
+            continue
+        }
+
+        $merged.Add($entry) | Out-Null
+    }
+
+    $merged.Add($CurrentEntry) | Out-Null
+    return @($merged)
 }
 
 function Build-LatestObjectFromD1Run {
@@ -1902,6 +1934,8 @@ try {
     }
 
     $registryEntries = @(Get-D1BackedRegistryEntries -RunRows $publishedRunRows -CurrentEntry $entry -Bucket $BucketName -TempDirectory $tempRoot)
+    $registryEntries = @(Merge-ConfirmedCurrentRegistryEntry -Entries $registryEntries -CurrentEntry $entry)
+    Write-Host "Rebuilt registry source contains $($registryEntries.Count) D1-backed run entry/entries including '$RunId'."
     $mergedRegistry = Build-RegistryFromEntries -Entries $registryEntries
     Assert-RegistryIncludesRun -Registry $mergedRegistry -RunId $RunId -Description "Rebuilt public registry"
     $registryPath = Join-Path $tempRoot "report-index.json"

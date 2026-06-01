@@ -157,6 +157,39 @@ function New-SqlTuple {
     return "(" + (($Values | ForEach-Object { ConvertTo-SqlLiteral $_ }) -join ", ") + ")"
 }
 
+function ConvertFrom-D1Boolean {
+    param([AllowNull()][object]$Value)
+
+    if ($null -eq $Value) {
+        return $false
+    }
+
+    if ($Value -is [bool]) {
+        return [bool]$Value
+    }
+
+    $text = [string]$Value
+    if ([string]::Equals($text, "true", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    if ([string]::Equals($text, "false", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $false
+    }
+
+    return ([int]$Value) -ne 0
+}
+
+function ConvertFrom-D1Integer {
+    param([AllowNull()][object]$Value)
+
+    if ($null -eq $Value -or [string]::IsNullOrWhiteSpace([string]$Value)) {
+        return 0
+    }
+
+    return [int]$Value
+}
+
 function Read-JsonFile {
     param([Parameter(Mandatory = $true)][string]$Path)
 
@@ -530,22 +563,26 @@ function Parse-PublicationWarnings {
     return $warnings
 }
 
-function Build-RegistryMerge {
+function Build-RegistryFromEntries {
     param(
-        [AllowNull()]$ExistingRegistry,
-        [Parameter(Mandatory = $true)]$CurrentEntry
+        [Parameter(Mandatory = $true)][object[]]$Entries
     )
 
     $entries = New-Object System.Collections.Generic.List[object]
-    if ($ExistingRegistry -and $ExistingRegistry.entries) {
-        foreach ($entry in @($ExistingRegistry.entries)) {
-            if ($entry.runId -and -not [string]::Equals($entry.runId.ToString(), $CurrentEntry.runId.ToString(), [System.StringComparison]::OrdinalIgnoreCase)) {
-                $entries.Add($entry) | Out-Null
-            }
+    $seenRunIds = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($entry in @($Entries)) {
+        $runId = [string]$entry.runId
+        if ([string]::IsNullOrWhiteSpace($runId)) {
+            throw "Registry entry is missing a run id."
         }
+
+        if (-not $seenRunIds.Add($runId)) {
+            throw "Registry contains duplicate run id '$runId'."
+        }
+
+        $entries.Add($entry) | Out-Null
     }
 
-    $entries.Add($CurrentEntry) | Out-Null
     $sorted = @($entries | Sort-Object `
         @{ Expression = { $_.generatedAt }; Descending = $true }, `
         @{ Expression = { $_.runId }; Descending = $false })
@@ -556,44 +593,276 @@ function Build-RegistryMerge {
     }
 }
 
-function Build-LatestObject {
+function Get-D1PublishedRunRows {
+    param(
+        [Parameter(Mandatory = $true)][string]$AccountId,
+        [Parameter(Mandatory = $true)][string]$DatabaseId,
+        [Parameter(Mandatory = $true)][string]$ApiToken
+    )
+
+    return @(Invoke-CloudflareD1QueryRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql @"
+SELECT
+  run_id,
+  generated_at,
+  published_at,
+  claim_level,
+  publishable,
+  diagnostic_only,
+  execution_profile,
+  visibility,
+  source_kind,
+  evidence_warning_count,
+  publication_warning_count,
+  copied_artifact_count,
+  skipped_artifact_count,
+  implementation_count,
+  scenario_count,
+  protocol_count,
+  validation_passed,
+  validation_failed,
+  validation_unsupported,
+  validation_not_applicable,
+  validation_inconclusive,
+  validation_infrastructure_failure,
+  benchmark_accepted,
+  benchmark_rejected,
+  benchmark_not_run_validation_failed,
+  benchmark_not_run_unsupported,
+  benchmark_not_run_load_tool_failed,
+  benchmark_not_run_parser_failed,
+  artifact_root_key,
+  bundle_prefix,
+  evidence_report_json_key,
+  evidence_report_markdown_key,
+  artifacts_index_key,
+  publication_manifest_key,
+  publication_warnings_key,
+  publication_skipped_key,
+  report_index_entry_key,
+  report_index_key
+FROM public_report_runs
+ORDER BY generated_at DESC, run_id ASC
+"@ -Description "published runs")
+}
+
+function Get-D1LatestPublicationRow {
+    param(
+        [Parameter(Mandatory = $true)][string]$AccountId,
+        [Parameter(Mandatory = $true)][string]$DatabaseId,
+        [Parameter(Mandatory = $true)][string]$ApiToken
+    )
+
+    $rows = @(Invoke-CloudflareD1QueryRows -AccountId $AccountId -DatabaseId $DatabaseId -ApiToken $ApiToken -Sql @"
+SELECT
+  run_id,
+  generated_at,
+  published_at,
+  claim_level,
+  publishable,
+  diagnostic_only,
+  execution_profile,
+  visibility,
+  source_kind,
+  evidence_warning_count,
+  publication_warning_count,
+  copied_artifact_count,
+  skipped_artifact_count,
+  implementation_count,
+  scenario_count,
+  protocol_count,
+  validation_passed,
+  validation_failed,
+  validation_unsupported,
+  validation_not_applicable,
+  validation_inconclusive,
+  validation_infrastructure_failure,
+  benchmark_accepted,
+  benchmark_rejected,
+  benchmark_not_run_validation_failed,
+  benchmark_not_run_unsupported,
+  benchmark_not_run_load_tool_failed,
+  benchmark_not_run_parser_failed,
+  artifact_root_key,
+  bundle_prefix,
+  evidence_report_json_key,
+  evidence_report_markdown_key,
+  artifacts_index_key,
+  publication_manifest_key,
+  publication_warnings_key,
+  publication_skipped_key,
+  report_index_entry_key,
+  report_index_key,
+  registry_key,
+  latest_key
+FROM public_report_latest
+LIMIT 1
+"@ -Description "latest publication")
+
+    if ($rows.Count -lt 1) {
+        return $null
+    }
+
+    return $rows[0]
+}
+
+function Test-D1RunShouldUpdateLatest {
+    param(
+        [AllowNull()]$LatestRow,
+        [Parameter(Mandatory = $true)]$Entry
+    )
+
+    if ($null -eq $LatestRow -or [string]::IsNullOrWhiteSpace([string]$LatestRow.generated_at)) {
+        return $true
+    }
+
+    try {
+        $currentGeneratedAt = [DateTimeOffset]$Entry.generatedAt
+        $existingGeneratedAt = [DateTimeOffset]$LatestRow.generated_at
+        return $currentGeneratedAt -ge $existingGeneratedAt
+    }
+    catch {
+        return $true
+    }
+}
+
+function Assert-RegistryEntryMatchesD1Run {
     param(
         [Parameter(Mandatory = $true)]$Entry,
-        [Parameter(Mandatory = $true)]$Manifest,
-        [Parameter(Mandatory = $true)]$PublicationWarnings,
-        [Parameter(Mandatory = $true)][datetimeoffset]$PublishedAt
+        [Parameter(Mandatory = $true)]$Row
+    )
+
+    $runId = [string]$Row.run_id
+    if ([string]::IsNullOrWhiteSpace($runId)) {
+        throw "D1 published run row is missing a run id."
+    }
+
+    if (-not [string]::Equals([string]$Entry.runId, $runId, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "D1 published run '$runId' references registry entry for run '$($Entry.runId)'."
+    }
+
+    $stringFields = @(
+        [ordered]@{ Json = "bundlePrefix"; Sql = "bundle_prefix" },
+        [ordered]@{ Json = "evidenceReportJsonKey"; Sql = "evidence_report_json_key" },
+        [ordered]@{ Json = "evidenceReportMarkdownKey"; Sql = "evidence_report_markdown_key" },
+        [ordered]@{ Json = "artifactsIndexKey"; Sql = "artifacts_index_key" },
+        [ordered]@{ Json = "publicationManifestKey"; Sql = "publication_manifest_key" },
+        [ordered]@{ Json = "publicationWarningsKey"; Sql = "publication_warnings_key" },
+        [ordered]@{ Json = "publicationSkippedKey"; Sql = "publication_skipped_key" },
+        [ordered]@{ Json = "reportIndexEntryKey"; Sql = "report_index_entry_key" },
+        [ordered]@{ Json = "reportIndexKey"; Sql = "report_index_key" },
+        [ordered]@{ Json = "visibility"; Sql = "visibility" },
+        [ordered]@{ Json = "sourceKind"; Sql = "source_kind" },
+        [ordered]@{ Json = "claimLevel"; Sql = "claim_level" },
+        [ordered]@{ Json = "executionProfile"; Sql = "execution_profile" },
+        [ordered]@{ Json = "artifactRootKey"; Sql = "artifact_root_key" }
+    )
+
+    foreach ($field in $stringFields) {
+        $jsonValue = [string]$Entry.($field.Json)
+        $sqlValue = [string]$Row.($field.Sql)
+        if (-not [string]::Equals($jsonValue, $sqlValue, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "D1 published run '$runId' has mismatched registry field '$($field.Json)' ('$jsonValue' vs '$sqlValue')."
+        }
+    }
+
+    if ([bool]$Entry.publishable -ne (ConvertFrom-D1Boolean $Row.publishable)) {
+        throw "D1 published run '$runId' has mismatched publishable metadata."
+    }
+
+    if ([bool]$Entry.diagnosticOnly -ne (ConvertFrom-D1Boolean $Row.diagnostic_only)) {
+        throw "D1 published run '$runId' has mismatched diagnosticOnly metadata."
+    }
+
+    if ([int]$Entry.warningCount -ne (ConvertFrom-D1Integer $Row.evidence_warning_count)) {
+        throw "D1 published run '$runId' has mismatched evidence warning count."
+    }
+
+    if (@($Entry.implementations).Count -ne (ConvertFrom-D1Integer $Row.implementation_count)) {
+        throw "D1 published run '$runId' has mismatched implementation count."
+    }
+
+    if (@($Entry.scenarios).Count -ne (ConvertFrom-D1Integer $Row.scenario_count)) {
+        throw "D1 published run '$runId' has mismatched scenario count."
+    }
+
+    if (@($Entry.protocols).Count -ne (ConvertFrom-D1Integer $Row.protocol_count)) {
+        throw "D1 published run '$runId' has mismatched protocol count."
+    }
+}
+
+function Get-D1BackedRegistryEntries {
+    param(
+        [Parameter(Mandatory = $true)][object[]]$RunRows,
+        [Parameter(Mandatory = $true)]$CurrentEntry,
+        [Parameter(Mandatory = $true)][string]$Bucket,
+        [Parameter(Mandatory = $true)][string]$TempDirectory
+    )
+
+    $entries = New-Object System.Collections.Generic.List[object]
+    foreach ($row in @($RunRows)) {
+        $runId = [string]$row.run_id
+        if ([string]::IsNullOrWhiteSpace($runId)) {
+            throw "D1 published run row is missing a run id."
+        }
+
+        if ([string]::Equals($runId, [string]$CurrentEntry.runId, [System.StringComparison]::OrdinalIgnoreCase)) {
+            $entry = $CurrentEntry
+        }
+        else {
+            $entryKey = [string]$row.report_index_entry_key
+            if ([string]::IsNullOrWhiteSpace($entryKey)) {
+                throw "D1 published run '$runId' has a blank report-index-entry key."
+            }
+
+            $entry = Read-R2JsonObject -Bucket $Bucket -ObjectKey $entryKey -TempDirectory $TempDirectory
+            if ($null -eq $entry) {
+                throw "D1 published run '$runId' references missing or malformed registry entry '$entryKey'."
+            }
+        }
+
+        Assert-RegistryEntryMatchesD1Run -Entry $entry -Row $row
+        $entries.Add($entry) | Out-Null
+    }
+
+    return @($entries)
+}
+
+function Build-LatestObjectFromD1Run {
+    param(
+        [Parameter(Mandatory = $true)]$Entry,
+        [Parameter(Mandatory = $true)]$Row
     )
 
     return [ordered]@{
         schemaVersion = "protocol-lab.public-report-latest.v1"
         runId = $Entry.runId
         generatedAt = $Entry.generatedAt
-        publishedAt = $PublishedAt.ToString("o")
+        publishedAt = [string]$Row.published_at
         claimLevel = $Entry.claimLevel
         publishable = [bool]$Entry.publishable
         diagnosticOnly = [bool]$Entry.diagnosticOnly
         executionProfile = $Entry.executionProfile
         visibility = $Entry.visibility
         sourceKind = $Entry.sourceKind
-        evidenceWarningCount = [int]$Entry.warningCount
-        publicationWarningCount = [int]$PublicationWarnings.Count
-        copiedArtifactCount = [int]$Manifest.copiedArtifactCount
-        skippedArtifactCount = [int]$Manifest.skippedArtifactCount
-        implementationCount = [int]$Entry.implementations.Count
-        scenarioCount = [int]$Entry.scenarios.Count
-        protocolCount = [int]$Entry.protocols.Count
-        validationPassed = [int]$Manifest.validationCounts.passed
-        validationFailed = [int]$Manifest.validationCounts.failed
-        validationUnsupported = [int]$Manifest.validationCounts.unsupported
-        validationNotApplicable = [int]$Manifest.validationCounts.notApplicable
-        validationInconclusive = [int]$Manifest.validationCounts.inconclusive
-        validationInfrastructureFailure = [int]$Manifest.validationCounts.infrastructureFailure
-        benchmarkAccepted = [int]$Manifest.benchmarkCounts.accepted
-        benchmarkRejected = [int]$Manifest.benchmarkCounts.rejected
-        benchmarkNotRunValidationFailed = [int]$Manifest.benchmarkCounts.notRunValidationFailed
-        benchmarkNotRunUnsupported = [int]$Manifest.benchmarkCounts.notRunUnsupported
-        benchmarkNotRunLoadToolFailed = [int]$Manifest.benchmarkCounts.notRunLoadToolFailed
-        benchmarkNotRunParserFailed = [int]$Manifest.benchmarkCounts.notRunParserFailed
+        evidenceWarningCount = ConvertFrom-D1Integer $Row.evidence_warning_count
+        publicationWarningCount = ConvertFrom-D1Integer $Row.publication_warning_count
+        copiedArtifactCount = ConvertFrom-D1Integer $Row.copied_artifact_count
+        skippedArtifactCount = ConvertFrom-D1Integer $Row.skipped_artifact_count
+        implementationCount = ConvertFrom-D1Integer $Row.implementation_count
+        scenarioCount = ConvertFrom-D1Integer $Row.scenario_count
+        protocolCount = ConvertFrom-D1Integer $Row.protocol_count
+        validationPassed = ConvertFrom-D1Integer $Row.validation_passed
+        validationFailed = ConvertFrom-D1Integer $Row.validation_failed
+        validationUnsupported = ConvertFrom-D1Integer $Row.validation_unsupported
+        validationNotApplicable = ConvertFrom-D1Integer $Row.validation_not_applicable
+        validationInconclusive = ConvertFrom-D1Integer $Row.validation_inconclusive
+        validationInfrastructureFailure = ConvertFrom-D1Integer $Row.validation_infrastructure_failure
+        benchmarkAccepted = ConvertFrom-D1Integer $Row.benchmark_accepted
+        benchmarkRejected = ConvertFrom-D1Integer $Row.benchmark_rejected
+        benchmarkNotRunValidationFailed = ConvertFrom-D1Integer $Row.benchmark_not_run_validation_failed
+        benchmarkNotRunUnsupported = ConvertFrom-D1Integer $Row.benchmark_not_run_unsupported
+        benchmarkNotRunLoadToolFailed = ConvertFrom-D1Integer $Row.benchmark_not_run_load_tool_failed
+        benchmarkNotRunParserFailed = ConvertFrom-D1Integer $Row.benchmark_not_run_parser_failed
         artifactRootKey = $Entry.artifactRootKey
         bundlePrefix = $Entry.bundlePrefix
         evidenceReportJsonKey = $Entry.evidenceReportJsonKey
@@ -711,7 +980,7 @@ function Assert-UploadedRegistryObjectsComplete {
         [Parameter(Mandatory = $true)][string]$Bucket,
         [Parameter(Mandatory = $true)][string]$RunId,
         [Parameter(Mandatory = $true)][string]$TempDirectory,
-        [Parameter(Mandatory = $true)][bool]$ShouldUpdateLatest
+        [Parameter(Mandatory = $true)][string]$ExpectedLatestRunId
     )
 
     $registryObject = Read-R2JsonObject -Bucket $Bucket -ObjectKey "public/registry/report-index.json" -TempDirectory $TempDirectory
@@ -724,16 +993,14 @@ function Assert-UploadedRegistryObjectsComplete {
         throw "Uploaded registry object 'public/registry/report-index.json' does not include run '$RunId'."
     }
 
-    if ($ShouldUpdateLatest) {
-        $latestJson = Read-R2JsonObject -Bucket $Bucket -ObjectKey "public/registry/latest.json" -TempDirectory $TempDirectory
-        if ($null -eq $latestJson) {
-            throw "Uploaded registry object 'public/registry/latest.json' is missing or malformed JSON."
-        }
+    $latestJson = Read-R2JsonObject -Bucket $Bucket -ObjectKey "public/registry/latest.json" -TempDirectory $TempDirectory
+    if ($null -eq $latestJson) {
+        throw "Uploaded registry object 'public/registry/latest.json' is missing or malformed JSON."
+    }
 
-        if ($latestJson.PSObject.Properties.Name -contains "runId" -and
-            -not [string]::Equals([string]$latestJson.runId, $RunId, [System.StringComparison]::OrdinalIgnoreCase)) {
-            throw "Uploaded registry object 'public/registry/latest.json' points at run '$($latestJson.runId)' instead of '$RunId'."
-        }
+    if ($latestJson.PSObject.Properties.Name -contains "runId" -and
+        -not [string]::Equals([string]$latestJson.runId, $ExpectedLatestRunId, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Uploaded registry object 'public/registry/latest.json' points at run '$($latestJson.runId)' instead of '$ExpectedLatestRunId'."
     }
 }
 
@@ -1505,39 +1772,43 @@ try {
 
     Assert-UploadedRunBundleComplete -Bucket $BucketName -RunId $RunId -BundleRoot $BundleRoot -TempDirectory $tempRoot
 
-    $registryObject = Read-R2JsonObject -Bucket $BucketName -ObjectKey "public/registry/report-index.json" -TempDirectory $tempRoot
-    $mergedRegistry = Build-RegistryMerge -ExistingRegistry $registryObject -CurrentEntry $entry
+    $sqlPath = Join-Path $tempRoot "public-report-index.sql"
+    Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $SchemaPath -Description "schema"
+
+    $existingLatestRow = Get-D1LatestPublicationRow -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken
+    $shouldUpdateLatest = Test-D1RunShouldUpdateLatest -LatestRow $existingLatestRow -Entry $entry
+    Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $shouldUpdateLatest
+
+    Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $sqlPath -Description "metadata"
+
+    $publishedRunRows = @(Get-D1PublishedRunRows -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken)
+    if ($publishedRunRows.Count -lt 1) {
+        throw "D1 published run scan returned no runs after metadata indexing."
+    }
+
+    $registryEntries = @(Get-D1BackedRegistryEntries -RunRows $publishedRunRows -CurrentEntry $entry -Bucket $BucketName -TempDirectory $tempRoot)
+    $mergedRegistry = Build-RegistryFromEntries -Entries $registryEntries
     $registryPath = Join-Path $tempRoot "report-index.json"
     $mergedRegistry | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $registryPath -Encoding utf8NoBOM
     Write-R2Object -ObjectKey "public/registry/report-index.json" -FilePath $registryPath
 
-    $latestObject = Read-R2JsonObject -Bucket $BucketName -ObjectKey "public/registry/latest.json" -TempDirectory $tempRoot
-    $shouldUpdateLatest = $true
-    if ($latestObject -and $latestObject.generatedAt) {
-        try {
-            $currentGeneratedAt = [DateTimeOffset]$entry.generatedAt
-            $existingGeneratedAt = [DateTimeOffset]$latestObject.generatedAt
-            $shouldUpdateLatest = $currentGeneratedAt -ge $existingGeneratedAt
-        }
-        catch {
-            $shouldUpdateLatest = $true
-        }
+    $latestRow = Get-D1LatestPublicationRow -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken
+    if ($null -eq $latestRow -or [string]::IsNullOrWhiteSpace([string]$latestRow.run_id)) {
+        throw "D1 latest publication row is missing after metadata indexing."
     }
 
-    if ($shouldUpdateLatest) {
-        $latestJson = Build-LatestObject -Entry $entry -Manifest $manifest -PublicationWarnings $warnings -PublishedAt $publishedAt
-        $latestPath = Join-Path $tempRoot "latest.json"
-        $latestJson | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $latestPath -Encoding utf8NoBOM
-        Write-R2Object -ObjectKey "public/registry/latest.json" -FilePath $latestPath
+    $latestRunId = [string]$latestRow.run_id
+    $latestEntry = @($registryEntries | Where-Object { [string]::Equals([string]$_.runId, $latestRunId, [System.StringComparison]::OrdinalIgnoreCase) } | Select-Object -First 1)
+    if ($latestEntry.Count -lt 1) {
+        throw "D1 latest publication row references run '$latestRunId', but no matching registry entry was rebuilt."
     }
 
-    Assert-UploadedRegistryObjectsComplete -Bucket $BucketName -RunId $RunId -TempDirectory $tempRoot -ShouldUpdateLatest $shouldUpdateLatest
+    $latestJson = Build-LatestObjectFromD1Run -Entry $latestEntry[0] -Row $latestRow
+    $latestPath = Join-Path $tempRoot "latest.json"
+    $latestJson | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $latestPath -Encoding utf8NoBOM
+    Write-R2Object -ObjectKey "public/registry/latest.json" -FilePath $latestPath
 
-    $sqlPath = Join-Path $tempRoot "public-report-index.sql"
-    Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $shouldUpdateLatest
-
-    Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $SchemaPath -Description "schema"
-    Invoke-D1SqlFile -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -Path $sqlPath -Description "metadata"
+    Assert-UploadedRegistryObjectsComplete -Bucket $BucketName -RunId $RunId -TempDirectory $tempRoot -ExpectedLatestRunId $latestRunId
 
     if ($VerifyPublishedRuns) {
         Assert-PublishedRunsComplete -Bucket $BucketName -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -TempDirectory $tempRoot

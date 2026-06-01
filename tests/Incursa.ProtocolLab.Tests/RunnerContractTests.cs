@@ -74,6 +74,11 @@ public sealed class RunnerContractTests
             Assert.Contains(result.Artifacts, artifact => artifact.Kind == "run-descriptor" && File.Exists(artifact.Path));
             Assert.Contains(result.Artifacts, artifact => artifact.Kind == "aggregate-results" && File.Exists(artifact.Path));
             Assert.Contains(result.Artifacts, artifact => artifact.Kind == "summary" && File.Exists(artifact.Path));
+            Assert.Contains(result.Artifacts, artifact => artifact.Kind == "evidence-report-v1-json" && File.Exists(artifact.Path));
+            Assert.Contains(result.Artifacts, artifact => artifact.Kind == "public-report-bundle" && Directory.Exists(artifact.Path));
+            Assert.True(File.Exists(Path.Combine(output, "artifact-references", "evidence-report-v1.json")));
+            Assert.True(File.Exists(Path.Combine(output, "publication", "artifact-references", "evidence-report-v1.json")));
+            Assert.True(File.Exists(Path.Combine(output, "publication", "artifact-references", "artifacts-index.json")));
         }
         finally
         {

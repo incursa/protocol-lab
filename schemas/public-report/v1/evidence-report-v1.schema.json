@@ -1,0 +1,688 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://protocol-lab.incursa.com/schemas/public-report/v1/evidence-report-v1.schema.json",
+  "title": "ProtocolLab Evidence Report v1",
+  "description": "Canonical shareable ProtocolLab run evidence payload uploaded to R2 as evidence-report-v1.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generatedAt",
+    "identity",
+    "matrixSummary",
+    "validationSummary",
+    "benchmarkAcceptance",
+    "cells",
+    "comparisonGroups",
+    "warnings",
+    "artifactIndex"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "protocol-lab.evidence-report.v1"
+    },
+    "runId": {
+      "$ref": "#/definitions/nonEmptyString"
+    },
+    "generatedAt": {
+      "$ref": "#/definitions/dateTime"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runId",
+        "timestamp",
+        "processorCount",
+        "warnings"
+      ],
+      "properties": {
+        "runId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/dateTime"
+        },
+        "suiteId": {
+          "type": "string"
+        },
+        "suiteTitle": {
+          "type": "string"
+        },
+        "gitCommit": {
+          "type": "string"
+        },
+        "hostName": {
+          "type": "string"
+        },
+        "operatingSystem": {
+          "type": "string"
+        },
+        "frameworkDescription": {
+          "type": "string"
+        },
+        "processArchitecture": {
+          "type": "string"
+        },
+        "operatingSystemArchitecture": {
+          "type": "string"
+        },
+        "processorCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalAvailableMemoryBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "executionMode": {
+          "type": "string"
+        },
+        "evidenceTier": {
+          "type": "string"
+        },
+        "warnings": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "matrixSummary": {
+      "$ref": "#/definitions/matrixSummary"
+    },
+    "validationSummary": {
+      "$ref": "#/definitions/validationSummary"
+    },
+    "benchmarkAcceptance": {
+      "$ref": "#/definitions/benchmarkAcceptance"
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/cell"
+      }
+    },
+    "comparisonGroups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/comparisonGroup"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/warning"
+      }
+    },
+    "artifactIndex": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/artifactEntry"
+      }
+    }
+  },
+  "definitions": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "matrixSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "totalCells",
+        "supportedCells",
+        "unsupportedCells",
+        "missingCapability",
+        "missingLoadTool",
+        "incompatibleTrafficShape",
+        "incompatibleLoadProfile",
+        "experimentalDisabled",
+        "placeholderNotRunnable",
+        "otherUnsupported",
+        "unsupportedCellDetails"
+      ],
+      "properties": {
+        "totalCells": {
+          "$ref": "#/definitions/count"
+        },
+        "supportedCells": {
+          "$ref": "#/definitions/count"
+        },
+        "unsupportedCells": {
+          "$ref": "#/definitions/count"
+        },
+        "missingCapability": {
+          "$ref": "#/definitions/count"
+        },
+        "missingLoadTool": {
+          "$ref": "#/definitions/count"
+        },
+        "incompatibleTrafficShape": {
+          "$ref": "#/definitions/count"
+        },
+        "incompatibleLoadProfile": {
+          "$ref": "#/definitions/count"
+        },
+        "experimentalDisabled": {
+          "$ref": "#/definitions/count"
+        },
+        "placeholderNotRunnable": {
+          "$ref": "#/definitions/count"
+        },
+        "otherUnsupported": {
+          "$ref": "#/definitions/count"
+        },
+        "unsupportedCellDetails": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "validationSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "failed",
+        "unsupported",
+        "notApplicable",
+        "inconclusive",
+        "infrastructureFailure",
+        "proofArtifacts"
+      ],
+      "properties": {
+        "passed": {
+          "$ref": "#/definitions/count"
+        },
+        "failed": {
+          "$ref": "#/definitions/count"
+        },
+        "unsupported": {
+          "$ref": "#/definitions/count"
+        },
+        "notApplicable": {
+          "$ref": "#/definitions/count"
+        },
+        "inconclusive": {
+          "$ref": "#/definitions/count"
+        },
+        "infrastructureFailure": {
+          "$ref": "#/definitions/count"
+        },
+        "proofArtifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "cellKey",
+              "status",
+              "artifacts"
+            ],
+            "properties": {
+              "cellKey": {
+                "$ref": "#/definitions/nonEmptyString"
+              },
+              "status": {
+                "$ref": "#/definitions/nonEmptyString"
+              },
+              "proofDirectory": {
+                "type": "string"
+              },
+              "artifacts": {
+                "$ref": "#/definitions/stringArray"
+              }
+            }
+          }
+        }
+      }
+    },
+    "benchmarkAcceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "acceptedBenchmarks",
+        "rejectedBenchmarks",
+        "notRunValidationFailed",
+        "notRunUnsupported",
+        "notRunLoadToolFailed",
+        "notRunParserFailed",
+        "acceptedDetails",
+        "rejectedDetails",
+        "notRunDetails"
+      ],
+      "properties": {
+        "acceptedBenchmarks": {
+          "$ref": "#/definitions/count"
+        },
+        "rejectedBenchmarks": {
+          "$ref": "#/definitions/count"
+        },
+        "notRunValidationFailed": {
+          "$ref": "#/definitions/count"
+        },
+        "notRunUnsupported": {
+          "$ref": "#/definitions/count"
+        },
+        "notRunLoadToolFailed": {
+          "$ref": "#/definitions/count"
+        },
+        "notRunParserFailed": {
+          "$ref": "#/definitions/count"
+        },
+        "acceptedDetails": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/benchmarkItem"
+          }
+        },
+        "rejectedDetails": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/benchmarkItem"
+          }
+        },
+        "notRunDetails": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/benchmarkItem"
+          }
+        }
+      }
+    },
+    "benchmarkItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "implementationId",
+        "scenarioId",
+        "protocol",
+        "connections",
+        "streamsPerConnection",
+        "repetition",
+        "benchmarkStatus"
+      ],
+      "properties": {
+        "implementationId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "scenarioId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "protocol": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "connections": {
+          "$ref": "#/definitions/count"
+        },
+        "streamsPerConnection": {
+          "$ref": "#/definitions/count"
+        },
+        "repetition": {
+          "$ref": "#/definitions/count"
+        },
+        "benchmarkStatus": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "evidenceTier": {
+          "type": "string"
+        }
+      }
+    },
+    "cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cellKey",
+        "implementationId",
+        "implementationName",
+        "scenarioId",
+        "scenarioName",
+        "family",
+        "protocol",
+        "role",
+        "executionProfile",
+        "durationSeconds",
+        "warmupSeconds",
+        "repetition",
+        "connections",
+        "streamsPerConnection",
+        "networkProfile",
+        "validation",
+        "benchmark",
+        "measurements",
+        "artifacts",
+        "warnings",
+        "errors"
+      ],
+      "properties": {
+        "cellKey": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "implementationId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "implementationName": {
+          "type": "string"
+        },
+        "scenarioId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "scenarioName": {
+          "type": "string"
+        },
+        "family": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "protocol": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "requestedProtocol": {
+          "type": "string"
+        },
+        "provenProtocol": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "executionProfile": {
+          "type": "string"
+        },
+        "loadProfileId": {
+          "type": "string"
+        },
+        "loadProfileTitle": {
+          "type": "string"
+        },
+        "loadProfilePurpose": {
+          "type": "string"
+        },
+        "loadTool": {
+          "type": "string"
+        },
+        "loadToolMode": {
+          "type": "string"
+        },
+        "loadToolCategory": {
+          "type": "string"
+        },
+        "targetExecutionMode": {
+          "type": "string"
+        },
+        "targetContract": {
+          "type": "string"
+        },
+        "durationSeconds": {
+          "$ref": "#/definitions/count"
+        },
+        "warmupSeconds": {
+          "$ref": "#/definitions/count"
+        },
+        "repetition": {
+          "$ref": "#/definitions/count"
+        },
+        "connections": {
+          "$ref": "#/definitions/count"
+        },
+        "streamsPerConnection": {
+          "$ref": "#/definitions/count"
+        },
+        "networkProfile": {
+          "type": "string"
+        },
+        "validation": {
+          "$ref": "#/definitions/cellValidation"
+        },
+        "benchmark": {
+          "$ref": "#/definitions/cellBenchmark"
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/measurement"
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cellArtifact"
+          }
+        },
+        "warnings": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "errors": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "cellValidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary",
+        "observations",
+        "proofArtifacts",
+        "warnings",
+        "errors"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "provenProtocol": {
+          "type": "string"
+        },
+        "protocolProofMethod": {
+          "type": "string"
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "proofArtifacts": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "warnings": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "errors": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "cellBenchmark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "parsedMetricsAvailable",
+        "evidenceReasons",
+        "comparabilityWarnings"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "failureReason": {
+          "type": "string"
+        },
+        "parsedMetricsAvailable": {
+          "type": "boolean"
+        },
+        "evidenceClass": {
+          "type": "string"
+        },
+        "comparabilityStatus": {
+          "type": "string"
+        },
+        "evidenceReasons": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "comparabilityWarnings": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "category",
+        "unit",
+        "source",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "category": {
+          "enum": [
+            "quantity",
+            "throughput",
+            "latency",
+            "memory",
+            "cpu",
+            "network",
+            "diagnostic",
+            "protocol",
+            "custom"
+          ]
+        },
+        "unit": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "source": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "value": {
+          "type": "number"
+        },
+        "statistic": {
+          "type": "string"
+        },
+        "higherIsBetter": {
+          "type": "boolean"
+        }
+      }
+    },
+    "cellArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "path",
+        "exists"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "path": {
+          "type": "string"
+        },
+        "exists": {
+          "type": "boolean"
+        }
+      }
+    },
+    "comparisonGroup": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "scenarioId",
+        "protocol",
+        "entries",
+        "comparabilityWarnings"
+      ],
+      "properties": {
+        "scenarioId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "protocol": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "comparabilityWarnings": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "warning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "message"
+      ],
+      "properties": {
+        "category": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "message": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "context": {
+          "type": "string"
+        }
+      }
+    },
+    "artifactEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cellKey",
+        "cellDirectory",
+        "files"
+      ],
+      "properties": {
+        "cellKey": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "cellDirectory": {
+          "type": "string"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cellArtifact"
+          }
+        }
+      }
+    }
+  }
+}

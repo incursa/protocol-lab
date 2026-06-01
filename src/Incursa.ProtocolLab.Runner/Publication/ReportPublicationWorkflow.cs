@@ -4,6 +4,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Incursa.ProtocolLab.Model;
+using NJsonSchema;
 
 namespace Incursa.ProtocolLab.Runner;
 
@@ -279,6 +280,21 @@ internal static class ReportPublicationWorkflow
         if (ContainsForbiddenContent(skippedMarkdown, out evidenceLeak))
         {
             output.WriteError($"Publication skipped list still contains a forbidden path or secret marker: {evidenceLeak}");
+            return RunnerCommandResult.Create(RunnerCommandKind.PublishReport, 1, output.Messages);
+        }
+
+        var schemaValidationError = await ValidatePublicReportSchemasAsync(
+            repositoryRoot,
+            [
+                ("evidence-report-v1.schema.json", "evidence-report-v1.json", evidenceReportJson),
+                ("artifacts-index.schema.json", "artifacts-index.json", artifactsIndexJson),
+                ("publication-manifest.schema.json", "publication-manifest.json", manifestJson),
+                ("report-index-entry.schema.json", "report-index-entry.json", registryEntryJson),
+                ("report-index.schema.json", "report-index.json", registryJson)
+            ]);
+        if (schemaValidationError is not null)
+        {
+            output.WriteError(schemaValidationError);
             return RunnerCommandResult.Create(RunnerCommandKind.PublishReport, 1, output.Messages);
         }
 
@@ -560,12 +576,37 @@ internal static class ReportPublicationWorkflow
             })
             .ToArray();
 
+        var publicArtifactsByCell = sanitizedIndex.ToDictionary(cell => cell.CellKey, StringComparer.OrdinalIgnoreCase);
+        var sanitizedCells = report.Cells
+            .Select(cell =>
+            {
+                var publicArtifacts = publicArtifactsByCell.TryGetValue(cell.CellKey, out var artifactEntry)
+                    ? artifactEntry.Files.Select(file => new EvidenceReportCellArtifact
+                    {
+                        Name = file.Name,
+                        Path = file.Exists ? file.Path : "",
+                        Exists = file.Exists
+                    }).ToArray()
+                    : Array.Empty<EvidenceReportCellArtifact>();
+
+                return cell with
+                {
+                    Validation = cell.Validation with
+                    {
+                        ProofArtifacts = []
+                    },
+                    Artifacts = publicArtifacts
+                };
+            })
+            .ToArray();
+
         return report with
         {
             ValidationSummary = report.ValidationSummary with
             {
                 ProofArtifacts = sanitizedProofs
             },
+            Cells = sanitizedCells,
             ArtifactIndex = sanitizedIndex
         };
     }
@@ -820,6 +861,46 @@ internal static class ReportPublicationWorkflow
 
         builder.AppendLine();
         return builder.ToString();
+    }
+
+    private static async Task<string?> ValidatePublicReportSchemasAsync(
+        string repositoryRoot,
+        IReadOnlyList<(string SchemaFileName, string PayloadName, string Payload)> payloads)
+    {
+        var schemaRoot = ResolvePublicReportSchemaRoot(repositoryRoot);
+        if (schemaRoot is null)
+        {
+            return $"Public report schema root was not found under {repositoryRoot} or {Directory.GetCurrentDirectory()}.";
+        }
+
+        foreach (var (schemaFileName, payloadName, payload) in payloads)
+        {
+            var schemaPath = Path.Combine(schemaRoot, schemaFileName);
+            if (!File.Exists(schemaPath))
+            {
+                return $"Public report schema is missing: {schemaPath}";
+            }
+
+            var schema = await JsonSchema.FromFileAsync(schemaPath);
+            var errors = schema.Validate(payload);
+            if (errors.Count > 0)
+            {
+                return $"{payloadName} does not match {schemaFileName}: {string.Join("; ", errors.Select(error => error.ToString()))}";
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ResolvePublicReportSchemaRoot(string repositoryRoot)
+    {
+        var candidates = new[]
+        {
+            Path.Combine(repositoryRoot, "schemas", "public-report", "v1"),
+            Path.Combine(Directory.GetCurrentDirectory(), "schemas", "public-report", "v1")
+        };
+
+        return candidates.FirstOrDefault(Directory.Exists);
     }
 
     private static bool IsSelectedArtifact(string name)

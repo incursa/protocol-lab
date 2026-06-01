@@ -82,6 +82,82 @@ public sealed record EvidenceReportBenchmarkItem
     public string? EvidenceTier { get; init; }
 }
 
+public sealed record EvidenceReportCellValidation
+{
+    public string Status { get; init; } = "";
+    public string Summary { get; init; } = "";
+    public string? ProvenProtocol { get; init; }
+    public string? ProtocolProofMethod { get; init; }
+    public IReadOnlyList<ValidationObservation> Observations { get; init; } = [];
+    public IReadOnlyList<ValidationProofArtifact> ProofArtifacts { get; init; } = [];
+    public IReadOnlyList<string> Warnings { get; init; } = [];
+    public IReadOnlyList<string> Errors { get; init; } = [];
+}
+
+public sealed record EvidenceReportCellBenchmark
+{
+    public string Status { get; init; } = "";
+    public string? FailureReason { get; init; }
+    public bool ParsedMetricsAvailable { get; init; }
+    public string? EvidenceClass { get; init; }
+    public string? ComparabilityStatus { get; init; }
+    public IReadOnlyList<string> EvidenceReasons { get; init; } = [];
+    public IReadOnlyList<string> ComparabilityWarnings { get; init; } = [];
+}
+
+public sealed record EvidenceReportMeasurement
+{
+    public string Name { get; init; } = "";
+    public string Category { get; init; } = "";
+    public string Unit { get; init; } = "";
+    public string Source { get; init; } = "";
+    public double Value { get; init; }
+    public string? Statistic { get; init; }
+    public bool? HigherIsBetter { get; init; }
+}
+
+public sealed record EvidenceReportCellArtifact
+{
+    public string Name { get; init; } = "";
+    public string Path { get; init; } = "";
+    public bool Exists { get; init; }
+}
+
+public sealed record EvidenceReportCell
+{
+    public string CellKey { get; init; } = "";
+    public string ImplementationId { get; init; } = "";
+    public string ImplementationName { get; init; } = "";
+    public string ScenarioId { get; init; } = "";
+    public string ScenarioName { get; init; } = "";
+    public string Family { get; init; } = "";
+    public string Protocol { get; init; } = "";
+    public string? RequestedProtocol { get; init; }
+    public string? ProvenProtocol { get; init; }
+    public string Role { get; init; } = "";
+    public string ExecutionProfile { get; init; } = "";
+    public string? LoadProfileId { get; init; }
+    public string? LoadProfileTitle { get; init; }
+    public string? LoadProfilePurpose { get; init; }
+    public string? LoadTool { get; init; }
+    public string? LoadToolMode { get; init; }
+    public string? LoadToolCategory { get; init; }
+    public string? TargetExecutionMode { get; init; }
+    public string? TargetContract { get; init; }
+    public int DurationSeconds { get; init; }
+    public int WarmupSeconds { get; init; }
+    public int Repetition { get; init; }
+    public int Connections { get; init; }
+    public int StreamsPerConnection { get; init; }
+    public string NetworkProfile { get; init; } = "";
+    public EvidenceReportCellValidation Validation { get; init; } = new();
+    public EvidenceReportCellBenchmark Benchmark { get; init; } = new();
+    public IReadOnlyList<EvidenceReportMeasurement> Measurements { get; init; } = [];
+    public IReadOnlyList<EvidenceReportCellArtifact> Artifacts { get; init; } = [];
+    public IReadOnlyList<string> Warnings { get; init; } = [];
+    public IReadOnlyList<string> Errors { get; init; } = [];
+}
+
 public sealed record EvidenceReportComparisonGroup
 {
     public string ScenarioId { get; init; } = "";
@@ -143,12 +219,14 @@ public sealed record EvidenceReportArtifactFile
 
 public sealed record EvidenceReport
 {
+    public string SchemaVersion { get; init; } = "protocol-lab.evidence-report.v1";
     public string RunId { get; init; } = "";
     public DateTimeOffset GeneratedAt { get; init; }
     public EvidenceReportIdentity Identity { get; init; } = new();
     public EvidenceReportMatrixSummary MatrixSummary { get; init; } = new();
     public EvidenceReportValidationSummary ValidationSummary { get; init; } = new();
     public EvidenceReportBenchmarkAcceptance BenchmarkAcceptance { get; init; } = new();
+    public IReadOnlyList<EvidenceReportCell> Cells { get; init; } = [];
     public IReadOnlyList<EvidenceReportComparisonGroup> ComparisonGroups { get; init; } = [];
     public IReadOnlyList<EvidenceReportWarning> Warnings { get; init; } = [];
     public IReadOnlyList<EvidenceReportArtifactEntry> ArtifactIndex { get; init; } = [];
@@ -170,6 +248,7 @@ public static class EvidenceReportBuilder
         var matrixSummary = BuildMatrixSummary(cells, compatibilities);
         var validationSummary = BuildValidationSummary(results);
         var benchmarkAcceptance = BuildBenchmarkAcceptance(results);
+        var reportCells = BuildCells(results);
         var comparisonGroups = BuildComparisonGroups(results);
         var warnings = BuildWarnings(cells, compatibilities, results);
         var artifactIndex = BuildArtifactIndex(results);
@@ -182,6 +261,7 @@ public static class EvidenceReportBuilder
             MatrixSummary = matrixSummary,
             ValidationSummary = validationSummary,
             BenchmarkAcceptance = benchmarkAcceptance,
+            Cells = reportCells,
             ComparisonGroups = comparisonGroups,
             Warnings = warnings,
             ArtifactIndex = artifactIndex
@@ -337,7 +417,7 @@ public static class EvidenceReportBuilder
                     break;
             }
 
-            var cellKey = $"{result.ImplementationId}/{result.ScenarioId}/{result.Protocol}/c{result.Connections}-s{result.StreamsPerConnection}-r{result.Repetition}";
+            var cellKey = BuildCellKey(result);
             var proofArtifacts = result.ValidationResult.ProofArtifacts
                 .Select(pa => pa.Path)
                 .ToArray();
@@ -481,6 +561,170 @@ public static class EvidenceReportBuilder
             Repetition = result.Repetition,
             BenchmarkStatus = result.BenchmarkExecutionStatus
         };
+    }
+
+    private static IReadOnlyList<EvidenceReportCell> BuildCells(IReadOnlyList<BenchmarkResult> results)
+    {
+        return results
+            .Select(result =>
+            {
+                var cellKey = BuildCellKey(result);
+                return new EvidenceReportCell
+                {
+                    CellKey = cellKey,
+                    ImplementationId = result.ImplementationId,
+                    ImplementationName = result.ImplementationName,
+                    ScenarioId = result.ScenarioId,
+                    ScenarioName = result.ScenarioName,
+                    Family = result.Family,
+                    Protocol = result.Protocol,
+                    RequestedProtocol = result.RequestedProtocol,
+                    ProvenProtocol = result.ProvenProtocol,
+                    Role = result.Role,
+                    ExecutionProfile = result.ExecutionProfile,
+                    LoadProfileId = result.LoadProfileId,
+                    LoadProfileTitle = result.LoadProfileTitle,
+                    LoadProfilePurpose = result.LoadProfilePurpose,
+                    LoadTool = result.LoadTool,
+                    LoadToolMode = result.LoadToolMode,
+                    LoadToolCategory = result.LoadToolCategory,
+                    TargetExecutionMode = result.TargetExecutionMode,
+                    TargetContract = result.TargetContract,
+                    DurationSeconds = result.DurationSeconds,
+                    WarmupSeconds = result.WarmupSeconds,
+                    Repetition = result.Repetition,
+                    Connections = result.Connections,
+                    StreamsPerConnection = result.StreamsPerConnection,
+                    NetworkProfile = result.NetworkProfile,
+                    Validation = new EvidenceReportCellValidation
+                    {
+                        Status = result.ValidationResult.Status.ToString(),
+                        Summary = result.ValidationResult.Summary,
+                        ProvenProtocol = result.ProvenProtocol,
+                        ProtocolProofMethod = result.ProtocolProof?.Method ?? result.ValidationResult.ProtocolProof?.Method,
+                        Observations = result.ValidationResult.Observations,
+                        ProofArtifacts = result.ValidationResult.ProofArtifacts,
+                        Warnings = result.ValidationResult.Warnings,
+                        Errors = result.ValidationResult.Errors
+                    },
+                    Benchmark = new EvidenceReportCellBenchmark
+                    {
+                        Status = result.BenchmarkExecutionStatus,
+                        FailureReason = result.BenchmarkFailureReason,
+                        ParsedMetricsAvailable = result.ParsedMetricsAvailable,
+                        EvidenceClass = result.Evidence?.EvidenceClass,
+                        ComparabilityStatus = result.Evidence?.ComparabilityStatus,
+                        EvidenceReasons = result.Evidence?.EvidenceReasons ?? [],
+                        ComparabilityWarnings = result.Evidence?.ComparabilityWarnings ?? []
+                    },
+                    Measurements = BuildMeasurements(result),
+                    Artifacts = result.Artifacts
+                        .OrderBy(artifact => artifact.Key, StringComparer.OrdinalIgnoreCase)
+                        .Select(artifact => new EvidenceReportCellArtifact
+                        {
+                            Name = artifact.Key,
+                            Path = artifact.Value,
+                            Exists = !string.IsNullOrWhiteSpace(artifact.Value)
+                        })
+                        .ToArray(),
+                    Warnings = result.Warnings
+                        .Concat(result.LoadShapeWarnings)
+                        .Concat(result.TargetSaturationWarnings)
+                        .Concat(result.LoadToolSaturationWarnings)
+                        .Concat(result.TargetProcessMetrics?.Warnings ?? [])
+                        .Concat(result.DiagnosticTarget?.Warnings ?? [])
+                        .Concat(result.CountersSummary?.ParseWarnings ?? [])
+                        .Concat(result.TargetDockerMetricsSummary?.ParseWarnings ?? [])
+                        .Concat(result.LoadToolDockerMetricsSummary?.ParseWarnings ?? [])
+                        .ToArray(),
+                    Errors = result.Errors
+                        .Concat(result.ValidationResult.Errors)
+                        .Concat(result.DiagnosticTarget?.Errors ?? [])
+                        .ToArray()
+                };
+            })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<EvidenceReportMeasurement> BuildMeasurements(BenchmarkResult result)
+    {
+        var measurements = new List<EvidenceReportMeasurement>();
+
+        AddMeasurement(measurements, "requestsPerSecond", "throughput", "requests/s", "load-tool", result.Metrics.RequestsPerSecond, "sample", true);
+        AddMeasurement(measurements, "throughputBytesPerSecond", "throughput", "bytes/s", "load-tool", result.Metrics.ThroughputBytesPerSecond, "sample", true);
+        AddMeasurement(measurements, "totalRequests", "quantity", "count", "load-tool", result.Metrics.TotalRequests, "sample", true);
+        AddMeasurement(measurements, "successfulRequests", "quantity", "count", "load-tool", result.Metrics.SuccessfulRequests, "sample", true);
+        AddMeasurement(measurements, "failedRequests", "quantity", "count", "load-tool", result.Metrics.FailedRequests, "sample", false);
+        AddMeasurement(measurements, "timeoutRequests", "quantity", "count", "load-tool", result.Metrics.TimeoutRequests, "sample", false);
+        AddMeasurement(measurements, "bytesReceived", "quantity", "bytes", "load-tool", result.Metrics.BytesReceived, "sample", true);
+        AddMeasurement(measurements, "bytesSent", "quantity", "bytes", "load-tool", result.Metrics.BytesSent, "sample", true);
+        AddMeasurement(measurements, "latencyMinMs", "latency", "ms", "load-tool", result.Metrics.LatencyMinMs, "min", false);
+        AddMeasurement(measurements, "latencyMaxMs", "latency", "ms", "load-tool", result.Metrics.LatencyMaxMs, "max", false);
+        AddMeasurement(measurements, "latencyMeanMs", "latency", "ms", "load-tool", result.Metrics.LatencyMeanMs, "mean", false);
+        AddMeasurement(measurements, "latencyP50Ms", "latency", "ms", "load-tool", result.Metrics.LatencyP50Ms, "p50", false);
+        AddMeasurement(measurements, "latencyP75Ms", "latency", "ms", "load-tool", result.Metrics.LatencyP75Ms, "p75", false);
+        AddMeasurement(measurements, "latencyP90Ms", "latency", "ms", "load-tool", result.Metrics.LatencyP90Ms, "p90", false);
+        AddMeasurement(measurements, "latencyP95Ms", "latency", "ms", "load-tool", result.Metrics.LatencyP95Ms, "p95", false);
+        AddMeasurement(measurements, "latencyP99Ms", "latency", "ms", "load-tool", result.Metrics.LatencyP99Ms, "p99", false);
+        AddMeasurement(measurements, "latencyP999Ms", "latency", "ms", "load-tool", result.Metrics.LatencyP999Ms, "p999", false);
+        AddMeasurement(measurements, "connectTimeMeanMs", "latency", "ms", "load-tool", result.Metrics.ConnectTimeMeanMs, "mean", false);
+        AddMeasurement(measurements, "timeToFirstByteMeanMs", "latency", "ms", "load-tool", result.Metrics.TimeToFirstByteMeanMs, "mean", false);
+        AddMeasurement(measurements, "targetCpuMeanPercent", "cpu", "percent", "target", result.TargetDockerMetricsSummary?.CpuMeanPercent, "mean", false);
+        AddMeasurement(measurements, "targetCpuMaxPercent", "cpu", "percent", "target", result.TargetDockerMetricsSummary?.CpuMaxPercent, "max", false);
+        AddMeasurement(measurements, "targetMemoryMaxBytes", "memory", "bytes", "target", result.TargetDockerMetricsSummary?.MemoryMaxBytes, "max", false);
+        AddMeasurement(measurements, "targetMemoryMaxPercent", "memory", "percent", "target", result.TargetDockerMetricsSummary?.MemoryMaxPercent, "max", false);
+        AddMeasurement(measurements, "loadToolCpuMeanPercent", "cpu", "percent", "load-generator", result.LoadToolDockerMetricsSummary?.CpuMeanPercent, "mean", false);
+        AddMeasurement(measurements, "loadToolCpuMaxPercent", "cpu", "percent", "load-generator", result.LoadToolDockerMetricsSummary?.CpuMaxPercent, "max", false);
+        AddMeasurement(measurements, "loadToolMemoryMaxBytes", "memory", "bytes", "load-generator", result.LoadToolDockerMetricsSummary?.MemoryMaxBytes, "max", false);
+        AddMeasurement(measurements, "counterCpuMean", "cpu", "percent", "runtime-counter", result.CountersSummary?.CpuMean, "mean", false);
+        AddMeasurement(measurements, "counterCpuMax", "cpu", "percent", "runtime-counter", result.CountersSummary?.CpuMax, "max", false);
+        AddMeasurement(measurements, "allocationRateMean", "memory", "bytes/s", "runtime-counter", result.CountersSummary?.AllocationRateMean, "mean", false);
+        AddMeasurement(measurements, "gcHeapSizeMean", "memory", "bytes", "runtime-counter", result.CountersSummary?.GcHeapSizeMean, "mean", false);
+        AddMeasurement(measurements, "gcHeapSizeMax", "memory", "bytes", "runtime-counter", result.CountersSummary?.GcHeapSizeMax, "max", false);
+        AddMeasurement(measurements, "exceptionRateMean", "diagnostic", "exceptions/s", "runtime-counter", result.CountersSummary?.ExceptionRateMean, "mean", false);
+
+        return measurements;
+    }
+
+    private static void AddMeasurement(
+        ICollection<EvidenceReportMeasurement> measurements,
+        string name,
+        string category,
+        string unit,
+        string source,
+        double? value,
+        string statistic,
+        bool higherIsBetter)
+    {
+        if (value.HasValue)
+        {
+            measurements.Add(new EvidenceReportMeasurement
+            {
+                Name = name,
+                Category = category,
+                Unit = unit,
+                Source = source,
+                Value = value.Value,
+                Statistic = statistic,
+                HigherIsBetter = higherIsBetter
+            });
+        }
+    }
+
+    private static void AddMeasurement(
+        ICollection<EvidenceReportMeasurement> measurements,
+        string name,
+        string category,
+        string unit,
+        string source,
+        long? value,
+        string statistic,
+        bool higherIsBetter)
+    {
+        if (value.HasValue)
+        {
+            AddMeasurement(measurements, name, category, unit, source, (double)value.Value, statistic, higherIsBetter);
+        }
     }
 
     private static IReadOnlyList<EvidenceReportComparisonGroup> BuildComparisonGroups(
@@ -751,7 +995,7 @@ public static class EvidenceReportBuilder
 
         foreach (var result in results)
         {
-            var cellKey = $"{result.ImplementationId}/{result.ScenarioId}/{result.Protocol}/c{result.Connections}-s{result.StreamsPerConnection}-r{result.Repetition}";
+            var cellKey = BuildCellKey(result);
             var resultJsonPath = GetArtifact(result, "resultJson");
             var directory = resultJsonPath is not null
                 ? Path.GetDirectoryName(resultJsonPath) ?? ""
@@ -802,6 +1046,11 @@ public static class EvidenceReportBuilder
     private static string? GetArtifact(BenchmarkResult result, string key)
     {
         return result.Artifacts.TryGetValue(key, out var value) ? value : null;
+    }
+
+    private static string BuildCellKey(BenchmarkResult result)
+    {
+        return $"{result.ImplementationId}/{result.ScenarioId}/{result.Protocol}/c{result.Connections}-s{result.StreamsPerConnection}-r{result.Repetition}";
     }
 
     private static double? ComputeMedian(double[] values)

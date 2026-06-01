@@ -120,8 +120,11 @@ evidence class is per-result, while claim level is report-wide.
 ### Public Publication Bundles
 
 `publish-report` converts a completed run into a public-safe publication
-bundle. The bundle is a derivative view of the run, not a new canonical
-source of truth. It is intentionally narrow:
+bundle. Benchmark `run` invokes that same conversion automatically after the
+completed run artifacts are written. The bundle is a derivative view of the
+run, not a new canonical source of truth. The canonical public payload inside
+the bundle is `evidence-report-v1.json`; supporting files are publication
+metadata and pointers. It is intentionally narrow:
 
 - it reads completed run artifacts and the evidence report JSON
 - it copies only public-safe artifacts into a staged publication output
@@ -133,6 +136,17 @@ The bundle workflow must keep claim semantics driven by the Evidence Report
 v1 JSON. It may label `DiagnosticOnly` and `publishable=false` explicitly,
 but it must not invent verified or official claims that the source data does
 not allow.
+
+The public report schema set lives under `schemas/public-report/v1/`.
+`evidence-report-v1.schema.json` defines the shareable R2 payload shape:
+identity, coverage, validation, benchmark acceptance, per-cell status,
+generic measurements, warnings, errors, and public artifact references.
+Companion schemas cover the artifact index, publication manifest, and
+registry objects.
+
+D1 is not a report model. It is a derived index for browsing, filtering,
+object-key verification, and latest-pointer lookup. Consumers that need the
+actual report must read the R2 `evidence-report-v1.json` object.
 
 ## Design Rules
 

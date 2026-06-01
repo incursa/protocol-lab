@@ -40,4 +40,24 @@ public sealed class AcceptanceScriptTests
         Assert.Contains("nginx H3 validation", script);
         Assert.Contains("nginx is Docker-only in Phase 3H", script);
     }
+
+    [Fact]
+    public void Local_public_report_script_runs_benchmark_and_stages_bundle_without_cloud_upload()
+    {
+        var script = File.ReadAllText(Path.Combine(
+            TestPaths.RepoRoot,
+            "scripts",
+            "publication",
+            "New-ProtocolLabPublicReportBundle.ps1"));
+
+        Assert.Contains("This script does not upload to R2 and does not write D1 metadata.", script);
+        Assert.Contains("\"run\",", script);
+        Assert.Contains("\"publish-report\",", script);
+        Assert.Contains("--publication-output", script);
+        Assert.Contains("--skip-publication-bundle", script);
+        Assert.Contains("--allow-diagnostic-publication", script);
+        Assert.Contains("evidence-report-v1.json", script);
+        Assert.Contains("artifacts-index.json", script);
+        Assert.Contains("report-index.json", script);
+    }
 }

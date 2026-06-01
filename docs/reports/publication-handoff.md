@@ -11,6 +11,9 @@ Start from a completed run under:
 .artifacts/runs/{runId}
 ```
 
+Benchmark `run` creates this run root and stages the matching public bundle
+under `.artifacts/publication/{runId}` automatically.
+
 The run root must contain, at minimum:
 
 - `aggregate-results.json`
@@ -20,7 +23,9 @@ The run root must contain, at minimum:
 
 ## Stage The Public Bundle
 
-Use the existing `publish-report` command to create the sanitized bundle:
+Benchmark runs stage the sanitized bundle automatically. Use the existing
+`publish-report` command when you need to restage a bundle from an existing
+completed run:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- publish-report --run .artifacts\runs\{runId} --output .artifacts\publication\{runId} --visibility public
@@ -46,6 +51,21 @@ The bundle contains:
 
 The bundle preserves the Evidence Report v1 semantics. It does not invent new
 claims, suppress `DiagnosticOnly`, or silently hide `publishable=false`.
+`evidence-report-v1.json` is the canonical public payload for downstream
+consumers and validates against
+`schemas/public-report/v1/evidence-report-v1.schema.json`.
+
+For local one-command generation, use:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\New-ProtocolLabPublicReportBundle.ps1
+```
+
+That script runs a short local benchmark whose `run` command writes
+`.artifacts/runs/{runId}` and stages `.artifacts/publication/{runId}`. To
+stage a bundle from an already-completed run, pass
+`-RunRoot .artifacts\runs\{runId}`. The script does not upload to R2 and does
+not write D1 metadata.
 
 ## Publish To Cloudflare
 
@@ -135,8 +155,8 @@ updated successfully.
 
 ## D1 Metadata
 
-The D1 index stores searchable metadata only. It does not store the full report
-JSON.
+The D1 index stores searchable metadata only. It is a derived, lossy index over
+the R2 payload and does not store or replace the full report JSON.
 
 Indexed metadata includes:
 
@@ -159,11 +179,18 @@ The D1 side also stores the object-key mapping rows for each published run in
 `public_report_latest`. Those rows are the public index contract that the
 verification step scans against R2.
 
+D1 rows must not be treated as the source of truth for validation outcomes,
+benchmark acceptance, claim level, or measurement semantics. If the site needs
+full details for a report, it must read
+`public/runs/{runId}/evidence-report-v1.json` from R2 and use D1 only to find,
+filter, or sort candidate runs.
+
 ## Validation Gates
 
 Before any upload or indexing step, the handoff validates:
 
 - Evidence Report JSON shape
+- public report JSON schema conformance
 - run ID consistency across all source files
 - artifact references stay under the run root
 - claim-level and execution-profile compatibility

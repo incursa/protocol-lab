@@ -1,0 +1,50 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-REPORT-0001",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab Public Report Architecture",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-REPORT",
+    "VER-PL-REPORT-0001"
+  ],
+  "satisfies": [
+    "REQ-PL-REPORT-0001",
+    "REQ-PL-REPORT-0002",
+    "REQ-PL-REPORT-0003",
+    "REQ-PL-REPORT-0004",
+    "REQ-PL-REPORT-0005",
+    "REQ-PL-REPORT-0006",
+    "REQ-PL-REPORT-0007"
+  ],
+  "purpose": "Describe the public report contract used by R2 publication bundles and downstream site consumers.",
+  "design_summary": "The canonical public report payload is `evidence-report-v1.json` with schema version `protocol-lab.evidence-report.v1`. It is generated from completed run evidence by the benchmark `run` workflow and by `publish-report` restaging, sanitized for public publication, and uploaded under `public/runs/{runId}/` in R2. The payload contains run identity, matrix coverage, validation summary, benchmark acceptance, per-cell validation and benchmark status, generic measurements, warnings, errors, and public artifact references. `publication-manifest.json`, `artifacts-index.json`, registry JSON, and D1 rows are derived metadata used for publication completeness, browse, and lookup.",
+  "key_components": [
+    "schemas/public-report/v1/evidence-report-v1.schema.json: primary JSON Schema for the canonical public payload.",
+    "schemas/public-report/v1/*.schema.json: supporting schemas for publication manifest, artifact index, and registry objects.",
+    "EvidenceReport: public model carrying schema version, per-cell detail, generic measurements, warnings, errors, and artifact references.",
+    "RunnerEngine.RunBenchmarkAsync: writes completed run artifacts, emits `evidence-report-v1.json`, and stages the schema-validated public report bundle unless explicitly skipped for dry-run planning.",
+    "ReportPublicationWorkflow: transforms completed run artifacts into the public-safe R2 bundle while preserving source report semantics.",
+    "New-ProtocolLabPublicReportBundle.ps1: local operator script that runs a short benchmark with automatic bundle staging or consumes an existing run root without Cloudflare side effects.",
+    "Publish-ProtocolLabReport.ps1: uploads the staged bundle, verifies required R2 objects, and writes derived D1 metadata."
+  ],
+  "data_and_state_considerations": "The R2 evidence report is the shareable semantic contract. D1 is intentionally lossy and optimized for browse and filter queries. Registry objects point to canonical R2 payloads and summarize them but do not replace them.",
+  "edge_cases_and_constraints": [
+    "Unsupported and failed cells remain visible with status, reason, warnings, errors, and copied public-safe artifacts when available.",
+    "Measurements are a typed list of name/category/unit/source/value records so future protocol and diagnostic measurements do not require a new top-level schema branch.",
+    "Public artifact paths are sanitized to bundle-relative paths and private absolute paths are rejected by the publication workflow.",
+    "DiagnosticOnly and publishable=false remain explicit labels rather than being hidden for public presentation."
+  ],
+  "alternatives_considered": [
+    "Making D1 the canonical report store was rejected because D1 is a derived index and cannot reliably preserve the full shareable report contract.",
+    "Creating a second public report shape beside Evidence Report v1 was rejected because it would create competing report semantics for the site and publisher.",
+    "Freezing private raw run artifacts first was deferred because public shareability and site integration depend on the sanitized R2 contract."
+  ],
+  "risks": [
+    "Schema drift between C# report models and JSON Schema if tests do not validate generated bundles.",
+    "Future site code may accidentally treat D1 fields as canonical unless the handoff docs keep the derived-index boundary explicit.",
+    "The initial schema may need non-breaking extensions as commercial controlled-run evidence adds attestation or long-running benchmark fields."
+  ]
+}

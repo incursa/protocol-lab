@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://protocol-lab.incursa.com/schemas/public-report/v1/report-index-entry.schema.json",
+  "title": "ProtocolLab Public Report Index Entry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generatedAt",
+    "bundlePrefix",
+    "evidenceReportJsonKey",
+    "evidenceReportMarkdownKey",
+    "artifactsIndexKey",
+    "publicationManifestKey",
+    "publicationWarningsKey",
+    "publicationSkippedKey",
+    "reportIndexEntryKey",
+    "reportIndexKey",
+    "visibility",
+    "sourceKind",
+    "claimLevel",
+    "publishable",
+    "diagnosticOnly",
+    "executionProfile",
+    "implementations",
+    "scenarios",
+    "protocols",
+    "validationCounts",
+    "benchmarkCounts",
+    "evidenceClasses",
+    "warningCount",
+    "artifactRootKey"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "protocol-lab.public-report-index-entry.v1"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "bundlePrefix": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceReportJsonKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceReportMarkdownKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifactsIndexKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "publicationManifestKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "publicationWarningsKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "publicationSkippedKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reportIndexEntryKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reportIndexKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "visibility": {
+      "const": "public"
+    },
+    "sourceKind": {
+      "type": "string",
+      "minLength": 1
+    },
+    "claimLevel": {
+      "enum": [
+        "DiagnosticOnly",
+        "Validation",
+        "Regression",
+        "Benchmark",
+        "Verified"
+      ]
+    },
+    "publishable": {
+      "type": "boolean"
+    },
+    "diagnosticOnly": {
+      "type": "boolean"
+    },
+    "executionProfile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "implementations": {
+      "$ref": "#/definitions/stringArray"
+    },
+    "scenarios": {
+      "$ref": "#/definitions/stringArray"
+    },
+    "protocols": {
+      "$ref": "#/definitions/stringArray"
+    },
+    "validationCounts": {
+      "$ref": "#/definitions/validationCounts"
+    },
+    "benchmarkCounts": {
+      "$ref": "#/definitions/benchmarkCounts"
+    },
+    "evidenceClasses": {
+      "$ref": "#/definitions/evidenceClasses"
+    },
+    "warningCount": {
+      "$ref": "#/definitions/count"
+    },
+    "artifactRootKey": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "definitions": {
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validationCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "failed",
+        "unsupported",
+        "notApplicable",
+        "inconclusive",
+        "infrastructureFailure"
+      ],
+      "properties": {
+        "passed": {
+          "$ref": "#/definitions/count"
+        },
+        "failed": {
+          "$ref": "#/definitions/count"
+        },
+        "unsupported": {
+          "$ref": "#/definitions/count"
+        },
+        "notApplicable": {
+          "$ref": "#/definitions/count"
+        },
+        "inconclusive": {
+          "$ref": "#/definitions/count"
+        },
+        "infrastructureFailure": {
+          "$ref": "#/definitions/count"
+        }
+      }
+    },
+    "benchmarkCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted",
+        "rejected",
+        "notRunValidationFailed",
+        "notRunUnsupported",
+        "notRunLoadToolFailed",
+        "notRunParserFailed"
+      ],
+      "properties": {
+        "accepted": {
+          "$ref": "#/definitions/count"
+        },
+        "rejected": {
+          "$ref": "#/definitions/count"
+        },
+        "notRunValidationFailed": {
+          "$ref": "#/definitions/count"
+        },
+        "notRunUnsupported": {
+          "$ref": "#/definitions/count"
+        },
+        "notRunLoadToolFailed": {
+          "$ref": "#/definitions/count"
+        },
+        "notRunParserFailed": {
+          "$ref": "#/definitions/count"
+        }
+      }
+    },
+    "evidenceClasses": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "counts"
+      ],
+      "properties": {
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

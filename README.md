@@ -109,10 +109,20 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations kestre
 
 ## Prepare a Public Report Bundle
 
-Use `publish-report` to prepare a public-safe bundle from a completed run.
-The command reads `aggregate-results.json` and `evidence-report-v1.json`,
-sanitizes the report, and writes a staged publication bundle. It does not
-upload to R2 by default.
+Benchmark `run` prepares a public-safe bundle automatically after it writes the
+completed run. The bundle reads `aggregate-results.json` and
+`evidence-report-v1.json`, sanitizes the report, and writes a staged
+publication bundle. It does not upload to R2 by default.
+
+To generate a local run and the corresponding public report bundle in one
+command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\New-ProtocolLabPublicReportBundle.ps1
+```
+
+Use `publish-report` when you need to restage an existing completed run or
+validate the publication plan without running the benchmark again:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- publish-report --run .artifacts\runs\{runId} --output .artifacts\publication\{runId} --visibility public --dry-run

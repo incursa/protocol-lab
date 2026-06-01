@@ -42,9 +42,9 @@ Runner/
 - `CheckAsync()` — verify tool and manifest state
 - `List()` — enumerate implementations, scenarios, load tools
 - `ValidateAsync()` — run validation for selected cells
-- `RunBenchmarkAsync()` — validate then benchmark for selected cells
+- `RunBenchmarkAsync()` — validate, benchmark, write run artifacts, and stage the public report bundle for selected cells
 - `Report()` — generate markdown summary for a completed run
-- `PublishReportAsync()` — prepare a public-safe publication bundle from a completed run
+- `PublishReportAsync()` — restage a public-safe publication bundle from a completed run
 
 Each method returns `RunnerCommandResult`, a structured result with messages
 and artifact references. The runner emits events through `IRunnerEventSink`

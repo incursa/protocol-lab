@@ -1197,22 +1197,54 @@ public sealed class RunnerEngine
         await File.WriteAllTextAsync(summaryPath, MarkdownSummaryWriter.Write(report));
 
         var evidenceReport = EvidenceReportBuilder.Build(runId, generatedAt, metadata, suiteId: null, suiteTitle: null, cells, compatibilities, results);
+        var evidenceReportV1JsonPath = Path.Combine(runRoot, "evidence-report-v1.json");
         var evidenceReportJsonPath = Path.Combine(runRoot, "evidence-report.json");
         var evidenceReportMdPath = Path.Combine(runRoot, "evidence-report.md");
+        await File.WriteAllTextAsync(evidenceReportV1JsonPath, ResultJson.Serialize(evidenceReport));
         await File.WriteAllTextAsync(evidenceReportJsonPath, ResultJson.Serialize(evidenceReport));
         await File.WriteAllTextAsync(evidenceReportMdPath, EvidenceReportMarkdownWriter.Write(evidenceReport));
 
+        var resultArtifacts = new List<RunnerArtifactReference>
+        {
+            new("run-descriptor", runJsonPath),
+            new("aggregate-results", aggregateResultsPath),
+            new("summary", summaryPath),
+            new("evidence-report-v1-json", evidenceReportV1JsonPath),
+            new("evidence-report-json", evidenceReportJsonPath),
+            new("evidence-report-md", evidenceReportMdPath)
+        };
+
+        var publicationExitCode = 0;
+        if (!string.Equals(options.Get("skip-publication-bundle"), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            var publicationBundleRoot = ResolvePublicationBundleRoot(root, outputDirectory, runId, options.Get("publication-output"));
+            output.WriteLine($"Staging public report bundle: {publicationBundleRoot}");
+
+            var publicationResult = await ReportPublicationWorkflow.PublishAsync(
+                root,
+                new RunnerCommandOptions(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["run"] = runRoot,
+                    ["output"] = publicationBundleRoot,
+                    ["visibility"] = "public",
+                    ["allow-diagnostic-publication"] = "true"
+                }));
+
+            CopyMessages(publicationResult.Messages, output);
+            publicationExitCode = publicationResult.ExitCode;
+            if (publicationResult.ExitCode == 0)
+            {
+                resultArtifacts.Add(new RunnerArtifactReference("public-report-bundle", publicationBundleRoot));
+                resultArtifacts.AddRange(publicationResult.Artifacts);
+            }
+        }
+
+        var runExitCode = results.Any(result => result.Errors.Count > 0 || result.ValidationResult.Status == ValidationStatus.Failed) || publicationExitCode != 0 ? 1 : 0;
         return RunnerCommandResult.Create(
             RunnerCommandKind.Run,
-            results.Any(result => result.Errors.Count > 0 || result.ValidationResult.Status == ValidationStatus.Failed) ? 1 : 0,
+            runExitCode,
             output.Messages,
-            [
-                new RunnerArtifactReference("run-descriptor", runJsonPath),
-                new RunnerArtifactReference("aggregate-results", aggregateResultsPath),
-                new RunnerArtifactReference("summary", summaryPath),
-                new RunnerArtifactReference("evidence-report-json", evidenceReportJsonPath),
-                new RunnerArtifactReference("evidence-report-md", evidenceReportMdPath)
-            ]);
+            resultArtifacts);
     }
 
     public RunnerCommandResult Report(string root, RunnerCommandOptions options, IRunnerEventSink? eventSink = null)
@@ -2047,6 +2079,48 @@ public sealed class RunnerEngine
                 Status = ValidationStatus.Unsupported,
                 Summary = support.Reason
             };
+    }
+
+    private static string ResolvePublicationBundleRoot(string root, string outputDirectory, string runId, string? requestedOutputRoot)
+    {
+        if (!string.IsNullOrWhiteSpace(requestedOutputRoot))
+        {
+            return ResolveFullPath(root, requestedOutputRoot);
+        }
+
+        var outputRoot = ResolveFullPath(root, outputDirectory);
+        var outputLeaf = Path.GetFileName(outputRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        if (string.Equals(outputLeaf, "runs", StringComparison.OrdinalIgnoreCase))
+        {
+            var artifactRoot = Path.GetDirectoryName(outputRoot) ?? root;
+            return Path.Combine(artifactRoot, "publication", runId);
+        }
+
+        return Path.Combine(outputRoot, "publication", runId);
+    }
+
+    private static string ResolveFullPath(string root, string path)
+    {
+        return Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(root, path));
+    }
+
+    private static void CopyMessages(IEnumerable<RunnerMessage> source, RunnerOutputBuffer target)
+    {
+        foreach (var message in source)
+        {
+            switch (message.Severity)
+            {
+                case RunnerMessageSeverity.Warning:
+                    target.WriteWarning(message.Text);
+                    break;
+                case RunnerMessageSeverity.Error:
+                    target.WriteError(message.Text);
+                    break;
+                default:
+                    target.WriteLine(message.Text);
+                    break;
+            }
+        }
     }
 
     private static IReadOnlyCollection<string>? SplitCsv(string? value)

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://protocol-lab.incursa.com/schemas/public-report/v1/artifacts-index.schema.json",
+  "title": "ProtocolLab Public Report Artifacts Index v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generatedAt",
+    "artifactRootKey",
+    "copiedArtifactCount",
+    "skippedArtifactCount",
+    "cells"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "protocol-lab.public-report-artifacts-index.v1"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "artifactRootKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "copiedArtifactCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "skippedArtifactCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cellKey",
+          "cellDirectory",
+          "files"
+        ],
+        "properties": {
+          "cellKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cellDirectory": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "path",
+                "exists",
+                "copied"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "path": {
+                  "type": "string"
+                },
+                "exists": {
+                  "type": "boolean"
+                },
+                "copied": {
+                  "type": "boolean"
+                },
+                "skipReason": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

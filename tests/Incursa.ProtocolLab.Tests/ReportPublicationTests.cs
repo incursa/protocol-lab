@@ -3,6 +3,7 @@
 
 using Incursa.ProtocolLab.Model;
 using Incursa.ProtocolLab.Runner;
+using NJsonSchema;
 
 namespace Incursa.ProtocolLab.Tests;
 
@@ -20,7 +21,7 @@ public sealed class ReportPublicationTests
                 TestPaths.RepoRoot,
                 CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
 
-            Assert.Equal(0, result.ExitCode);
+            AssertSucceeded(result);
             Assert.Contains(result.Messages, message => message.Text.Contains("Report bundle written", StringComparison.OrdinalIgnoreCase));
 
             Assert.True(File.Exists(Path.Combine(sample.OutputRoot, "evidence-report-v1.json")));
@@ -89,6 +90,55 @@ public sealed class ReportPublicationTests
     }
 
     [Fact]
+    public async Task Public_bundle_json_files_match_public_report_schemas()
+    {
+        var tempRoot = CreateTempRoot();
+
+        try
+        {
+            var sample = await CreateSampleRunAsync(tempRoot);
+            var result = await new RunnerEngine().PublishReportAsync(
+                TestPaths.RepoRoot,
+                CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
+
+            AssertSucceeded(result);
+
+            await AssertSchemaValidAsync(
+                Path.Combine("schemas", "public-report", "v1", "evidence-report-v1.schema.json"),
+                Path.Combine(sample.OutputRoot, "evidence-report-v1.json"));
+            await AssertSchemaValidAsync(
+                Path.Combine("schemas", "public-report", "v1", "artifacts-index.schema.json"),
+                Path.Combine(sample.OutputRoot, "artifacts-index.json"));
+            await AssertSchemaValidAsync(
+                Path.Combine("schemas", "public-report", "v1", "publication-manifest.schema.json"),
+                Path.Combine(sample.OutputRoot, "publication-manifest.json"));
+            await AssertSchemaValidAsync(
+                Path.Combine("schemas", "public-report", "v1", "report-index-entry.schema.json"),
+                Path.Combine(sample.OutputRoot, "report-index-entry.json"));
+            await AssertSchemaValidAsync(
+                Path.Combine("schemas", "public-report", "v1", "report-index.schema.json"),
+                Path.Combine(sample.OutputRoot, "report-index.json"));
+
+            var evidenceReport = ResultJson.Deserialize<EvidenceReport>(
+                await File.ReadAllTextAsync(Path.Combine(sample.OutputRoot, "evidence-report-v1.json")));
+            Assert.NotNull(evidenceReport);
+            Assert.Equal("protocol-lab.evidence-report.v1", evidenceReport!.SchemaVersion);
+            Assert.NotEmpty(evidenceReport.Cells);
+            Assert.Contains(evidenceReport.Cells, cell => cell.Measurements.Any(measurement => measurement.Name == "requestsPerSecond"));
+            Assert.All(evidenceReport.Cells.SelectMany(cell => cell.Artifacts), artifact =>
+            {
+                Assert.True(string.IsNullOrWhiteSpace(artifact.Path) || artifact.Path.StartsWith("artifacts/", StringComparison.OrdinalIgnoreCase));
+                Assert.DoesNotContain(@"C:\shared", artifact.Path, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("protocol-lab-internal", artifact.Path, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
     public async Task Dry_run_validates_bundle_without_writing_output_files()
     {
         var tempRoot = CreateTempRoot();
@@ -100,7 +150,7 @@ public sealed class ReportPublicationTests
                 TestPaths.RepoRoot,
                 CreatePublishOptions(sample.RunRoot, sample.OutputRoot, dryRun: true));
 
-            Assert.Equal(0, result.ExitCode);
+            AssertSucceeded(result);
             Assert.Contains(result.Messages, message => message.Text.Contains("Dry run: report bundle", StringComparison.OrdinalIgnoreCase));
             Assert.False(Directory.Exists(sample.OutputRoot));
         }
@@ -144,7 +194,7 @@ public sealed class ReportPublicationTests
                 TestPaths.RepoRoot,
                 CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
 
-            Assert.Equal(0, result.ExitCode);
+            AssertSucceeded(result);
             var skipped = await File.ReadAllTextAsync(Path.Combine(sample.OutputRoot, "publication-skipped.md"));
             Assert.Contains("missing optional artifact", skipped, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("h2load-output.json", skipped, StringComparison.OrdinalIgnoreCase);
@@ -167,7 +217,7 @@ public sealed class ReportPublicationTests
                 TestPaths.RepoRoot,
                 CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
 
-            Assert.Equal(0, result.ExitCode);
+            AssertSucceeded(result);
             var skipped = await File.ReadAllTextAsync(Path.Combine(sample.OutputRoot, "publication-skipped.md"));
             Assert.Contains("missing optional artifact", skipped, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("h2load-output.json", skipped, StringComparison.OrdinalIgnoreCase);
@@ -372,7 +422,7 @@ public sealed class ReportPublicationTests
                 tempRoot,
                 CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
 
-            Assert.Equal(0, result.ExitCode);
+            AssertSucceeded(result);
             Assert.True(File.Exists(Path.Combine(sample.OutputRoot, "artifacts", "kestrel-http3", "http.core.plaintext", "h3", "c1-s1-r1", "manifest.json")));
         }
         finally
@@ -434,7 +484,7 @@ public sealed class ReportPublicationTests
                 tempRoot,
                 CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
 
-            Assert.Equal(0, result.ExitCode);
+            AssertSucceeded(result);
             var skipped = await File.ReadAllTextAsync(Path.Combine(sample.OutputRoot, "publication-skipped.md"));
             Assert.Contains("docker-inspect.json", skipped, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("missing optional artifact", skipped, StringComparison.OrdinalIgnoreCase);
@@ -507,6 +557,37 @@ public sealed class ReportPublicationTests
         }
     }
 
+    private static async Task AssertSchemaValidAsync(string schemaRelativePath, string payloadPath)
+    {
+        var schemaPath = Path.Combine(TestPaths.RepoRoot, schemaRelativePath);
+        var schema = await JsonSchema.FromFileAsync(schemaPath);
+        var payload = await File.ReadAllTextAsync(payloadPath);
+        var errors = schema.Validate(payload);
+
+        Assert.True(
+            errors.Count == 0,
+            $"{Path.GetFileName(payloadPath)} failed {schemaRelativePath}: {string.Join("; ", errors.Select(error => error.ToString()))}");
+    }
+
+    private static void AssertSucceeded(RunnerCommandResult result)
+    {
+        Assert.True(
+            result.ExitCode == 0,
+            string.Join(Environment.NewLine, result.Messages.Select(message => $"{message.Severity}: {message.Text}")));
+    }
+
+    private static void CopyPublicReportSchemas(string repositoryRoot)
+    {
+        var sourceRoot = Path.Combine(TestPaths.RepoRoot, "schemas", "public-report", "v1");
+        var targetRoot = Path.Combine(repositoryRoot, "schemas", "public-report", "v1");
+        Directory.CreateDirectory(targetRoot);
+
+        foreach (var sourcePath in Directory.EnumerateFiles(sourceRoot, "*.schema.json"))
+        {
+            File.Copy(sourcePath, Path.Combine(targetRoot, Path.GetFileName(sourcePath)), overwrite: true);
+        }
+    }
+
     private static async Task<(string RunRoot, string OutputRoot)> CreateSampleRunAsync(
         string tempRoot,
         bool leakInManifest = false,
@@ -519,6 +600,7 @@ public sealed class ReportPublicationTests
         var runRoot = Path.Combine(runArtifactsRoot, runId);
         var outputRoot = Path.Combine(tempRoot, ".artifacts", "publication", runId);
         Directory.CreateDirectory(runRoot);
+        CopyPublicReportSchemas(tempRoot);
 
         var metadata = new RunMetadata(
             "sample-host",

@@ -6,6 +6,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NJsonSchema" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Incursa.ProtocolLab.Cli" />
     <InternalsVisibleTo Include="Incursa.ProtocolLab.Tests" />
   </ItemGroup>

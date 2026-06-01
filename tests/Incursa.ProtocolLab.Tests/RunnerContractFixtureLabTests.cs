@@ -41,6 +41,9 @@ public sealed class RunnerContractFixtureLabTests
             Assert.True(File.Exists(Path.Combine(output, runId, "run.json")));
             Assert.True(File.Exists(Path.Combine(output, runId, "aggregate-results.json")));
             Assert.True(File.Exists(Path.Combine(output, runId, "summary.md")));
+            Assert.True(File.Exists(Path.Combine(output, runId, "evidence-report-v1.json")));
+            Assert.True(File.Exists(Path.Combine(output, "publication", runId, "evidence-report-v1.json")));
+            Assert.True(File.Exists(Path.Combine(output, "publication", runId, "artifacts-index.json")));
             Assert.Contains("fixture-http-success", await File.ReadAllTextAsync(Path.Combine(output, runId, "summary.md")));
         }
         finally

@@ -1193,21 +1193,20 @@ function Write-D1SqlFile {
     $objectKeyRows = @($objectKeys | ForEach-Object { New-SqlTuple @($Entry.runId, $_.objectKind, $_.objectKey) })
 
     $statements = New-Object System.Collections.Generic.List[string]
-    $statements.Add("BEGIN IMMEDIATE;") | Out-Null
     $statements.Add(("INSERT INTO public_report_runs (" + ($runColumns -join ", ") + ") VALUES " + (New-SqlTuple $runValues) + " ON CONFLICT(run_id) DO UPDATE SET " + ($runAssignments -join ", ") + ";")) | Out-Null
 
+    $statements.Add("DELETE FROM public_report_run_implementations WHERE run_id = " + (ConvertTo-SqlLiteral $Entry.runId) + ";") | Out-Null
     if ($implementationRows.Count -gt 0) {
-        $statements.Add("DELETE FROM public_report_run_implementations WHERE run_id = " + (ConvertTo-SqlLiteral $Entry.runId) + ";") | Out-Null
         $statements.Add("INSERT INTO public_report_run_implementations (run_id, implementation_id) VALUES " + ($implementationRows -join ", ") + ";") | Out-Null
     }
 
+    $statements.Add("DELETE FROM public_report_run_scenarios WHERE run_id = " + (ConvertTo-SqlLiteral $Entry.runId) + ";") | Out-Null
     if ($scenarioRows.Count -gt 0) {
-        $statements.Add("DELETE FROM public_report_run_scenarios WHERE run_id = " + (ConvertTo-SqlLiteral $Entry.runId) + ";") | Out-Null
         $statements.Add("INSERT INTO public_report_run_scenarios (run_id, scenario_id) VALUES " + ($scenarioRows -join ", ") + ";") | Out-Null
     }
 
+    $statements.Add("DELETE FROM public_report_run_protocols WHERE run_id = " + (ConvertTo-SqlLiteral $Entry.runId) + ";") | Out-Null
     if ($protocolRows.Count -gt 0) {
-        $statements.Add("DELETE FROM public_report_run_protocols WHERE run_id = " + (ConvertTo-SqlLiteral $Entry.runId) + ";") | Out-Null
         $statements.Add("INSERT INTO public_report_run_protocols (run_id, protocol_id) VALUES " + ($protocolRows -join ", ") + ";") | Out-Null
     }
 
@@ -1311,8 +1310,6 @@ function Write-D1SqlFile {
         $statements.Add("DELETE FROM public_report_latest;") | Out-Null
         $statements.Add(("INSERT INTO public_report_latest (" + ($latestColumns -join ", ") + ") VALUES " + (New-SqlTuple $latestValues) + ";")) | Out-Null
     }
-
-    $statements.Add("COMMIT;") | Out-Null
 
     Set-Content -LiteralPath $SqlPath -Value ($statements -join "`n") -Encoding utf8NoBOM
 }

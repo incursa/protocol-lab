@@ -568,7 +568,7 @@ function Build-RegistryFromEntries {
         [Parameter(Mandatory = $true)][object[]]$Entries
     )
 
-    $entries = New-Object System.Collections.Generic.List[object]
+    $entries = New-Object System.Collections.ArrayList
     $seenRunIds = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($entry in @($Entries)) {
         $runId = [string]$entry.runId
@@ -798,7 +798,7 @@ function Get-D1BackedRegistryEntries {
         [Parameter(Mandatory = $true)][string]$TempDirectory
     )
 
-    $entries = New-Object System.Collections.Generic.List[object]
+    $entries = New-Object System.Collections.ArrayList
     foreach ($row in @($RunRows)) {
         $runId = [string]$row.run_id
         if ([string]::IsNullOrWhiteSpace($runId)) {

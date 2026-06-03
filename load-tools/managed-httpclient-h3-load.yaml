@@ -13,6 +13,9 @@ supports:
     - h3
   trafficShapes:
     - request-response
+    - download
+    - streaming-download
+    - upload
   roles:
     - client
 

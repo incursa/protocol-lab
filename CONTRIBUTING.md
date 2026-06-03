@@ -5,6 +5,8 @@ and stay aligned with the repository's evidence model.
 
 ## Before You Open A Pull Request
 
+- Read [CONTRIBUTOR-AGREEMENT.md](CONTRIBUTOR-AGREEMENT.md) and sign the
+  agreement on your pull request if you are not on the workflow allowlist.
 - Read [README.md](README.md), [docs/README.md](docs/README.md), and
   [docs/protocol-lab/product-boundaries.md](docs/protocol-lab/product-boundaries.md).
 - Run `dotnet tool restore`.

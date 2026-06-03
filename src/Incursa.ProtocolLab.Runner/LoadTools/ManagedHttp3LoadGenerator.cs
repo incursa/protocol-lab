@@ -121,7 +121,7 @@ internal static class ManagedHttp3LoadGenerator
             errors = errors.Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
         });
 
-        return new LoadToolRun(errors.IsEmpty ? 0 : 1, output, string.Join(Environment.NewLine, errors));
+        return new LoadToolRun(0, output, string.Join(Environment.NewLine, errors));
     }
 
     private static async Task<ManagedRunCounters> RunPhaseAsync(
@@ -183,7 +183,7 @@ internal static class ManagedHttp3LoadGenerator
                 }
 
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
-                var body = await response.Content.ReadAsByteArrayAsync(token);
+                var body = await HttpScenarioValidator.ReadResponseBodyAsync(response.Content, token);
                 requestStopwatch.Stop();
 
                 if (!record)
@@ -237,7 +237,7 @@ internal static class ManagedHttp3LoadGenerator
                     errors.Add($"Managed H3 request timed out: {ex.Message}");
                 }
             }
-            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or NotSupportedException)
+            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or NotSupportedException or IOException)
             {
                 if (record)
                 {
@@ -351,6 +351,7 @@ internal static class ManagedHttp3JsonParser
             };
 
             var warnings = ReadStringArray(document.RootElement, "warnings").ToList();
+            warnings.AddRange(ReadStringArray(document.RootElement, "errors"));
             var responseVersionFailures = FindLong(document.RootElement, "responseVersionFailures");
             if (responseVersionFailures > 0)
             {

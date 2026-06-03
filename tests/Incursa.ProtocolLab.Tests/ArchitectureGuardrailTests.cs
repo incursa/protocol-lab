@@ -60,8 +60,11 @@ public sealed class ArchitectureGuardrailTests
                     ((string?)element.Attribute("Update") ?? ""))
                 .ToArray();
 
-            Assert.DoesNotContain(references, reference => reference.Contains("Incursa.Quic", StringComparison.OrdinalIgnoreCase));
-            Assert.DoesNotContain(references, reference => reference.Contains("Incursa.Http3", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(
+                references,
+                reference =>
+                    reference.Contains("Incursa.Quic.Http3", StringComparison.OrdinalIgnoreCase) ||
+                    reference.Contains("Incursa.Http3", StringComparison.OrdinalIgnoreCase));
         }
     }
 
@@ -91,6 +94,14 @@ public sealed class ArchitectureGuardrailTests
             Assert.DoesNotContain("Console.Write", source, StringComparison.Ordinal);
             Assert.DoesNotContain("Console.Error.Write", source, StringComparison.Ordinal);
         }
+    }
+
+    [Fact]
+    public void Incursa_raw_quic_adapter_builds_the_raw_server_project()
+    {
+        var references = ProjectReferences("src", "Incursa.ProtocolLab.Adapters.IncursaRawQuic", "Incursa.ProtocolLab.Adapters.IncursaRawQuic.csproj");
+
+        Assert.Contains("IncursaRawQuicServer.csproj", references);
     }
 
     [Fact]

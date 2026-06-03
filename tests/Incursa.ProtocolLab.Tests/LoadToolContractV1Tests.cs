@@ -56,6 +56,9 @@ public sealed class LoadToolContractV1Tests
         Assert.Equal("managed-lab", tool.Category);
         Assert.Contains("h3", tool.GetEffectiveProtocols());
         Assert.Contains("request-response", tool.GetEffectiveTrafficShapes());
+        Assert.Contains("download", tool.GetEffectiveTrafficShapes());
+        Assert.Contains("streaming-download", tool.GetEffectiveTrafficShapes());
+        Assert.Contains("upload", tool.GetEffectiveTrafficShapes());
         Assert.Contains("client", tool.GetEffectiveRoles());
         Assert.Contains("responseVersionFailures", tool.GetEffectiveSecondaryMetrics());
         Assert.Equal("managed-httpclient-h3-json", tool.GetEffectiveParserType());
@@ -86,6 +89,7 @@ public sealed class LoadToolContractV1Tests
         Assert.Contains("src/Incursa.ProtocolLab.Adapters.QuicGo", tool.DefaultArguments);
         Assert.Contains("run", tool.DefaultArguments);
         Assert.Contains("./cmd/quic-go-raw-load", tool.DefaultArguments);
+        Assert.Equal("localhost", tool.Sni);
         Assert.Contains("Go-backed raw QUIC load generator", tool.Notes, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -274,7 +278,8 @@ public sealed class LoadToolContractV1Tests
             SupportedTrafficShapes = ["bidirectional-stream"],
             SupportedRoles = ["client"],
             Executable = "go",
-            DefaultArguments = ["-C", "src/Incursa.ProtocolLab.Adapters.QuicGo", "run", "./cmd/quic-go-raw-load"]
+            DefaultArguments = ["-C", "src/Incursa.ProtocolLab.Adapters.QuicGo", "run", "./cmd/quic-go-raw-load"],
+            Sni = "localhost"
         };
 
         var compatibleCell = new RunCell(
@@ -344,9 +349,12 @@ public sealed class LoadToolContractV1Tests
 
         var compatibleResolution = LoadToolInvoker.Resolve([quicGoRawLoad], compatibleCell, requestedTool: null, requestedMode: null);
         var incompatibleResolution = LoadToolInvoker.Resolve([quicGoRawLoad], incompatibleCell, requestedTool: null, requestedMode: null);
+        var buildArguments = LoadToolInvoker.BuildArguments(quicGoRawLoad, new Uri("quic://127.0.0.1:59041"), compatibleCell);
 
         Assert.True(compatibleResolution.CanExecute, $"Expected compatible but got {compatibleResolution.Result.Status}: {string.Join(", ", compatibleResolution.Result.Errors)}");
         Assert.False(incompatibleResolution.CanExecute, $"Expected incompatible but got {incompatibleResolution.Result.Status}");
+        Assert.Contains("--sni", buildArguments);
+        Assert.Contains("localhost", buildArguments);
     }
 
     // ── Parser Failure and Raw Output Preservation ──────────────────────────
@@ -409,6 +417,50 @@ public sealed class LoadToolContractV1Tests
         var parsed = LoadToolInvoker.Parse(manifest, output, "");
 
         Assert.True(parsed.ParsedMetricsAvailable);
+    }
+
+    [Fact]
+    public void Managed_httpclient_h3_json_parser_extracts_metrics_warnings_and_errors()
+    {
+        var manifest = new LoadToolManifest
+        {
+            Id = "managed-httpclient-h3-load",
+            OutputParserId = "managed-httpclient-h3-json"
+        };
+
+        var output = """
+        {
+          "tool": "managed-httpclient-h3-load",
+          "category": "managed-lab",
+          "metrics": {
+            "requestsPerSecond": 123.4,
+            "totalRequests": 12,
+            "successfulRequests": 11,
+            "failedRequests": 1,
+            "timeoutRequests": 0,
+            "bytesReceived": 4096,
+            "throughputBytesPerSecond": 8192.0,
+            "latencyMinMs": 0.4,
+            "latencyMeanMs": 0.8,
+            "latencyP50Ms": 0.7,
+            "latencyP95Ms": 1.1,
+            "latencyP99Ms": 1.3,
+            "latencyMaxMs": 1.5,
+            "statusCodeCounts": { "200": 11, "500": 1 }
+          },
+          "warnings": ["response version mismatch"],
+          "errors": ["Managed H3 request failed: Error while copying content to a stream."]
+        }
+        """;
+
+        var parsed = LoadToolInvoker.Parse(manifest, output, "");
+
+        Assert.True(parsed.ParsedMetricsAvailable);
+        Assert.Equal(123.4, parsed.Metrics.RequestsPerSecond);
+        Assert.Equal(12, parsed.Metrics.TotalRequests);
+        Assert.Equal(4096, parsed.Metrics.BytesReceived);
+        Assert.Contains(parsed.Warnings, warning => warning.Contains("response version mismatch", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(parsed.Warnings, warning => warning.Contains("Error while copying content to a stream.", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

@@ -11,6 +11,46 @@ namespace Incursa.ProtocolLab.Tests;
 public sealed class IncursaRawQuicAdapterConformanceTests
 {
     [Fact]
+    public async Task Adapter_resolves_repository_root_from_adapter_project_working_directory()
+    {
+        var adapterProjectDirectory = Path.Combine(TestPaths.RepoRoot, "src", "Incursa.ProtocolLab.Adapters.IncursaRawQuic");
+        await using var host = await IncursaRawQuicAdapterProcessHost.StartAsync(new IncursaRawQuicAdapterProcessOptions
+        {
+            WorkingDirectory = adapterProjectDirectory
+        });
+
+        var client = new ProtocolLabAdapterClient(host.Client);
+        var runId = $"raw-quic-repo-root-{Guid.NewGuid():N}";
+        var cellId = "working-dir";
+        var session = await client.CreateSessionAsync(new AdapterSessionCreateRequest
+        {
+            RunId = runId,
+            CellId = cellId
+        });
+
+        var expectedSessionSnapshot = Path.Combine(
+            TestPaths.RepoRoot,
+            ".artifacts",
+            "runs",
+            runId,
+            cellId,
+            "adapter",
+            session.Session.SessionId,
+            "session.json");
+
+        Assert.True(File.Exists(expectedSessionSnapshot));
+
+        var prepare = await client.PrepareAsync(session.Session.SessionId, CreatePrepare("fixture.quic.handshake"));
+        Assert.Equal(AdapterOperationResultCategory.Succeeded, prepare.Category);
+
+        var start = await client.StartAsync(session.Session.SessionId);
+        Assert.Equal(AdapterOperationResultCategory.Succeeded, start.Category);
+
+        await client.StopAsync(session.Session.SessionId);
+        await client.DeleteSessionAsync(session.Session.SessionId);
+    }
+
+    [Fact]
     public async Task Adapter_reports_health_and_manifest()
     {
         await using var host = await IncursaRawQuicAdapterProcessHost.StartAsync();

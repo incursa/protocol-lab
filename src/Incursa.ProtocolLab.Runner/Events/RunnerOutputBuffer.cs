@@ -32,6 +32,11 @@ internal sealed class RunnerOutputBuffer
         Add(RunnerMessageSeverity.Error, text);
     }
 
+    public void Append(RunnerMessage message)
+    {
+        messages.Add(message);
+    }
+
     private void Add(RunnerMessageSeverity severity, string text)
     {
         var message = new RunnerMessage(severity, text);

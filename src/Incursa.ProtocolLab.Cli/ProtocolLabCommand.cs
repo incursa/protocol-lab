@@ -20,6 +20,7 @@ internal static class ProtocolLabCommand
         var options = CliOptions.Parse(commandArgs).ToRunnerOptions();
         var root = options.Get("root") ?? Directory.GetCurrentDirectory();
         var runner = new RunnerEngine();
+        IRunnerEventSink? liveEventSink = command == "run" ? new ConsoleRunnerEventSink() : null;
 
         try
         {
@@ -27,13 +28,16 @@ internal static class ProtocolLabCommand
             {
                 "list" => runner.List(commandArgs, root),
                 "validate" => await runner.ValidateAsync(root, options),
-                "run" => await runner.RunBenchmarkAsync(root, options),
+                "run" => await runner.RunBenchmarkAsync(root, options, liveEventSink),
                 "check" or "doctor" => await runner.CheckAsync(root),
                 "report" => runner.Report(root, options),
                 "publish-report" => await runner.PublishReportAsync(root, options),
                 _ => Unknown(command)
             };
-            RunnerConsoleRenderer.Render(result);
+            if (command != "run")
+            {
+                RunnerConsoleRenderer.Render(result);
+            }
             return result.ExitCode;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

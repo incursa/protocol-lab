@@ -8,6 +8,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Incursa.Qpack" Version="1.0.6" />
     <PackageVersion Include="Incursa.Quic" Version="1.0.6" />
+    <PackageVersion Include="Incursa.Quic.Diagnostics.Qlog" Version="1.0.6" />
     <PackageVersion Include="Incursa.Quic.Http3" Version="1.0.6" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="10.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

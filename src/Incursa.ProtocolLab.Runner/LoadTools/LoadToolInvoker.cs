@@ -82,6 +82,9 @@ internal static class LoadToolInvoker
         string? requestedTool,
         string? requestedMode)
     {
+        var trafficShapeClause = string.IsNullOrWhiteSpace(cell.Scenario.TrafficShape)
+            ? string.Empty
+            : $", traffic shape '{cell.Scenario.TrafficShape}'";
         var compatible = manifests
             .Where(manifest => IsCompatible(manifest, cell))
             .ToArray();
@@ -90,7 +93,7 @@ internal static class LoadToolInvoker
             return Unavailable(
                 requestedTool,
                 requestedMode,
-                $"No load-tool manifest supports protocol '{cell.Protocol}' and scenario family '{cell.Scenario.Family}'.");
+                $"No load-tool manifest supports protocol '{cell.Protocol}' and scenario family '{cell.Scenario.Family}'{trafficShapeClause}.");
         }
 
         if (!string.IsNullOrWhiteSpace(requestedTool))
@@ -112,7 +115,7 @@ internal static class LoadToolInvoker
                 return Unavailable(
                     requestedTool,
                     requestedMode,
-                    $"Load tool '{requestedTool}' is not compatible with protocol '{cell.Protocol}' and scenario family '{cell.Scenario.Family}'.");
+                    $"Load tool '{requestedTool}' is not compatible with protocol '{cell.Protocol}', scenario family '{cell.Scenario.Family}'{trafficShapeClause}.");
             }
 
             return ResolveManifest(requested, requestedMode);
@@ -364,12 +367,16 @@ internal static class LoadToolInvoker
         bool captureQlog = true)
     {
         var id = manifest.Id.ToLowerInvariant();
+        var rawQuicSniArguments = string.IsNullOrWhiteSpace(manifest.Sni)
+            ? Array.Empty<string>()
+            : ["--sni", manifest.Sni];
         return id switch
         {
             "h2load" => [.. manifest.DefaultArguments, .. BuildH2loadProtocolArguments(manifest, cell.Protocol, paths, mode, connectTarget, captureQlog), .. BuildH2loadOutputArguments(cell, paths, mode), "-D", cell.DurationSeconds.ToString(CultureInfo.InvariantCulture), "--warm-up-time", cell.WarmupSeconds.ToString(CultureInfo.InvariantCulture), "-c", cell.Connections.ToString(CultureInfo.InvariantCulture), "-m", cell.StreamsPerConnection.ToString(CultureInfo.InvariantCulture), targetUrl.ToString()],
             "oha" => [.. manifest.DefaultArguments, .. BuildOhaProtocolArguments(cell.Protocol), "-z", $"{cell.DurationSeconds.ToString(CultureInfo.InvariantCulture)}s", "-c", cell.Connections.ToString(CultureInfo.InvariantCulture), targetUrl.ToString()],
             ManagedHttp3LoadGenerator.ToolId => ["--http-version", "3.0", "--version-policy", "RequestVersionExact", "--concurrency", cell.Connections.ToString(CultureInfo.InvariantCulture), "--duration", $"{cell.DurationSeconds.ToString(CultureInfo.InvariantCulture)}s", "--warmup", $"{cell.WarmupSeconds.ToString(CultureInfo.InvariantCulture)}s", targetUrl.ToString()],
             "quic-go-raw-load" => [.. manifest.DefaultArguments,
+                ..rawQuicSniArguments,
                 "--alpn", "plab-raw-quic",
                 "--behavior", cell.Scenario.QuicTransport?.Behavior ?? "",
                 "--stream-type", cell.Scenario.QuicTransport?.StreamType ?? "",
@@ -790,14 +797,17 @@ internal static class LoadToolInvoker
 
     private static string? GetSni(ResolvedLoadTool tool, Uri requestedUrl)
     {
+        if (!string.IsNullOrWhiteSpace(tool.Manifest.Sni))
+        {
+            return tool.Manifest.Sni;
+        }
+
         if (!IsDockerTool(tool))
         {
             return null;
         }
 
-        return string.IsNullOrWhiteSpace(tool.Manifest.Sni)
-            ? requestedUrl.Host
-            : tool.Manifest.Sni;
+        return requestedUrl.Host;
     }
 
     private static string? BuildDockerCommandLine(

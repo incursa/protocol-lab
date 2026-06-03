@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Incursa.ProtocolLab.Adapter.Contracts\Incursa.ProtocolLab.Adapter.Contracts.csproj" />
     <ProjectReference Include="..\Incursa.ProtocolLab.Model\Incursa.ProtocolLab.Model.csproj" />
+    <ProjectReference Include="..\..\servers\IncursaRawQuicServer\IncursaRawQuicServer.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

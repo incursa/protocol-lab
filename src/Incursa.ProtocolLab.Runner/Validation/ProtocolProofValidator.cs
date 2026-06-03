@@ -387,7 +387,7 @@ internal static class ProtocolProofValidator
             await WriteManagedProofArtifactsAsync(paths, result.ProtocolProof!, response.Body, stderr);
             return result;
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or NotSupportedException or InvalidOperationException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or NotSupportedException or InvalidOperationException or IOException)
         {
             var status = LooksLikeUnsupportedH3(ex) ? ValidationStatus.Unsupported : ValidationStatus.Failed;
             var errors = new List<string>
@@ -472,7 +472,7 @@ internal static class ProtocolProofValidator
         }
 
         using var response = await client.SendAsync(request);
-        var body = await response.Content.ReadAsByteArrayAsync();
+        var body = await HttpScenarioValidator.ReadResponseBodyAsync(response.Content);
         var warnings = certificateBypassUsed
             ? new[] { "Loopback certificate validation bypass was used for managed HTTP/3 proof." }
             : [];

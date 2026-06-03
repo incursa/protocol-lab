@@ -46,9 +46,15 @@ public sealed class CliRunTests
     public async Task Run_without_base_url_preserves_load_tool_artifact_files()
     {
         var output = Path.Combine(Path.GetTempPath(), $"protocol-lab-{Guid.NewGuid():N}");
+        var originalOut = Console.Out;
+        var originalError = Console.Error;
+        using var writer = new StringWriter();
 
         try
         {
+            Console.SetOut(writer);
+            Console.SetError(writer);
+
             var exitCode = await ProtocolLabCommand.RunAsync(
             [
                 "run",
@@ -63,6 +69,12 @@ public sealed class CliRunTests
             ]);
 
             Assert.Equal(0, exitCode);
+            var consoleOutput = writer.ToString();
+            Assert.Contains("Benchmark plan:", consoleOutput);
+            Assert.Contains("starting target", consoleOutput);
+            Assert.Contains("validating target", consoleOutput);
+            Assert.Contains("Staging public report bundle:", consoleOutput);
+            Assert.Contains("complete validation=", consoleOutput);
 
             var cellDirectory = Path.Combine(
                 output,
@@ -115,6 +127,8 @@ public sealed class CliRunTests
         }
         finally
         {
+            Console.SetOut(originalOut);
+            Console.SetError(originalError);
             if (Directory.Exists(output))
             {
                 Directory.Delete(output, recursive: true);

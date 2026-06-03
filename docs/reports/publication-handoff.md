@@ -109,18 +109,18 @@ private-path leaks, secret patterns, or missing Cloudflare credentials.
 
 ## GitHub Actions Automation
 
-The repository wires the same handoff into GitHub Actions so a fresh public
-bundle is published automatically from the main branch and from the nightly
-run:
+The repository keeps benchmark compute out of the normal CI build. The
+benchmark handoff remains available through the dedicated reusable workflow,
+but only the nightly/manual path invokes it automatically:
 
-- `.github/workflows/ci.yml` calls the reusable publish workflow after the
-  main branch build and test job.
-- `.github/workflows/nightly-public-report.yml` calls the same reusable
+- `.github/workflows/nightly-public-report.yml` calls the reusable publish
   workflow on a schedule and via manual dispatch.
 - The reusable workflow runs a canonical `kestrel-http3` H3 regression pass
   with `managed-httpclient-h3-load`, then publishes the resulting completed
   run with `-AllowDiagnosticPublication` so diagnostic runs stay visible
   instead of being hidden.
+- For ad hoc local runs, use
+  [docs/benchmarking/local-benchmark-workflow.md](../benchmarking/local-benchmark-workflow.md).
 
 The workflow requires these repository secrets:
 

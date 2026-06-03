@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Incursa LLC.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using System.Buffers;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
@@ -97,16 +98,43 @@ internal static class HttpScenarioValidator
             }
 
             using var response = await client.SendAsync(request);
-            var body = await response.Content.ReadAsByteArrayAsync();
+            var body = await ReadResponseBodyAsync(response.Content);
             var errors = ValidateResponse(cell.Scenario.Endpoint, response.StatusCode, response.Headers, response.Content.Headers, body, requestBody);
 
             return errors.Count == 0
                 ? CreateResult(cell, ValidationStatus.Passed, "Endpoint behavior matched scenario.")
                 : CreateResult(cell, ValidationStatus.Failed, "Endpoint behavior did not match scenario.", errors: errors);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or UriFormatException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or UriFormatException or IOException)
         {
             return CreateResult(cell, ValidationStatus.Failed, ex.Message, errors: [ex.Message]);
+        }
+    }
+
+    internal static async Task<byte[]> ReadResponseBodyAsync(HttpContent content, CancellationToken cancellationToken = default)
+    {
+        using var stream = await content.ReadAsStreamAsync();
+        using var buffer = new MemoryStream();
+        var rented = ArrayPool<byte>.Shared.Rent(81920);
+
+        try
+        {
+            while (true)
+            {
+                var read = await stream.ReadAsync(rented.AsMemory(), cancellationToken);
+                if (read == 0)
+                {
+                    break;
+                }
+
+                buffer.Write(rented, 0, read);
+            }
+
+            return buffer.ToArray();
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rented);
         }
     }
 

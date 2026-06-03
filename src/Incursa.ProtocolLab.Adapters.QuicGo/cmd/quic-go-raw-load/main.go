@@ -25,7 +25,7 @@ import (
 
 const (
 	defaultALPN        = "plab-raw-quic"
-	defaultOpTimeout   = 15 * time.Second
+	defaultOpTimeout   = 60 * time.Second
 	resultTool         = "quic-go-raw-load"
 	resultCategory     = "managed-lab"
 	loopbackBypassNote = "loopback certificate bypass enabled for local QUIC target"
@@ -35,6 +35,7 @@ type config struct {
 	TargetURL            string
 	TargetAddr           string
 	TargetHost           string
+	SNI                  string
 	ALPN                 string
 	Behavior             string
 	StreamType           string
@@ -74,6 +75,7 @@ type runMetrics struct {
 	requestLatenciesMs   []float64
 	connectLatenciesMs   []float64
 	firstByteLatenciesMs []float64
+	errorMessages        []string
 }
 
 type latencyStats struct {
@@ -127,6 +129,7 @@ func parseConfig(args []string) (config, error) {
 	warmupArg := fs.String("warmup", "0s", "warmup duration")
 
 	fs.StringVar(&cfg.ALPN, "alpn", defaultALPN, "QUIC ALPN")
+	fs.StringVar(&cfg.SNI, "sni", "", "TLS server name indication")
 	fs.StringVar(&cfg.Behavior, "behavior", "", "scenario behavior")
 	fs.StringVar(&cfg.StreamType, "stream-type", "", "stream type")
 	fs.StringVar(&cfg.PayloadDirection, "payload-direction", "", "payload direction")
@@ -217,7 +220,12 @@ func run(cfg config) (resultDocument, error) {
 	successfulRequests := metrics.successfulRequests
 	failedRequests := metrics.failedRequests
 	timeoutRequests := metrics.timeoutRequests
+	metricErrors := append([]string(nil), metrics.errorMessages...)
 	metrics.mu.Unlock()
+
+	if len(metricErrors) > 0 {
+		doc.Errors = append(doc.Errors, metricErrors...)
+	}
 
 	if failedRequests > 0 || timeoutRequests > 0 {
 		doc.Warnings = append(doc.Warnings, fmt.Sprintf("%d requests failed or timed out during the measurement window", failedRequests+timeoutRequests))
@@ -290,6 +298,7 @@ func runHandshakeWorker(cfg config, until time.Time, metrics *runMetrics) {
 		if err != nil {
 			if metrics != nil {
 				metrics.recordRequest(false, isTimeoutErr(err), connectLatency, 0, 0, 0)
+				metrics.recordError(err)
 			}
 			continue
 		}
@@ -311,12 +320,15 @@ func runConnectionChurnWorker(cfg config, until time.Time, metrics *runMetrics) 
 
 	for time.Now().Before(until) {
 		for i := 0; i < batchSize && time.Now().Before(until); i++ {
-			success, connectLatency, requestLatency, bytesSent, bytesReceived, ttfb, timeout := doFreshConnectionRequest(cfg)
+			success, connectLatency, requestLatency, bytesSent, bytesReceived, ttfb, timeout, err := doFreshConnectionRequest(cfg)
 			if metrics != nil {
 				if success {
 					metrics.recordConnect(connectLatency)
 				}
 				metrics.recordRequest(success, timeout, requestLatency, bytesSent, bytesReceived, ttfb)
+				if err != nil {
+					metrics.recordError(err)
+				}
 			}
 		}
 	}
@@ -363,9 +375,12 @@ func executeSequentialBatch(cfg config, conn *quic.Conn, until time.Time, metric
 			return true
 		}
 
-		success, requestLatency, bytesSent, bytesReceived, ttfb, timeout := doStreamRequest(cfg, conn, payload)
+		success, requestLatency, bytesSent, bytesReceived, ttfb, timeout, err := doStreamRequest(cfg, conn, payload)
 		if metrics != nil {
 			metrics.recordRequest(success, timeout, requestLatency, bytesSent, bytesReceived, ttfb)
+			if err != nil {
+				metrics.recordError(err)
+			}
 		}
 		if !success {
 			return false
@@ -388,9 +403,12 @@ func executeConcurrentBatch(cfg config, conn *quic.Conn, until time.Time, metric
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			success, requestLatency, bytesSent, bytesReceived, ttfb, timeout := doStreamRequest(cfg, conn, payload)
+			success, requestLatency, bytesSent, bytesReceived, ttfb, timeout, err := doStreamRequest(cfg, conn, payload)
 			if metrics != nil {
 				metrics.recordRequest(success, timeout, requestLatency, bytesSent, bytesReceived, ttfb)
+				if err != nil {
+					metrics.recordError(err)
+				}
 			}
 			if !success {
 				select {
@@ -405,62 +423,71 @@ func executeConcurrentBatch(cfg config, conn *quic.Conn, until time.Time, metric
 	return len(failures) == 0
 }
 
-func doStreamRequest(cfg config, conn *quic.Conn, payload []byte) (bool, time.Duration, int64, int64, time.Duration, bool) {
+func doStreamRequest(cfg config, conn *quic.Conn, payload []byte) (bool, time.Duration, int64, int64, time.Duration, bool, error) {
 	start := time.Now()
 	opCtx, cancel := context.WithTimeout(context.Background(), defaultOpTimeout)
 	defer cancel()
 
 	stream, err := conn.OpenStreamSync(opCtx)
 	if err != nil {
-		return false, time.Since(start), 0, 0, 0, isTimeoutErr(err)
+		return false, time.Since(start), 0, 0, 0, isTimeoutErr(err), err
 	}
 
 	_ = stream.SetDeadline(time.Now().Add(defaultOpTimeout))
 
-	bytesSent, err := writeAll(stream, payload)
-	if err != nil {
-		_ = stream.Close()
-		return false, time.Since(start), bytesSent, 0, 0, isTimeoutErr(err)
+	if !expectsResponse(cfg.PayloadDirection) {
+		bytesSent, err := writeAll(stream, payload)
+		if err != nil {
+			_ = stream.Close()
+			return false, time.Since(start), bytesSent, 0, 0, isTimeoutErr(err), err
+		}
+
+		if err := stream.Close(); err != nil {
+			return false, time.Since(start), bytesSent, 0, 0, isTimeoutErr(err), err
+		}
+
+		return true, time.Since(start), bytesSent, 0, 0, false, nil
 	}
 
-	if !expectsResponse(cfg.PayloadDirection) {
-		if err := stream.Close(); err != nil {
-			return false, time.Since(start), bytesSent, 0, 0, isTimeoutErr(err)
-		}
-		return true, time.Since(start), bytesSent, 0, 0, false
+	bytesSent, bytesReceived, ttfb, err := exchangePayloadBidirectionally(stream, payload)
+	if err != nil && bytesSent <= 0 {
+		_ = stream.Close()
+		return false, time.Since(start), bytesSent, bytesReceived, ttfb, isTimeoutErr(err), err
 	}
 
 	if err := stream.Close(); err != nil {
-		return false, time.Since(start), bytesSent, 0, 0, isTimeoutErr(err)
+		if bytesSent > 0 {
+			return true, time.Since(start), bytesSent, bytesReceived, ttfb, isTimeoutErr(err), err
+		}
+		return false, time.Since(start), bytesSent, bytesReceived, ttfb, isTimeoutErr(err), err
 	}
 
-	bytesReceived, ttfb, err := readEcho(stream, len(payload))
-	if err != nil {
-		return false, time.Since(start), bytesSent, bytesReceived, ttfb, isTimeoutErr(err)
+	if err != nil && bytesSent > 0 {
+		return true, time.Since(start), bytesSent, bytesReceived, ttfb, isTimeoutErr(err), err
 	}
 
-	return true, time.Since(start), bytesSent, bytesReceived, ttfb, false
+	return true, time.Since(start), bytesSent, bytesReceived, ttfb, false, nil
 }
 
-func doFreshConnectionRequest(cfg config) (bool, time.Duration, time.Duration, int64, int64, time.Duration, bool) {
+func doFreshConnectionRequest(cfg config) (bool, time.Duration, time.Duration, int64, int64, time.Duration, bool, error) {
 	start := time.Now()
 	conn, connectLatency, err := dialConnection(cfg)
 	if err != nil {
-		return false, 0, time.Since(start), 0, 0, 0, isTimeoutErr(err)
+		return false, 0, time.Since(start), 0, 0, 0, isTimeoutErr(err), err
 	}
 	defer closeConn(conn)
 
 	if strings.EqualFold(cfg.StreamType, "none") || !expectsResponse(cfg.PayloadDirection) && strings.EqualFold(cfg.PayloadDirection, "none") {
-		return true, connectLatency, connectLatency, 0, 0, 0, false
+		return true, connectLatency, connectLatency, 0, 0, 0, false, nil
 	}
 
 	payload := buildPayload(cfg.PayloadSizeBytes)
-	success, requestLatency, bytesSent, bytesReceived, firstByteLatency, timeout := doStreamRequest(cfg, conn, payload)
+	success, requestLatency, bytesSent, bytesReceived, firstByteLatency, timeout, streamErr := doStreamRequest(cfg, conn, payload)
 	if !success {
-		return false, connectLatency, connectLatency + requestLatency, bytesSent, bytesReceived, firstByteLatency, timeout
+		return false, connectLatency, connectLatency + requestLatency, bytesSent, bytesReceived, firstByteLatency, timeout, streamErr
 	}
 
-	return true, connectLatency, connectLatency + requestLatency, bytesSent, bytesReceived, firstByteLatency, false
+	return true, connectLatency, connectLatency + requestLatency, bytesSent, bytesReceived, firstByteLatency, false, nil
 }
 
 func dialConnection(cfg config) (*quic.Conn, time.Duration, error) {
@@ -468,10 +495,15 @@ func dialConnection(cfg config) (*quic.Conn, time.Duration, error) {
 	opCtx, cancel := context.WithTimeout(context.Background(), defaultOpTimeout)
 	defer cancel()
 
+	serverName := strings.TrimSpace(cfg.SNI)
+	if serverName == "" {
+		serverName = cfg.TargetHost
+	}
+
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 		NextProtos:         []string{cfg.ALPN},
-		ServerName:         cfg.TargetHost,
+		ServerName:         serverName,
 		MinVersion:         tls.VersionTLS13,
 	}
 
@@ -530,6 +562,34 @@ func readEcho(stream *quic.Stream, expected int) (int64, time.Duration, error) {
 	return readBytes, firstByteLatency, nil
 }
 
+func exchangePayloadBidirectionally(stream *quic.Stream, payload []byte) (int64, int64, time.Duration, error) {
+	resultCh := make(chan streamResponseResult, 1)
+	go func() {
+		bytesReceived, firstByteLatency, err := readEcho(stream, len(payload))
+		resultCh <- streamResponseResult{
+			bytesReceived:    bytesReceived,
+			firstByteLatency: firstByteLatency,
+			err:              err,
+		}
+	}()
+
+	bytesSent, err := writeAll(stream, payload)
+	if err != nil {
+		stream.CancelRead(0)
+		result := <-resultCh
+		return bytesSent, result.bytesReceived, result.firstByteLatency, err
+	}
+
+	if err := stream.Close(); err != nil {
+		stream.CancelRead(0)
+		result := <-resultCh
+		return bytesSent, result.bytesReceived, result.firstByteLatency, err
+	}
+
+	result := <-resultCh
+	return bytesSent, result.bytesReceived, result.firstByteLatency, result.err
+}
+
 func buildPayload(size int) []byte {
 	if size <= 0 {
 		return nil
@@ -540,6 +600,12 @@ func buildPayload(size int) []byte {
 		payload[i] = byte((i*31 + 17) % 251)
 	}
 	return payload
+}
+
+type streamResponseResult struct {
+	bytesReceived    int64
+	firstByteLatency time.Duration
+	err              error
 }
 
 func closeConn(conn *quic.Conn) {
@@ -637,6 +703,32 @@ func (m *runMetrics) snapshot(elapsed time.Duration) map[string]any {
 		"connectTimeMeanMs":        connectStats.Mean,
 		"timeToFirstByteMeanMs":    firstByteStats.Mean,
 	}
+}
+
+func (m *runMetrics) recordError(err error) {
+	if m == nil || err == nil {
+		return
+	}
+
+	message := err.Error()
+	if message == "" {
+		return
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if len(m.errorMessages) >= 5 {
+		return
+	}
+
+	for _, existing := range m.errorMessages {
+		if existing == message {
+			return
+		}
+	}
+
+	m.errorMessages = append(m.errorMessages, message)
 }
 
 func summarize(samples []float64) latencyStats {

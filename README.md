@@ -107,9 +107,15 @@ image:
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations kestrel-http3,incursa-http3 --scenarios http.core.plaintext,http.core.json --protocol h3 --load-tool h2load --load-tool-mode docker
 ```
 
-For broader local comparison coverage, use `suites/h3-local-v1-comparison.yaml` with `--load-profile local-comparison`; it now includes quic-go alongside Kestrel and Incursa while covering the full stable H3 app matrix across core, payload, headers, and upload scenarios.
+For broader local comparison coverage, use `suites/h3-local-v1-comparison.yaml` with `--load-profile local-comparison`; it includes quic-go alongside Kestrel and Incursa while covering the full stable H3 app matrix across core, payload, headers, and upload scenarios.
 
-## Prepare a Public Report Bundle
+## Local Workflow
+
+Use [docs/benchmarking/local-benchmark-workflow.md](docs/benchmarking/local-benchmark-workflow.md)
+for the exact commands to run build, test, check, selected benchmark suites,
+and publication.
+
+## Publish Completed Runs
 
 Benchmark `run` prepares a public-safe bundle automatically after it writes the
 completed run. The bundle reads `aggregate-results.json` and
@@ -139,6 +145,18 @@ needed, uploads the public files to `public/runs/{runId}/` in the
 `protocol-lab-reports` bucket through the R2 S3 API, verifies the uploaded
 payload before advancing the registry/latest pointers, and writes the
 searchable metadata into D1 through the Cloudflare D1 REST API.
+
+To batch upload one or more completed local runs, use the wrapper script:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\Publish-ProtocolLabRuns.ps1 `
+  -RunsRoot .artifacts\runs `
+  -PrefixFilter local-workflow `
+  -VerifyPublishedRuns
+```
+
+This scans completed run directories, publishes each one through the existing
+Cloudflare handoff, and writes `.artifacts\runs\publication-summary.md`.
 
 The workflow consumes these GitHub secrets:
 
@@ -188,8 +206,17 @@ the internal repo consumes them instead of silently diverging.
 See [docs/protocol-lab/product-boundaries.md](docs/protocol-lab/product-boundaries.md)
 for the conceptual split.
 
+## Contributing
+
+Pull requests to this repository require the `Contributor Agreement` status
+check. Read [CONTRIBUTOR-AGREEMENT.md](CONTRIBUTOR-AGREEMENT.md) and
+[CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
 ## Documentation
 
+- [Contributing](CONTRIBUTING.md) - contribution workflow, checks, and gates
+- [Contributor Agreement](CONTRIBUTOR-AGREEMENT.md) - the required public
+  agreement text and signing phrase
 - [docs/README.md](docs/README.md)
 - [docs/quickstart.md](docs/quickstart.md)
 - [docs/protocol-lab/first-public-release-checklist.md](docs/protocol-lab/first-public-release-checklist.md)

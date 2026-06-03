@@ -6,10 +6,26 @@ using Incursa.ProtocolLab.Adapter.Contracts;
 using Incursa.ProtocolLab.Adapters.IncursaRawQuic;
 using Microsoft.AspNetCore.Http;
 
+static string ResolveRepositoryRoot(string contentRootPath)
+{
+    var directory = new DirectoryInfo(contentRootPath);
+    while (directory is not null)
+    {
+        if (File.Exists(Path.Combine(directory.FullName, "Incursa.ProtocolLab.sln")))
+        {
+            return directory.FullName;
+        }
+
+        directory = directory.Parent;
+    }
+
+    return contentRootPath;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(new IncursaRawQuicAdapterRuntime(new IncursaRawQuicAdapterOptions
 {
-    RepositoryRoot = Directory.GetCurrentDirectory(),
+    RepositoryRoot = ResolveRepositoryRoot(builder.Environment.ContentRootPath),
     ControlPlaneBaseUrl = builder.Configuration["ASPNETCORE_URLS"] ?? ""
 }));
 var app = builder.Build();

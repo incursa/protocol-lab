@@ -6,4 +6,9 @@
     <RootNamespace>IncursaRawQuicServer</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Incursa.Quic" />
+    <PackageReference Include="Incursa.Quic.Diagnostics.Qlog" />
+  </ItemGroup>
+
 </Project>

@@ -27,6 +27,17 @@ internal static class IncursaRawQuicProtocolEndpointLauncher
         si.ArgumentList.Add("--"); si.ArgumentList.Add(port.ToString(System.Globalization.CultureInfo.InvariantCulture));
         si.Environment["PROTOCOL_LAB_INCURSA_RAW_QUIC_ALPN"] = plan.Alpn;
         si.Environment["PROTOCOL_LAB_INCURSA_RAW_QUIC_CERT_SUBJECT"] = plan.CertificateSubject;
+        var debugLogging = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_RAW_QUIC_DEBUG");
+        if (!string.IsNullOrWhiteSpace(debugLogging))
+        {
+            si.Environment["PROTOCOL_LAB_INCURSA_RAW_QUIC_DEBUG"] = debugLogging;
+        }
+
+        var qlogPath = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_RAW_QUIC_QLOG_PATH");
+        if (!string.IsNullOrWhiteSpace(qlogPath))
+        {
+            si.Environment["PROTOCOL_LAB_INCURSA_RAW_QUIC_QLOG_PATH"] = qlogPath;
+        }
 
         var cl = BuildCommandLine(si.FileName, [.. si.ArgumentList]);
         await File.WriteAllTextAsync(session.CommandLinePath, cl, ct);

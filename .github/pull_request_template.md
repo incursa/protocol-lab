@@ -19,6 +19,11 @@ Describe the change and the user-visible impact.
 - [ ] Public/community vs internal/commercial boundary is explicit
 - [ ] Any benchmark claim states the evidence class and its limitations
 
+## Contribution Agreement
+
+- [ ] I have read [CONTRIBUTOR-AGREEMENT.md](/CONTRIBUTOR-AGREEMENT.md)
+      and, if required, signed the agreement on this pull request.
+
 ## Notes
 
 Add anything a reviewer should know about tradeoffs, risks, or follow-up work.

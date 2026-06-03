@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Incursa LLC.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
@@ -109,6 +110,8 @@ internal sealed class TargetHandle : IAsyncDisposable
 
 internal static class TargetOrchestrator
 {
+    private static readonly ConcurrentDictionary<string, Task<ProjectBuildOutcome>> ProjectBuildCache = new(StringComparer.OrdinalIgnoreCase);
+
     public static async Task<TargetHandle> StartAsync(
         string root,
         ImplementationManifest manifest,
@@ -182,7 +185,7 @@ internal static class TargetOrchestrator
             return new TargetHandle(resolvedBaseUrl, unsupportedResult);
         }
 
-        return await StartProcessAsync(root, manifest, paths, ResolveBaseUrl(manifest, requestedProtocol), options);
+        return await StartProcessAsync(root, manifest, paths, ResolveBaseUrl(manifest, requestedProtocol), requestedProtocol, options);
     }
 
     public static async Task WriteTargetExecutionAsync(ArtifactPaths paths, TargetExecutionResult result)
@@ -195,6 +198,7 @@ internal static class TargetOrchestrator
         ImplementationManifest manifest,
         ArtifactPaths paths,
         string resolvedBaseUrl,
+        string? requestedProtocol,
         TargetStartOptions options)
     {
         if (string.IsNullOrWhiteSpace(manifest.Executable))
@@ -257,7 +261,7 @@ internal static class TargetOrchestrator
             Warnings = startCommand.Warnings
         };
 
-        var readyResult = await WaitReadyAsync(process, manifest, startedResult);
+        var readyResult = await WaitReadyAsync(process, manifest, resolvedBaseUrl, requestedProtocol, startedResult);
         await WriteTargetExecutionAsync(paths, readyResult);
         return new TargetHandle(resolvedBaseUrl, process, stdoutTask, stderrTask, readyResult);
     }
@@ -542,22 +546,18 @@ internal static class TargetOrchestrator
                 warnings.Add($"target-configuration:{normalizedConfiguration}");
             }
 
+            var buildOutcome = await EnsureProjectBuiltAsync(projectPath, normalizedConfiguration);
+            warnings.AddRange(buildOutcome.Warnings);
             var targetPath = await TryResolveProjectTargetPathAsync(projectPath, warnings, normalizedConfiguration);
-            if (!string.IsNullOrWhiteSpace(targetPath))
+            if (buildOutcome.Succeeded &&
+                !string.IsNullOrWhiteSpace(targetPath) &&
+                File.Exists(targetPath))
             {
-                if (!File.Exists(targetPath))
-                {
-                    await TryBuildProjectAsync(projectPath, warnings, normalizedConfiguration);
-                }
-
-                if (File.Exists(targetPath))
-                {
-                    return new TargetStartCommand(
-                        manifest.Executable,
-                        ["exec", targetPath, .. NormalizeDirectAppArguments(manifest.CommandArguments)],
-                        workingDirectory,
-                        warnings);
-                }
+                return new TargetStartCommand(
+                    manifest.Executable,
+                    ["exec", targetPath, .. NormalizeDirectAppArguments(manifest.CommandArguments)],
+                    workingDirectory,
+                    warnings);
             }
 
             warnings.Add("target-direct-dll-startup-unavailable; falling back to dotnet run wrapper.");
@@ -583,6 +583,21 @@ internal static class TargetOrchestrator
         }
 
         return new TargetStartCommand(manifest.Executable, manifest.CommandArguments, defaultWorkingDirectory, []);
+    }
+
+    private static Task<ProjectBuildOutcome> EnsureProjectBuiltAsync(string projectPath, string? configuration)
+    {
+        var cacheKey = BuildProjectCacheKey(projectPath, configuration);
+        return ProjectBuildCache.GetOrAdd(cacheKey, _ => TryBuildProjectAsync(projectPath, configuration));
+    }
+
+    private static string BuildProjectCacheKey(string projectPath, string? configuration)
+    {
+        var normalizedConfiguration = string.IsNullOrWhiteSpace(configuration)
+            ? string.Empty
+            : configuration.Trim().ToUpperInvariant();
+
+        return $"{Path.GetFullPath(projectPath)}|{normalizedConfiguration}";
     }
 
     private static IReadOnlyList<string> BuildDockerRunArguments(
@@ -1042,7 +1057,7 @@ internal static class TargetOrchestrator
             {
                 if (string.Equals(requestedProtocol, "h3", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (await IsManagedHttp3ReadyAsync(resolvedBaseUrl, manifest.ReadinessCheck.Url, manifest.CertificateMode))
+                    if (await IsHttp3ReadyAsync(resolvedBaseUrl, manifest.ReadinessCheck.Url, manifest.CertificateMode))
                     {
                         return MarkReady(startedResult);
                     }
@@ -1079,7 +1094,7 @@ internal static class TargetOrchestrator
         return MarkFailed(startedResult, error, null);
     }
 
-    private static async Task<bool> IsManagedHttp3ReadyAsync(string baseUrl, string readinessPath, string certificateMode)
+    private static async Task<bool> IsHttp3ReadyAsync(string baseUrl, string readinessPath, string certificateMode)
     {
         var uri = new Uri(new Uri(baseUrl.TrimEnd('/') + "/"), readinessPath.TrimStart('/'));
         var handler = new SocketsHttpHandler
@@ -1176,7 +1191,8 @@ internal static class TargetOrchestrator
             var result = await RunProcessForOutputAsync(
                 "dotnet",
                 arguments,
-                Path.GetDirectoryName(projectPath) ?? Directory.GetCurrentDirectory());
+                Path.GetDirectoryName(projectPath) ?? Directory.GetCurrentDirectory(),
+                CreateFreshNuGetEnvironment());
             if (result.ExitCode != 0)
             {
                 warnings.Add($"target-path-resolution-failed: dotnet msbuild exited {result.ExitCode}.");
@@ -1194,10 +1210,12 @@ internal static class TargetOrchestrator
         }
     }
 
-    private static async Task TryBuildProjectAsync(string projectPath, List<string> warnings, string? configuration)
+    private static async Task<ProjectBuildOutcome> TryBuildProjectAsync(string projectPath, string? configuration)
     {
+        var warnings = new List<string>();
         try
         {
+            var environment = CreateFreshNuGetEnvironment();
             var arguments = new List<string>
             {
                 "build",
@@ -1215,16 +1233,22 @@ internal static class TargetOrchestrator
             var result = await RunProcessForOutputAsync(
                 "dotnet",
                 arguments,
-                Path.GetDirectoryName(projectPath) ?? Directory.GetCurrentDirectory());
+                Path.GetDirectoryName(projectPath) ?? Directory.GetCurrentDirectory(),
+                environment);
             if (result.ExitCode != 0)
             {
                 warnings.Add($"target-build-before-direct-start-failed: dotnet build exited {result.ExitCode}.");
+                return new ProjectBuildOutcome(false, warnings);
             }
+
+            return new ProjectBuildOutcome(true, warnings);
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
         {
             warnings.Add($"target-build-before-direct-start-failed: {ex.Message}");
         }
+
+        return new ProjectBuildOutcome(false, warnings);
     }
 
     private static IReadOnlyList<string> NormalizeDirectAppArguments(IReadOnlyList<string> arguments)
@@ -1237,7 +1261,8 @@ internal static class TargetOrchestrator
     private static async Task<ProcessOutput> RunProcessForOutputAsync(
         string executable,
         IReadOnlyList<string> arguments,
-        string workingDirectory)
+        string workingDirectory,
+        IReadOnlyDictionary<string, string>? environment = null)
     {
         var startInfo = new ProcessStartInfo(executable)
         {
@@ -1251,12 +1276,35 @@ internal static class TargetOrchestrator
             startInfo.ArgumentList.Add(argument);
         }
 
+        if (environment is not null)
+        {
+            foreach (var pair in environment)
+            {
+                startInfo.Environment[pair.Key] = pair.Value;
+            }
+        }
+
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException($"Failed to start '{executable}'.");
         var stdoutTask = process.StandardOutput.ReadToEndAsync();
         var stderrTask = process.StandardError.ReadToEndAsync();
         await process.WaitForExitAsync();
         return new ProcessOutput(process.ExitCode, await stdoutTask, await stderrTask);
+    }
+
+    private static IReadOnlyDictionary<string, string> CreateFreshNuGetEnvironment()
+    {
+        var cacheRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Incursa.ProtocolLab",
+            "nuget-cache",
+            Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
+
+        Directory.CreateDirectory(cacheRoot);
+        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["NUGET_PACKAGES"] = cacheRoot
+        };
     }
 
     private static string BuildCommandLine(string executable, IReadOnlyList<string> arguments)
@@ -1274,6 +1322,8 @@ internal static class TargetOrchestrator
     private static async Task<TargetExecutionResult> WaitReadyAsync(
         Process process,
         ImplementationManifest manifest,
+        string resolvedBaseUrl,
+        string? requestedProtocol,
         TargetExecutionResult startedResult)
     {
         var type = string.IsNullOrWhiteSpace(manifest.ReadinessCheck.Type)
@@ -1307,14 +1357,21 @@ internal static class TargetOrchestrator
 
             try
             {
+                if (string.Equals(requestedProtocol, "h3", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(type, ReadinessCheckTypes.Http, StringComparison.OrdinalIgnoreCase) &&
+                    await IsHttp3ReadyAsync(resolvedBaseUrl, manifest.ReadinessCheck.Url, manifest.CertificateMode))
+                {
+                    return MarkReady(startedResult);
+                }
+
                 if (string.Equals(type, ReadinessCheckTypes.Http, StringComparison.OrdinalIgnoreCase) &&
-                    await IsHttpReadyAsync(manifest.BaseUrl, manifest.ReadinessCheck.Url))
+                    await IsHttpReadyAsync(resolvedBaseUrl, manifest.ReadinessCheck.Url))
                 {
                     return MarkReady(startedResult);
                 }
 
                 if (string.Equals(type, ReadinessCheckTypes.Tcp, StringComparison.OrdinalIgnoreCase) &&
-                    await IsTcpReadyAsync(manifest.BaseUrl))
+                    await IsTcpReadyAsync(resolvedBaseUrl))
                 {
                     return MarkReady(startedResult);
                 }
@@ -1468,6 +1525,8 @@ internal static class TargetOrchestrator
     private sealed record TargetStartCommand(string Executable, IReadOnlyList<string> Arguments, string WorkingDirectory, List<string> Warnings);
 
     private sealed record DockerNetworkResult(int ExitCode, string? NetworkId, IReadOnlyList<string> Warnings);
+
+    private sealed record ProjectBuildOutcome(bool Succeeded, IReadOnlyList<string> Warnings);
 
     private sealed record ProcessOutput(int ExitCode, string Stdout, string Stderr)
     {

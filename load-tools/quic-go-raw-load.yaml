@@ -82,6 +82,7 @@ defaultArguments:
   - src/Incursa.ProtocolLab.Adapters.QuicGo
   - run
   - ./cmd/quic-go-raw-load
+sni: localhost
 versionCommand:
   - version
 availabilityCheck: path

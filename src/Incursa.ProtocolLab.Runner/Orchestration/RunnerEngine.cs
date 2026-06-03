@@ -399,6 +399,7 @@ public sealed class RunnerEngine
             options.Get("counter-format") ?? "json",
             root);
         var loadTools = LoadToolCatalog.Load(Path.Combine(root, "load-tools"));
+        output.WriteLine($"Benchmark plan: {cells.Length} cell(s) queued for execution profile {ExecutionProfiles.ToId(executionProfile)}; capturing run metadata.");
         var metadata = await RunMetadataCapture.CaptureAsync(executionProfile);
         var results = new List<BenchmarkResult>();
         var compatibilities = new List<RunCellCompatibility>();
@@ -406,9 +407,13 @@ public sealed class RunnerEngine
             .GroupBy(GetRepetitionGroupKey)
             .ToDictionary(static group => group.Key, static group => group.Count(), StringComparer.Ordinal);
 
-        foreach (var cell in cells)
+        for (var cellIndex = 0; cellIndex < cells.Length; cellIndex++)
         {
+            var cell = cells[cellIndex];
             var totalRepetitions = totalRepetitionsByCell[GetRepetitionGroupKey(cell)];
+            var cellLabel = $"{cell.Implementation.Id}/{cell.Scenario.Id}/{cell.Protocol}";
+            var progressPrefix = $"[{cellIndex + 1}/{cells.Length}] {cellLabel} r{cell.Repetition}/{totalRepetitions}";
+            output.WriteLine($"{progressPrefix}: starting");
             var paths = ArtifactLayout.GetCellPaths(outputDirectory, runId, cell);
             PrepareCellDirectories(paths);
             await WriteSnapshotsAsync(paths, cell);
@@ -471,6 +476,204 @@ public sealed class RunnerEngine
                 StdoutPath = paths.LoadToolStdout,
                 StderrPath = paths.LoadToolStderr
             };
+            TargetExecutionResult? executionTarget = null;
+            ScenarioValidationResult? validation = null;
+            string targetBaseUrl = externalBaseUrl ?? string.Empty;
+            var isAdapterTarget = string.Equals(cell.Implementation.TargetContract, "adapter-v1", StringComparison.OrdinalIgnoreCase);
+
+            async Task<BenchmarkResult> FinalizeBenchmarkCellFailureAsync(Exception exception)
+            {
+                var failureMessage = $"Runner exception: {exception.GetType().Name}: {exception.Message}";
+                errors.Add(failureMessage);
+                benchmarkExecutionStatus = LoadToolExecutionStatuses.Failed;
+                benchmarkFailureReason = failureMessage;
+                recordedLoadTool ??= requestedLoadTool;
+                recordedLoadToolMode ??= requestedLoadToolMode;
+
+                if (validation is null)
+                {
+                    validation = BuildInfrastructureFailureValidationResult(
+                        cell,
+                        failureMessage,
+                        warnings,
+                        [failureMessage]);
+                    await File.WriteAllTextAsync(paths.ValidationJson, ResultJson.Serialize(validation));
+                }
+
+                if (executionTarget is null)
+                {
+                    executionTarget = BuildInfrastructureFailureTargetResult(
+                        paths,
+                        cell,
+                        targetOptions.Mode,
+                        failureMessage);
+                }
+
+                var validationResult = validation ?? throw new InvalidOperationException("Validation result was not produced.");
+                var executionTargetResult = executionTarget ?? throw new InvalidOperationException("Target execution result was not produced.");
+
+                await TargetOrchestrator.WriteTargetExecutionAsync(paths, executionTargetResult);
+                await File.WriteAllTextAsync(paths.LoadToolStdout, "");
+                await File.WriteAllTextAsync(paths.LoadToolStderr, failureMessage);
+
+                loadToolExecution = loadToolExecution with
+                {
+                    Status = benchmarkExecutionStatus,
+                    ToolId = recordedLoadTool,
+                    Mode = recordedLoadToolMode,
+                    Category = recordedLoadToolCategory,
+                    Version = recordedLoadToolVersion,
+                    CommandLine = loadToolCommandLine,
+                    DockerCommandLine = dockerCommandLine,
+                    WorkingDirectory = loadToolWorkingDirectory,
+                    ParserId = loadToolParserId,
+                    RequestedUrl = requestedLoadToolUrl,
+                    EffectiveUrl = effectiveLoadToolUrl,
+                    ConnectTarget = loadToolConnectTarget,
+                    HostRewriteMode = hostRewriteMode,
+                    Sni = loadToolSni,
+                    ContainerNetwork = loadToolContainerNetwork,
+                    CertificateMode = loadToolCertificateMode,
+                    StdoutPath = paths.LoadToolStdout,
+                    StderrPath = paths.LoadToolStderr,
+                    ExitCode = 1,
+                    Errors = [failureMessage],
+                    Warnings = warnings.ToArray()
+                };
+                await File.WriteAllTextAsync(paths.LoadToolExecutionJson, ResultJson.Serialize(loadToolExecution));
+
+                if (requestedLoadShape is null)
+                {
+                    requestedLoadShape = BuildRequestedLoadShape(cell);
+                }
+
+                if (effectiveLoadShape is null)
+                {
+                    effectiveLoadShape = BuildSkippedEffectiveLoadShape(cell);
+                }
+
+                if (loadShapeSemantics is null)
+                {
+                    loadShapeSemantics = new LoadShapeSemantics
+                    {
+                        Protocol = cell.Protocol,
+                        LoadTool = recordedLoadTool,
+                        Warnings = []
+                    };
+                }
+
+                loadShapeWarnings.AddRange(BuildFairnessWarnings(
+                    cell,
+                    targetBaseUrl,
+                    totalRepetitions,
+                    benchmarkExecutionStatus == LoadToolExecutionStatuses.Succeeded ? parsedMetricsAvailable : null));
+
+                var finalWarnings = FilterTargetDiagnosticWarnings(
+                    warnings,
+                    executionTargetResult,
+                    targetDockerMetricsAvailable)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                var finalErrors = errors.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+                await WriteNotesAsync(paths, finalWarnings, finalErrors);
+
+                var result = BenchmarkResult.FromCell(
+                    runId,
+                    cell,
+                    validationResult,
+                    recordedLoadTool,
+                    parsedMetricsAvailable,
+                    artifacts,
+                    metrics,
+                    finalWarnings,
+                    finalErrors,
+                    recordedLoadToolMode,
+                    recordedLoadToolCategory,
+                    recordedLoadToolVersion,
+                    benchmarkExecutionStatus,
+                    benchmarkFailureReason,
+                    loadToolCommandLine,
+                    dockerImage,
+                    dockerCommandLine,
+                    loadToolWorkingDirectory,
+                    loadToolParserId,
+                    requestedLoadToolUrl,
+                    effectiveLoadToolUrl,
+                    loadToolConnectTarget,
+                    hostRewriteMode,
+                    loadToolSni,
+                    loadToolContainerNetwork,
+                    loadToolCertificateMode,
+                    requestedLoadShape,
+                    effectiveLoadShape,
+                    loadShapeSemantics,
+                    loadShapeWarnings.Distinct(StringComparer.OrdinalIgnoreCase),
+                    executionTargetResult,
+                    validationResult.ProtocolProof);
+
+                result = result with
+                {
+                    LoadToolExitCode = loadToolExecution.ExitCode,
+                    LoadToolH3CapabilityStatus = loadToolExecution.H3CapabilityStatus,
+                    LoadToolH3CapabilityWarnings = loadToolExecution.H3CapabilityWarnings.ToArray(),
+                    LoadToolDockerImageId = loadToolExecution.DockerImageId,
+                    LoadToolDockerImageDigest = loadToolExecution.DockerImageDigest,
+                    LoadToolContainerId = loadToolExecution.ContainerId,
+                    LoadToolDockerInspectPath = loadToolExecution.DockerInspectPath,
+                    LoadToolContainerName = loadToolExecution.ContainerName,
+                    LoadToolDockerResourceLimitsRequested = loadToolExecution.LoadToolDockerResourceLimitsRequested,
+                    LoadToolDockerResourceLimitsEffective = loadToolExecution.LoadToolDockerResourceLimitsEffective,
+                    LoadToolDockerMetricsAvailable = loadToolExecution.LoadToolDockerMetricsAvailable,
+                    LoadToolDockerMetricsSummary = loadToolExecution.LoadToolDockerMetricsSummary,
+                    LoadToolSaturationStatus = loadToolExecution.LoadToolSaturationStatus,
+                    LoadToolSaturationWarnings = loadToolExecution.LoadToolSaturationWarnings,
+                    LoadToolDockerMetricsArtifacts = loadToolExecution.LoadToolDockerMetricsArtifacts,
+                    TargetDockerMetricsAvailable = targetDockerMetricsAvailable,
+                    TargetDockerMetricsSummary = targetDockerMetricsSummary,
+                    TargetSaturationStatus = targetSaturationStatus,
+                    TargetSaturationWarnings = targetSaturationWarnings,
+                    TargetDockerMetricsArtifacts = targetDockerMetricsArtifacts,
+                    ResourceLimitWarnings = result.ResourceLimitWarnings
+                        .Concat(loadToolExecution.ResourceLimitWarnings)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray(),
+                    DockerCleanup = MergeDockerCleanup(MergeDockerCleanup(result.DockerCleanup, loadToolExecution.CleanupSummary), targetMetricsCleanupSummary),
+                    TargetProcessMetrics = targetProcessMetrics,
+                    DiagnosticTarget = diagnosticTarget,
+                    CountersAvailable = countersAvailable,
+                    CountersCaptureStatus = countersCaptureStatus,
+                    CountersSummary = countersSummary,
+                    CounterArtifacts = counterArtifacts,
+                    QlogDirectory = paths.QlogDirectory,
+                    QlogFileCount = qlogFileCount
+                };
+
+                result = result with
+                {
+                    Evidence = BenchmarkEvidenceEvaluator.Assess(result)
+                };
+
+                result = PopulateLoadProfileMetadata(result, cell, loadProfiles);
+
+                await File.WriteAllTextAsync(paths.DockerResourceLimitsJson, ResultJson.Serialize(new
+                {
+                    targetRequested = result.TargetDockerResourceLimitsRequested,
+                    targetEffective = result.TargetDockerResourceLimitsEffective,
+                    loadToolRequested = result.LoadToolDockerResourceLimitsRequested,
+                    loadToolEffective = result.LoadToolDockerResourceLimitsEffective,
+                    warnings = result.ResourceLimitWarnings
+                }));
+
+                if (result.DockerCleanup is not null)
+                {
+                    await File.WriteAllTextAsync(paths.DockerCleanupJson, ResultJson.Serialize(result.DockerCleanup));
+                }
+
+                await File.WriteAllTextAsync(paths.ResultJson, ResultJson.Serialize(result));
+                return result;
+            }
+
             var compatibility = CompatibilityClassifier.Classify(cell, networkProfiles: networkProfiles, loadProfiles: loadProfiles);
             compatibilities.Add(compatibility);
             if (!compatibility.CanRun)
@@ -516,20 +719,20 @@ public sealed class RunnerEngine
                 skippedResult = PopulateLoadProfileMetadata(skippedResult, cell, loadProfiles);
                 await File.WriteAllTextAsync(paths.ResultJson, ResultJson.Serialize(skippedResult));
                 results.Add(skippedResult);
-                output.WriteLine($"{cell.Implementation.Id}/{cell.Scenario.Id}/{cell.Protocol}: validation={compatibilityValidation.Status}, benchmark={LoadToolExecutionStatuses.Skipped}, loadTool=none");
+                output.WriteLine($"{progressPrefix}: complete validation={compatibilityValidation.Status}, benchmark={LoadToolExecutionStatuses.Skipped}, loadTool=none");
                 continue;
             }
 
-            var target = await TargetOrchestrator.StartAsync(root, cell.Implementation, externalBaseUrl, paths, cell.Protocol, targetOptions);
+            TargetHandle? target = null;
             AdapterSessionHandle? adapterSession = null;
-            var executionTarget = target.Result;
-            var targetBaseUrl = target.BaseUrl;
-            var isAdapterTarget = string.Equals(cell.Implementation.TargetContract, "adapter-v1", StringComparison.OrdinalIgnoreCase);
-
-            ScenarioValidationResult validation;
 
             try
             {
+                output.WriteLine($"{progressPrefix}: starting target");
+                target = await TargetOrchestrator.StartAsync(root, cell.Implementation, externalBaseUrl, paths, cell.Protocol, targetOptions);
+                executionTarget = target.Result;
+                targetBaseUrl = target.BaseUrl;
+
                 if (isAdapterTarget &&
                     !target.Result.Unsupported &&
                     !target.Result.Failed &&
@@ -547,6 +750,7 @@ public sealed class RunnerEngine
                     targetBaseUrl = adapterSession.ProtocolBaseUrl ?? executionTarget.TargetEffectiveBaseUrl ?? target.BaseUrl;
                 }
 
+                output.WriteLine($"{progressPrefix}: validating target");
                 validation = await ValidateCellAsync(root, cell, targetBaseUrl, executionTarget, paths);
                 await File.WriteAllTextAsync(paths.ValidationJson, ResultJson.Serialize(validation));
                 warnings.AddRange(validation.Warnings ?? []);
@@ -751,6 +955,7 @@ public sealed class RunnerEngine
                                         cell.DurationSeconds + cell.WarmupSeconds + 3);
                                 }
 
+                                output.WriteLine($"{progressPrefix}: running load tool {resolution.Tool.Manifest.Id}");
                                 run = await LoadToolInvoker.RunAsync(resolution.Tool, plan);
                             }
                             finally
@@ -1015,172 +1220,189 @@ public sealed class RunnerEngine
                     executionTarget = adapterSession.Result;
                 }
 
-                await target.DisposeAsync();
-                await TargetOrchestrator.WriteTargetExecutionAsync(paths, executionTarget);
-            }
-
-            warnings.AddRange(executionTarget.Warnings);
-            warnings.AddRange(executionTarget.NetworkWarnings);
-            warnings.AddRange(executionTarget.ResourceLimitWarnings);
-
-            if (targetProcessMetrics is not null)
-            {
-                targetProcessMetrics = targetProcessMetrics with
+                if (target is not null)
                 {
-                    ExitCode = executionTarget.ExitCode,
-                    Crashed = targetProcessExitedBeforeDispose == true &&
-                        executionTarget.ExitCode.HasValue &&
-                        executionTarget.ExitCode.Value != 0
-                };
+                    await target.DisposeAsync();
+                }
 
-                if (targetProcessMetrics.Crashed)
+                if (executionTarget is not null)
                 {
-                    var exitCode = executionTarget.ExitCode.GetValueOrDefault();
-                    var exitWarning = $"target-process-exit-code-{exitCode.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
-                    targetProcessMetrics = targetProcessMetrics with
-                    {
-                        Warnings = targetProcessMetrics.Warnings
-                            .Concat([exitWarning])
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .ToArray()
-                    };
+                    await TargetOrchestrator.WriteTargetExecutionAsync(paths, executionTarget);
                 }
             }
 
-            if (requestedLoadShape is null)
+            try
             {
-                requestedLoadShape = BuildRequestedLoadShape(cell);
-            }
+                warnings.AddRange(executionTarget.Warnings);
+                warnings.AddRange(executionTarget.NetworkWarnings);
+                warnings.AddRange(executionTarget.ResourceLimitWarnings);
 
-            if (effectiveLoadShape is null)
-            {
-                effectiveLoadShape = BuildSkippedEffectiveLoadShape(cell);
-            }
-
-            if (loadShapeSemantics is null)
-            {
-                loadShapeSemantics = new LoadShapeSemantics
+                if (targetProcessMetrics is not null)
                 {
-                    Protocol = cell.Protocol,
-                    LoadTool = recordedLoadTool,
-                    Warnings = []
-                };
-            }
+                    targetProcessMetrics = targetProcessMetrics with
+                    {
+                        ExitCode = executionTarget.ExitCode,
+                        Crashed = targetProcessExitedBeforeDispose == true &&
+                            executionTarget.ExitCode.HasValue &&
+                            executionTarget.ExitCode.Value != 0
+                    };
 
-            loadShapeWarnings.AddRange(BuildFairnessWarnings(
-                cell,
-                targetBaseUrl,
-                totalRepetitions,
-                benchmarkExecutionStatus == LoadToolExecutionStatuses.Succeeded ? parsedMetricsAvailable : null));
-            var finalWarnings = FilterTargetDiagnosticWarnings(
-                warnings,
-                executionTarget,
-                targetDockerMetricsAvailable)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            var finalErrors = errors.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-            loadToolExecution = loadToolExecution with
-            {
-                Warnings = finalWarnings.Concat(loadToolExecution.H3CapabilityWarnings).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
-            };
-            await WriteNotesAsync(paths, finalWarnings, finalErrors);
-            await File.WriteAllTextAsync(paths.LoadToolExecutionJson, ResultJson.Serialize(loadToolExecution));
+                    if (targetProcessMetrics.Crashed)
+                    {
+                        var exitCode = executionTarget.ExitCode.GetValueOrDefault();
+                        var exitWarning = $"target-process-exit-code-{exitCode.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+                        targetProcessMetrics = targetProcessMetrics with
+                        {
+                            Warnings = targetProcessMetrics.Warnings
+                                .Concat([exitWarning])
+                                .Distinct(StringComparer.OrdinalIgnoreCase)
+                                .ToArray()
+                        };
+                    }
+                }
 
-            var result = BenchmarkResult.FromCell(
-                runId,
-                cell,
-                validation,
-                recordedLoadTool,
-                parsedMetricsAvailable,
-                artifacts,
-                metrics,
-                finalWarnings,
-                finalErrors,
-                recordedLoadToolMode,
-                recordedLoadToolCategory,
-                recordedLoadToolVersion,
-                benchmarkExecutionStatus,
-                benchmarkFailureReason,
-                loadToolCommandLine,
-                dockerImage,
-                dockerCommandLine,
-                loadToolWorkingDirectory,
-                loadToolParserId,
-                requestedLoadToolUrl,
-                effectiveLoadToolUrl,
-                loadToolConnectTarget,
-                hostRewriteMode,
-                loadToolSni,
-                loadToolContainerNetwork,
-                loadToolCertificateMode,
-                requestedLoadShape,
-                effectiveLoadShape,
-                loadShapeSemantics,
-                loadShapeWarnings.Distinct(StringComparer.OrdinalIgnoreCase),
-                executionTarget,
-                validation.ProtocolProof);
+                if (requestedLoadShape is null)
+                {
+                    requestedLoadShape = BuildRequestedLoadShape(cell);
+                }
 
-            result = result with
-            {
-                LoadToolExitCode = loadToolExecution.ExitCode,
-                LoadToolH3CapabilityStatus = loadToolExecution.H3CapabilityStatus,
-                LoadToolH3CapabilityWarnings = loadToolExecution.H3CapabilityWarnings.ToArray(),
-                LoadToolDockerImageId = loadToolExecution.DockerImageId,
-                LoadToolDockerImageDigest = loadToolExecution.DockerImageDigest,
-                LoadToolContainerId = loadToolExecution.ContainerId,
-                LoadToolDockerInspectPath = loadToolExecution.DockerInspectPath,
-                LoadToolContainerName = loadToolExecution.ContainerName,
-                LoadToolDockerResourceLimitsRequested = loadToolExecution.LoadToolDockerResourceLimitsRequested,
-                LoadToolDockerResourceLimitsEffective = loadToolExecution.LoadToolDockerResourceLimitsEffective,
-                LoadToolDockerMetricsAvailable = loadToolExecution.LoadToolDockerMetricsAvailable,
-                LoadToolDockerMetricsSummary = loadToolExecution.LoadToolDockerMetricsSummary,
-                LoadToolSaturationStatus = loadToolExecution.LoadToolSaturationStatus,
-                LoadToolSaturationWarnings = loadToolExecution.LoadToolSaturationWarnings,
-                LoadToolDockerMetricsArtifacts = loadToolExecution.LoadToolDockerMetricsArtifacts,
-                TargetDockerMetricsAvailable = targetDockerMetricsAvailable,
-                TargetDockerMetricsSummary = targetDockerMetricsSummary,
-                TargetSaturationStatus = targetSaturationStatus,
-                TargetSaturationWarnings = targetSaturationWarnings,
-                TargetDockerMetricsArtifacts = targetDockerMetricsArtifacts,
-                ResourceLimitWarnings = result.ResourceLimitWarnings
-                    .Concat(loadToolExecution.ResourceLimitWarnings)
+                if (effectiveLoadShape is null)
+                {
+                    effectiveLoadShape = BuildSkippedEffectiveLoadShape(cell);
+                }
+
+                if (loadShapeSemantics is null)
+                {
+                    loadShapeSemantics = new LoadShapeSemantics
+                    {
+                        Protocol = cell.Protocol,
+                        LoadTool = recordedLoadTool,
+                        Warnings = []
+                    };
+                }
+
+                loadShapeWarnings.AddRange(BuildFairnessWarnings(
+                    cell,
+                    targetBaseUrl,
+                    totalRepetitions,
+                    benchmarkExecutionStatus == LoadToolExecutionStatuses.Succeeded ? parsedMetricsAvailable : null));
+                var finalWarnings = FilterTargetDiagnosticWarnings(
+                    warnings,
+                    executionTarget,
+                    targetDockerMetricsAvailable)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray(),
-                DockerCleanup = MergeDockerCleanup(MergeDockerCleanup(result.DockerCleanup, loadToolExecution.CleanupSummary), targetMetricsCleanupSummary),
-                TargetProcessMetrics = targetProcessMetrics,
-                DiagnosticTarget = diagnosticTarget,
-                CountersAvailable = countersAvailable,
-                CountersCaptureStatus = countersCaptureStatus,
-                CountersSummary = countersSummary,
-                CounterArtifacts = counterArtifacts,
-                QlogDirectory = paths.QlogDirectory,
-                QlogFileCount = qlogFileCount
-            };
+                    .ToArray();
+                var finalErrors = errors.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                loadToolExecution = loadToolExecution with
+                {
+                    Warnings = finalWarnings.Concat(loadToolExecution.H3CapabilityWarnings).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+                };
+                await WriteNotesAsync(paths, finalWarnings, finalErrors);
+                await File.WriteAllTextAsync(paths.LoadToolExecutionJson, ResultJson.Serialize(loadToolExecution));
 
-            result = result with
-            {
-                Evidence = BenchmarkEvidenceEvaluator.Assess(result)
-            };
+                var result = BenchmarkResult.FromCell(
+                    runId,
+                    cell,
+                    validation,
+                    recordedLoadTool,
+                    parsedMetricsAvailable,
+                    artifacts,
+                    metrics,
+                    finalWarnings,
+                    finalErrors,
+                    recordedLoadToolMode,
+                    recordedLoadToolCategory,
+                    recordedLoadToolVersion,
+                    benchmarkExecutionStatus,
+                    benchmarkFailureReason,
+                    loadToolCommandLine,
+                    dockerImage,
+                    dockerCommandLine,
+                    loadToolWorkingDirectory,
+                    loadToolParserId,
+                    requestedLoadToolUrl,
+                    effectiveLoadToolUrl,
+                    loadToolConnectTarget,
+                    hostRewriteMode,
+                    loadToolSni,
+                    loadToolContainerNetwork,
+                    loadToolCertificateMode,
+                    requestedLoadShape,
+                    effectiveLoadShape,
+                    loadShapeSemantics,
+                    loadShapeWarnings.Distinct(StringComparer.OrdinalIgnoreCase),
+                    executionTarget,
+                    validation.ProtocolProof);
 
-            result = PopulateLoadProfileMetadata(result, cell, loadProfiles);
+                result = result with
+                {
+                    LoadToolExitCode = loadToolExecution.ExitCode,
+                    LoadToolH3CapabilityStatus = loadToolExecution.H3CapabilityStatus,
+                    LoadToolH3CapabilityWarnings = loadToolExecution.H3CapabilityWarnings.ToArray(),
+                    LoadToolDockerImageId = loadToolExecution.DockerImageId,
+                    LoadToolDockerImageDigest = loadToolExecution.DockerImageDigest,
+                    LoadToolContainerId = loadToolExecution.ContainerId,
+                    LoadToolDockerInspectPath = loadToolExecution.DockerInspectPath,
+                    LoadToolContainerName = loadToolExecution.ContainerName,
+                    LoadToolDockerResourceLimitsRequested = loadToolExecution.LoadToolDockerResourceLimitsRequested,
+                    LoadToolDockerResourceLimitsEffective = loadToolExecution.LoadToolDockerResourceLimitsEffective,
+                    LoadToolDockerMetricsAvailable = loadToolExecution.LoadToolDockerMetricsAvailable,
+                    LoadToolDockerMetricsSummary = loadToolExecution.LoadToolDockerMetricsSummary,
+                    LoadToolSaturationStatus = loadToolExecution.LoadToolSaturationStatus,
+                    LoadToolSaturationWarnings = loadToolExecution.LoadToolSaturationWarnings,
+                    LoadToolDockerMetricsArtifacts = loadToolExecution.LoadToolDockerMetricsArtifacts,
+                    TargetDockerMetricsAvailable = targetDockerMetricsAvailable,
+                    TargetDockerMetricsSummary = targetDockerMetricsSummary,
+                    TargetSaturationStatus = targetSaturationStatus,
+                    TargetSaturationWarnings = targetSaturationWarnings,
+                    TargetDockerMetricsArtifacts = targetDockerMetricsArtifacts,
+                    ResourceLimitWarnings = result.ResourceLimitWarnings
+                        .Concat(loadToolExecution.ResourceLimitWarnings)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray(),
+                    DockerCleanup = MergeDockerCleanup(MergeDockerCleanup(result.DockerCleanup, loadToolExecution.CleanupSummary), targetMetricsCleanupSummary),
+                    TargetProcessMetrics = targetProcessMetrics,
+                    DiagnosticTarget = diagnosticTarget,
+                    CountersAvailable = countersAvailable,
+                    CountersCaptureStatus = countersCaptureStatus,
+                    CountersSummary = countersSummary,
+                    CounterArtifacts = counterArtifacts,
+                    QlogDirectory = paths.QlogDirectory,
+                    QlogFileCount = qlogFileCount
+                };
 
-            await File.WriteAllTextAsync(paths.DockerResourceLimitsJson, ResultJson.Serialize(new
-            {
-                targetRequested = result.TargetDockerResourceLimitsRequested,
-                targetEffective = result.TargetDockerResourceLimitsEffective,
-                loadToolRequested = result.LoadToolDockerResourceLimitsRequested,
-                loadToolEffective = result.LoadToolDockerResourceLimitsEffective,
-                warnings = result.ResourceLimitWarnings
-            }));
+                result = result with
+                {
+                    Evidence = BenchmarkEvidenceEvaluator.Assess(result)
+                };
 
-            if (result.DockerCleanup is not null)
-            {
-                await File.WriteAllTextAsync(paths.DockerCleanupJson, ResultJson.Serialize(result.DockerCleanup));
+                result = PopulateLoadProfileMetadata(result, cell, loadProfiles);
+
+                await File.WriteAllTextAsync(paths.DockerResourceLimitsJson, ResultJson.Serialize(new
+                {
+                    targetRequested = result.TargetDockerResourceLimitsRequested,
+                    targetEffective = result.TargetDockerResourceLimitsEffective,
+                    loadToolRequested = result.LoadToolDockerResourceLimitsRequested,
+                    loadToolEffective = result.LoadToolDockerResourceLimitsEffective,
+                    warnings = result.ResourceLimitWarnings
+                }));
+
+                if (result.DockerCleanup is not null)
+                {
+                    await File.WriteAllTextAsync(paths.DockerCleanupJson, ResultJson.Serialize(result.DockerCleanup));
+                }
+
+                await File.WriteAllTextAsync(paths.ResultJson, ResultJson.Serialize(result));
+                results.Add(result);
+                output.WriteLine($"{progressPrefix}: complete validation={validation.Status}, benchmark={benchmarkExecutionStatus}, loadTool={recordedLoadTool ?? "none"}");
             }
-
-            await File.WriteAllTextAsync(paths.ResultJson, ResultJson.Serialize(result));
-            results.Add(result);
-            output.WriteLine($"{cell.Implementation.Id}/{cell.Scenario.Id}/{cell.Protocol}: validation={validation.Status}, benchmark={benchmarkExecutionStatus}, loadTool={recordedLoadTool ?? "none"}");
+        catch (Exception ex)
+        {
+            var failedResult = await FinalizeBenchmarkCellFailureAsync(ex);
+            results.Add(failedResult);
+            output.WriteLine($"{progressPrefix}: complete validation={failedResult.ValidationResult.Status}, benchmark={failedResult.BenchmarkExecutionStatus}, loadTool={failedResult.LoadTool ?? "none"}");
+            continue;
+        }
         }
 
         var runRoot = ArtifactLayout.GetRunRoot(outputDirectory, runId);
@@ -1228,7 +1450,8 @@ public sealed class RunnerEngine
                     ["output"] = publicationBundleRoot,
                     ["visibility"] = "public",
                     ["allow-diagnostic-publication"] = "true"
-                }));
+                }),
+                eventSink);
 
             CopyMessages(publicationResult.Messages, output);
             publicationExitCode = publicationResult.ExitCode;
@@ -1309,6 +1532,55 @@ public sealed class RunnerEngine
             StderrPath = paths.TargetStderr,
             LogsPath = paths.CellDirectory,
             Warnings = [$"{compatibility.Status}: {reason}"]
+        };
+    }
+
+    private static ScenarioValidationResult BuildInfrastructureFailureValidationResult(
+        RunCell cell,
+        string summary,
+        IReadOnlyList<string>? warnings = null,
+        IReadOnlyList<string>? errors = null)
+    {
+        return new ScenarioValidationResult
+        {
+            ScenarioId = cell.Scenario.Id,
+            TargetId = cell.Implementation.Id,
+            AdapterId = "",
+            Protocol = cell.Protocol,
+            Status = ValidationStatus.InfrastructureFailure,
+            Summary = summary,
+            Warnings = warnings ?? [],
+            Errors = errors ?? []
+        };
+    }
+
+    private static TargetExecutionResult BuildInfrastructureFailureTargetResult(
+        ArtifactPaths paths,
+        RunCell cell,
+        string? targetExecutionMode,
+        string summary)
+    {
+        var mode = string.IsNullOrWhiteSpace(targetExecutionMode)
+            ? cell.Implementation.TargetKind
+            : targetExecutionMode;
+
+        if (string.IsNullOrWhiteSpace(mode))
+        {
+            mode = TargetKinds.Process;
+        }
+
+        return new TargetExecutionResult
+        {
+            Status = TargetExecutionStatuses.Failed,
+            TargetExecutionMode = mode,
+            TargetContract = cell.Implementation.TargetContract,
+            Started = false,
+            Ready = false,
+            Failed = true,
+            StdoutPath = paths.TargetStdout,
+            StderrPath = paths.TargetStderr,
+            LogsPath = paths.CellDirectory,
+            Errors = [summary]
         };
     }
 
@@ -2105,18 +2377,7 @@ public sealed class RunnerEngine
     {
         foreach (var message in source)
         {
-            switch (message.Severity)
-            {
-                case RunnerMessageSeverity.Warning:
-                    target.WriteWarning(message.Text);
-                    break;
-                case RunnerMessageSeverity.Error:
-                    target.WriteError(message.Text);
-                    break;
-                default:
-                    target.WriteLine(message.Text);
-                    break;
-            }
+            target.Append(message);
         }
     }
 

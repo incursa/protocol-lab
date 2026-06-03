@@ -10,6 +10,7 @@ namespace Incursa.ProtocolLab.Tests.Fixtures.IncursaRawQuicAdapterLab;
 internal sealed record IncursaRawQuicAdapterProcessOptions
 {
     public int ControlPlanePort { get; init; } = 53591;
+    public string? WorkingDirectory { get; init; }
     public string QuicAlpn { get; init; } = "plab-raw-quic";
     public int QuicPort { get; init; }
     public int ReadinessTimeoutSeconds { get; init; } = 10;
@@ -34,10 +35,11 @@ internal sealed class IncursaRawQuicAdapterProcessHost : IAsyncDisposable
         opts ??= new();
         var root = TestPaths.RepoRoot;
         var proj = Path.Combine(root, "src", "Incursa.ProtocolLab.Adapters.IncursaRawQuic", "Incursa.ProtocolLab.Adapters.IncursaRawQuic.csproj");
+        var workingDirectory = string.IsNullOrWhiteSpace(opts.WorkingDirectory) ? root : opts.WorkingDirectory!;
         var addr = new Uri($"http://127.0.0.1:{opts.ControlPlanePort}");
         var sop = Path.Combine(Path.GetTempPath(), $"incursa-raw-quic-adapter-{Guid.NewGuid():N}.stdout.txt");
         var sep = Path.Combine(Path.GetTempPath(), $"incursa-raw-quic-adapter-{Guid.NewGuid():N}.stderr.txt");
-        var si = new ProcessStartInfo("dotnet") { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+        var si = new ProcessStartInfo("dotnet") { WorkingDirectory = workingDirectory, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
         si.ArgumentList.Add("run"); si.ArgumentList.Add("--no-build"); si.ArgumentList.Add("--no-restore"); si.ArgumentList.Add("--no-launch-profile"); si.ArgumentList.Add("--project"); si.ArgumentList.Add(proj);
         si.Environment["ASPNETCORE_URLS"] = addr.ToString();
         si.Environment["PROTOCOL_LAB_INCURSA_RAW_QUIC_ALPN"] = opts.QuicAlpn;

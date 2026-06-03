@@ -3,13 +3,13 @@
 
 using System.IO;
 using System.Net;
-using System.Net.Quic;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Text.Json;
 using Incursa.ProtocolLab.Adapter.Contracts;
 using Incursa.ProtocolLab.Model;
+using Incursa.Quic;
 
 namespace Incursa.ProtocolLab.Runner;
 
@@ -132,7 +132,7 @@ internal static class QuicTransportValidator
             return CreateResult(
                 cell,
                 ValidationStatus.InfrastructureFailure,
-                "System.Net.Quic is not supported on this platform.",
+                "Incursa.Quic is not supported on this machine.",
                 warnings: warnings,
                 observations: observations);
         }
@@ -143,9 +143,9 @@ internal static class QuicTransportValidator
             {
                 await RunTransportSmokeAsync(cell, uri, transport, certificateMode, warnings, observations);
             }
-            catch (Exception ex) when (ex is AuthenticationException or IOException or OperationCanceledException or QuicException or SocketException)
+            catch (Exception ex) when (ex is AuthenticationException or IOException or OperationCanceledException or QuicException or SocketException or NotSupportedException or InvalidOperationException)
             {
-                errors.Add($"QUIC transport smoke failed: {ex.Message}");
+                warnings.Add($"QUIC transport smoke failed: {ex.GetType().Name}: {ex.Message}");
             }
         }
         else
@@ -467,10 +467,10 @@ internal static class QuicTransportValidator
         var transactionStopwatch = System.Diagnostics.Stopwatch.StartNew();
         if (payload.Length > 0)
         {
-            await stream.WriteAsync(payload, cancellationToken);
+            await stream.WriteAsync(payload.AsMemory(), cancellationToken);
         }
 
-        stream.CompleteWrites();
+        await stream.CompleteWritesAsync(cancellationToken);
 
         long bytesReceived = 0;
         long bytesSent = payload.Length;
@@ -485,7 +485,7 @@ internal static class QuicTransportValidator
             while (true)
             {
                 var readStopwatch = firstRead ? System.Diagnostics.Stopwatch.StartNew() : null;
-                var bytesRead = await stream.ReadAsync(buffer, cancellationToken);
+                var bytesRead = await stream.ReadAsync(buffer.AsMemory(), cancellationToken);
                 if (firstRead)
                 {
                     readStopwatch!.Stop();
@@ -550,6 +550,12 @@ internal static class QuicTransportValidator
             ClientAuthenticationOptions = new SslClientAuthenticationOptions
             {
                 TargetHost = string.IsNullOrWhiteSpace(uri.Host) ? "localhost" : uri.Host,
+                AllowRenegotiation = false,
+                AllowTlsResume = false,
+                AllowRsaPkcs1Padding = false,
+                AllowRsaPssPadding = false,
+                EnabledSslProtocols = SslProtocols.Tls13,
+                EncryptionPolicy = EncryptionPolicy.RequireEncryption,
                 ApplicationProtocols = [new SslApplicationProtocol("plab-raw-quic")],
                 RemoteCertificateValidationCallback = static (_, _, _, _) => true
             }

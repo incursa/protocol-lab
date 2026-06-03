@@ -54,6 +54,6 @@ Same QUIC/UDP metadata keys as MSQuic adapter: `alpn`, `sni`, `transport`,
 ## Limitations
 
 - Child process launch only (no Docker)
-- Requires platform msquic support (same as MSQuic adapter)
+- Requires the managed `Incursa.Quic` runtime slice to be supported on the current machine
 - Self-signed certificate for loopback
 - No qlog or SSL key log exports

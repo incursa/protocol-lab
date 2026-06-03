@@ -38,8 +38,7 @@ commandArguments:
   - -Body
   - fixture-ok
 readinessCheck:
-  type: http
-  url: /ok
+  type: tcp
   timeoutSeconds: 10
 shutdownBehavior: process-exit
 capabilities:

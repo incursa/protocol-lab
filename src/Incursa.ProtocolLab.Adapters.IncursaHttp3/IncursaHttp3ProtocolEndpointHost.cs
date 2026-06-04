@@ -228,6 +228,10 @@ internal sealed class IncursaHttp3EndpointMetricsSink : IHttp3DiagnosticsSink
 {
     private int activeConnections;
     private int activeRequests;
+    private static readonly bool DebugLogging = string.Equals(
+        Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_HTTP3_DEBUG"),
+        "1",
+        StringComparison.Ordinal);
 
     public bool IsEnabled => true;
 
@@ -238,6 +242,23 @@ internal sealed class IncursaHttp3EndpointMetricsSink : IHttp3DiagnosticsSink
     public void Emit(Http3DiagnosticEvent diagnosticEvent)
     {
         ArgumentNullException.ThrowIfNull(diagnosticEvent);
+
+        if (DebugLogging)
+        {
+            switch (diagnosticEvent.Kind)
+            {
+                case Http3DiagnosticKind.ConnectionStarted:
+                case Http3DiagnosticKind.ConnectionClosed:
+                case Http3DiagnosticKind.FrameReceived:
+                case Http3DiagnosticKind.RequestStarted:
+                case Http3DiagnosticKind.RequestCompleted:
+                case Http3DiagnosticKind.ResponseStarted:
+                case Http3DiagnosticKind.ResponseCompleted:
+                    Console.Error.WriteLine(
+                        $"IncursaH3 diag {diagnosticEvent.Kind} role={diagnosticEvent.Role ?? "<none>"} stream={diagnosticEvent.StreamId?.ToString(CultureInfo.InvariantCulture) ?? "<none>"} frame={diagnosticEvent.FrameType?.ToString() ?? diagnosticEvent.RawFrameType?.ToString(CultureInfo.InvariantCulture) ?? "<none>"} payload={diagnosticEvent.PayloadLength?.ToString(CultureInfo.InvariantCulture) ?? "<none>"} method={diagnosticEvent.Method ?? "<none>"} path={diagnosticEvent.Path ?? "<none>"} status={diagnosticEvent.StatusCode?.ToString(CultureInfo.InvariantCulture) ?? "<none>"}");
+                    break;
+            }
+        }
 
         switch (diagnosticEvent.Kind)
         {
@@ -265,6 +286,10 @@ internal sealed class IncursaHttp3RequestHandler : IHttp3RequestHandler
     private const int StatusMethodNotAllowed = 405;
     private const int StatusPayloadTooLarge = 413;
     private const int StatusInternalServerError = 500;
+    private static readonly bool DebugLogging = string.Equals(
+        Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_HTTP3_DEBUG"),
+        "1",
+        StringComparison.Ordinal);
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IncursaHttp3EndpointOptions options;
@@ -282,6 +307,11 @@ internal sealed class IncursaHttp3RequestHandler : IHttp3RequestHandler
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (DebugLogging)
+        {
+            Console.Error.WriteLine($"IncursaH3 handling {request.Method} {request.Path} bodyLength={request.Body.Length}");
+        }
+
         var target = RequestTarget.Parse(request.Path);
         Http3ServerResponse response = request.Method switch
         {
@@ -289,6 +319,11 @@ internal sealed class IncursaHttp3RequestHandler : IHttp3RequestHandler
             "POST" => HandlePost(request, target),
             _ => Text(StatusMethodNotAllowed, "Method Not Allowed"),
         };
+
+        if (DebugLogging)
+        {
+            Console.Error.WriteLine($"IncursaH3 completed {request.Method} {request.Path} status={response.StatusCode} bodyLength={response.Body.Length}");
+        }
 
         return ValueTask.FromResult(response);
     }
@@ -365,9 +400,10 @@ internal sealed class IncursaHttp3RequestHandler : IHttp3RequestHandler
 
         if (target.Path == "/sink")
         {
+            var bytesRead = CountBytes(request.Body.Span);
             return Json(StatusOk, new
             {
-                bytesRead = request.Body.Length,
+                bytesRead,
             });
         }
 
@@ -380,6 +416,17 @@ internal sealed class IncursaHttp3RequestHandler : IHttp3RequestHandler
         }
 
         return Text(StatusNotFound, "Not Found");
+    }
+
+    private static int CountBytes(ReadOnlySpan<byte> body)
+    {
+        var count = 0;
+        foreach (var _ in body)
+        {
+            count++;
+        }
+
+        return count;
     }
 
     private object CreateStatusPayload()

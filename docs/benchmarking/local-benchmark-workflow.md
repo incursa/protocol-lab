@@ -48,6 +48,23 @@ The script keeps going when a stage fails and writes:
 - `.artifacts\runs\<runId>\evidence-report-v1.md`
 - `.artifacts\runs\<runId>\aggregate-results.json`
 
+## Run Everything
+
+Run the full benchmark suite catalog without supplying suite IDs:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\benchmarking\Invoke-ProtocolLabBenchmarkAll.ps1 `
+  -RunIdPrefix local-all
+```
+
+This wrapper runs build, tests, repository check, and the benchmark suite
+catalog listed in [docs/benchmarking/suite-catalog.md](suite-catalog.md).
+
+## Suite Catalog
+
+See [docs/benchmarking/suite-catalog.md](suite-catalog.md) for the full list
+of benchmark and acceptance suite IDs, target modes, and load tools.
+
 ## Publish Completed Runs
 
 To batch publish completed local runs to R2/D1:

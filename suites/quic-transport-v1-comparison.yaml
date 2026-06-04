@@ -8,11 +8,11 @@ implementations:
   - incursa-raw-quic-adapter-v1
   - msquic-dotnet-raw-adapter-v1
 scenarios:
-  - quic.transport.handshake-cold
   - quic.transport.stream-throughput.1mb
   - quic.transport.multiplex.100x64kb
   - quic.transport.connection-churn
   - quic.transport.duplex-streams
+  - quic.transport.handshake-cold
 protocol: quic
 loadTools:
   - id: quic-go-raw-load

@@ -15,6 +15,8 @@ var listenPort = port > 0 ? port : GetFreePort();
 var alpn = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_RAW_QUIC_ALPN") ?? "plab-raw-quic";
 var certSubject = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_RAW_QUIC_CERT_SUBJECT") ?? "CN=Incursa-RawQuic-Local";
 var qlogPath = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_RAW_QUIC_QLOG_PATH");
+var payloadDirection = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_RAW_QUIC_PAYLOAD_DIRECTION") ?? "bidirectional";
+var echoResponses = !string.Equals(payloadDirection, "client-to-server", StringComparison.OrdinalIgnoreCase);
 
 var certificate = GenerateSelfSignedCertificate(certSubject);
 var alpnProtocol = new SslApplicationProtocol(alpn);
@@ -101,7 +103,7 @@ try
             Console.Error.WriteLine($"IncursaRawQuicServer accepted connection #{connectionIndex} for ALPN '{alpn}'");
         }
 
-        _ = HandleConnectionAsync(connection, connectionIndex, default, debugLogging);
+        _ = HandleConnectionAsync(connection, connectionIndex, default, debugLogging, echoResponses);
     }
 }
 catch (OperationCanceledException)
@@ -152,7 +154,7 @@ finally
     }
 }
 
-static async Task HandleConnectionAsync(QuicConnection connection, int connectionIndex, CancellationToken cancellationToken, bool debugLogging)
+static async Task HandleConnectionAsync(QuicConnection connection, int connectionIndex, CancellationToken cancellationToken, bool debugLogging, bool echoResponses)
 {
     try
     {
@@ -166,7 +168,7 @@ static async Task HandleConnectionAsync(QuicConnection connection, int connectio
                 Console.Error.WriteLine($"IncursaRawQuicServer accepted inbound stream #{acceptedStreamIndex} on connection #{connectionIndex}");
             }
 
-            _ = HandleStreamAsync(stream, connectionIndex, acceptedStreamIndex, cancellationToken, debugLogging);
+            _ = HandleStreamAsync(stream, connectionIndex, acceptedStreamIndex, cancellationToken, debugLogging, echoResponses);
         }
     }
     catch (OperationCanceledException)
@@ -201,7 +203,7 @@ static async Task HandleConnectionAsync(QuicConnection connection, int connectio
     }
 }
 
-static async Task HandleStreamAsync(QuicStream stream, int connectionIndex, int streamIndex, CancellationToken cancellationToken, bool debugLogging)
+static async Task HandleStreamAsync(QuicStream stream, int connectionIndex, int streamIndex, CancellationToken cancellationToken, bool debugLogging, bool echoResponses)
 {
     try
     {
@@ -211,6 +213,7 @@ static async Task HandleStreamAsync(QuicStream stream, int connectionIndex, int 
         }
 
         var buffer = new byte[65536];
+        using var responseBuffer = echoResponses ? new MemoryStream() : null;
 
         while (true)
         {
@@ -229,18 +232,25 @@ static async Task HandleStreamAsync(QuicStream stream, int connectionIndex, int 
                 Console.Error.WriteLine($"IncursaRawQuicServer stream #{streamIndex} on connection #{connectionIndex} read {bytesRead} byte(s)");
             }
 
-            if (stream.CanWrite)
+            if (responseBuffer is not null)
             {
-                await stream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
-                if (debugLogging)
-                {
-                    Console.Error.WriteLine($"IncursaRawQuicServer stream #{streamIndex} on connection #{connectionIndex} wrote {bytesRead} byte(s)");
-                }
+                await responseBuffer.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
             }
         }
 
         if (stream.CanWrite)
         {
+            if (responseBuffer is not null && responseBuffer.Length > 0)
+            {
+                responseBuffer.Position = 0;
+                await responseBuffer.CopyToAsync(stream, cancellationToken);
+
+                if (debugLogging)
+                {
+                    Console.Error.WriteLine($"IncursaRawQuicServer stream #{streamIndex} on connection #{connectionIndex} wrote {responseBuffer.Length} byte(s)");
+                }
+            }
+
             await stream.CompleteWritesAsync(cancellationToken);
             if (debugLogging)
             {

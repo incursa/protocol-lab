@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
@@ -25,6 +26,7 @@ internal sealed class MsQuicDotNetQuicServer
     private readonly CancellationTokenSource stopCts = new();
     private readonly Task acceptLoop;
     private readonly string serverLogPath;
+    private readonly bool echoResponses;
     private int acceptedConnections;
     private int openedStreams;
     private long bytesReceived;
@@ -35,11 +37,13 @@ internal sealed class MsQuicDotNetQuicServer
     private MsQuicDotNetQuicServer(
         QuicListener listener,
         AdapterEndpoint endpoint,
-        string serverLogPath)
+        string serverLogPath,
+        bool echoResponses)
     {
         this.listener = listener;
         Endpoint = endpoint;
         this.serverLogPath = serverLogPath;
+        this.echoResponses = echoResponses;
         IsListening = true;
         acceptLoop = AcceptConnectionsAsync(stopCts.Token);
     }
@@ -66,6 +70,7 @@ internal sealed class MsQuicDotNetQuicServer
 
         var certificate = GenerateSelfSignedCertificate(plan.CertificateSubject);
         var alpn = new SslApplicationProtocol(plan.Alpn);
+        var echoResponses = !string.Equals(plan.Scenario.QuicTransport?.PayloadDirection, "client-to-server", StringComparison.OrdinalIgnoreCase);
         var port = options.QuicPort > 0 ? options.QuicPort : GetFreePort();
         var endpoint = new IPEndPoint(IPAddress.Loopback, port);
 
@@ -125,7 +130,7 @@ internal sealed class MsQuicDotNetQuicServer
         await File.AppendAllTextAsync(session.ServerLogPath,
             $"[{DateTimeOffset.UtcNow:O}] QUIC listener started on {endpoint} with ALPN '{plan.Alpn}'{Environment.NewLine}");
 
-        return new MsQuicDotNetQuicServer(listener, adapterEndpoint, session.ServerLogPath);
+        return new MsQuicDotNetQuicServer(listener, adapterEndpoint, session.ServerLogPath, echoResponses);
     }
 
     public async Task StopAsync()
@@ -233,6 +238,7 @@ internal sealed class MsQuicDotNetQuicServer
         {
             var buffer = new byte[65536];
             long streamBytesRead = 0;
+            using var responseBuffer = echoResponses ? new MemoryStream() : null;
 
             int bytesRead;
             while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken)) > 0)
@@ -240,17 +246,22 @@ internal sealed class MsQuicDotNetQuicServer
                 Interlocked.Add(ref bytesReceived, bytesRead);
                 streamBytesRead += bytesRead;
 
-                if (stream.CanWrite)
+                if (responseBuffer is not null)
                 {
-                    await stream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
-                    Interlocked.Add(ref bytesSent, bytesRead);
+                    await responseBuffer.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
                 }
             }
 
             if (stream.CanWrite)
             {
-                await stream.WriteAsync(ReadOnlyMemory<byte>.Empty, cancellationToken);
-                await stream.FlushAsync(cancellationToken);
+                if (responseBuffer is not null && responseBuffer.Length > 0)
+                {
+                    responseBuffer.Position = 0;
+                    await responseBuffer.CopyToAsync(stream, cancellationToken);
+                    Interlocked.Add(ref bytesSent, responseBuffer.Length);
+                }
+
+                stream.CompleteWrites();
             }
 
             await File.AppendAllTextAsync(serverLogPath,

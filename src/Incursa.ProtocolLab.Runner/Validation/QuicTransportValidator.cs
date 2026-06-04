@@ -316,6 +316,10 @@ internal static class QuicTransportValidator
         List<ValidationObservation> observations)
     {
         var sampleConnections = Math.Clamp(Math.Max(cell.Connections, 1), 1, 2);
+        if (string.Equals(transport.StreamType, "none", StringComparison.OrdinalIgnoreCase))
+        {
+            sampleConnections = Math.Max(sampleConnections, 2);
+        }
         var sampleStreams = string.Equals(transport.StreamType, "none", StringComparison.OrdinalIgnoreCase)
             ? 0
             : Math.Clamp(Math.Max(cell.StreamsPerConnection, 1), 1, 4);
@@ -334,6 +338,7 @@ internal static class QuicTransportValidator
         if (string.Equals(transport.StreamType, "none", StringComparison.OrdinalIgnoreCase))
         {
             await RunHandshakeSmokeAsync(connectionOptions, sampleConnections, cancellationTokenSource.Token, observations);
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationTokenSource.Token);
             return;
         }
 
@@ -348,10 +353,12 @@ internal static class QuicTransportValidator
             string.Equals(transport.Behavior, "connection-churn", StringComparison.OrdinalIgnoreCase))
         {
             await RunChurnSmokeAsync(connectionOptions, sampleConnections, sampleStreams, payload, transport.StreamType, cancellationTokenSource.Token, observations);
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationTokenSource.Token);
             return;
         }
 
         await RunConnectionSmokeAsync(connectionOptions, sampleConnections, sampleStreams, payload, transport.StreamType, transport.OpenPattern, cancellationTokenSource.Token, observations);
+        await Task.Delay(TimeSpan.FromSeconds(5), cancellationTokenSource.Token);
     }
 
     private static async Task RunHandshakeSmokeAsync(

@@ -3,15 +3,17 @@ name: quic-go HTTP/3
 description: Go-based quic-go HTTP/3 Docker benchmark target for ProtocolLab local comparisons.
 image: incursa/protocol-lab-quic-go-bench-server:local
 targetKind: docker
+executable: go
+workingDirectory: src/Incursa.ProtocolLab.Adapters.QuicGo
 dockerfile: src/Incursa.ProtocolLab.Adapters.QuicGo/Dockerfile
 buildContext: src/Incursa.ProtocolLab.Adapters.QuicGo
 dockerNetworkMode: published-port
-dockerBaseUrl: https://localhost:5447
+dockerBaseUrl: https://127.0.0.1:5447
 dockerProtocolBaseUrls:
-  h3: https://localhost:5447
-baseUrl: https://localhost:5447
+  h3: https://127.0.0.1:5447
+baseUrl: https://127.0.0.1:5447
 protocolBaseUrls:
-  h3: https://localhost:5447
+  h3: https://127.0.0.1:5447
 certificateMode: quic-go-self-signed-loopback-certificate
 roles:
   - server
@@ -26,9 +28,12 @@ ports:
     protocol: tcp+udp
 environment:
   PROTOCOL_LAB_IMPLEMENTATION: quic-go-http3
+  PROTOCOL_LAB_QUIC_GO_ADDR: 127.0.0.1:5447
 dockerEnvironment:
   PROTOCOL_LAB_IMPLEMENTATION: quic-go-http3
-commandArguments: []
+commandArguments:
+  - run
+  - ./cmd/quic-go-http3
 dockerCommandArguments: []
 readinessCheck:
   type: http

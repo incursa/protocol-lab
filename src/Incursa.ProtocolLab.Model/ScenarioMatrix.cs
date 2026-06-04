@@ -52,6 +52,11 @@ public static class ScenarioMatrix
                 var connections = options.Connections is { Count: > 0 } ? options.Connections : scenario.Benchmark.Connections;
                 var streams = options.StreamsPerConnection is { Count: > 0 } ? options.StreamsPerConnection : scenario.Benchmark.StreamsPerConnection;
                 var repetitions = options.Repetitions ?? scenario.Benchmark.Repetitions;
+                if (string.Equals(options.LoadProfileId, "local-comparison", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(scenario.Id, "quic.transport.handshake-cold", StringComparison.OrdinalIgnoreCase))
+                {
+                    repetitions = 1;
+                }
                 var networkProfiles = options.NetworkProfiles is { Count: > 0 } ? options.NetworkProfiles : [scenario.NetworkProfile];
 
                 foreach (var protocol in protocols)

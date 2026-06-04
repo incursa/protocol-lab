@@ -417,6 +417,13 @@ public sealed class RunnerEngine
             var paths = ArtifactLayout.GetCellPaths(outputDirectory, runId, cell);
             PrepareCellDirectories(paths);
             await WriteSnapshotsAsync(paths, cell);
+            if (string.Equals(cell.Scenario.Id, "quic.transport.handshake-cold", StringComparison.OrdinalIgnoreCase) &&
+                cell.Repetition == 1)
+            {
+                // Give prior QUIC cells time to release sockets and settle before the
+                // cold-handshake probe starts.
+                await Task.Delay(TimeSpan.FromSeconds(30));
+            }
 
             var artifacts = BuildArtifactMap(paths);
             var warnings = new List<string>();
@@ -957,6 +964,12 @@ public sealed class RunnerEngine
 
                                 output.WriteLine($"{progressPrefix}: running load tool {resolution.Tool.Manifest.Id}");
                                 run = await LoadToolInvoker.RunAsync(resolution.Tool, plan);
+                                if (ShouldRetryHandshakeColdLoadRun(cell, resolution.Tool, run))
+                                {
+                                    warnings.Add("handshake-cold-zero-success-load-tool-retry.");
+                                    await Task.Delay(TimeSpan.FromSeconds(30));
+                                    run = await LoadToolInvoker.RunAsync(resolution.Tool, plan);
+                                }
                             }
                             finally
                             {
@@ -1395,6 +1408,11 @@ public sealed class RunnerEngine
                 await File.WriteAllTextAsync(paths.ResultJson, ResultJson.Serialize(result));
                 results.Add(result);
                 output.WriteLine($"{progressPrefix}: complete validation={validation.Status}, benchmark={benchmarkExecutionStatus}, loadTool={recordedLoadTool ?? "none"}");
+                if (string.Equals(cell.Scenario.Id, "quic.transport.handshake-cold", StringComparison.OrdinalIgnoreCase) &&
+                    cell.Repetition < totalRepetitions)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(60));
+                }
             }
         catch (Exception ex)
         {
@@ -2261,6 +2279,20 @@ public sealed class RunnerEngine
             cell.StreamsPerConnection.ToString(System.Globalization.CultureInfo.InvariantCulture),
             cell.DurationSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture),
             cell.WarmupSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private static bool ShouldRetryHandshakeColdLoadRun(RunCell cell, ResolvedLoadTool tool, LoadToolRun run)
+    {
+        if (!string.Equals(cell.Scenario.Id, "quic.transport.handshake-cold", StringComparison.OrdinalIgnoreCase) ||
+            run.ExitCode == 0)
+        {
+            return false;
+        }
+
+        var parsed = LoadToolInvoker.Parse(tool.Manifest, run.Stdout, run.Stderr);
+        return parsed.ParsedMetricsAvailable &&
+            (parsed.Metrics.SuccessfulRequests ?? 0) == 0 &&
+            (parsed.Metrics.TotalRequests ?? 0) > 0;
     }
 
     private static IReadOnlyList<string> BuildFairnessWarnings(

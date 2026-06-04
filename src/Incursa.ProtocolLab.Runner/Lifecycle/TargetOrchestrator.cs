@@ -549,10 +549,14 @@ internal static class TargetOrchestrator
             var buildOutcome = await EnsureProjectBuiltAsync(projectPath, normalizedConfiguration);
             warnings.AddRange(buildOutcome.Warnings);
             var targetPath = await TryResolveProjectTargetPathAsync(projectPath, warnings, normalizedConfiguration);
-            if (buildOutcome.Succeeded &&
-                !string.IsNullOrWhiteSpace(targetPath) &&
+            if (!string.IsNullOrWhiteSpace(targetPath) &&
                 File.Exists(targetPath))
             {
+                if (!buildOutcome.Succeeded)
+                {
+                    warnings.Add("target-build-before-direct-start-failed; using existing project output.");
+                }
+
                 return new TargetStartCommand(
                     manifest.Executable,
                     ["exec", targetPath, .. NormalizeDirectAppArguments(manifest.CommandArguments)],

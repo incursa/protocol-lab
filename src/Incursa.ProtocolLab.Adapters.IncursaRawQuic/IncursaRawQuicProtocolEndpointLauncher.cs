@@ -14,6 +14,8 @@ internal static class IncursaRawQuicProtocolEndpointLauncher
     public static async Task<IncursaRawQuicEndpointProcess> StartAsync(string repositoryRoot, IncursaRawQuicSession session, IncursaRawQuicEndpointPlan plan, string projectPath, CancellationToken ct)
     {
         var resolvedProject = Path.IsPathFullyQualified(projectPath) ? projectPath : Path.GetFullPath(Path.Combine(repositoryRoot, projectPath));
+        var projectDirectory = Path.GetDirectoryName(resolvedProject) ?? repositoryRoot;
+        var assemblyName = Path.GetFileNameWithoutExtension(resolvedProject);
         var port = plan.Port > 0 ? plan.Port : GetFreePort();
 
         var si = new ProcessStartInfo("dotnet")
@@ -23,10 +25,34 @@ internal static class IncursaRawQuicProtocolEndpointLauncher
             RedirectStandardError = true,
             UseShellExecute = false
         };
-        si.ArgumentList.Add("run"); si.ArgumentList.Add("--no-restore"); si.ArgumentList.Add("--no-launch-profile"); si.ArgumentList.Add("--project"); si.ArgumentList.Add(resolvedProject);
-        si.ArgumentList.Add("--"); si.ArgumentList.Add(port.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        var directExecDll = ResolveBuiltServerDll(projectDirectory, assemblyName);
+        if (directExecDll is not null)
+        {
+            // Prefer the built Release/Debug output so startup does not pay the dotnet-run build cost.
+            si.ArgumentList.Add("exec");
+            si.ArgumentList.Add(directExecDll);
+            si.ArgumentList.Add(port.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        else
+        {
+            si.ArgumentList.Add("run");
+            si.ArgumentList.Add("--configuration");
+            si.ArgumentList.Add("Release");
+            si.ArgumentList.Add("--no-restore");
+            si.ArgumentList.Add("--no-launch-profile");
+            si.ArgumentList.Add("--project");
+            si.ArgumentList.Add(resolvedProject);
+            si.ArgumentList.Add("--");
+            si.ArgumentList.Add(port.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
         si.Environment["PROTOCOL_LAB_INCURSA_RAW_QUIC_ALPN"] = plan.Alpn;
         si.Environment["PROTOCOL_LAB_INCURSA_RAW_QUIC_CERT_SUBJECT"] = plan.CertificateSubject;
+        var payloadDirection = plan.Scenario.QuicTransport?.PayloadDirection;
+        if (!string.IsNullOrWhiteSpace(payloadDirection))
+        {
+            si.Environment["PROTOCOL_LAB_INCURSA_RAW_QUIC_PAYLOAD_DIRECTION"] = payloadDirection;
+        }
         var debugLogging = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_RAW_QUIC_DEBUG");
         if (!string.IsNullOrWhiteSpace(debugLogging))
         {
@@ -54,6 +80,35 @@ internal static class IncursaRawQuicProtocolEndpointLauncher
             Tls = new AdapterTlsNotes { CertificateMode = "incursa-raw-quic-self-signed", CertificateNotes = $"Incursa raw QUIC server self-signed certificate subject '{plan.CertificateSubject}'.", Sni = "localhost", VerificationNotes = "Loopback certificate validation bypassed." },
             Extensions = new Dictionary<string, JsonElement> { ["alpn"] = ProtocolLabAdapterJson.SerializeValue(new[] { plan.Alpn }), ["sni"] = ProtocolLabAdapterJson.SerializeValue("localhost"), ["transport"] = ProtocolLabAdapterJson.SerializeValue("udp"), ["streamBehavior"] = ProtocolLabAdapterJson.SerializeValue("bidirectional"), ["supportedStreamDirections"] = ProtocolLabAdapterJson.SerializeValue(new[] { "bidirectional" }), ["datagramSupported"] = ProtocolLabAdapterJson.SerializeValue(false), ["zeroRttSupported"] = ProtocolLabAdapterJson.SerializeValue(false) }
         }, cl, session.StdoutPath, session.StderrPath, port);
+    }
+
+    private static string? ResolveBuiltServerDll(string projectDirectory, string assemblyName)
+    {
+        var candidateRoots = new[]
+        {
+            Path.Combine(projectDirectory, "bin", "Release"),
+            Path.Combine(projectDirectory, "bin", "Debug")
+        };
+
+        foreach (var candidateRoot in candidateRoots)
+        {
+            if (!Directory.Exists(candidateRoot))
+            {
+                continue;
+            }
+
+            var match = Directory.EnumerateFiles(candidateRoot, assemblyName + ".dll", SearchOption.AllDirectories)
+                .Select(path => new FileInfo(path))
+                .OrderByDescending(info => info.LastWriteTimeUtc)
+                .FirstOrDefault();
+
+            if (match is not null)
+            {
+                return match.FullName;
+            }
+        }
+
+        return null;
     }
 
     private static async Task CopyToFileAsync(TextReader r, string path, CancellationToken ct) { await using var s = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read); await using var w = new StreamWriter(s, Encoding.UTF8); while (!ct.IsCancellationRequested) { var line = await r.ReadLineAsync(); if (line is null) break; await w.WriteLineAsync(line); await w.FlushAsync(); } }

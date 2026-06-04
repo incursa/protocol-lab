@@ -26,6 +26,7 @@ import (
 const (
 	defaultALPN        = "plab-raw-quic"
 	defaultOpTimeout   = 60 * time.Second
+	defaultDialTimeout = 30 * time.Second
 	resultTool         = "quic-go-raw-load"
 	resultCategory     = "managed-lab"
 	loopbackBypassNote = "loopback certificate bypass enabled for local QUIC target"
@@ -300,6 +301,7 @@ func runHandshakeWorker(cfg config, until time.Time, metrics *runMetrics) {
 				metrics.recordRequest(false, isTimeoutErr(err), connectLatency, 0, 0, 0)
 				metrics.recordError(err)
 			}
+			time.Sleep(25 * time.Millisecond)
 			continue
 		}
 
@@ -309,6 +311,7 @@ func runHandshakeWorker(cfg config, until time.Time, metrics *runMetrics) {
 		}
 
 		closeConn(conn)
+		time.Sleep(25 * time.Millisecond)
 	}
 }
 
@@ -492,7 +495,9 @@ func doFreshConnectionRequest(cfg config) (bool, time.Duration, time.Duration, i
 
 func dialConnection(cfg config) (*quic.Conn, time.Duration, error) {
 	start := time.Now()
-	opCtx, cancel := context.WithTimeout(context.Background(), defaultOpTimeout)
+	// Keep connection establishment bounded so one stalled handshake doesn't
+	// consume the entire benchmark window before the worker can retry.
+	opCtx, cancel := context.WithTimeout(context.Background(), defaultDialTimeout)
 	defer cancel()
 
 	serverName := strings.TrimSpace(cfg.SNI)
@@ -507,8 +512,14 @@ func dialConnection(cfg config) (*quic.Conn, time.Duration, error) {
 		MinVersion:         tls.VersionTLS13,
 	}
 
-	conn, err := quic.DialAddr(opCtx, cfg.TargetAddr, tlsConfig, &quic.Config{})
-	return conn, time.Since(start), err
+	conn, err := quic.DialAddr(opCtx, cfg.TargetAddr, tlsConfig, &quic.Config{
+		HandshakeIdleTimeout: defaultDialTimeout,
+	})
+	if err != nil {
+		return nil, time.Since(start), err
+	}
+
+	return conn, time.Since(start), nil
 }
 
 func writeAll(stream *quic.Stream, payload []byte) (int64, error) {
@@ -563,31 +574,17 @@ func readEcho(stream *quic.Stream, expected int) (int64, time.Duration, error) {
 }
 
 func exchangePayloadBidirectionally(stream *quic.Stream, payload []byte) (int64, int64, time.Duration, error) {
-	resultCh := make(chan streamResponseResult, 1)
-	go func() {
-		bytesReceived, firstByteLatency, err := readEcho(stream, len(payload))
-		resultCh <- streamResponseResult{
-			bytesReceived:    bytesReceived,
-			firstByteLatency: firstByteLatency,
-			err:              err,
-		}
-	}()
-
 	bytesSent, err := writeAll(stream, payload)
 	if err != nil {
-		stream.CancelRead(0)
-		result := <-resultCh
-		return bytesSent, result.bytesReceived, result.firstByteLatency, err
+		return bytesSent, 0, 0, err
 	}
 
 	if err := stream.Close(); err != nil {
-		stream.CancelRead(0)
-		result := <-resultCh
-		return bytesSent, result.bytesReceived, result.firstByteLatency, err
+		return bytesSent, 0, 0, err
 	}
 
-	result := <-resultCh
-	return bytesSent, result.bytesReceived, result.firstByteLatency, result.err
+	bytesReceived, firstByteLatency, err := readEcho(stream, len(payload))
+	return bytesSent, bytesReceived, firstByteLatency, err
 }
 
 func buildPayload(size int) []byte {

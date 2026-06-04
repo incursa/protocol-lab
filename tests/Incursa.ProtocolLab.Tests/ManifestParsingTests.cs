@@ -248,8 +248,8 @@ public sealed class ManifestParsingTests
         Assert.Equal("docker", manifest.TargetKind);
         Assert.Equal("src/Incursa.ProtocolLab.Adapters.QuicGo/Dockerfile", manifest.Dockerfile);
         Assert.Equal("src/Incursa.ProtocolLab.Adapters.QuicGo", manifest.BuildContext);
-        Assert.Equal("https://localhost:5447", manifest.DockerBaseUrl);
-        Assert.Equal("https://localhost:5447", manifest.BaseUrl);
+        Assert.Equal("https://127.0.0.1:5447", manifest.DockerBaseUrl);
+        Assert.Equal("https://127.0.0.1:5447", manifest.BaseUrl);
         Assert.Equal("quic-go-self-signed-loopback-certificate", manifest.CertificateMode);
         Assert.Contains("server", manifest.Roles);
         Assert.Contains("h3", manifest.SupportedProtocols);

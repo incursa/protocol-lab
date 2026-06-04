@@ -975,7 +975,7 @@ internal static class ProtocolProofValidator
     {
         if (DebugLogging)
         {
-            Console.Error.WriteLine(message);
+            Trace.WriteLine(message);
         }
     }
 

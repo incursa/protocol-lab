@@ -733,7 +733,8 @@ public static class EvidenceReportBuilder
         var acceptedResults = results
             .Where(r => r.ValidationResult.Status == ValidationStatus.Passed &&
                         r.BenchmarkExecutionStatus == LoadToolExecutionStatuses.Succeeded &&
-                        r.ParsedMetricsAvailable)
+                        r.ParsedMetricsAvailable &&
+                        HasPositiveMeasuredWork(r))
             .ToArray();
 
         var groups = acceptedResults
@@ -759,6 +760,13 @@ public static class EvidenceReportBuilder
         return groups;
     }
 
+    private static bool HasPositiveMeasuredWork(BenchmarkResult result)
+    {
+        return result.Metrics.SuccessfulRequests.GetValueOrDefault() > 0 &&
+            result.Metrics.TotalRequests.GetValueOrDefault() > 0 &&
+            result.Metrics.RequestsPerSecond.GetValueOrDefault() > 0;
+    }
+
     private static EvidenceReportComparisonGroup BuildComparisonGroup(
         ComparisonGroupKey key,
         BenchmarkResult[] groupResults)
@@ -774,6 +782,7 @@ public static class EvidenceReportBuilder
                 var sample = results[0];
                 var metricsResults = results
                     .Where(r => r.ParsedMetricsAvailable)
+                    .Where(HasPositiveMeasuredWork)
                     .ToArray();
 
                 double? rpsMedian = null;

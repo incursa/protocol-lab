@@ -42,7 +42,7 @@ public sealed class ArchitectureGuardrailTests
     }
 
     [Fact]
-    public void Runner_and_cli_do_not_reference_protocol_implementation_assemblies()
+    public void Runner_and_cli_do_not_reference_adapter_implementation_assemblies()
     {
         var projectFiles = new[]
         {
@@ -63,8 +63,8 @@ public sealed class ArchitectureGuardrailTests
             Assert.DoesNotContain(
                 references,
                 reference =>
-                    reference.Contains("Incursa.Quic.Http3", StringComparison.OrdinalIgnoreCase) ||
-                    reference.Contains("Incursa.Http3", StringComparison.OrdinalIgnoreCase));
+                    reference.Contains("Incursa.ProtocolLab.Adapters.", StringComparison.OrdinalIgnoreCase) ||
+                    reference.Contains("Incursa.ProtocolLab.Servers.", StringComparison.OrdinalIgnoreCase));
         }
     }
 

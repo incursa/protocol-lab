@@ -5,11 +5,11 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using System.Security.Authentication;
 using System.Text.Json;
-using Incursa.Quic;
-using Incursa.Quic.Http3;
 using Incursa.ProtocolLab.Model;
 
 namespace Incursa.ProtocolLab.Runner;
@@ -89,6 +89,11 @@ internal static class ManagedHttp3LoadGenerator
             warnings.Add("Loopback certificate validation bypass was used for managed HTTP/3 load.");
         }
 
+        if (measured.SuccessfulRequests <= 0)
+        {
+            errors.Add("Managed H3 load completed without any successful measured requests.");
+        }
+
         var output = ResultJson.Serialize(new
         {
             tool = ToolId,
@@ -107,7 +112,8 @@ internal static class ManagedHttp3LoadGenerator
             errors = errors.Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
         });
 
-        return new LoadToolRun(0, output, string.Join(Environment.NewLine, errors));
+        var exitCode = errors.IsEmpty ? 0 : 1;
+        return new LoadToolRun(exitCode, output, string.Join(Environment.NewLine, errors));
     }
 
     private static async Task<ManagedRunCounters> RunPhaseAsync(
@@ -147,164 +153,108 @@ internal static class ManagedHttp3LoadGenerator
         ConcurrentBag<string> errors)
     {
         var endpoint = plan.Cell.Scenario.Endpoint ?? throw new InvalidOperationException("Managed H3 load requires an HTTP endpoint.");
-        ManagedHttp3Client? client = null;
+        using var client = CreateHttpClient(certificateBypassUsed);
+        var scenarioUri = plan.TargetUrl;
 
         try
         {
             while (!token.IsCancellationRequested)
             {
-                if (client is null)
-                {
-                    try
-                    {
-                        client = await ManagedHttp3Client.ConnectAsync(plan.TargetUrl, certificateBypassUsed, token).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException) when (token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-                    catch (TaskCanceledException ex)
-                    {
-                        if (record)
-                        {
-                            errors.Add($"Managed H3 request timed out before a request completed: {ex.Message}");
-                        }
-
-                        continue;
-                    }
-                    catch (Exception ex) when (ex is QuicException or Http3Exception or HttpRequestException or InvalidOperationException or NotSupportedException or IOException or SocketException or CryptographicException)
-                    {
-                        if (record)
-                        {
-                            errors.Add($"Managed H3 request failed before a request completed: {ex.Message}");
-                        }
-
-                        continue;
-                    }
-                }
-
                 var requestStopwatch = Stopwatch.StartNew();
-                ManagedProofResponse? response = null;
-                Exception? requestFailure = null;
-                for (var attempt = 0; attempt < 2 && !token.IsCancellationRequested; attempt++)
+                using var request = new HttpRequestMessage(new HttpMethod(endpoint.Method), scenarioUri)
                 {
-                    ManagedHttp3Client currentClient = client ?? throw new InvalidOperationException("Managed H3 client was not connected.");
+                    Version = HttpVersion.Version30,
+                    VersionPolicy = HttpVersionPolicy.RequestVersionExact
+                };
+
+                if (requestBody.Length > 0)
+                {
+                    request.Content = new ByteArrayContent(requestBody);
+                }
+
+                foreach (var header in endpoint.RequestHeaders)
+                {
+                    if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value))
+                    {
+                        request.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    }
+                }
+
+                try
+                {
+                    using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+                    var body = await HttpScenarioValidator.ReadResponseBodyAsync(response.Content, token).ConfigureAwait(false);
+                    requestStopwatch.Stop();
+
+                    if (!record)
+                    {
+                        continue;
+                    }
+
+                    Interlocked.Increment(ref counters.TotalRequests);
+                    Interlocked.Add(ref counters.BytesReceived, body.Length);
+                    statusCodes.AddOrUpdate(((int)response.StatusCode).ToString(CultureInfo.InvariantCulture), 1, static (_, value) => value + 1);
+                    samples.Add(requestStopwatch.Elapsed.TotalMilliseconds);
+
+                    var responseVersion = FormatVersion(response.Version);
+                    List<string> validationErrors;
                     try
                     {
-                        response = await currentClient.SendAsync(endpoint, plan.TargetUrl, requestBody, token).ConfigureAwait(false);
-                        break;
+                        validationErrors = HttpScenarioValidator.ValidateResponse(
+                            endpoint,
+                            response.StatusCode,
+                            response.Headers,
+                            response.Content.Headers,
+                            body,
+                            requestBody);
                     }
-                    catch (OperationCanceledException) when (token.IsCancellationRequested)
+                    catch (JsonException ex)
                     {
-                        return;
+                        validationErrors = [$"Response JSON validation failed: {ex.Message}"];
                     }
-                    catch (TaskCanceledException ex)
+
+                    if (!string.Equals(responseVersion, "3.0", StringComparison.OrdinalIgnoreCase))
                     {
-                        requestFailure = ex;
-                        if (record)
+                        Interlocked.Increment(ref counters.ResponseVersionFailures);
+                        validationErrors.Add($"Expected HTTP/3 response version 3.0, got {responseVersion ?? "<missing>"}.");
+                    }
+
+                    if (validationErrors.Count == 0)
+                    {
+                        Interlocked.Increment(ref counters.SuccessfulRequests);
+                    }
+                    else
+                    {
+                        Interlocked.Increment(ref counters.FailedRequests);
+                        foreach (var error in validationErrors.Take(5))
                         {
-                            requestStopwatch.Stop();
-                            Interlocked.Increment(ref counters.TotalRequests);
-                            Interlocked.Increment(ref counters.FailedRequests);
-                            Interlocked.Increment(ref counters.TimeoutRequests);
-                            errors.Add($"Managed H3 request timed out: {ex.Message}");
+                            warnings.Add(error);
                         }
-
-                        response = null;
-                        break;
-                    }
-                    catch (Exception ex) when (ex is QuicException or Http3Exception or HttpRequestException or InvalidOperationException or NotSupportedException or IOException or SocketException or CryptographicException)
-                    {
-                        requestFailure = ex;
-                        if (attempt == 0)
-                        {
-                            try
-                            {
-                                await currentClient.DisposeAsync().ConfigureAwait(false);
-                            }
-                            catch
-                            {
-                            }
-
-                            client = null;
-                            if (!token.IsCancellationRequested)
-                            {
-                                try
-                                {
-                                    client = await ManagedHttp3Client.ConnectAsync(plan.TargetUrl, certificateBypassUsed, token).ConfigureAwait(false);
-                                }
-                                catch (OperationCanceledException) when (token.IsCancellationRequested)
-                                {
-                                    return;
-                                }
-                                catch
-                                {
-                                    break;
-                                }
-                            }
-
-                            continue;
-                        }
-
-                        if (record)
-                        {
-                            requestStopwatch.Stop();
-                            Interlocked.Increment(ref counters.TotalRequests);
-                            Interlocked.Increment(ref counters.FailedRequests);
-                            errors.Add($"Managed H3 request failed: {ex.Message}");
-                        }
-
-                        response = null;
-                        break;
                     }
                 }
-
-                if (response is null)
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
                 {
-                    if (requestFailure is not null && !record)
+                    return;
+                }
+                catch (TaskCanceledException ex)
+                {
+                    if (record)
                     {
-                        // Warmup failures are ignored for counters, but the reconnect attempt was already made.
+                        requestStopwatch.Stop();
+                        Interlocked.Increment(ref counters.TotalRequests);
+                        Interlocked.Increment(ref counters.FailedRequests);
+                        Interlocked.Increment(ref counters.TimeoutRequests);
+                        errors.Add($"Managed H3 request timed out: {ex.Message}");
                     }
-
-                    continue;
                 }
-
-                requestStopwatch.Stop();
-
-                if (!record)
+                catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or NotSupportedException or IOException or SocketException or CryptographicException or AuthenticationException)
                 {
-                    continue;
-                }
-
-                Interlocked.Increment(ref counters.TotalRequests);
-                Interlocked.Add(ref counters.BytesReceived, response.Body.Length);
-                statusCodes.AddOrUpdate(((int)response.StatusCode).ToString(CultureInfo.InvariantCulture), 1, static (_, value) => value + 1);
-                samples.Add(requestStopwatch.Elapsed.TotalMilliseconds);
-
-                var responseVersion = FormatVersion(response.ResponseVersion);
-                var validationErrors = HttpScenarioValidator.ValidateResponse(
-                    endpoint,
-                    response.StatusCode,
-                    response.ContentType,
-                    response.Body,
-                    requestBody);
-
-                if (!string.Equals(responseVersion, "3.0", StringComparison.OrdinalIgnoreCase))
-                {
-                    Interlocked.Increment(ref counters.ResponseVersionFailures);
-                    validationErrors.Add($"Expected HTTP/3 response version 3.0, got {responseVersion ?? "<missing>"}.");
-                }
-
-                if (validationErrors.Count == 0)
-                {
-                    Interlocked.Increment(ref counters.SuccessfulRequests);
-                }
-                else
-                {
-                    Interlocked.Increment(ref counters.FailedRequests);
-                    foreach (var error in validationErrors.Take(5))
+                    if (record)
                     {
-                        warnings.Add(error);
+                        requestStopwatch.Stop();
+                        Interlocked.Increment(ref counters.TotalRequests);
+                        Interlocked.Increment(ref counters.FailedRequests);
+                        errors.Add($"Managed H3 request failed: {ex.Message}");
                     }
                 }
             }
@@ -317,17 +267,33 @@ internal static class ManagedHttp3LoadGenerator
         {
             errors.Add($"Managed H3 request timed out before a request completed: {ex.Message}");
         }
-        catch (Exception ex) when (ex is QuicException or Http3Exception or HttpRequestException or InvalidOperationException or NotSupportedException or IOException or SocketException or CryptographicException)
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or NotSupportedException or IOException or SocketException or CryptographicException or AuthenticationException)
         {
             errors.Add($"Managed H3 request failed before a request completed: {ex.Message}");
         }
-        finally
+    }
+
+    private static HttpClient CreateHttpClient(bool certificateBypassUsed)
+    {
+        var handler = new SocketsHttpHandler
         {
-            if (client is not null)
+            EnableMultipleHttp3Connections = true,
+            SslOptions =
             {
-                await client.DisposeAsync().ConfigureAwait(false);
+                EnabledSslProtocols = SslProtocols.Tls13,
+                ApplicationProtocols = [System.Net.Security.SslApplicationProtocol.Http3]
             }
+        };
+
+        if (certificateBypassUsed)
+        {
+            handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
         }
+
+        return new HttpClient(handler)
+        {
+            Timeout = Timeout.InfiniteTimeSpan
+        };
     }
 
     private static bool ShouldBypassCertificateValidation(Uri uri, string certificateMode)

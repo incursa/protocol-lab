@@ -114,7 +114,7 @@ benchmark handoff remains available through the dedicated reusable workflow,
 but only the nightly/manual path invokes it automatically:
 
 - `.github/workflows/nightly-public-report.yml` calls the reusable publish
-  workflow on a schedule and via manual dispatch.
+  workflow via manual dispatch.
 - The reusable workflow runs a canonical `kestrel-http3` H3 regression pass
   with `managed-httpclient-h3-load`, then publishes the resulting completed
   run with `-AllowDiagnosticPublication` so diagnostic runs stay visible

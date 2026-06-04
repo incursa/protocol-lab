@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Security;
@@ -392,7 +393,7 @@ internal sealed class ManagedHttp3Client : IAsyncDisposable
     {
         if (DebugLogging)
         {
-            Console.Error.WriteLine(message);
+            Trace.WriteLine(message);
         }
     }
 

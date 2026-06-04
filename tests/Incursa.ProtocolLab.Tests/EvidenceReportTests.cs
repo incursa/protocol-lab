@@ -247,6 +247,20 @@ public sealed class EvidenceReportTests
     }
 
     [Fact]
+    public void Comparison_groups_exclude_zero_success_metric_rows()
+    {
+        var results = new List<BenchmarkResult>
+        {
+            CreateAcceptedResult("kestrel", "Kestrel", "scenario1", "S1", "h3", 16, 10, 1, 0, 0, 0, 0, 0, 0),
+            CreateAcceptedResult("incursa", "Incursa", "scenario1", "S1", "h3", 16, 10, 1, 4800, 2.1, 3.1, 4.1, 2.6, 95000)
+        };
+
+        var report = EvidenceReportBuilder.Build("run", DateTimeOffset.UtcNow, null, null, null, [], [], results);
+
+        Assert.Empty(report.ComparisonGroups);
+    }
+
+    [Fact]
     public void Full_stable_local_comparison_suite_produces_comparison_groups()
     {
         var results = new List<BenchmarkResult>();
@@ -959,6 +973,10 @@ public sealed class EvidenceReportTests
             Metrics = new HttpMetrics
             {
                 RequestsPerSecond = requestsPerSecond,
+                TotalRequests = requestsPerSecond.HasValue ? 100 : null,
+                SuccessfulRequests = requestsPerSecond.HasValue && requestsPerSecond.Value > 0 ? 100 : 0,
+                FailedRequests = 0,
+                TimeoutRequests = 0,
                 LatencyP50Ms = p50,
                 LatencyP95Ms = p95,
                 LatencyP99Ms = p99,

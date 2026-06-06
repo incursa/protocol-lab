@@ -9,11 +9,7 @@ on:
         type: string
         default: public-report
     secrets:
-      CLOUDFLARE_API_TOKEN:
-        required: true
       CLOUDFLARE_ACCOUNT_ID:
-        required: true
-      PROTOCOL_LAB_DB_ID:
         required: true
       R2_ACCESS_KEY_ID:
         required: true
@@ -31,9 +27,7 @@ jobs:
     env:
       RUN_ID_PREFIX: ${{ inputs.run-id-prefix }}
       RUN_ID: ${{ inputs.run-id-prefix }}-${{ github.run_id }}-${{ github.run_attempt }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      PROTOCOL_LAB_DB_ID: ${{ secrets.PROTOCOL_LAB_DB_ID }}
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: auto
@@ -80,7 +74,10 @@ jobs:
             --scenarios http.core.plaintext,http.core.json `
             --protocol h3 `
             --load-tool managed-httpclient-h3-load `
-            --load-profile local-regression
+            --load-profile smoke `
+            --duration 5 `
+            --warmup 1 `
+            --repetitions 1
 
           $exitCode = $LASTEXITCODE
           "exit_code=$exitCode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8NoBOM
@@ -98,8 +95,7 @@ jobs:
             -RunId $runId `
             -RunRoot $runRoot `
             -AllowDiagnosticPublication `
-            -VerifyPublishedRuns `
-            -D1DatabaseId $env:PROTOCOL_LAB_DB_ID
+            -VerifyUploadedObjects
 
       - name: Fail if benchmark run failed
         if: always() && steps.publish.outcome == 'success' && steps.run.outputs.exit_code != '0'

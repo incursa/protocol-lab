@@ -130,7 +130,7 @@ metadata and pointers. It is intentionally narrow:
 - it copies only public-safe artifacts into a staged publication output
 - it writes a sanitized `evidence-report-v1.json` and Markdown rendering
 - it emits `publication-manifest.json`, `publication-warnings.md`,
-  `publication-skipped.md`, and registry JSON for the public site
+  `publication-skipped.md`, and per-run registry helper JSON for compatibility
 
 The bundle workflow must keep claim semantics driven by the Evidence Report
 v1 JSON. It may label `DiagnosticOnly` and `publishable=false` explicitly,
@@ -141,12 +141,12 @@ The public report schema set lives under `schemas/public-report/v1/`.
 `evidence-report-v1.schema.json` defines the shareable R2 payload shape:
 identity, coverage, validation, benchmark acceptance, per-cell status,
 generic measurements, warnings, errors, and public artifact references.
-Companion schemas cover the artifact index, publication manifest, and
-registry objects.
+Companion schemas cover the artifact index, publication manifest, and per-run
+registry helper objects.
 
-D1 is not a report model. It is a derived index for browsing, filtering,
-object-key verification, and latest-pointer lookup. Consumers that need the
-actual report must read the R2 `evidence-report-v1.json` object.
+ProtocolLab does not own downstream browse indexes or latest selection
+processing. Consumers that need the actual report must read the R2
+`evidence-report-v1.json` object from the run prefix.
 
 ## Design Rules
 

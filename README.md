@@ -142,9 +142,9 @@ diagnostic-only and should remain labeled that way in the output.
 To complete the Cloudflare handoff, run
 `scripts\publication\Publish-ProtocolLabReport.ps1`. It stages the bundle if
 needed, uploads the public files to `public/runs/{runId}/` in the
-`protocol-lab-reports` bucket through the R2 S3 API, verifies the uploaded
-payload before advancing the registry/latest pointers, and writes the
-searchable metadata into D1 through the Cloudflare D1 REST API.
+`protocol-lab-reports` bucket through the R2 S3 API, and can verify the
+uploaded run-prefix objects. The downstream site owns processing, indexing,
+and latest selection after the R2 objects exist.
 
 To batch upload one or more completed local runs, use the wrapper script:
 
@@ -152,22 +152,34 @@ To batch upload one or more completed local runs, use the wrapper script:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\Publish-ProtocolLabRuns.ps1 `
   -RunsRoot .artifacts\runs `
   -PrefixFilter local-workflow `
-  -VerifyPublishedRuns
+  -VerifyUploadedObjects
 ```
 
-This scans completed run directories, publishes each one through the existing
-Cloudflare handoff, and writes `.artifacts\runs\publication-summary.md`.
+This scans completed run directories, uploads each one through the R2 handoff,
+and writes `.artifacts\runs\publication-summary.md`.
 
 The workflow consumes these GitHub secrets:
 
-- `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
-- `PROTOCOL_LAB_DB_ID`
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
 
 The R2 endpoint is derived from `CLOUDFLARE_ACCOUNT_ID` unless a different
 non-secret endpoint is provided for a jurisdictional bucket.
+
+For local uploads, the uploader first uses existing process environment
+variables:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN` when using temporary credentials
+- `CLOUDFLARE_ACCOUNT_ID` or `R2_ENDPOINT`
+- `AWS_DEFAULT_REGION=auto`
+
+If those are not set, it can load a credentials file named by
+`PROTOCOL_LAB_R2_CREDENTIALS_PATH`, a file passed with `-R2CredentialsPath`, or
+PowerShell SecretManagement secrets named `ProtocolLab-R2-AccessKeyId`,
+`ProtocolLab-R2-SecretAccessKey`, and `ProtocolLab-CloudflareAccountId`.
 
 See [docs/reports/publication-handoff.md](docs/reports/publication-handoff.md)
 for the exact layout and validation gates.

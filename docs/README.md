@@ -34,7 +34,7 @@ here as if they were public contracts.
 
 ## Reports
 
-- [Public Report Handoff](reports/publication-handoff.md) - local run to R2 and D1 publication path
+- [Public Report Handoff](reports/publication-handoff.md) - local run to R2 upload path
 - [Public Report Publication Bundle](reports/publication-bundle.md) - staged bundle format and command flow
 - [Public Report Safety](reports/public-report-safety.md) - safety checks, labels, and exclusion rules
 

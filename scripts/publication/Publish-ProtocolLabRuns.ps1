@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-Publishes one or more completed ProtocolLab runs to R2/D1.
+Uploads one or more completed ProtocolLab runs to R2.
 
 .DESCRIPTION
-Scans completed run directories under the selected runs root and invokes
-Publish-ProtocolLabReport.ps1 for each one. The script is batch-friendly: it
-keeps going when a single run fails so the rest of the completed runs still get
-published. By default it treats the uploads as diagnostic local evidence and
+Scans completed run directories under the selected runs root and invokes the
+R2-only publication wrapper for each one. The script is batch-friendly: it keeps
+going when a single run fails so the rest of the completed runs still get
+uploaded. By default it treats the uploads as diagnostic local evidence and
 passes the diagnostic publication flag through to the underlying publisher.
 
 .PARAMETER RunsRoot
@@ -24,8 +24,8 @@ name starts with the prefix are published.
 Do not pass the diagnostic publication flag through to the underlying publisher.
 Use this when the run bundle is expected to satisfy the publishable gate.
 
-.PARAMETER VerifyPublishedRuns
-Ask the underlying publisher to verify the uploaded payloads after publishing.
+.PARAMETER VerifyUploadedObjects
+Ask the underlying uploader to verify the uploaded R2 objects after upload.
 
 .PARAMETER DryRun
 Validate the selected runs and print the planned publication commands without
@@ -40,7 +40,18 @@ param(
     [string]$RunIds,
     [string]$PrefixFilter,
     [switch]$RequirePublishable,
-    [switch]$VerifyPublishedRuns,
+    [switch]$VerifyUploadedObjects,
+    [ValidateRange(1, 64)]
+    [int]$UploadConcurrency = 8,
+    [string]$PowerShellPath = "pwsh",
+    [string]$R2CredentialsPath,
+    [string]$R2CredentialsPathEnvironmentVariable = "PROTOCOL_LAB_R2_CREDENTIALS_PATH",
+    [string]$R2SecretVault,
+    [string]$R2AccessKeyIdSecretName = "ProtocolLab-R2-AccessKeyId",
+    [string]$R2SecretAccessKeySecretName = "ProtocolLab-R2-SecretAccessKey",
+    [string]$CloudflareAccountIdSecretName = "ProtocolLab-CloudflareAccountId",
+    [string]$R2EndpointSecretName = "ProtocolLab-R2-Endpoint",
+    [string]$R2SessionTokenSecretName = "ProtocolLab-R2-SessionToken",
     [switch]$DryRun,
     [switch]$FailOnError
 )
@@ -118,15 +129,30 @@ function Invoke-PublishStage {
         "-File", $PublishScript,
         "-RunId", $RunId,
         "-RunRoot", $RunRoot,
-        "-BundleRoot", $bundleRoot
+        "-BundleRoot", $bundleRoot,
+        "-UploadConcurrency", "$UploadConcurrency",
+        "-R2CredentialsPathEnvironmentVariable", $R2CredentialsPathEnvironmentVariable,
+        "-R2AccessKeyIdSecretName", $R2AccessKeyIdSecretName,
+        "-R2SecretAccessKeySecretName", $R2SecretAccessKeySecretName,
+        "-CloudflareAccountIdSecretName", $CloudflareAccountIdSecretName,
+        "-R2EndpointSecretName", $R2EndpointSecretName,
+        "-R2SessionTokenSecretName", $R2SessionTokenSecretName
     )
+
+    if (-not [string]::IsNullOrWhiteSpace($R2CredentialsPath)) {
+        $arguments += @("-R2CredentialsPath", $R2CredentialsPath)
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($R2SecretVault)) {
+        $arguments += @("-R2SecretVault", $R2SecretVault)
+    }
 
     if (-not $RequirePublishable) {
         $arguments += "-AllowDiagnosticPublication"
     }
 
-    if ($VerifyPublishedRuns) {
-        $arguments += "-VerifyPublishedRuns"
+    if ($VerifyUploadedObjects) {
+        $arguments += "-VerifyUploadedObjects"
     }
 
     if ($DryRun) {
@@ -134,7 +160,7 @@ function Invoke-PublishStage {
     }
 
     Write-StageHeader -Name "Publish run $RunId"
-    $commandLine = "powershell " + ($arguments -join " ")
+    $commandLine = "$PowerShellPath " + ($arguments -join " ")
     Write-Host $commandLine
 
     if ($DryRun) {
@@ -142,7 +168,7 @@ function Invoke-PublishStage {
         return
     }
 
-    & powershell @arguments
+    & $PowerShellPath @arguments
     $exitCode = $LASTEXITCODE
     if ($exitCode -eq 0) {
         Add-Result -Name $RunId -Status "passed" -ExitCode $exitCode -RunRoot $RunRoot -BundleRoot $bundleRoot -CommandLine $commandLine

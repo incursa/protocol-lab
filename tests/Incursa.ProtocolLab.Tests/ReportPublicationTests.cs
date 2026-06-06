@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Incursa LLC.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using System.Diagnostics;
 using Incursa.ProtocolLab.Model;
 using Incursa.ProtocolLab.Runner;
 using NJsonSchema;
@@ -519,17 +520,60 @@ public sealed class ReportPublicationTests
     }
 
     [Fact]
-    public void Publish_workflow_verifies_published_runs_before_advancing_the_latest_pointer()
+    public async Task R2_upload_script_dry_run_accepts_bundle_root_without_credentials()
     {
-        var scriptPath = Path.Combine(TestPaths.RepoRoot, "scripts", "publication", "Publish-ProtocolLabReport.ps1");
-        var script = File.ReadAllText(scriptPath);
+        var tempRoot = CreateTempRoot();
 
-        var verifyIndex = script.IndexOf("Assert-PublishedRunsComplete -Bucket $BucketName -AccountId $cloudflareAccountId -DatabaseId $D1DatabaseId -ApiToken $cloudflareApiToken -TempDirectory $tempRoot -SkipRegistryValidation", StringComparison.Ordinal);
-        var latestWriteIndex = script.IndexOf("Write-D1SqlFile -Entry $entry -Manifest $manifest -Warnings $warnings -SqlPath $sqlPath -PublishedAt $publishedAt -UpdateLatest $true", StringComparison.Ordinal);
+        try
+        {
+            var sample = await CreateSampleRunAsync(tempRoot);
+            var result = await new RunnerEngine().PublishReportAsync(
+                TestPaths.RepoRoot,
+                CreatePublishOptions(sample.RunRoot, sample.OutputRoot));
+            AssertSucceeded(result);
 
-        Assert.True(verifyIndex >= 0, "Expected the publication workflow to verify published runs before advancing the latest pointer.");
-        Assert.True(latestWriteIndex >= 0, "Expected the publication workflow to advance the latest pointer in a second D1 write.");
-        Assert.True(verifyIndex < latestWriteIndex, "Published-run verification must happen before the latest pointer update.");
+            var uploadResult = await RunPowerShellAsync(
+                Path.Combine(TestPaths.RepoRoot, "scripts", "publication", "Upload-ProtocolLabReportBundle.ps1"),
+                "-BundleRoot",
+                sample.OutputRoot,
+                "-DryRun");
+
+            Assert.True(uploadResult.ExitCode == 0, uploadResult.Output);
+            Assert.Contains("public/runs/sample-run/evidence-report-v1.json", uploadResult.Output, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("public/runs/sample-run/artifacts-index.json", uploadResult.Output, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("public/registry/", uploadResult.Output, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
+    public void Publication_scripts_and_workflows_do_not_reference_site_indexing_side_effects()
+    {
+        var paths = Directory.EnumerateFiles(Path.Combine(TestPaths.RepoRoot, "scripts", "publication"), "*", SearchOption.TopDirectoryOnly)
+            .Where(path => Path.GetExtension(path) is ".ps1" or ".py")
+            .Concat(Directory.EnumerateFiles(Path.Combine(TestPaths.RepoRoot, ".github", "workflows"), "*.yml", SearchOption.TopDirectoryOnly))
+            .ToArray();
+
+        var forbidden = new[]
+        {
+            "PROTOCOL_LAB" + "_DB_ID",
+            "D" + "1DatabaseId",
+            "Invoke-Cloudflare" + "D1",
+            "public_report" + "_",
+            "public/registry/"
+        };
+
+        foreach (var path in paths)
+        {
+            var text = File.ReadAllText(path);
+            foreach (var marker in forbidden)
+            {
+                Assert.DoesNotContain(marker, text, StringComparison.OrdinalIgnoreCase);
+            }
+        }
     }
 
     private static RunnerCommandOptions CreatePublishOptions(string runRoot, string outputRoot, bool dryRun = false, bool allowDiagnosticPublication = false)
@@ -574,6 +618,33 @@ public sealed class ReportPublicationTests
         Assert.True(
             result.ExitCode == 0,
             string.Join(Environment.NewLine, result.Messages.Select(message => $"{message.Severity}: {message.Text}")));
+    }
+
+    private static async Task<(int ExitCode, string Output)> RunPowerShellAsync(string scriptPath, params string[] arguments)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "powershell",
+            WorkingDirectory = TestPaths.RepoRoot,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false
+        };
+        startInfo.ArgumentList.Add("-NoProfile");
+        startInfo.ArgumentList.Add("-ExecutionPolicy");
+        startInfo.ArgumentList.Add("Bypass");
+        startInfo.ArgumentList.Add("-File");
+        startInfo.ArgumentList.Add(scriptPath);
+        foreach (var argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start PowerShell.");
+        var stdout = await process.StandardOutput.ReadToEndAsync();
+        var stderr = await process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+        return (process.ExitCode, stdout + stderr);
     }
 
     private static void CopyPublicReportSchemas(string repositoryRoot)

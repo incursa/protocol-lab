@@ -19,8 +19,8 @@
     "VER-PL-REPORT-0001"
   ],
   "purpose": "Define the canonical public report payload and supporting publication metadata for ProtocolLab report bundles stored in R2.",
-  "scope": "This specification covers public report JSON payload semantics, schema versioning, measurements, evidence, logs and artifacts, failure diagnostics, and the D1 derived-index boundary. It does not define private raw run retention, hosted execution, or commercial attestation policy.",
-  "context": "ProtocolLab publishes public-safe report bundles to R2 under public/runs/{runId}/. The site and other consumers need a stable shareable JSON contract that carries the complete report semantics, while D1 remains a lossy searchable index derived from that payload.",
+  "scope": "This specification covers public report JSON payload semantics, schema versioning, measurements, evidence, logs and artifacts, failure diagnostics, and the downstream processing boundary. It does not define private raw run retention, hosted execution, site indexing, latest selection, or commercial attestation policy.",
+  "context": "ProtocolLab publishes public-safe report bundles to R2 under public/runs/{runId}/. The site and other consumers need a stable shareable JSON contract that carries the complete report semantics, while browse indexes and latest selection are derived downstream from that payload.",
   "requirements": [
     {
       "id": "REQ-PL-REPORT-0001",
@@ -101,7 +101,7 @@
     {
       "id": "REQ-PL-REPORT-0005",
       "title": "Supporting metadata boundary",
-      "statement": "The publication workflow MUST treat publication manifest, artifact index, registry JSON, and D1 rows as derived supporting metadata that do not redefine claim level, validation outcome, benchmark acceptance, or measurement semantics independently of the canonical public evidence report.",
+      "statement": "The publication workflow MUST treat publication manifest, artifact index, and per-run registry helper JSON as derived supporting metadata that do not redefine claim level, validation outcome, benchmark acceptance, or measurement semantics independently of the canonical public evidence report.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
@@ -139,7 +139,7 @@
     {
       "id": "REQ-PL-REPORT-0007",
       "title": "Benchmark-run bundle production",
-      "statement": "The benchmark run workflow MUST produce the schema-validated public report bundle as part of each benchmark run without requiring R2 upload or D1 writes.",
+      "statement": "The benchmark run workflow MUST produce the schema-validated public report bundle as part of each benchmark run without requiring R2 upload or downstream index writes.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",

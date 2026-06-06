@@ -21,6 +21,12 @@ Bundle output root used by the benchmark runs. Defaults to
 Build configuration for the build/test/check stages and the CLI host when
 running benchmarks. Defaults to Release.
 
+.PARAMETER WorkflowProfile
+Benchmark workflow profile. Quick runs only the smallest public-report artifact
+proof, Regression uses local-regression load shapes, and Comparison preserves
+the full local-comparison behavior. Defaults to Comparison for this run-all
+entrypoint.
+
 .PARAMETER ExecutionProfile
 Optional execution profile to pass through to benchmark runs.
 
@@ -55,6 +61,8 @@ param(
     [string]$PublicationOutputRoot = ".artifacts\publication",
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
+    [ValidateSet("Quick", "Regression", "Comparison")]
+    [string]$WorkflowProfile = "Comparison",
     [string]$ExecutionProfile,
     [int]$DurationSeconds,
     [int]$WarmupSeconds,
@@ -70,11 +78,16 @@ $ErrorActionPreference = "Stop"
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $BenchmarkSetScript = Join-Path $RepoRoot "scripts\benchmarking\Invoke-ProtocolLabBenchmarkSet.ps1"
-$BenchmarkSuites = @(
-    "ci-public-report",
-    "h3-local-v1-comparison",
-    "quic-transport-v1-comparison"
-)
+$BenchmarkSuites = if ($WorkflowProfile -eq "Quick") {
+    @("ci-public-report")
+}
+else {
+    @(
+        "ci-public-report",
+        "h3-local-v1-comparison",
+        "quic-transport-v1-comparison"
+    )
+}
 
 if (-not (Test-Path -LiteralPath $BenchmarkSetScript)) {
     throw "Benchmark set script not found: $BenchmarkSetScript"
@@ -89,6 +102,7 @@ $arguments = @(
     "-RunCheck",
     "-Suite", ($BenchmarkSuites -join ","),
     "-RunIdPrefix", $RunIdPrefix,
+    "-WorkflowProfile", $WorkflowProfile,
     "-Output", $Output,
     "-PublicationOutputRoot", $PublicationOutputRoot,
     "-Configuration", $Configuration

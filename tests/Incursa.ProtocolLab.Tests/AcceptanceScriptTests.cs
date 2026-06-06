@@ -50,7 +50,7 @@ public sealed class AcceptanceScriptTests
             "publication",
             "New-ProtocolLabPublicReportBundle.ps1"));
 
-        Assert.Contains("This script does not upload to R2 and does not write D1 metadata.", script);
+        Assert.Contains("This script does not upload to R2.", script);
         Assert.Contains("\"run\",", script);
         Assert.Contains("\"publish-report\",", script);
         Assert.Contains("--publication-output", script);
@@ -59,5 +59,27 @@ public sealed class AcceptanceScriptTests
         Assert.Contains("evidence-report-v1.json", script);
         Assert.Contains("artifacts-index.json", script);
         Assert.Contains("report-index.json", script);
+    }
+
+    [Fact]
+    public void R2_upload_script_exposes_bundle_root_dry_run_and_object_verification()
+    {
+        var script = File.ReadAllText(Path.Combine(
+            TestPaths.RepoRoot,
+            "scripts",
+            "publication",
+            "Upload-ProtocolLabReportBundle.ps1"));
+
+        Assert.Contains("[string]$BundleRoot", script);
+        Assert.Contains("[string]$RunRoot", script);
+        Assert.Contains("[int]$UploadConcurrency = 8", script);
+        Assert.Contains("[string]$R2CredentialsPath", script);
+        Assert.Contains("PROTOCOL_LAB_R2_CREDENTIALS_PATH", script);
+        Assert.Contains("PowerShell SecretManagement", script);
+        Assert.Contains("[switch]$VerifyUploadedObjects", script);
+        Assert.Contains("[switch]$DryRun", script);
+        Assert.Contains("public/runs/$RunId/", script);
+        Assert.DoesNotContain("C:\\temp", script, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("public/registry/", script, StringComparison.OrdinalIgnoreCase);
     }
 }

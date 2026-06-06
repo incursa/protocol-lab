@@ -9,9 +9,8 @@ the same files expected under public/runs/{runId}/ in R2, including
 evidence-report-v1.json, artifacts-index.json, publication-manifest.json,
 report-index-entry.json, and report-index.json.
 
-This script does not upload to R2 and does not write D1 metadata. Use
-Publish-ProtocolLabReport.ps1 for the Cloudflare handoff after the local bundle
-has been inspected.
+This script does not upload to R2. Use Upload-ProtocolLabReportBundle.ps1 for
+the R2 handoff after the local bundle has been inspected.
 
 When -RunRoot is supplied, the script skips the benchmark step and only stages
 a public bundle from that completed run.

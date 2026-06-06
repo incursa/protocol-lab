@@ -55,17 +55,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\New-Prot
   -RunRoot .artifacts\runs\{runId}
 ```
 
-The script does not upload to R2 and does not write D1 metadata. It allows
-diagnostic-only local bundles by default so local failures still produce
-inspectable public-safe artifacts with `DiagnosticOnly` preserved. Use
-`-RequirePublishable` when local generation should fail instead of staging a
-diagnostic-only bundle.
+The script does not upload. It allows diagnostic-only local bundles by default
+so local failures still produce inspectable public-safe artifacts with
+`DiagnosticOnly` preserved. Use `-RequirePublishable` when local generation
+should fail instead of staging a diagnostic-only bundle.
 
-To publish the staged bundle into R2 and D1, use
-`scripts/publication/Publish-ProtocolLabReport.ps1`. The script expects the
-bundle to live under `.artifacts/publication/{runId}` and uploads it to
-`public/runs/{runId}/` through the R2 S3-compatible API and writes the
-searchable metadata into D1 through the Cloudflare D1 REST API.
+To upload the staged bundle to R2, use
+`scripts/publication/Upload-ProtocolLabReportBundle.ps1`. The script expects
+the bundle to live under `.artifacts/publication/{runId}` unless `-BundleRoot`
+points elsewhere, and uploads it to `public/runs/{runId}/` through the R2
+S3-compatible API. The downstream site owns processing, indexing, and latest
+selection after the run-prefix objects exist in R2.
 
 ## Bundle Layout
 

@@ -7,7 +7,13 @@ repository.
 
 Use `scripts/benchmarking/Invoke-ProtocolLabBenchmarkSet.ps1` for a selected
 subset, or `scripts/benchmarking/Invoke-ProtocolLabBenchmarkAll.ps1` for the
-full benchmark suite catalog.
+full benchmark suite catalog. The benchmark wrappers expose `Quick`,
+`Regression`, and `Comparison` profiles:
+
+- `Quick` runs the smallest public-report artifact proof.
+- `Regression` uses the local-regression load shape for selected suites.
+- `Comparison` preserves the full local-comparison behavior and is expected to
+  take longer.
 
 | Suite ID | Protocol | Target mode | Load tool | Purpose | Runner |
 | --- | --- | --- | --- | --- | --- |

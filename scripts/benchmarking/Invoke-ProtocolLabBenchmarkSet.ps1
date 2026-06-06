@@ -169,6 +169,9 @@ $ResolvedIncursaQuicSourceRoot = if ($script:IncursaQuicSourceRootSpecified) {
 else {
     $null
 }
+if ($script:IncursaQuicSourceRootSpecified) {
+    $env:PROTOCOL_LAB_INCURSA_QUIC_SOURCE_ROOT = $ResolvedIncursaQuicSourceRoot
+}
 
 $BenchmarkProfiles = @{
     "ci-public-report" = [pscustomobject]@{

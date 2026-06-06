@@ -26,8 +26,21 @@ internal static class IncursaRawQuicProtocolEndpointLauncher
             UseShellExecute = false
         };
 
-        var directExecDll = ResolveBuiltServerDll(projectDirectory, assemblyName);
-        if (directExecDll is not null)
+        var incursaQuicSourceRoot = Environment.GetEnvironmentVariable("PROTOCOL_LAB_INCURSA_QUIC_SOURCE_ROOT");
+        if (!string.IsNullOrWhiteSpace(incursaQuicSourceRoot))
+        {
+            si.ArgumentList.Add("run");
+            si.ArgumentList.Add("--configuration");
+            si.ArgumentList.Add("Release");
+            si.ArgumentList.Add("--no-launch-profile");
+            si.ArgumentList.Add("--project");
+            si.ArgumentList.Add(resolvedProject);
+            si.ArgumentList.Add($"-p:IncursaQuicSourceRoot={incursaQuicSourceRoot}");
+            si.ArgumentList.Add("--");
+            si.ArgumentList.Add(port.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            si.Environment["PROTOCOL_LAB_INCURSA_QUIC_SOURCE_ROOT"] = incursaQuicSourceRoot;
+        }
+        else if (ResolveBuiltServerDll(projectDirectory, assemblyName) is { } directExecDll)
         {
             // Prefer the built Release/Debug output so startup does not pay the dotnet-run build cost.
             si.ArgumentList.Add("exec");

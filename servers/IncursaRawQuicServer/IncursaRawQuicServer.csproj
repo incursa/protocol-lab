@@ -6,9 +6,14 @@
     <RootNamespace>IncursaRawQuicServer</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(IncursaQuicSourceRoot)' == ''">
     <PackageReference Include="Incursa.Quic" />
     <PackageReference Include="Incursa.Quic.Diagnostics.Qlog" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IncursaQuicSourceRoot)' != ''">
+    <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Quic\Incursa.Quic.csproj" />
+    <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Quic.Qlog\Incursa.Quic.Qlog.csproj" />
   </ItemGroup>
 
 </Project>

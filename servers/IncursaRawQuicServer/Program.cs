@@ -213,7 +213,6 @@ static async Task HandleStreamAsync(QuicStream stream, int connectionIndex, int 
         }
 
         var buffer = new byte[65536];
-        using var responseBuffer = echoResponses ? new MemoryStream() : null;
 
         while (true)
         {
@@ -232,25 +231,19 @@ static async Task HandleStreamAsync(QuicStream stream, int connectionIndex, int 
                 Console.Error.WriteLine($"IncursaRawQuicServer stream #{streamIndex} on connection #{connectionIndex} read {bytesRead} byte(s)");
             }
 
-            if (responseBuffer is not null)
+            if (echoResponses && stream.CanWrite)
             {
-                await responseBuffer.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+                await stream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+
+                if (debugLogging)
+                {
+                    Console.Error.WriteLine($"IncursaRawQuicServer stream #{streamIndex} on connection #{connectionIndex} echoed {bytesRead} byte(s)");
+                }
             }
         }
 
         if (stream.CanWrite)
         {
-            if (responseBuffer is not null && responseBuffer.Length > 0)
-            {
-                responseBuffer.Position = 0;
-                await responseBuffer.CopyToAsync(stream, cancellationToken);
-
-                if (debugLogging)
-                {
-                    Console.Error.WriteLine($"IncursaRawQuicServer stream #{streamIndex} on connection #{connectionIndex} wrote {responseBuffer.Length} byte(s)");
-                }
-            }
-
             await stream.CompleteWritesAsync(cancellationToken);
             if (debugLogging)
             {

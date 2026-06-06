@@ -2,4 +2,15 @@
   <ItemGroup Condition="'$(IsPackable)' == 'true' And Exists('$(MSBuildProjectDirectory)\README.md')">
     <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="\" Visible="false" Link="README.md" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(IncursaQuicSourceRoot)' != ''">
+    <IncursaQuicSourceRoot>$([System.IO.Path]::GetFullPath('$(IncursaQuicSourceRoot)'))</IncursaQuicSourceRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IncursaQuicSourceRoot)' != ''">
+    <PackageReference Remove="Incursa.Qpack;Incursa.Quic;Incursa.Quic.Http3" />
+    <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Qpack\Incursa.Qpack.csproj" />
+    <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Quic\Incursa.Quic.csproj" />
+    <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Quic.Http3\Incursa.Quic.Http3.csproj" />
+  </ItemGroup>
 </Project>

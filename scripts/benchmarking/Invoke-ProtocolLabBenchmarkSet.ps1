@@ -29,6 +29,11 @@ Run the repository check command before any benchmark suites.
 Prefix used for generated benchmark run IDs. Each benchmark suite uses
 <prefix>-<suite>.
 
+.PARAMETER WorkflowProfile
+Benchmark workflow profile. Quick runs the smallest public-report artifact
+proof, Regression uses local-regression load shapes for selected suites, and
+Comparison preserves the full local-comparison behavior.
+
 .PARAMETER Output
 Run artifact output root. Defaults to .artifacts\runs.
 
@@ -53,6 +58,16 @@ Overrides the target configuration for benchmark runs.
 .PARAMETER ExecutionProfile
 Optional execution profile to pass through to benchmark runs.
 
+.PARAMETER Implementations
+Optional implementation filter override for benchmark runs. Accepts either
+comma-separated values or repeated values. The singular -Implementation alias is
+also supported.
+
+.PARAMETER Scenarios
+Optional scenario filter override for benchmark runs. Accepts either
+comma-separated values or repeated values. The singular -Scenario alias is also
+supported.
+
 .PARAMETER DurationSeconds
 Optional duration override for benchmark runs.
 
@@ -71,6 +86,14 @@ Optional streams-per-connection override for benchmark runs.
 .PARAMETER BaseUrl
 Optional base URL override for benchmark runs.
 
+.PARAMETER IncursaQuicSourceRoot
+Optional quic-dotnet source root passed to MSBuild as IncursaQuicSourceRoot so
+ProtocolLab consumes local Incursa QUIC project references instead of packages.
+
+.PARAMETER NoRestore
+Pass --no-restore to dotnet build/test/run stages. Intended for tight
+source-reference loops after the first restore.
+
 .PARAMETER DryRun
 Print the planned commands without executing them.
 
@@ -85,6 +108,8 @@ param(
     [switch]$RunTests,
     [switch]$RunCheck,
     [string]$RunIdPrefix = ("local-workflow-" + (Get-Date -Format "yyyyMMddHHmmss")),
+    [ValidateSet("Quick", "Regression", "Comparison")]
+    [string]$WorkflowProfile = "Regression",
     [string]$Output = ".artifacts\runs",
     [string]$PublicationOutputRoot = ".artifacts\publication",
     [ValidateSet("Debug", "Release")]
@@ -96,12 +121,18 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$TargetConfiguration,
     [string]$ExecutionProfile,
+    [Alias("Implementation")]
+    [string[]]$Implementations,
+    [Alias("Scenario")]
+    [string[]]$Scenarios,
     [int]$DurationSeconds,
     [int]$WarmupSeconds,
     [int]$Repetitions,
     [int]$Connections,
     [int]$StreamsPerConnection,
     [string]$BaseUrl,
+    [string]$IncursaQuicSourceRoot,
+    [switch]$NoRestore,
     [switch]$DryRun,
     [switch]$FailOnError
 )
@@ -124,6 +155,20 @@ $script:RepetitionsOverrideSpecified = $PSBoundParameters.ContainsKey("Repetitio
 $script:ConnectionsOverrideSpecified = $PSBoundParameters.ContainsKey("Connections")
 $script:StreamsOverrideSpecified = $PSBoundParameters.ContainsKey("StreamsPerConnection")
 $script:BaseUrlSpecified = $PSBoundParameters.ContainsKey("BaseUrl")
+$script:ImplementationsOverrideSpecified = $PSBoundParameters.ContainsKey("Implementations")
+$script:ScenariosOverrideSpecified = $PSBoundParameters.ContainsKey("Scenarios")
+$script:IncursaQuicSourceRootSpecified = $PSBoundParameters.ContainsKey("IncursaQuicSourceRoot") -and -not [string]::IsNullOrWhiteSpace($IncursaQuicSourceRoot)
+$ResolvedIncursaQuicSourceRoot = if ($script:IncursaQuicSourceRootSpecified) {
+    if ([System.IO.Path]::IsPathRooted($IncursaQuicSourceRoot)) {
+        [System.IO.Path]::GetFullPath($IncursaQuicSourceRoot)
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $IncursaQuicSourceRoot))
+    }
+}
+else {
+    $null
+}
 
 $BenchmarkProfiles = @{
     "ci-public-report" = [pscustomobject]@{
@@ -196,6 +241,22 @@ function Escape-MdCell {
     return ([string]$Value).Replace("|", "\|").Replace("`r`n", "<br>").Replace("`n", "<br>")
 }
 
+function Join-FilterValues {
+    param([AllowNull()][string[]]$Values)
+
+    $normalized = New-Object System.Collections.Generic.List[string]
+    foreach ($value in @($Values)) {
+        foreach ($entry in @($value -split ',')) {
+            $trimmed = $entry.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($trimmed)) {
+                $normalized.Add($trimmed) | Out-Null
+            }
+        }
+    }
+
+    return ($normalized -join ",")
+}
+
 function Add-StageResult {
     param(
         [Parameter(Mandatory = $true)][string]$Name,
@@ -261,6 +322,7 @@ function Write-WorkflowSummary {
     $lines.Add("Generated: $([DateTimeOffset]::UtcNow.ToString('u'))")
     $lines.Add("Run ID prefix: ``$RunIdPrefix``")
     $lines.Add("Configuration: ``$Configuration``")
+    $lines.Add("Workflow profile: ``$WorkflowProfile``")
     $lines.Add("")
     $lines.Add("| Stage | Status | Exit Code | Artifact Path | Publication Path |")
     $lines.Add("| --- | --- | --- | --- | --- |")
@@ -282,19 +344,39 @@ function New-BenchmarkRunArguments {
     $targetModeValue = if ($script:TargetModeOverrideSpecified -and -not [string]::IsNullOrWhiteSpace($TargetMode)) { $TargetMode } else { $Profile.TargetMode }
     $targetNetworkModeValue = if ($script:TargetNetworkModeOverrideSpecified -and -not [string]::IsNullOrWhiteSpace($TargetNetworkMode)) { $TargetNetworkMode } else { $Profile.TargetNetworkMode }
     $targetConfigurationValue = if ($script:TargetConfigurationOverrideSpecified -and -not [string]::IsNullOrWhiteSpace($TargetConfiguration)) { $TargetConfiguration } elseif (-not [string]::IsNullOrWhiteSpace($Profile.TargetConfiguration)) { $Profile.TargetConfiguration } else { $Configuration }
+    $implementationsValue = if ($script:ImplementationsOverrideSpecified) { Join-FilterValues -Values $Implementations } else { $Profile.Implementations }
+    $scenariosValue = if ($script:ScenariosOverrideSpecified) { Join-FilterValues -Values $Scenarios } else { $Profile.Scenarios }
+    $loadProfileValue = $Profile.LoadProfile
+    if ($WorkflowProfile -eq "Quick") {
+        $loadProfileValue = "smoke"
+    }
+    elseif ($WorkflowProfile -eq "Regression") {
+        $loadProfileValue = "local-regression"
+    }
 
     $arguments = @(
         "run",
         "--project", $CliProject,
-        "-c", $Configuration,
+        "-c", $Configuration
+    )
+
+    if ($NoRestore) {
+        $arguments += "--no-restore"
+    }
+
+    if ($script:IncursaQuicSourceRootSpecified) {
+        $arguments += "-p:IncursaQuicSourceRoot=$ResolvedIncursaQuicSourceRoot"
+    }
+
+    $arguments += @(
         "--",
         "run",
-        "--implementations", $Profile.Implementations,
-        "--scenarios", $Profile.Scenarios,
+        "--implementations", $implementationsValue,
+        "--scenarios", $scenariosValue,
         "--protocol", $Profile.Protocol,
         "--load-tool", $Profile.LoadTool,
         "--load-tool-mode", $Profile.LoadToolMode,
-        "--load-profile", $Profile.LoadProfile,
+        "--load-profile", $loadProfileValue,
         "--target-configuration", $targetConfigurationValue,
         "--run-id", $RunId,
         "--output", $OutputRoot,
@@ -320,21 +402,36 @@ function New-BenchmarkRunArguments {
     if ($script:DurationOverrideSpecified) {
         $arguments += @("--duration", "$DurationSeconds")
     }
+    elseif ($WorkflowProfile -eq "Quick") {
+        $arguments += @("--duration", "5")
+    }
 
     if ($script:WarmupOverrideSpecified) {
         $arguments += @("--warmup", "$WarmupSeconds")
+    }
+    elseif ($WorkflowProfile -eq "Quick") {
+        $arguments += @("--warmup", "1")
     }
 
     if ($script:RepetitionsOverrideSpecified) {
         $arguments += @("--repetitions", "$Repetitions")
     }
+    elseif ($WorkflowProfile -eq "Quick") {
+        $arguments += @("--repetitions", "1")
+    }
 
     if ($script:ConnectionsOverrideSpecified) {
         $arguments += @("--connections", "$Connections")
     }
+    elseif ($WorkflowProfile -eq "Quick") {
+        $arguments += @("--connections", "4")
+    }
 
     if ($script:StreamsOverrideSpecified) {
         $arguments += @("--streams-per-connection", "$StreamsPerConnection")
+    }
+    elseif ($WorkflowProfile -eq "Quick") {
+        $arguments += @("--streams-per-connection", "1")
     }
 
     return $arguments
@@ -343,10 +440,6 @@ function New-BenchmarkRunArguments {
 Set-Location $RepoRoot
 New-Item -ItemType Directory -Force $OutputRoot | Out-Null
 New-Item -ItemType Directory -Force $PublicationRoot | Out-Null
-
-if (-not $RunBuild -and -not $RunTests -and -not $RunCheck -and (-not $Suite -or $Suite.Count -lt 1)) {
-    throw "Specify at least one stage switch or one benchmark suite."
-}
 
 $selectedSuites = New-Object System.Collections.Generic.List[string]
 foreach ($suiteValue in @($Suite)) {
@@ -358,16 +451,52 @@ foreach ($suiteValue in @($Suite)) {
     }
 }
 
+if ($selectedSuites.Count -eq 0 -and $WorkflowProfile -eq "Quick") {
+    $selectedSuites.Add("ci-public-report") | Out-Null
+}
+
+if (-not $RunBuild -and -not $RunTests -and -not $RunCheck -and $selectedSuites.Count -lt 1) {
+    throw "Specify at least one stage switch, one benchmark suite, or -WorkflowProfile Quick."
+}
+
 if ($RunBuild) {
-    Invoke-Stage -Name "Build solution" -FilePath "dotnet" -Arguments @("build", "Incursa.ProtocolLab.sln", "-c", $Configuration) -ArtifactPath $null -PublicationPath $null
+    $buildArguments = @("build", "Incursa.ProtocolLab.sln", "-c", $Configuration)
+    if ($NoRestore) {
+        $buildArguments += "--no-restore"
+    }
+
+    if ($script:IncursaQuicSourceRootSpecified) {
+        $buildArguments += "/p:IncursaQuicSourceRoot=$ResolvedIncursaQuicSourceRoot"
+    }
+
+    Invoke-Stage -Name "Build solution" -FilePath "dotnet" -Arguments $buildArguments -ArtifactPath $null -PublicationPath $null
 }
 
 if ($RunTests) {
-    Invoke-Stage -Name "Test solution" -FilePath "dotnet" -Arguments @("test", "Incursa.ProtocolLab.sln", "-c", $Configuration) -ArtifactPath $null -PublicationPath $null
+    $testArguments = @("test", "Incursa.ProtocolLab.sln", "-c", $Configuration)
+    if ($NoRestore) {
+        $testArguments += "--no-restore"
+    }
+
+    if ($script:IncursaQuicSourceRootSpecified) {
+        $testArguments += "/p:IncursaQuicSourceRoot=$ResolvedIncursaQuicSourceRoot"
+    }
+
+    Invoke-Stage -Name "Test solution" -FilePath "dotnet" -Arguments $testArguments -ArtifactPath $null -PublicationPath $null
 }
 
 if ($RunCheck) {
-    Invoke-Stage -Name "Run repository check" -FilePath "dotnet" -Arguments @("run", "--project", "src\Incursa.ProtocolLab.Cli", "-c", $Configuration, "--", "check") -ArtifactPath $null -PublicationPath $null
+    $checkArguments = @("run", "--project", "src\Incursa.ProtocolLab.Cli", "-c", $Configuration)
+    if ($NoRestore) {
+        $checkArguments += "--no-restore"
+    }
+
+    if ($script:IncursaQuicSourceRootSpecified) {
+        $checkArguments += "-p:IncursaQuicSourceRoot=$ResolvedIncursaQuicSourceRoot"
+    }
+
+    $checkArguments += @("--", "check")
+    Invoke-Stage -Name "Run repository check" -FilePath "dotnet" -Arguments $checkArguments -ArtifactPath $null -PublicationPath $null
 }
 
 foreach ($suiteName in @($selectedSuites)) {

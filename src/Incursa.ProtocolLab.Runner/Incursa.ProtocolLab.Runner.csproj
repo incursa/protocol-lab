@@ -7,6 +7,9 @@
 
   <ItemGroup>
     <PackageReference Include="NJsonSchema" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IncursaQuicSourceRoot)' == ''">
     <PackageReference Include="Incursa.Quic" />
     <PackageReference Include="Incursa.Quic.Http3" />
   </ItemGroup>

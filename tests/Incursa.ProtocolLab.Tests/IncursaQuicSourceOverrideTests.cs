@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Incursa.ProtocolLab.Tests;
 
@@ -12,6 +13,14 @@ public sealed class IncursaQuicSourceOverrideTests
     [
         "Incursa.Qpack",
         "Incursa.Quic",
+        "Incursa.Quic.Http3"
+    ];
+
+    private static readonly string[] IncursaSourceOverridePackageIds =
+    [
+        "Incursa.Qpack",
+        "Incursa.Quic",
+        "Incursa.Quic.Diagnostics.Qlog",
         "Incursa.Quic.Http3"
     ];
 
@@ -43,6 +52,28 @@ public sealed class IncursaQuicSourceOverrideTests
 
         Assert.DoesNotContain(items.PackageReferences, package => IncursaPackageIds.Contains(package, StringComparer.OrdinalIgnoreCase));
         Assert.All(expectedReferences, expected => Assert.Contains(Path.GetFullPath(expected), items.ProjectReferences));
+    }
+
+    [Theory]
+    [InlineData("src", "Incursa.ProtocolLab.Adapters.IncursaHttp3", "Incursa.ProtocolLab.Adapters.IncursaHttp3.csproj")]
+    [InlineData("src", "Incursa.ProtocolLab.Runner", "Incursa.ProtocolLab.Runner.csproj")]
+    public void Source_overridable_projects_condition_incursa_quic_package_references_on_package_mode(params string[] relativeProjectPath)
+    {
+        var document = XDocument.Load(ProjectPath(relativeProjectPath));
+        var references = document.Descendants()
+            .Where(static element => element.Name.LocalName == "PackageReference")
+            .Where(static element =>
+                element.Attribute("Include")?.Value is { } include
+                && IncursaSourceOverridePackageIds.Contains(include, StringComparer.OrdinalIgnoreCase))
+            .ToArray();
+
+        Assert.NotEmpty(references);
+        Assert.All(
+            references,
+            reference => Assert.Contains(
+                "$(IncursaQuicSourceRoot)' == ''",
+                EffectiveCondition(reference),
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private static async Task<EvaluatedItems> EvaluateItemsAsync(string projectPath, params string[] additionalArguments)
@@ -100,6 +131,13 @@ public sealed class IncursaQuicSourceOverrideTests
     private static string ProjectPath(params string[] relativePath)
     {
         return Path.Combine([TestPaths.RepoRoot, .. relativePath]);
+    }
+
+    private static string EffectiveCondition(XElement element)
+    {
+        return element.Attribute("Condition")?.Value
+            ?? element.Parent?.Attribute("Condition")?.Value
+            ?? string.Empty;
     }
 
     private sealed record EvaluatedItems(string[] PackageReferences, string[] ProjectReferences);

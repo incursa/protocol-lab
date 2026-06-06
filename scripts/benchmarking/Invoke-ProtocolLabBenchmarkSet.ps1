@@ -145,6 +145,7 @@ $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $CliProject = Join-Path $RepoRoot "src\Incursa.ProtocolLab.Cli"
 $OutputRoot = if ([System.IO.Path]::IsPathRooted($Output)) { $Output } else { Join-Path $RepoRoot $Output }
 $PublicationRoot = if ([System.IO.Path]::IsPathRooted($PublicationOutputRoot)) { $PublicationOutputRoot } else { Join-Path $RepoRoot $PublicationOutputRoot }
+$BenchmarkBuildRoot = Join-Path $RepoRoot ".artifacts\build\benchmark-workflow"
 $script:TargetModeOverrideSpecified = $PSBoundParameters.ContainsKey("TargetMode")
 $script:TargetNetworkModeOverrideSpecified = $PSBoundParameters.ContainsKey("TargetNetworkMode")
 $script:TargetConfigurationOverrideSpecified = $PSBoundParameters.ContainsKey("TargetConfiguration")
@@ -260,6 +261,17 @@ function Join-FilterValues {
     return ($normalized -join ",")
 }
 
+function Format-MsBuildDirectoryProperty {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    if (-not $fullPath.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $fullPath += [System.IO.Path]::DirectorySeparatorChar
+    }
+
+    return $fullPath
+}
+
 function Add-StageResult {
     param(
         [Parameter(Mandatory = $true)][string]$Name,
@@ -360,7 +372,8 @@ function New-BenchmarkRunArguments {
     $arguments = @(
         "run",
         "--project", $CliProject,
-        "-c", $Configuration
+        "-c", $Configuration,
+        "-p:BaseOutputPath=$(Format-MsBuildDirectoryProperty (Join-Path $BenchmarkBuildRoot $RunId))"
     )
 
     if ($NoRestore) {

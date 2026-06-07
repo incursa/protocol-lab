@@ -73,6 +73,29 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\benchmarking\Invoke-
 This wrapper runs build, tests, repository check, and the benchmark suite
 catalog listed in [docs/benchmarking/suite-catalog.md](suite-catalog.md).
 
+## Run And Upload The Full Benchmark Sweep
+
+Use the sweep wrapper when you want a complete local benchmark refresh and R2
+upload in one operator command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\benchmarking\Invoke-ProtocolLabBenchmarkSweepAndPublish.ps1 `
+  -RunIdPrefix local-sweep-20260606 `
+  -IncursaQuicSourceRoot C:\shared\src\incursa\quic-dotnet `
+  -VerifyUploadedObjects
+```
+
+By default, this runs the full benchmark catalog with both `Regression` and
+`Comparison` workflow profiles, then uploads every completed run matching the
+prefix to R2. Pass `-IncludeQuick` if you also want the smallest smoke artifact
+proof. Pass `-IncludeAcceptance` only when you also want the separate v1 local
+acceptance workflow in the same publication batch. The wrapper checks R2
+credentials before benchmark execution so a missing upload credential fails
+early instead of after the benchmark sweep has completed. Use
+`-IncursaQuicSourceRoot` when validating local `quic-dotnet` runtime fixes; the
+wrapper passes that source root through to the build, test, check, and benchmark
+stages so restored Incursa QUIC packages are not used for the sweep.
+
 ## Suite Catalog
 
 See [docs/benchmarking/suite-catalog.md](suite-catalog.md) for the full list

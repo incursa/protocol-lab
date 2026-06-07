@@ -1,0 +1,169 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-LAB-PACKAGE-V1",
+  "artifact_type": "specification",
+  "title": "ProtocolLab Lab Package v1",
+  "domain": "protocol-lab",
+  "capability": "lab-package-v1",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "tags": [
+    "protocol-lab",
+    "lab",
+    "package",
+    "benchmarking",
+    "trusted-code"
+  ],
+  "related_artifacts": [
+    "SPEC-PL-RUNNER",
+    "SPEC-PL-REPORT"
+  ],
+  "purpose": "Define the trusted internal package format used to move development and prebuilt implementation binaries from a repository such as quic-dotnet into a ProtocolLab lab controller and worker.",
+  "scope": "This specification covers the .plabpkg archive extension, manifest shape, package identity, environment declarations, dependency declarations, safe extraction rules, package upload metadata, worker materialization, and ProtocolLab implementation manifest integration. It does not define sandboxing, untrusted code execution, Proxmox lifecycle automation, R2-backed package storage, or public benchmark provenance.",
+  "context": "The private lab controller schedules work across pre-provisioned workers. For development loops, a job may need to carry code that has not been committed or published as a Docker image. A .plabpkg is a ZIP-compatible trusted internal archive with a root manifest and packaged implementation manifests, binaries, and scripts.",
+  "requirements": [
+    {
+      "id": "REQ-PL-LABPKG-0001",
+      "title": "Package file identity",
+      "statement": "A ProtocolLab lab package MUST use the .plabpkg extension and MUST be a ZIP-compatible archive.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG-0002"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0002",
+      "title": "Root manifest",
+      "statement": "A ProtocolLab lab package MUST contain a root protocol-lab-package.json manifest with schemaVersion, packageId, packageVersion, kind, entryManifests, environments, and dependencies.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG-0001",
+          "REQ-PL-LABPKG-0003"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0003",
+      "title": "Stable package identity",
+      "statement": "The tuple packageId, packageVersion, and SHA-256 digest MUST identify the exact bytes uploaded to the controller and referenced by jobs.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG-0009"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0004",
+      "title": "Environment declarations",
+      "statement": "The package manifest MUST declare one or more OS and architecture compatible environments, each with an entrypoint kind, path, arguments, and workingDirectory.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0005",
+      "title": "Dependency floor",
+      "statement": "The package manifest MUST declare whether it requires pwsh, bash, .NET, or Docker beyond ordinary executable process launch support.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0006",
+      "title": "Implementation manifest entrypoints",
+      "statement": "Package entryManifests MUST point to package-relative ProtocolLab implementation manifests that the worker can expose to the runner through a generated per-attempt catalog overlay.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-RUNNER-0001",
+          "REQ-PL-RUNNER-0004"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0007",
+      "title": "Safe extraction boundary",
+      "statement": "A worker MUST reject package entries that are absolute paths, contain path traversal, or would extract outside the per-attempt package workspace.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "required"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0008",
+      "title": "Hash verification",
+      "statement": "A worker MUST verify the package SHA-256 before extraction and classify a mismatch as an Infrastructure failure.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG-0003"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0009",
+      "title": "Controller package API",
+      "statement": "The controller SHOULD provide package upload, list, metadata, and download APIs so jobs can reference stored package bytes by packageId, packageVersion, and SHA-256.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG-0010",
+      "title": "Artifact evidence",
+      "statement": "Job results and evidence artifacts SHOULD record every referenced package's packageId, packageVersion, SHA-256, and materialized workspace path.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "optional",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-RUNNER-0012",
+          "REQ-PL-RUNNER-0015"
+        ]
+      }
+    }
+  ]
+}

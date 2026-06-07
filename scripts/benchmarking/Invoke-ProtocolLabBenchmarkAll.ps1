@@ -48,6 +48,14 @@ Optional streams-per-connection override for benchmark runs.
 .PARAMETER BaseUrl
 Optional base URL override for benchmark runs.
 
+.PARAMETER IncursaQuicSourceRoot
+Optional quic-dotnet source root passed to MSBuild as IncursaQuicSourceRoot so
+ProtocolLab consumes local Incursa QUIC project references instead of packages.
+
+.PARAMETER NoRestore
+Pass --no-restore to dotnet build/test/run stages. Intended for tight
+source-reference loops after the first restore.
+
 .PARAMETER DryRun
 Print the planned commands without executing them.
 
@@ -70,6 +78,8 @@ param(
     [int]$Connections,
     [int]$StreamsPerConnection,
     [string]$BaseUrl,
+    [string]$IncursaQuicSourceRoot,
+    [switch]$NoRestore,
     [switch]$DryRun,
     [switch]$FailOnError
 )
@@ -134,6 +144,14 @@ if ($PSBoundParameters.ContainsKey("StreamsPerConnection")) {
 
 if (-not [string]::IsNullOrWhiteSpace($BaseUrl)) {
     $arguments += @("-BaseUrl", $BaseUrl)
+}
+
+if (-not [string]::IsNullOrWhiteSpace($IncursaQuicSourceRoot)) {
+    $arguments += @("-IncursaQuicSourceRoot", $IncursaQuicSourceRoot)
+}
+
+if ($NoRestore) {
+    $arguments += "-NoRestore"
 }
 
 if ($DryRun) {

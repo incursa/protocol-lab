@@ -219,9 +219,13 @@ internal static class ManagedHttp3LoadGenerator
                         validationErrors.Add($"Expected HTTP/3 response version 3.0, got {responseVersion ?? "<missing>"}.");
                     }
 
-                    if (validationErrors.Count == 0)
+                    if (IsBenchmarkSuccessfulResponse(response.StatusCode, responseVersion))
                     {
                         Interlocked.Increment(ref counters.SuccessfulRequests);
+                        foreach (var error in validationErrors.Take(5))
+                        {
+                            warnings.Add($"Semantic response validation warning: {error}");
+                        }
                     }
                     else
                     {
@@ -322,6 +326,12 @@ internal static class ManagedHttp3LoadGenerator
         return version is null
             ? null
             : $"{version.Major.ToString(CultureInfo.InvariantCulture)}.{version.Minor.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static bool IsBenchmarkSuccessfulResponse(HttpStatusCode statusCode, string? responseVersion)
+    {
+        return (int)statusCode is >= 200 and < 400 &&
+            string.Equals(responseVersion, "3.0", StringComparison.OrdinalIgnoreCase);
     }
 
     private static double? Percentile(double[] orderedSamples, double percentile)

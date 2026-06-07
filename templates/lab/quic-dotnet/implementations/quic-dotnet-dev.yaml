@@ -1,0 +1,54 @@
+id: quic-dotnet-dev
+name: QUIC.NET Development Adapter
+description: Package-carried QUIC.NET ProtocolLab adapter built from the developer working tree.
+image: ""
+targetKind: process
+targetContract: adapter-v1
+executable: pwsh
+project: ""
+workingDirectory: .
+dockerfile: ""
+buildContext: ""
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: http://127.0.0.1:53381
+baseUrl: http://127.0.0.1:53381
+adapterControlPlaneBaseUrl: http://127.0.0.1:53381
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - quic
+  - h3
+supportedWorkloadFamilies:
+  - quic.transport
+  - http.application
+ports:
+  - name: control-plane
+    containerPort: 53381
+    hostPort: 53381
+    protocol: tcp
+environment:
+  ASPNETCORE_URLS: http://127.0.0.1:53381
+dockerEnvironment: {}
+commandArguments:
+  - -NoLogo
+  - -NoProfile
+  - -File
+  - scripts/run-current-platform.ps1
+readinessCheck:
+  type: http
+  url: /protocol-lab/adapter/v1/health
+  timeoutSeconds: 10
+shutdownBehavior: process-exit
+capabilities:
+  - adapter-control-plane
+  - quic.server
+  - http3.server
+artifactExports:
+  - server.stdout.txt
+  - server.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Trusted lab package execution only.

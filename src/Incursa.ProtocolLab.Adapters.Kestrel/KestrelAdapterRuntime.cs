@@ -30,7 +30,7 @@ public sealed record KestrelAdapterOptions
 
     public string ImplementationId { get; init; } = "kestrel-http3";
 
-    public string ImplementationName { get; init; } = "Kestrel HTTP/3 Baseline";
+    public string ImplementationName { get; init; } = "Kestrel HTTP/3";
 
     public string ImplementationVersion { get; init; } = "1.0.0";
 

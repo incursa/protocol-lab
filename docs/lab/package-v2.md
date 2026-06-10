@@ -35,6 +35,34 @@ Entry manifest layout is part of the contract:
 `load-runner`, load-tool package kinds, and `providedLoadTools` are legacy
 draft names and are not valid package v2 semantics.
 
+## Local Package Validation
+
+Validate a package source directory or `.plabpkg` archive with the public CLI:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package <package-root-or-plabpkg>
+```
+
+The command validates the root manifest against
+`schemas/package/v2/package.schema.json`, checks entry-manifest paths and
+existence, validates `test-executor` entry manifests against
+`schemas/test-executor/v1/manifest.schema.json`, validates scenario entries
+against `schemas/scenario.schema.json`, and checks that entry manifest IDs
+match the package `provided*` metadata.
+
+Neutral examples live under `fixtures/public-contracts/packages/`:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-test-executor
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-adapter-implementation
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-scenario-pack
+```
+
+The implementation fixture proves package v2 metadata and entry layout only.
+Adapter v1 lifecycle behavior is proven by running
+`conformance adapter --base-url <adapter-control-plane-url>` against the live
+adapter control plane.
+
 ## IDs And Catalog Entries
 
 Package IDs, implementation IDs, test-executor IDs, scenario IDs, suite IDs,

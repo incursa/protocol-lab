@@ -1,0 +1,35 @@
+executorIdentity:
+  id: neutral-test-executor
+  name: Neutral Test Executor Fixture
+  version: 0.0.0-fixture
+versionCompatibility:
+  contractVersion: test-executor-v1
+  compatibleContractVersions:
+    - test-executor-v1
+claimedCapabilities:
+  - id: fixture.public.echo
+    status: supported
+supportedTestSelectors:
+  - selectorType: test-id
+    expression: fixture.public.echo
+supportedScenarioSelectors:
+  - selectorType: scenario-id
+    expression: fixture.public.h3-echo
+supportedProtocolFamilies:
+  - h3
+supportedExecutionModes:
+  - process
+requiredTargetEndpointBindings:
+  - bindingId: primary
+    purpose: test-endpoint
+    endpointType: h3
+    protocols:
+      - h3
+supportedArtifactTypes:
+  - type: log
+    producedByStates:
+      - stopped
+metricsAvailability:
+  available: true
+  availableKinds:
+    - session

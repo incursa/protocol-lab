@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "neutral-test-executor",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "test-executor",
+  "displayName": "Neutral Test Executor Fixture",
+  "entryManifests": [
+    "test-executors/neutral-test-executor.yaml"
+  ],
+  "providedTestExecutors": [
+    {
+      "testExecutorId": "neutral-test-executor",
+      "displayName": "Neutral Test Executor Fixture",
+      "protocols": [
+        "h3"
+      ],
+      "scenarios": [
+        "fixture.public.h3-echo"
+      ],
+      "tests": [
+        "fixture.public.echo"
+      ],
+      "requiredCapabilities": []
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/neutral-test-executor-placeholder",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": false,
+    "requiresGo": false,
+    "requiredCapabilities": []
+  }
+}

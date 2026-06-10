@@ -85,6 +85,27 @@ outside this public contract repository.
 
 ## Run Validation
 
+Validate package v2 metadata before handing a component package to any lab:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package <package-root-or-plabpkg>
+```
+
+Validate a live Adapter v1 control plane:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance adapter --base-url <adapter-control-plane-url> --scenario-id <supported-scenario-id> --scenario-version 1.0 --protocol <protocol-id>
+```
+
+Validate a live Test Executor v1 control plane:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance test-executor --base-url <test-executor-control-plane-url> --test-id <supported-test-id> --scenario-id <supported-scenario-id> --scenario-version 1.0 --protocol <protocol-id>
+```
+
+These conformance commands use only public schemas, public contract models, and
+local HTTP calls. They do not require `protocol-lab-internal`.
+
 Validate a submitted implementation target and scenario with the CLI:
 
 ```powershell

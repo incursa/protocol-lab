@@ -45,6 +45,18 @@ outcomes without collapsing them into one generic error class.
 
 ## Local verification
 
+Run the public CLI probe against a live Adapter v1 control plane:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance adapter --base-url <adapter-control-plane-url> --scenario-id <supported-scenario-id> --scenario-version 1.0 --protocol <protocol-id>
+```
+
+The command calls health, manifest, session creation, prepare, start, status,
+endpoint discovery, metrics, artifacts, stop, delete, invalid-transition, and
+delete-idempotency behavior using only public Adapter v1 schemas and models.
+It does not start or depend on a production adapter implementation in this
+repository.
+
 Run the conformance tests directly:
 
 ```powershell
@@ -56,4 +68,3 @@ Run the schema checks directly:
 ```powershell
 dotnet test Incursa.ProtocolLab.sln --no-build --filter FullyQualifiedName~AdapterSchemaValidatorTests
 ```
-

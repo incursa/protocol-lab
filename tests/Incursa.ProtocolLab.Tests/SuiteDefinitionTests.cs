@@ -58,6 +58,27 @@ public sealed class SuiteDefinitionTests
     }
 
     [Fact]
+    public void Parses_h3_large_body_package_backed_suite()
+    {
+        var suite = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "h3-large-body-v1.yaml"));
+
+        Assert.Equal("h3-large-body-v1", suite.Id);
+        Assert.Equal("h3", suite.Protocol);
+        Assert.Equal("smoke", suite.LoadProfileId);
+        Assert.Equal("process", suite.TargetMode);
+        Assert.Empty(suite.Implementations);
+        Assert.Equal(["http.payload.bytes.64kb", "http.payload.bytes.1mb"], suite.Scenarios);
+        Assert.Contains(suite.LoadTools, tool => tool.Id == "managed-httpclient-h3-load" && tool.Mode == "managed" && tool.Category == "managed-lab");
+        Assert.Equal(5, suite.Defaults.DurationSeconds);
+        Assert.Equal(1, suite.Defaults.WarmupSeconds);
+        Assert.Equal(1, suite.Defaults.Repetitions);
+        Assert.Equal(1, suite.Defaults.Connections);
+        Assert.Equal(1, suite.Defaults.StreamsPerConnection);
+        Assert.Contains("Package-backed", suite.Notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("not public benchmark claims", suite.Notes, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Parses_quic_transport_v1_comparison_suite_with_raw_quic_targets()
     {
         var suite = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "quic-transport-v1-comparison.yaml"));

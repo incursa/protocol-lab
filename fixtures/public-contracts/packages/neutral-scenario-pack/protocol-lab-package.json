@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "neutral-scenario-pack",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "scenario-pack",
+  "displayName": "Neutral Scenario Pack Fixture",
+  "entryManifests": [
+    "scenarios/fixture/public-h3-echo.yaml",
+    "suites/fixture-public-h3.yaml"
+  ],
+  "providedScenarios": [
+    {
+      "scenarioId": "fixture.public.h3-echo",
+      "displayName": "Neutral Public H3 Echo",
+      "protocols": [
+        "h3"
+      ]
+    }
+  ],
+  "providedSuites": [
+    {
+      "suiteId": "fixture-public-h3",
+      "displayName": "Neutral Public H3 Suite",
+      "protocols": [
+        "h3"
+      ],
+      "testExecutors": [
+        "neutral-test-executor"
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "bash",
+        "path": "scripts/noop.sh",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": true,
+    "requiresGo": false,
+    "requiredCapabilities": []
+  }
+}

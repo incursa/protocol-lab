@@ -1,0 +1,25 @@
+id: fixture-public-h3
+name: Neutral Public H3 Suite
+description: Neutral suite fixture for package v2 validation.
+targetMode: external
+targetNetworkMode: published-port
+implementations:
+  - neutral-adapter-implementation
+unsupportedImplementations: []
+scenarios:
+  - fixture.public.h3-echo
+protocol: h3
+loadTools:
+  - id: neutral-test-executor
+    mode: process
+    category: test-executor
+defaults:
+  durationSeconds: 1
+  warmupSeconds: 0
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: Fixture metadata only; it is not a benchmark evidence suite.

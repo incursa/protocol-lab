@@ -51,6 +51,16 @@ the package/catalog metadata that schedulers consume.
 
 ## Local verification
 
+Run the public CLI probe against a live Test Executor v1 control plane:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance test-executor --base-url <test-executor-control-plane-url> --test-id <supported-test-id> --scenario-id <supported-scenario-id> --scenario-version 1.0 --protocol <protocol-id>
+```
+
+The command calls health, manifest, session creation, session lookup, prepare,
+start, status, metrics, artifacts, stop, and delete behavior using only public
+Test Executor v1 schemas and models.
+
 Run the conformance tests directly:
 
 ```powershell

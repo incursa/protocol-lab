@@ -34,6 +34,7 @@ here as if they were public contracts.
 - [Architecture](architecture.md) - foundational architecture summary and public contract boundaries
 - [Adapter Contract v1](architecture/adapter-contract-v1.md) - full control plane API specification
 - [Package v2](lab/package-v2.md) - schema-backed component package contract
+- [Public Contract Fixtures](../fixtures/public-contracts/README.md) - neutral package examples for local conformance validation
 
 ## Reports
 

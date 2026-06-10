@@ -8,8 +8,8 @@ future public repository.
 ## Summary
 
 - The staged public seed restores, builds, and tests successfully.
-- The Incursa HTTP/3 adapter is now repo-owned and no longer depends on an
-  external sample-path shape.
+- The public repository is the contract home for schemas, package tooling, and
+  neutral conformance fixtures; production adapters remain outside this repo.
 - The export contains no unresolved warning-classified files.
 - The export contains no accepted warnings.
 - `workbench validate --profile core` passes in the source repository; the
@@ -81,10 +81,9 @@ workbench validate --profile core
 - Skipped: `0`
 - Total: `255`
 - Notes:
-  - The Incursa HTTP/3 adapter conformance suite now observes both the control
-    plane and the protocol endpoint.
-  - `tests/Incursa.ProtocolLab.Tests/IncursaHttp3AdapterConformanceTests.cs`
-    passes against the repo-owned adapter project.
+  - Adapter v1, Test Executor v1, and package v2 contract tests prove the
+    public schema and conformance surfaces without a production adapter
+    implementation in this repository.
 
 ### Targeted guardrail rerun
 
@@ -159,7 +158,7 @@ Validation note:
 
 `ready for clean repo creation`
 
-The staged public seed is buildable, tested, and no longer depends on an
-external sample-path shape. The remaining cleanup is non-blocking wording
-alignment in broader planning docs outside the Incursa HTTP/3 adapter surface.
+The staged public seed is buildable, tested, and contract-first. The remaining
+cleanup is non-blocking wording alignment in broader planning docs outside the
+public contract surface.
 

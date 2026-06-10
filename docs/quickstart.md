@@ -42,6 +42,28 @@ It is a local diagnostic command, not hosted-lab readiness.
 
 ## 5. Validate Public Contracts
 
+Run the public conformance command against the neutral package fixtures:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-test-executor
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-adapter-implementation
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-scenario-pack
+```
+
+Validate your own package root directory or `.plabpkg` archive the same way:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package <package-root-or-plabpkg>
+```
+
+Then start your adapter or test-executor control plane locally and run the
+behavioral conformance probe against its HTTP base URL:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance adapter --base-url <adapter-control-plane-url> --scenario-id <supported-scenario-id> --scenario-version 1.0 --protocol <protocol-id>
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance test-executor --base-url <test-executor-control-plane-url> --test-id <supported-test-id> --scenario-id <supported-scenario-id> --scenario-version 1.0 --protocol <protocol-id>
+```
+
 Run the focused public contract tests:
 
 ```powershell

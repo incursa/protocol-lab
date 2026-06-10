@@ -1,0 +1,36 @@
+schemaVersion: "1.0"
+id: fixture.public.h3-echo
+title: Neutral Public H3 Echo
+description: Neutral scenario fixture for public package and conformance documentation.
+status: draft
+kind: workload
+layer: application
+protocol: h3
+version: "1.0"
+roles:
+  - server
+requires:
+  capabilities:
+    - fixture.public.echo
+  protocols:
+    - h3
+  roles:
+    - server
+trafficShape: requestResponse
+endpoint:
+  method: GET
+  path: /
+validation:
+  required: true
+  checks:
+    - response-status
+  http:
+    expectedStatus: 200
+    expectedProtocol: h3
+artifacts:
+  required:
+    - log
+  optional: []
+tags:
+  - fixture
+  - public-contract

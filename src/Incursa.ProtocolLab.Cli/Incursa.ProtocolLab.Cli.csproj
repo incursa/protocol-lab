@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\Incursa.ProtocolLab.Adapter.Conformance\Incursa.ProtocolLab.Adapter.Conformance.csproj" />
     <ProjectReference Include="..\Incursa.ProtocolLab.Runner\Incursa.ProtocolLab.Runner.csproj" />
   </ItemGroup>
 

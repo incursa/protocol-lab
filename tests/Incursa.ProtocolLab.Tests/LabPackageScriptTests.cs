@@ -74,6 +74,30 @@ public sealed class LabPackageScriptTests
     }
 
     [Fact]
+    public void H3_component_package_builder_emits_large_body_managed_executor_and_scenario_pack()
+    {
+        var script = Read("scripts", "lab", "New-ProtocolLabH3ComponentPackages.ps1");
+
+        Assert.Contains("protocol-lab-managed-h3-test-executor", script);
+        Assert.Contains("protocol-lab-h3-large-body-scenarios", script);
+        Assert.Contains("kind = \"test-executor\"", script);
+        Assert.Contains("kind = \"scenario-pack\"", script);
+        Assert.Contains("test-executors/managed-httpclient-h3-load.yaml", script);
+        Assert.Contains("Test Executor Contract v1 manifest", script);
+        Assert.Contains("availabilityCheck: managed", script);
+        Assert.Contains("managed-httpclient-h3-json", script);
+        Assert.Contains("h3-large-body-v1", script);
+        Assert.Contains("suites/$SelectedSuiteId.yaml", script);
+        Assert.Contains("http.payload.bytes.64kb", script);
+        Assert.Contains("http.payload.bytes.1mb", script);
+        Assert.Contains("H3 component package builder only supports explicit large-body scenarios", script);
+        Assert.Contains("requiresBash = $false", script);
+        Assert.DoesNotContain("quic.transport.multiplex.100x64kb", script);
+        Assert.DoesNotContain("quic-go-raw-load", script);
+        Assert.DoesNotContain("http.upload.hash.1mb", script);
+    }
+
+    [Fact]
     public void Public_v2_package_spec_defines_component_runtime_boundary()
     {
         var spec = Read("specs", "requirements", "protocol-lab", "SPEC-PL-LAB-PACKAGE-V2.json");

@@ -37,7 +37,7 @@ public sealed class ArchitectureGuardrailTests
         var runnerReferences = ProjectReferences("src", "Incursa.ProtocolLab.Runner", "Incursa.ProtocolLab.Runner.csproj");
         var modelReferences = ProjectReferences("src", "Incursa.ProtocolLab.Model", "Incursa.ProtocolLab.Model.csproj");
 
-        Assert.Equal(["Incursa.ProtocolLab.Runner.csproj"], cliReferences);
+        Assert.Equal(["Incursa.ProtocolLab.Adapter.Conformance.csproj", "Incursa.ProtocolLab.Runner.csproj"], cliReferences);
         Assert.Equal(["Incursa.ProtocolLab.Adapter.Contracts.csproj", "Incursa.ProtocolLab.Model.csproj"], runnerReferences);
         Assert.Empty(modelReferences);
     }
@@ -225,6 +225,7 @@ public sealed class ArchitectureGuardrailTests
             ProjectPath("docs", "runner", "fixture-lab.md"),
             ProjectPath("docs", "spec", "raw-quic-load-generator-contract.md"),
             ProjectPath("docs", "protocol-lab", "vision.md"),
+            ProjectPath("docs", "protocol-lab", "public-seed-readiness.md"),
             ProjectPath("docs", "protocol-lab", "public-repo-readiness.md")
         };
         var removedWorkflowMarkers = new[]

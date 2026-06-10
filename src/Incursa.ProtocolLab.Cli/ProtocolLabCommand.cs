@@ -19,6 +19,11 @@ internal static class ProtocolLabCommand
         var commandArgs = args.Skip(1).ToArray();
         var options = CliOptions.Parse(commandArgs).ToRunnerOptions();
         var root = options.Get("root") ?? Directory.GetCurrentDirectory();
+        if (command == "conformance")
+        {
+            return await ConformanceCommand.RunAsync(commandArgs, root);
+        }
+
         var runner = new RunnerEngine();
         IRunnerEventSink? liveEventSink = command == "run" ? new ConsoleRunnerEventSink() : null;
 
@@ -69,6 +74,9 @@ internal static class ProtocolLabCommand
           list network-profiles [--root <path>]
           list load-tools [--root <path>]
           check [--root <path>]
+          conformance package --package <path> [--root <path>]
+          conformance adapter --base-url <url> [--scenario-id <id>] [--scenario-version <version>] [--role <role>] [--protocol <id>] [--endpoint-type <type>] [--artifact-type <type>] [--timeout-seconds <seconds>]
+          conformance test-executor --base-url <url> [--test-id <id>] [--scenario-id <id>] [--scenario-version <version>] [--protocol <id>] [--target-scheme <scheme>] [--target-host <host>] [--target-port <port>] [--target-path <path>] [--timeout-seconds <seconds>] [--require-metrics] [--require-artifacts]
           validate --implementations <ids> --scenarios <ids> [--base-url <url>] [--protocol <id>] [--run-id <id>] [--execution-profile <id>] [--target-mode process|docker|external] [--target-network-mode published-port|shared-docker-network] [--target-configuration <Debug|Release>] [--network-profile <id>]
           run --implementations <ids> --scenarios <ids> [--base-url <url>] [--run-id <id>] [--execution-profile <id>] [--target-mode process|docker|external] [--target-network-mode published-port|shared-docker-network] [--target-configuration <Debug|Release>] [--target-docker-build] [--target-docker-image <image>] [--load-profile <id>] [--test-executor h2load|oha|managed-httpclient-h3-load] [--test-executor-mode process|docker|managed] [--disable-load-tool-qlog] [--capture-load-tool-metrics] [--load-tool-metrics-interval <seconds>] [--capture-target-container-metrics] [--target-container-metrics-interval <seconds>] [--network-profile <id>] [--output <path>] [--publication-output <path>]
           report --run-id <id> [--output <path>]

@@ -148,7 +148,7 @@ public sealed class HttpValidationModelTests
             HttpStatusCode.OK,
             "text/plain",
             "Hello, World!"u8.ToArray(),
-            ["Loopback certificate validation bypass was used for managed QUIC HTTP/3 proof."]);
+            ["Loopback certificate validation bypass was used for managed System.Net.Http HTTP/3 proof."]);
 
         var result = ProtocolProofValidator.BuildManagedProofValidationResult(
             cell,
@@ -160,8 +160,8 @@ public sealed class HttpValidationModelTests
             certificateBypassUsed: true);
 
         Assert.Equal(ValidationStatus.Passed, result.Status);
-        Assert.Equal("managed-quic-http3-exact", result.ProtocolProof!.Method);
-        Assert.Equal("managed-incursa-quic-http3", result.ProtocolProof.ProofClient);
+        Assert.Equal("managed-system-net-http3-exact", result.ProtocolProof!.Method);
+        Assert.Equal("system-net-httpclient", result.ProtocolProof.ProofClient);
         Assert.Equal("h3", result.ProtocolProof.ProvenProtocol);
         Assert.Equal("3.0", result.ProtocolProof.ResponseVersion);
         Assert.Contains("loopback-certificate-validation-bypass", result.ProtocolProof.CertificateMode);

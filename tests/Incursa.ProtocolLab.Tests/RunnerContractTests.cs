@@ -62,7 +62,7 @@ public sealed class RunnerContractTests
             ["protocol"] = "h1",
             ["output"] = output,
             ["run-id"] = "artifact-references",
-            ["load-tool"] = "definitely-missing-protocol-lab-tool"
+            ["test-executor"] = "definitely-missing-protocol-lab-tool"
         });
 
         try

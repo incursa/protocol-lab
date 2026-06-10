@@ -1,0 +1,352 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/package/v2/package.schema.json",
+  "title": "ProtocolLab Component Package v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "packageId",
+    "packageVersion",
+    "kind",
+    "entryManifests",
+    "environments",
+    "dependencies"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "protocol-lab-package-v2"
+    },
+    "packageId": {
+      "$ref": "#/$defs/token"
+    },
+    "packageVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["implementation", "test-executor", "scenario-pack", "toolchain"]
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "entryManifests": {
+      "$ref": "#/$defs/pathArray"
+    },
+    "providedImplementations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/providedImplementation" }
+    },
+    "providedTestExecutors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/providedTestExecutor" }
+    },
+    "providedScenarios": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/providedScenario" }
+    },
+    "providedSuites": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/providedSuite" }
+    },
+    "environments": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/environment" }
+    },
+    "dependencies": {
+      "$ref": "#/$defs/dependencies"
+    }
+  },
+  "oneOf": [
+    {
+      "required": ["kind", "entryManifests", "providedImplementations"],
+      "properties": {
+        "kind": {
+          "enum": ["implementation"]
+        },
+        "entryManifests": {
+          "minItems": 1,
+          "items": {
+            "allOf": [
+              { "$ref": "#/$defs/packageRelativePath" },
+              { "pattern": "^implementations/" }
+            ]
+          }
+        },
+        "providedImplementations": {
+          "minItems": 1
+        }
+      }
+    },
+    {
+      "required": ["kind", "entryManifests", "providedTestExecutors"],
+      "properties": {
+        "kind": {
+          "enum": ["test-executor"]
+        },
+        "entryManifests": {
+          "minItems": 1,
+          "items": {
+            "allOf": [
+              { "$ref": "#/$defs/packageRelativePath" },
+              { "pattern": "^test-executors/" }
+            ]
+          }
+        },
+        "providedTestExecutors": {
+          "minItems": 1
+        }
+      }
+    },
+    {
+      "required": ["kind", "entryManifests"],
+      "properties": {
+        "kind": {
+          "enum": ["scenario-pack"]
+        },
+        "entryManifests": {
+          "minItems": 1,
+          "items": {
+            "allOf": [
+              { "$ref": "#/$defs/packageRelativePath" },
+              { "pattern": "^(scenarios|suites)/" }
+            ]
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": ["providedScenarios"],
+          "properties": { "providedScenarios": { "minItems": 1 } }
+        },
+        {
+          "required": ["providedSuites"],
+          "properties": { "providedSuites": { "minItems": 1 } }
+        }
+      ]
+    },
+    {
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": ["toolchain"]
+        }
+      }
+    }
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "kind": { "const": "implementation" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "required": ["providedImplementations"],
+        "properties": {
+          "providedImplementations": { "minItems": 1 },
+          "entryManifests": {
+            "items": {
+              "allOf": [
+                { "$ref": "#/$defs/packageRelativePath" },
+                { "pattern": "^implementations/" }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "kind": { "const": "test-executor" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "required": ["providedTestExecutors"],
+        "properties": {
+          "providedTestExecutors": { "minItems": 1 },
+          "entryManifests": {
+            "items": {
+              "allOf": [
+                { "$ref": "#/$defs/packageRelativePath" },
+                { "pattern": "^test-executors/" }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "kind": { "const": "scenario-pack" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "anyOf": [
+          {
+            "required": ["providedScenarios"],
+            "properties": { "providedScenarios": { "minItems": 1 } }
+          },
+          {
+            "required": ["providedSuites"],
+            "properties": { "providedSuites": { "minItems": 1 } }
+          }
+        ],
+        "properties": {
+          "entryManifests": {
+            "items": {
+              "allOf": [
+                { "$ref": "#/$defs/packageRelativePath" },
+                { "pattern": "^(scenarios|suites)/" }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "kind": { "const": "toolchain" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "dependencies": {
+            "required": ["requiredCapabilities"]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "token": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "pathArray": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/packageRelativePath" }
+    },
+    "packageRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "anyOf": [
+          { "pattern": "^[A-Za-z]:" },
+          { "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:" },
+          { "pattern": "^/" },
+          { "pattern": "(^|[\\\\/])\\.\\.($|[\\\\/])" }
+        ]
+      }
+    },
+    "capabilityRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "$ref": "#/$defs/token" },
+        "value": { "type": "string" }
+      }
+    },
+    "providedImplementation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementationId", "protocols"],
+      "properties": {
+        "implementationId": { "$ref": "#/$defs/token" },
+        "displayName": { "type": "string" },
+        "protocols": { "$ref": "#/$defs/stringArray" },
+        "scenarios": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "providedTestExecutor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["testExecutorId", "protocols"],
+      "properties": {
+        "testExecutorId": { "$ref": "#/$defs/token" },
+        "displayName": { "type": "string" },
+        "protocols": { "$ref": "#/$defs/stringArray" },
+        "scenarios": { "$ref": "#/$defs/stringArray" },
+        "tests": { "$ref": "#/$defs/stringArray" },
+        "requiredCapabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/capabilityRequirement" }
+        }
+      }
+    },
+    "providedScenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenarioId", "protocols"],
+      "properties": {
+        "scenarioId": { "$ref": "#/$defs/token" },
+        "displayName": { "type": "string" },
+        "protocols": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "providedSuite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["suiteId", "protocols"],
+      "properties": {
+        "suiteId": { "$ref": "#/$defs/token" },
+        "displayName": { "type": "string" },
+        "protocols": { "$ref": "#/$defs/stringArray" },
+        "testExecutors": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "arch", "entrypoint"],
+      "properties": {
+        "os": {
+          "type": "string",
+          "enum": ["linux", "windows", "macos"]
+        },
+        "arch": {
+          "type": "string",
+          "enum": ["x64", "arm64"]
+        },
+        "entrypoint": { "$ref": "#/$defs/entrypoint" }
+      }
+    },
+    "entrypoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "path", "arguments", "workingDirectory"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["process", "bash", "pwsh"]
+        },
+        "path": { "$ref": "#/$defs/packageRelativePath" },
+        "arguments": { "$ref": "#/$defs/stringArray" },
+        "workingDirectory": { "$ref": "#/$defs/packageRelativePath" }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiresDotNet", "requiresDocker", "requiresPwsh", "requiresBash"],
+      "properties": {
+        "requiresDotNet": { "type": "boolean" },
+        "requiresDocker": { "type": "boolean" },
+        "requiresPwsh": { "type": "boolean" },
+        "requiresBash": { "type": "boolean" },
+        "requiresGo": { "type": "boolean" },
+        "requiredCapabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/capabilityRequirement" }
+        }
+      }
+    }
+  }
+}

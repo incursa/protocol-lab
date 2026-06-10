@@ -22,7 +22,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\benchmarking\Invoke-
   -RunTests `
   -RunCheck `
   -WorkflowProfile Regression `
-  -Suite ci-public-report,h3-local-v1-comparison,quic-transport-v1-comparison `
+  -Suite ci-public-report,h3-local-v1-comparison `
   -RunIdPrefix local-workflow
 ```
 
@@ -43,14 +43,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\benchmarking\Invoke-
   -RunIdPrefix local-h3-comparison
 ```
 
-To run only the raw QUIC comparison suite:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\benchmarking\Invoke-ProtocolLabBenchmarkSet.ps1 `
-  -WorkflowProfile Comparison `
-  -Suite quic-transport-v1-comparison `
-  -RunIdPrefix local-quic-comparison
-```
+Raw QUIC runs are package-backed. Build and submit an implementation package,
+the public raw QUIC test executor package, and the public raw QUIC scenario
+pack through the package v2/controller workflow rather than this runner-only
+benchmark wrapper. The enabled raw QUIC scenarios are
+`quic.transport.multiplex.100x64kb` and `quic.transport.duplex-streams`.
 
 The script keeps going when a stage fails and writes:
 
@@ -81,7 +78,6 @@ upload in one operator command:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\benchmarking\Invoke-ProtocolLabBenchmarkSweepAndPublish.ps1 `
   -RunIdPrefix local-sweep-20260606 `
-  -IncursaQuicSourceRoot C:\shared\src\incursa\quic-dotnet `
   -VerifyUploadedObjects
 ```
 
@@ -91,10 +87,7 @@ prefix to R2. Pass `-IncludeQuick` if you also want the smallest smoke artifact
 proof. Pass `-IncludeAcceptance` only when you also want the separate v1 local
 acceptance workflow in the same publication batch. The wrapper checks R2
 credentials before benchmark execution so a missing upload credential fails
-early instead of after the benchmark sweep has completed. Use
-`-IncursaQuicSourceRoot` when validating local `quic-dotnet` runtime fixes; the
-wrapper passes that source root through to the build, test, check, and benchmark
-stages so restored Incursa QUIC packages are not used for the sweep.
+early instead of after the benchmark sweep has completed.
 
 ## Suite Catalog
 

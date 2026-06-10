@@ -32,7 +32,7 @@ public sealed class TargetLifecycleTests
     public void Readiness_check_models_http_readiness_for_udp_h3_targets()
     {
         var manifest = YamlFile.Load<ImplementationManifest>(
-            Path.Combine(TestPaths.RepoRoot, "implementations", "incursa-http3.yaml"));
+            Path.Combine(TestPaths.RepoRoot, "implementations", "kestrel-http3.yaml"));
 
         Assert.Equal(ReadinessCheckTypes.Http, manifest.ReadinessCheck.Type);
         Assert.Equal("/plaintext", manifest.ReadinessCheck.Url);
@@ -88,26 +88,23 @@ public sealed class TargetLifecycleTests
     }
 
     [Fact]
-    public void Builds_incursa_docker_target_command_with_published_udp_port()
+    public void Builds_quic_go_docker_target_command_with_published_udp_port()
     {
         var manifest = YamlFile.Load<ImplementationManifest>(
-            Path.Combine(TestPaths.RepoRoot, "implementations", "incursa-http3.yaml"));
+            Path.Combine(TestPaths.RepoRoot, "implementations", "quic-go-http3.yaml"));
 
         var commandLine = TargetOrchestrator.BuildDockerRunCommandLineForTest(
             manifest,
             manifest.Image,
-            "protocol-lab-incursa-test",
+            "protocol-lab-quic-go-test",
             TargetNetworkModes.PublishedPort,
             dockerNetwork: null);
 
         Assert.Contains("docker run", commandLine);
-        Assert.Contains("--name protocol-lab-incursa-test", commandLine);
-        Assert.Contains("--publish 5444:5444/udp", commandLine);
-        Assert.DoesNotContain("--publish 5444:5444/tcp", commandLine);
-        Assert.Contains("PROTOCOL_LAB_INCURSA_MODE=endpoint", commandLine);
-        Assert.Contains("PROTOCOL_LAB_H3_PORT=5444", commandLine);
-        Assert.Contains("--mode endpoint", commandLine);
-        Assert.Contains("--port 5444", commandLine);
+        Assert.Contains("--name protocol-lab-quic-go-test", commandLine);
+        Assert.Contains("--publish 5447:8443/udp", commandLine);
+        Assert.Contains("--publish 5447:8443/tcp", commandLine);
+        Assert.Contains("PROTOCOL_LAB_IMPLEMENTATION=quic-go-http3", commandLine);
         Assert.Contains(manifest.Image, commandLine);
     }
 
@@ -252,7 +249,7 @@ public sealed class TargetLifecycleTests
     public void Generates_stable_docker_network_names_and_aliases()
     {
         Assert.Equal("protocol-lab-local-phase3c-run", TargetOrchestrator.GenerateDockerNetworkName("local phase3c/run"));
-        Assert.Equal("incursa-http3", TargetOrchestrator.GenerateNetworkAlias("Incursa_HTTP3"));
+        Assert.Equal("package-http3", TargetOrchestrator.GenerateNetworkAlias("Package_HTTP3"));
     }
 
     [Fact]

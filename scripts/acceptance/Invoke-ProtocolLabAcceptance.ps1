@@ -3,11 +3,11 @@
 Runs the ProtocolLab v1 local acceptance workflow.
 
 .DESCRIPTION
-Runs build, tests, check, Kestrel H3 validation, Incursa H3 validation,
-managed-lab H3 comparison, Docker h2load external-reference H3 comparison, and
-counter-enabled Docker h2load H3 comparison when dotnet-counters is available.
-Artifacts are written under the configured output root. The script does not
-stage files, commit changes, or alter benchmark semantics.
+Runs build, tests, check, Kestrel H3 validation, managed-lab H3 comparison,
+Docker h2load external-reference H3 comparison, and counter-enabled Docker
+h2load H3 comparison when dotnet-counters is available. Artifacts are written
+under the configured output root. The script does not stage files, commit
+changes, or alter benchmark semantics.
 
 .PARAMETER RunIdPrefix
 Prefix used for generated run IDs.
@@ -40,8 +40,8 @@ Requested streams per connection.
 Run artifact output root. Defaults to .artifacts\runs.
 
 .PARAMETER TargetMode
-Target execution mode. Defaults to process. Docker mode runs Kestrel and
-Incursa H3 Docker target paths unless Incursa is explicitly skipped.
+Target execution mode. Defaults to process. Docker mode runs public reference
+target paths.
 
 .PARAMETER TargetNetworkMode
 Docker target network mode. Defaults to published-port. shared-docker-network
@@ -49,9 +49,6 @@ uses a generated per-run Docker network for Docker h2load benchmark traffic.
 
 .PARAMETER BuildTargetImages
 Build local Docker target images before Docker target acceptance stages.
-
-.PARAMETER SkipIncursaDockerTarget
-Skip Incursa Docker target validation and benchmark stages in Docker target mode.
 
 .PARAMETER IncludeCaddy
 Include optional Caddy HTTP/3 Docker target validation and benchmark stages.
@@ -105,7 +102,6 @@ param(
     [ValidateSet("published-port", "shared-docker-network")]
     [string]$TargetNetworkMode = "published-port",
     [switch]$BuildTargetImages,
-    [switch]$SkipIncursaDockerTarget,
     [switch]$IncludeCaddy,
     [switch]$IncludeNginx,
     [string]$TargetCpus,
@@ -126,11 +122,9 @@ $OutputRoot = if ([System.IO.Path]::IsPathRooted($Output)) { $Output } else { Jo
 $IndexScript = Join-Path $RepoRoot "scripts\analysis\New-ProtocolLabRunIndex.ps1"
 $H2LoadImage = "incursa/protocol-lab-h2load-http3:local"
 $KestrelTargetImage = "incursa/protocol-lab-kestrel-bench-server:local"
-$IncursaTargetImage = "incursa/protocol-lab-incursa-http3-bench-server:local"
 $CaddyTargetImage = "incursa/protocol-lab-caddy-bench-server:local"
 $NginxTargetImage = "incursa/protocol-lab-nginx-bench-server:local"
 $KestrelTargetImageScript = Join-Path $RepoRoot "scripts\build\Build-KestrelBenchServerImage.ps1"
-$IncursaTargetImageScript = Join-Path $RepoRoot "scripts\build\Build-IncursaHttp3BenchServerImage.ps1"
 $CaddyTargetImageScript = Join-Path $RepoRoot "scripts\build\Build-CaddyBenchServerImage.ps1"
 $NginxTargetImageScript = Join-Path $RepoRoot "scripts\build\Build-NginxBenchServerImage.ps1"
 $RunIds = New-Object System.Collections.Generic.List[string]
@@ -181,25 +175,6 @@ function Test-DotnetCountersAvailable {
     return $LASTEXITCODE -eq 0
 }
 
-function Get-IncursaProjectPath {
-    $manifest = Join-Path $RepoRoot "implementations\incursa-http3.yaml"
-    if (-not (Test-Path -LiteralPath $manifest)) {
-        throw "Incursa manifest not found: $manifest"
-    }
-
-    $projectLine = Select-String -LiteralPath $manifest -Pattern "^\s*project:\s*(.+?)\s*$" | Select-Object -First 1
-    if (-not $projectLine) {
-        throw "Incursa manifest does not declare a project path: $manifest"
-    }
-
-    $project = $projectLine.Matches[0].Groups[1].Value.Trim().Trim('"').Trim("'")
-    if ([System.IO.Path]::IsPathRooted($project)) {
-        return $project
-    }
-
-    return Join-Path $RepoRoot $project
-}
-
 Set-Location $RepoRoot
 New-Item -ItemType Directory -Force $OutputRoot | Out-Null
 
@@ -237,14 +212,6 @@ if ($TargetMode -eq "docker") {
 
         Invoke-Stage -Name "Build Kestrel Docker target image" -FilePath "powershell" -Arguments @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $KestrelTargetImageScript) -RunId $null
 
-        if (-not $SkipIncursaDockerTarget) {
-            if (-not (Test-Path -LiteralPath $IncursaTargetImageScript)) {
-                throw "Incursa target image build script not found: $IncursaTargetImageScript"
-            }
-
-            Invoke-Stage -Name "Build Incursa HTTP/3 Docker target image" -FilePath "powershell" -Arguments @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $IncursaTargetImageScript) -RunId $null
-        }
-
         if ($IncludeCaddy) {
             if (-not (Test-Path -LiteralPath $CaddyTargetImageScript)) {
                 throw "Caddy target image build script not found: $CaddyTargetImageScript"
@@ -267,15 +234,6 @@ if ($TargetMode -eq "docker") {
     & docker image inspect $KestrelTargetImage *> $null
     if ($LASTEXITCODE -ne 0) {
         throw "Kestrel Docker target image '$KestrelTargetImage' is required for Docker target acceptance. Run scripts\bootstrap\Initialize-ProtocolLab.ps1 -BuildTargetImages, or rerun acceptance with -TargetMode process."
-    }
-
-    if (-not $SkipIncursaDockerTarget) {
-        Write-Stage "Checking required Incursa Docker target image"
-        Write-Host "docker image inspect $IncursaTargetImage"
-        & docker image inspect $IncursaTargetImage *> $null
-        if ($LASTEXITCODE -ne 0) {
-            throw "Incursa Docker target image '$IncursaTargetImage' is required for Docker target acceptance. Run scripts\build\Build-IncursaHttp3BenchServerImage.ps1, rerun with -BuildTargetImages, or use -SkipIncursaDockerTarget."
-        }
     }
 
     if ($IncludeCaddy) {
@@ -313,34 +271,7 @@ Invoke-Stage -Name "Kestrel H3 validation" -FilePath "dotnet" -Arguments (@(
     "--run-id", $kestrelValidationRunId
 )) -RunId $kestrelValidationRunId
 
-if ($TargetMode -eq "docker" -and $SkipIncursaDockerTarget) {
-    $StageResults.Add([pscustomobject]@{
-        Name = "Incursa H3 validation"
-        Status = "skipped"
-        ExitCode = $null
-        ArtifactPath = "Incursa Docker target explicitly skipped; process target remains available."
-    }) | Out-Null
-    $implementationSet = "kestrel-http3"
-}
-else {
-    $incursaValidationRunId = "$RunIdPrefix-incursa-h3-validation"
-    $incursaProject = Get-IncursaProjectPath
-    if (-not (Test-Path -LiteralPath $incursaProject)) {
-        throw "Incursa HTTP/3 endpoint project is required for v1 acceptance but was not found: $incursaProject. Update implementations\incursa-http3.yaml if the manifest path is wrong."
-    }
-
-    Invoke-Stage -Name "Incursa H3 validation" -FilePath "dotnet" -Arguments (@(
-        "run", "--project", "src\Incursa.ProtocolLab.Cli", "--",
-        "validate",
-        "--implementations", "incursa-http3",
-        "--scenarios", "http.core.plaintext,http.core.json",
-        "--protocol", "h3"
-    ) + $TargetArgs + $ResourceArgs + @(
-        "--output", $OutputRoot,
-        "--run-id", $incursaValidationRunId
-    )) -RunId $incursaValidationRunId
-    $implementationSet = "kestrel-http3,incursa-http3"
-}
+$implementationSet = "kestrel-http3"
 
 if ($IncludeCaddy) {
     $caddyValidationRunId = "$RunIdPrefix-caddy-h3-validation"

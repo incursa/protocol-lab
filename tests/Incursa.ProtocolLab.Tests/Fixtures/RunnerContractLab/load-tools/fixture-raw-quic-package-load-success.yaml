@@ -1,0 +1,37 @@
+id: fixture-raw-quic-package-load-success
+name: Fixture Raw QUIC Package Load Success
+description: Package-shaped raw QUIC load tool that runs from a materialized package-local working directory.
+kind: process
+category: managed-lab
+supportedProtocols:
+  - quic
+supportedScenarioFamilies:
+  - quic.transport
+executable: powershell
+workingDirectory: tests/Incursa.ProtocolLab.Tests/Fixtures/RunnerContractLab
+dockerImage: ""
+dockerCommand: ""
+dockerArguments: []
+dockerEnvironment: {}
+dockerAutoPull: false
+dockerHostRewrite: ""
+sni: localhost
+defaultArguments:
+  - -NoProfile
+  - -ExecutionPolicy
+  - Bypass
+  - -File
+  - scripts/fixture-load-tool.ps1
+  - -Mode
+  - rawquic-success
+versionCommand:
+  - -NoProfile
+  - -ExecutionPolicy
+  - Bypass
+  - -File
+  - scripts/fixture-load-tool.ps1
+  - -Mode
+  - version
+availabilityCheck: path
+outputParserId: raw-quic-json
+notes: Fixture-only package-backed raw QUIC load proof for runner contract tests. Does not perform real QUIC traffic.

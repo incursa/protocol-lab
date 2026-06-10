@@ -1,17 +1,25 @@
 # Raw QUIC Foundation
 
-The raw QUIC foundation provides the scenario shapes, adapter endpoint metadata,
-fixture proofs, and load-tool scaffolding needed before real raw QUIC adapters
-and load generators are implemented.
+The raw QUIC foundation provides scenario shapes, adapter endpoint metadata,
+fixture proofs, reference package/test-executor contracts, and the local
+load-tool shape used for current runner fixture workflows.
 
 ## Current State
 
-- Fixture-only: all raw QUIC scenarios are proven through deterministic fixture
-  adapter endpoints and fixture load tools.
-- No real QUIC traffic is generated or validated.
-- No Incursa or MSQuic raw QUIC adapter exists yet.
+- Fixture-only scenarios remain under the runner contract fixture lab.
+- Production raw QUIC implementations are expected to arrive as
+  implementation packages from producer repositories.
+- `quic-go-raw-load` is the reference raw QUIC test executor used by public
+  component package fixtures. The local runner still has a load-tool catalog
+  entry for fixture execution.
+- Catalog raw QUIC execution is enabled only for:
+  - `quic.transport.multiplex.100x64kb`
+  - `quic.transport.duplex-streams`
+- `quic.transport.handshake-cold`, `quic.transport.stream-throughput.1mb`,
+  and `quic.transport.connection-churn` remain explicitly unsupported until
+  scenario-specific validation gates are added.
 - The runner accepts QUIC endpoints from adapters without adding QUIC packet
-  logic.
+  logic or binding to a concrete QUIC implementation.
 
 ## Scenario Shapes
 
@@ -111,14 +119,31 @@ The `Extensions` bag carries additional QUIC-specific metadata:
 | `zeroRttSupported` | `bool` | Optional 0-RTT support flag |
 | `transport` | `string` | Transport protocol (e.g. `"udp"`) |
 
+## Validation Gates
+
+For enabled catalog raw QUIC scenarios, the runner first validates adapter
+endpoint metadata, then runs the selected load tool, parses raw QUIC JSON, and
+updates the validation result from load-tool evidence. Benchmark metrics are
+accepted only when all gates pass:
+
+- bytes sent and bytes received satisfy the scenario's expected byte shape
+- completed streams satisfy the expected stream shape
+- failed request count is zero
+- timeout request count is zero
+- raw load-tool stdout and stderr are preserved
+
+If parsing fails or any gate fails, the cell is classified as failed and parsed
+metrics are not accepted in `result.json`; the raw stdout/stderr artifacts are
+still retained for diagnosis.
+
 ## Current Limitations
 
-- No real QUIC traffic is generated or validated.
-- No Incursa or MSQuic raw QUIC adapter exists.
-- Raw QUIC load tools are fixture-only (deterministic, no actual QUIC packets).
-- QUIC scenario validation is fixture-only (returns "passed" for any QUIC
-  endpoint from a ready adapter session).
-- No qlog, SSL key log, or packet capture support.
+- Only multiplex and duplex catalog raw QUIC scenarios are enabled.
+- Fixture lab raw QUIC load tools are deterministic test fixtures and do not
+  generate real QUIC packets.
+- qlog, SSL key log, and packet capture support are not available for raw QUIC
+  cells; results record missing qlog evidence honestly.
 - Datagram and 0-RTT support is declared in metadata but not exercised.
 - No Docker packaging for raw QUIC targets.
-- Raw QUIC benchmarking claims are not implemented.
+- Raw QUIC comparison evidence remains local-lab evidence, not publishable
+  benchmark claims.

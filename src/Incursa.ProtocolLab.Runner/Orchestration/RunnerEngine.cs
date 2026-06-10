@@ -160,14 +160,11 @@ public sealed class RunnerEngine
 
         output.WriteLine();
         WriteManifestStatus(root, "Kestrel manifest", "implementations", "kestrel-http3.yaml", warnings, output);
-        WriteManifestStatus(root, "Incursa manifest", "implementations", "incursa-http3.yaml", warnings, output);
         WriteManifestStatus(root, "Caddy manifest", "implementations", "caddy-http3.yaml", warnings, output);
         WriteManifestStatus(root, "nginx manifest", "implementations", "nginx-http3.yaml", warnings, output);
         await WriteDockerTargetImageStatusAsync(root, "Kestrel Docker target image", "implementations", "kestrel-http3.yaml", "scripts\\build\\Build-KestrelBenchServerImage.ps1", warnings, output);
-        await WriteDockerTargetImageStatusAsync(root, "Incursa Docker target image", "implementations", "incursa-http3.yaml", "scripts\\build\\Build-IncursaHttp3BenchServerImage.ps1", warnings, output);
         await WriteDockerTargetImageStatusAsync(root, "Caddy Docker target image", "implementations", "caddy-http3.yaml", "scripts\\build\\Build-CaddyBenchServerImage.ps1", warnings, output);
         await WriteDockerTargetImageStatusAsync(root, "nginx Docker target image", "implementations", "nginx-http3.yaml", "scripts\\build\\Build-NginxBenchServerImage.ps1", warnings, output);
-        WriteIncursaProjectStatus(root, warnings, output);
         WriteAdapterBackedManifestStatus(root, warnings, output);
 
         output.WriteLine();
@@ -190,11 +187,11 @@ public sealed class RunnerEngine
         output.WriteLine();
         output.WriteLine("Next commands:");
         output.WriteLine("  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\bootstrap\\Initialize-ProtocolLab.ps1 -BuildH2LoadImage");
-        output.WriteLine("  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\bootstrap\\Initialize-ProtocolLab.ps1 -BuildTargetImages -BuildIncursaTargetImage -SkipCheck");
+        output.WriteLine("  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\bootstrap\\Initialize-ProtocolLab.ps1 -BuildTargetImages -SkipCheck");
         output.WriteLine("  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\build\\Build-CaddyBenchServerImage.ps1");
         output.WriteLine("  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\build\\Build-NginxBenchServerImage.ps1");
         output.WriteLine("  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\acceptance\\Invoke-ProtocolLabAcceptance.ps1 -RunIdPrefix local-v1-acceptance -DurationSeconds 5 -WarmupSeconds 1 -Repetitions 1");
-        output.WriteLine("  dotnet run --project src\\Incursa.ProtocolLab.Cli -- validate --implementations kestrel-http3,incursa-http3 --target-mode docker --scenarios http.core.plaintext,http.core.json --protocol h3");
+        output.WriteLine("  dotnet run --project src\\Incursa.ProtocolLab.Cli -- validate --implementations kestrel-http3 --target-mode docker --scenarios http.core.plaintext,http.core.json --protocol h3");
         output.WriteLine("  dotnet run --project src\\Incursa.ProtocolLab.Cli -- validate --implementations caddy-http3 --target-mode docker --target-network-mode shared-docker-network --scenarios http.core.plaintext,http.core.json --protocol h3");
         output.WriteLine("  dotnet run --project src\\Incursa.ProtocolLab.Cli -- validate --implementations nginx-http3 --target-mode docker --target-network-mode shared-docker-network --scenarios http.core.plaintext,http.core.json --protocol h3");
         return RunnerCommandResult.Create(RunnerCommandKind.Check, 0, output.Messages);
@@ -388,8 +385,8 @@ public sealed class RunnerEngine
         var loadToolMetricsInterval = TimeSpan.FromSeconds(Math.Max(1, ParseInt(options.Get("load-tool-metrics-interval")) ?? ParseInt(options.Get("load-tool-metrics-interval-seconds")) ?? 1));
         var captureTargetContainerMetrics = string.Equals(options.Get("capture-target-container-metrics"), "true", StringComparison.OrdinalIgnoreCase);
         var targetContainerMetricsInterval = TimeSpan.FromSeconds(Math.Max(1, ParseInt(options.Get("target-container-metrics-interval")) ?? ParseInt(options.Get("target-container-metrics-interval-seconds")) ?? 1));
-        var requestedLoadTool = options.Get("load-tool");
-        var requestedLoadToolMode = options.Get("load-tool-mode");
+        var requestedLoadTool = options.Get("test-executor") ?? options.Get("load-tool");
+        var requestedLoadToolMode = options.Get("test-executor-mode") ?? options.Get("load-tool-mode");
         var networkProfiles = NetworkProfileCatalog.Load(Path.Combine(root, "scenarios", "network", "profiles"));
         var loadProfiles = LoadProfileCatalog.Load(Path.Combine(root, "load-profiles"));
         var counterOptions = new RuntimeCounterCaptureOptions(
@@ -862,7 +859,7 @@ public sealed class RunnerEngine
                             loadShapeWarnings.AddRange(plan.EffectiveLoadShape.Warnings);
                             if (string.Equals(resolution.Tool.Manifest.Category, LoadToolCategories.ManagedLab, StringComparison.OrdinalIgnoreCase))
                             {
-                                warnings.Add("managed-httpclient-h3-load results are valid local lab measurements, not external-reference h2load benchmarks.");
+                                warnings.Add($"{resolution.Tool.Manifest.Id} results are valid local lab measurements, not external-reference benchmarks.");
                             }
                             loadToolCommandLine = plan.CommandLine;
                             dockerImage = resolution.Tool.DockerImage;
@@ -950,6 +947,7 @@ public sealed class RunnerEngine
                             }
 
                             LoadToolRun? run = null;
+                            var loadToolAttempts = new List<LoadToolRun>();
                             var startTime = DateTimeOffset.UtcNow;
                             try
                             {
@@ -964,11 +962,13 @@ public sealed class RunnerEngine
 
                                 output.WriteLine($"{progressPrefix}: running load tool {resolution.Tool.Manifest.Id}");
                                 run = await LoadToolInvoker.RunAsync(resolution.Tool, plan);
+                                loadToolAttempts.Add(run);
                                 if (ShouldRetryHandshakeColdLoadRun(cell, resolution.Tool, run))
                                 {
                                     warnings.Add("handshake-cold-zero-success-load-tool-retry.");
                                     await Task.Delay(TimeSpan.FromSeconds(30));
                                     run = await LoadToolInvoker.RunAsync(resolution.Tool, plan);
+                                    loadToolAttempts.Add(run);
                                 }
                             }
                             finally
@@ -997,6 +997,8 @@ public sealed class RunnerEngine
 
                             await File.WriteAllTextAsync(paths.LoadToolStdout, run.Stdout);
                             await File.WriteAllTextAsync(paths.LoadToolStderr, run.Stderr);
+                            await File.WriteAllTextAsync(paths.LoadToolCommandTxt, plan.CommandLine);
+                            await WriteLoadToolAttemptArtifactsAsync(paths, loadToolAttempts);
                             loadToolDockerInspectPath = run.DockerInspectPath;
                             loadToolContainerId = run.ContainerId;
                             loadToolContainerName = run.ContainerName;
@@ -1122,6 +1124,29 @@ public sealed class RunnerEngine
                                     warnings.Add("h2load qlog artifacts were not produced for this benchmark cell; qlog review is deferred.");
                                 }
 
+                                if (ProtocolIds.IsQuic(cell.Protocol) &&
+                                    string.Equals(cell.Scenario.Family, "quic.transport", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    validation = QuicTransportValidator.ValidateLoadMetrics(
+                                        cell,
+                                        validation,
+                                        metrics,
+                                        parsedMetricsAvailable,
+                                        paths.LoadToolStdout,
+                                        paths.LoadToolStderr,
+                                        qlogFileCount);
+                                    await File.WriteAllTextAsync(paths.ValidationJson, ResultJson.Serialize(validation));
+                                    warnings.AddRange(validation.Warnings);
+                                    errors.AddRange(validation.Errors);
+                                    if (!validation.AllowsBenchmark)
+                                    {
+                                        benchmarkExecutionStatus = LoadToolExecutionStatuses.Failed;
+                                        benchmarkFailureReason = validation.Summary;
+                                        parsedMetricsAvailable = false;
+                                        metrics = new HttpMetrics();
+                                    }
+                                }
+
                                 if (string.Equals(resolution.Tool.Mode, LoadToolKinds.Docker, StringComparison.OrdinalIgnoreCase))
                                 {
                                     if (run.DockerMetricsAvailable)
@@ -1144,7 +1169,7 @@ public sealed class RunnerEngine
                                 if (resolution.Tool.Manifest.Category is not null &&
                                     string.Equals(resolution.Tool.Manifest.Category, LoadToolCategories.ManagedLab, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    warnings.Add("managed-httpclient-h3-load results are valid local lab measurements, not external-reference h2load benchmarks.");
+                                    warnings.Add($"{resolution.Tool.Manifest.Id} results are valid local lab measurements, not external-reference benchmarks.");
                                 }
                                 if (run.Stderr.Contains("timeout", StringComparison.OrdinalIgnoreCase) ||
                                     run.Stderr.Contains("timed out", StringComparison.OrdinalIgnoreCase) ||
@@ -1733,13 +1758,14 @@ public sealed class RunnerEngine
     {
         return new Dictionary<string, string>
         {
-                ["resultJson"] = paths.ResultJson,
-                ["validationJson"] = paths.ValidationJson,
-                ["protocolProofJson"] = paths.ProtocolProofJson,
-                ["protocolProofStdout"] = paths.ProtocolProofStdout,
-                ["protocolProofStderr"] = paths.ProtocolProofStderr,
-                ["loadToolStdout"] = paths.LoadToolStdout,
+            ["resultJson"] = paths.ResultJson,
+            ["validationJson"] = paths.ValidationJson,
+            ["protocolProofJson"] = paths.ProtocolProofJson,
+            ["protocolProofStdout"] = paths.ProtocolProofStdout,
+            ["protocolProofStderr"] = paths.ProtocolProofStderr,
+            ["loadToolStdout"] = paths.LoadToolStdout,
             ["loadToolStderr"] = paths.LoadToolStderr,
+            ["loadToolCommand"] = paths.LoadToolCommandTxt,
             ["h2loadStdout"] = paths.H2loadStdout,
             ["h2loadStderr"] = paths.H2loadStderr,
             ["h2loadOutputJson"] = paths.H2loadOutputJson,
@@ -1924,42 +1950,6 @@ public sealed class RunnerEngine
         if (!found)
         {
             warnings.Add($"{fileName} is missing; restore the repository files before running v1 acceptance.");
-        }
-    }
-
-    private static void WriteIncursaProjectStatus(string root, List<string> warnings, RunnerOutputBuffer output)
-    {
-        var manifestPath = Path.Combine(root, "implementations", "incursa-http3.yaml");
-        if (!File.Exists(manifestPath))
-        {
-            return;
-        }
-
-        try
-        {
-            var manifest = YamlFile.Load<ImplementationManifest>(manifestPath);
-            var project = manifest.Project;
-            if (string.IsNullOrWhiteSpace(project))
-            {
-                output.WriteLine("Incursa sample project: not declared in manifest");
-                warnings.Add("Incursa manifest does not declare a project path.");
-                return;
-            }
-
-            var projectPath = Path.IsPathFullyQualified(project)
-                ? project
-                : Path.Combine(root, project);
-            var found = File.Exists(projectPath);
-            output.WriteLine($"Incursa sample project: {(found ? "found" : "missing")} path={projectPath}");
-            if (!found)
-            {
-                warnings.Add("Incursa endpoint path is missing; point implementations\\incursa-http3.yaml at the repo-owned endpoint project or update the manifest.");
-            }
-        }
-        catch (Exception ex) when (ex is IOException or InvalidDataException)
-        {
-            output.WriteLine($"Incursa sample project: unknown ({ex.Message})");
-            warnings.Add("Incursa manifest could not be parsed.");
         }
     }
 
@@ -2149,6 +2139,7 @@ public sealed class RunnerEngine
         Directory.CreateDirectory(paths.PcapDirectory);
         File.WriteAllText(paths.LoadToolStdout, "");
         File.WriteAllText(paths.LoadToolStderr, "");
+        File.WriteAllText(paths.LoadToolCommandTxt, "");
         File.WriteAllText(paths.TargetStdout, "");
         File.WriteAllText(paths.TargetStderr, "");
         File.WriteAllText(paths.ServerStdout, "");
@@ -2216,6 +2207,18 @@ public sealed class RunnerEngine
         }
 
         await File.WriteAllLinesAsync(paths.Notes, lines);
+    }
+
+    private static async Task WriteLoadToolAttemptArtifactsAsync(ArtifactPaths paths, IReadOnlyList<LoadToolRun> attempts)
+    {
+        for (var index = 0; index < attempts.Count; index++)
+        {
+            var attemptNumber = index + 1;
+            var stdoutPath = Path.Combine(paths.CellDirectory, $"load-tool.attempt-{attemptNumber.ToString(System.Globalization.CultureInfo.InvariantCulture)}.stdout.txt");
+            var stderrPath = Path.Combine(paths.CellDirectory, $"load-tool.attempt-{attemptNumber.ToString(System.Globalization.CultureInfo.InvariantCulture)}.stderr.txt");
+            await File.WriteAllTextAsync(stdoutPath, attempts[index].Stdout);
+            await File.WriteAllTextAsync(stderrPath, attempts[index].Stderr);
+        }
     }
 
     private static int CountFiles(string directory)

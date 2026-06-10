@@ -28,6 +28,7 @@ internal static class RawQuicJsonParser
                 SuccessfulRequests = FindLong(metricsElement, "successfulRequests", "succeeded", "success", "done"),
                 FailedRequests = FindLong(metricsElement, "failedRequests", "failed"),
                 TimeoutRequests = FindLong(metricsElement, "timeoutRequests", "timeout", "timeouts"),
+                CompletedStreams = FindLong(metricsElement, "completedStreams", "streamsCompleted", "successfulStreams"),
                 BytesReceived = FindLong(metricsElement, "bytesReceived", "receivedBytes", "totalBytesReceived"),
                 BytesSent = FindLong(metricsElement, "bytesSent", "sentBytes", "totalBytesSent"),
                 ThroughputBytesPerSecond = FindNumber(metricsElement, "throughputBytesPerSecond", "bytesPerSecond", "throughput"),
@@ -58,6 +59,7 @@ internal static class RawQuicJsonParser
             var parsed = metrics.RequestsPerSecond is not null ||
                 metrics.TotalRequests is not null ||
                 metrics.SuccessfulRequests is not null ||
+                metrics.CompletedStreams is not null ||
                 metrics.BytesReceived is not null ||
                 metrics.BytesSent is not null ||
                 metrics.LatencyMeanMs is not null ||

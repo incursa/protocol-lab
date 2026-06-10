@@ -1,257 +1,96 @@
-# Preparing quic-dotnet for ProtocolLab Lab Runs
+# quic-dotnet Package Handoff Boundary
 
-This is the handoff plan for adding `.plabpkg` production and lab-run submission to the `quic-dotnet` repo.
+This document records the public ProtocolLab expectations for package-backed
+`quic-dotnet` lab runs. The public `protocol-lab` repository no longer carries
+quic-dotnet production adapter templates. quic-dotnet owns its package authoring
+scripts, package source layout, adapter binaries, and launch scripts locally.
 
-The target workflow is:
+ProtocolLab provides only the neutral pieces:
 
-1. Publish the `quic-dotnet` ProtocolLab adapter from the current working tree.
-2. Stage a ProtocolLab Lab Package source directory.
-3. Build a `.plabpkg` archive.
-4. Upload it to the lab controller.
-5. Submit a benchmark job referencing the exact package SHA-256.
-6. Poll for completion and download artifacts.
+- Adapter Contract v1 under `/protocol-lab/adapter/v1`
+- Test Executor Contract v1 under `/protocol-lab/test-executor/v1`
+- Component Package v2 schema and builder tooling
+- conformance suites for adapter and test executor HTTP control planes
+- neutral package submission helpers
 
-## Add These Files to quic-dotnet
+## Package Targets
 
-Recommended files:
+quic-dotnet should produce separate package families for distinct execution
+lanes:
 
-```text
-eng/protocol-lab/
-  New-QuicDotNetProtocolLabPackage.ps1
-  Invoke-QuicDotNetProtocolLabRun.ps1
-  templates/
-    protocol-lab-package.json
-    implementations/
-      quic-dotnet-dev.yaml
-    scripts/
-      run-current-platform.ps1
-      run-linux.sh
-      run-windows.ps1
-```
+| Package ID | Kind | Purpose |
+| --- | --- | --- |
+| `quic-dotnet-dev` | `implementation` | HTTP/3 implementation package exposing Adapter Contract v1. |
+| `quic-dotnet-raw-dev` | `implementation` | Raw QUIC implementation package exposing Adapter Contract v1. |
 
-Starter versions of these files live in `templates/lab/quic-dotnet/` in this repo. Copy that directory to `quic-dotnet/eng/protocol-lab/`, then replace:
+Raw QUIC support remains intentionally narrow. Until additional validator and
+artifact gates exist, `quic-dotnet-raw-dev` should only declare:
 
-- `__ADAPTER_PROJECT__` with the ProtocolLab adapter project path in `quic-dotnet`.
-- `__ADAPTER_EXECUTABLE__` with the adapter binary name without `.exe`.
-- Manifest protocol/capability fields if the adapter only supports raw QUIC or only supports HTTP/3.
+- `quic.transport.multiplex.100x64kb`
+- `quic.transport.duplex-streams`
 
-The scripts in `protocol-lab/scripts/lab/` can be called directly from the `quic-dotnet` scripts, or copied into `quic-dotnet` if that repo needs to work without a sibling ProtocolLab checkout.
+## Package v2 Requirements
 
-## Package Script Responsibilities
-
-`eng/protocol-lab/New-QuicDotNetProtocolLabPackage.ps1` should:
-
-1. Accept `-Configuration`, `-ProtocolLabRoot`, `-OutputPath`, and optional `-PackageVersion`.
-2. Run `dotnet publish` for the ProtocolLab adapter project.
-3. Stage files under `artifacts/protocol-lab/package-source/{packageVersion}/`.
-4. Copy the package manifest and implementation manifest templates.
-5. Copy launch scripts.
-6. Copy published binaries to `bin/{rid}/`.
-7. Call `protocol-lab/scripts/lab/New-ProtocolLabPackage.ps1`.
-8. Return JSON containing `packageId`, `packageVersion`, `sha256`, and package path.
-
-Suggested version format for dirty development builds:
-
-```powershell
-$timestamp = Get-Date -AsUTC -Format "yyyyMMddTHHmmssZ"
-$shortSha = git rev-parse --short HEAD
-$dirty = if ((git status --porcelain).Length -gt 0) { "dirty" } else { "clean" }
-$packageVersion = "dev-$timestamp-$shortSha-$dirty"
-```
-
-## Run Script Responsibilities
-
-`eng/protocol-lab/Invoke-QuicDotNetProtocolLabRun.ps1` should:
-
-1. Call `New-QuicDotNetProtocolLabPackage.ps1`.
-2. Call `protocol-lab/scripts/lab/Submit-ProtocolLabPackageRun.ps1`.
-3. Pass `-ImplementationId quic-dotnet-dev`.
-4. Default to `-SuiteId h3-local-v1`, `-ScenarioId http.core.plaintext`, `-Protocol h3`, and `-LoadProfileId smoke`.
-5. Write the final job JSON under `artifacts/protocol-lab/results/{jobId}.json`.
-6. Download artifact archives under `artifacts/protocol-lab/results/{jobId}.zip` when the controller exposes an artifact archive URL.
-
-## Template package manifest
-
-`eng/protocol-lab/templates/protocol-lab-package.json`:
+Each package root must contain `protocol-lab-package.json` using:
 
 ```json
 {
-  "schemaVersion": "protocol-lab-package-v1",
-  "packageId": "quic-dotnet-dev",
-  "packageVersion": "__PACKAGE_VERSION__",
-  "kind": "implementation",
-  "displayName": "QUIC.NET development build",
-  "entryManifests": [
-    "implementations/quic-dotnet-dev.yaml"
-  ],
-  "environments": [
-    {
-      "os": "linux",
-      "arch": "x64",
-      "entrypoint": {
-        "kind": "bash",
-        "path": "scripts/run-linux.sh",
-        "arguments": [],
-        "workingDirectory": "."
-      }
-    },
-    {
-      "os": "windows",
-      "arch": "x64",
-      "entrypoint": {
-        "kind": "pwsh",
-        "path": "scripts/run-windows.ps1",
-        "arguments": [],
-        "workingDirectory": "."
-      }
-    }
-  ],
-  "dependencies": {
-    "requiresDotNet": false,
-    "requiresDocker": false,
-    "requiresPwsh": true,
-    "requiresBash": true
-  }
+  "schemaVersion": "protocol-lab-package-v2",
+  "kind": "implementation"
 }
 ```
 
-## Template implementation manifest
+The complete manifest must satisfy
+`schemas/package/v2/package.schema.json`. For implementation packages this
+means:
 
-`eng/protocol-lab/templates/implementations/quic-dotnet-dev.yaml`:
+- `entryManifests` contains at least one package-relative implementation
+  manifest path.
+- `providedImplementations` declares each implementation id, supported
+  protocols, and supported scenarios.
+- every environment entrypoint path and working directory is package-relative.
+- dependencies explicitly declare required runtime/tool availability.
 
-```yaml
-id: quic-dotnet-dev
-name: QUIC.NET Development Adapter
-description: Package-carried QUIC.NET ProtocolLab adapter built from the developer working tree.
-image: ""
-targetKind: process
-targetContract: adapter-v1
-executable: pwsh
-project: ""
-workingDirectory: .
-dockerfile: ""
-buildContext: ""
-containerName: ""
-dockerNetwork: ""
-dockerNetworkMode: published-port
-dockerBaseUrl: http://127.0.0.1:53381
-baseUrl: http://127.0.0.1:53381
-adapterControlPlaneBaseUrl: http://127.0.0.1:53381
-certificateMode: none
-roles:
-  - server
-supportedProtocols:
-  - quic
-  - h3
-supportedWorkloadFamilies:
-  - quic.transport
-  - http.application
-ports:
-  - name: control-plane
-    containerPort: 53381
-    hostPort: 53381
-    protocol: tcp
-environment:
-  ASPNETCORE_URLS: http://127.0.0.1:53381
-dockerEnvironment: {}
-commandArguments:
-  - -NoLogo
-  - -NoProfile
-  - -File
-  - scripts/run-current-platform.ps1
-readinessCheck:
-  type: http
-  url: /protocol-lab/adapter/v1/health
-  timeoutSeconds: 10
-shutdownBehavior: process-exit
-capabilities:
-  - adapter-control-plane
-  - quic.server
-  - http3.server
-artifactExports:
-  - server.stdout.txt
-  - server.stderr.txt
-qlogSupport: false
-sslKeyLogSupport: false
-notes: Trusted lab package execution only.
-```
+Package-relative paths must not be absolute, drive-qualified, or use `..`
+traversal segments.
 
-Adjust `supportedProtocols`, `supportedWorkloadFamilies`, and capabilities to match the adapter that `quic-dotnet` actually exposes.
+## Conformance Expectations
 
-## Template launch scripts
-
-`eng/protocol-lab/templates/scripts/run-current-platform.ps1`:
+Before a package is submitted to a controller:
 
 ```powershell
-$ErrorActionPreference = "Stop"
-
-if ($IsWindows) {
-    & "$PSScriptRoot/run-windows.ps1" @args
-    exit $LASTEXITCODE
-}
-
-if ($IsLinux) {
-    & bash "$PSScriptRoot/run-linux.sh" @args
-    exit $LASTEXITCODE
-}
-
-throw "Unsupported OS for quic-dotnet ProtocolLab package."
+dotnet test Incursa.ProtocolLab.sln --no-build --filter FullyQualifiedName~AdapterConformanceSuiteTests
 ```
 
-`eng/protocol-lab/templates/scripts/run-linux.sh`:
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PACKAGE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-ADAPTER="$PACKAGE_ROOT/bin/linux-x64/QuicDotNet.ProtocolLabAdapter"
-chmod +x "$ADAPTER" 2>/dev/null || true
-exec "$ADAPTER" "$@"
-```
-
-`eng/protocol-lab/templates/scripts/run-windows.ps1`:
+When quic-dotnet also produces a package-carried test executor, verify it with:
 
 ```powershell
-$ErrorActionPreference = "Stop"
-$PackageRoot = Split-Path -Parent $PSScriptRoot
-& (Join-Path $PackageRoot "bin/win-x64/QuicDotNet.ProtocolLabAdapter.exe") @args
-exit $LASTEXITCODE
+dotnet test Incursa.ProtocolLab.sln --no-build --filter FullyQualifiedName~TestExecutorConformanceSuiteTests
 ```
 
-Rename the executable paths to the actual adapter binary name in `quic-dotnet`.
+The controller-side package proof should record:
 
-## Example Pack Command
+- package id, version, kind, and SHA-256
+- selected implementation id
+- selected scenario/test/suite ids
+- selected test-executor package and id
+- selected protocol
+- materialized package root and entrypoint
+- job result artifacts that identify all selected packages
 
-From `quic-dotnet`:
+## Submission Shape
 
-```powershell
-pwsh ./eng/protocol-lab/New-QuicDotNetProtocolLabPackage.ps1 `
-  -ProtocolLabRoot C:/shared/src/incursa/protocol-lab `
-  -Configuration Release `
-  -OutputPath ./artifacts/protocol-lab/packages/quic-dotnet-dev.plabpkg
-```
-
-## Example Submit Command
-
-From `quic-dotnet`:
-
-```powershell
-pwsh ./eng/protocol-lab/Invoke-QuicDotNetProtocolLabRun.ps1 `
-  -ProtocolLabRoot C:/shared/src/incursa/protocol-lab `
-  -ControllerUri http://lab-controller:5080 `
-  -ScenarioId http.core.plaintext `
-  -LoadProfileId smoke
-```
-
-Or call the shared ProtocolLab script directly after creating a package:
+After quic-dotnet builds its `.plabpkg`, submit it with the neutral ProtocolLab
+helper and explicit package references:
 
 ```powershell
 pwsh C:/shared/src/incursa/protocol-lab/scripts/lab/Submit-ProtocolLabPackageRun.ps1 `
   -ControllerUri http://lab-controller:5080 `
   -PackagePath ./artifacts/protocol-lab/packages/quic-dotnet-dev.plabpkg `
+  -PackageReference <test-executor-package-id:version:sha256> `
+  -PackageReference <scenario-pack-id:version:sha256> `
   -ImplementationId quic-dotnet-dev `
+  -TestExecutorId managed-httpclient-h3-load `
   -SuiteId h3-local-v1 `
   -ScenarioId http.core.plaintext `
   -Protocol h3 `
@@ -259,7 +98,11 @@ pwsh C:/shared/src/incursa/protocol-lab/scripts/lab/Submit-ProtocolLabPackageRun
   -ArtifactOutputPath ./artifacts/protocol-lab/results/latest.zip
 ```
 
-## Controller Contract Expected by the Scripts
+Raw QUIC submissions should select `quic-dotnet-raw-dev`, `Protocol quic`, and
+one of the two currently enabled raw QUIC scenarios listed above. A raw QUIC
+job must never fall back to the managed HTTP/3 test executor.
+
+## Controller Contract Expected by the Helper
 
 The shared submit script expects:
 
@@ -268,43 +111,33 @@ The shared submit script expects:
 - `POST /api/lab/jobs` accepts a JSON job request with `packages`.
 - Job submission returns `jobId` or `id`.
 - `GET /api/lab/jobs/{jobId}` returns `status` or `state`.
-- Terminal job statuses are `Completed`, `Failed`, `Canceled`, `Cancelled`, or `TimedOut`.
-- Artifact archive URL is returned as one of:
-  - `artifactArchiveUrl`
-  - `artifactsDownloadUrl`
-  - `downloadUrl`
-  - `artifacts.archiveUrl`
-  - `artifacts.downloadUrl`
+- Terminal job statuses are `Completed`, `Failed`, `Canceled`, `Cancelled`,
+  or `TimedOut`.
+- Artifact archive URL is returned as one of `artifactArchiveUrl`,
+  `artifactsDownloadUrl`, `downloadUrl`, `artifacts.archiveUrl`, or
+  `artifacts.downloadUrl`.
 
-## Codex Prompt for quic-dotnet
+## Prompt for quic-dotnet
 
 Use this prompt inside the `quic-dotnet` repo:
 
 ```text
-Add ProtocolLab Lab Package support to this repo.
+Add ProtocolLab Component Package v2 support owned by this repo.
 
-Implement eng/protocol-lab/New-QuicDotNetProtocolLabPackage.ps1 and eng/protocol-lab/Invoke-QuicDotNetProtocolLabRun.ps1.
+Create local package authoring scripts under eng/protocol-lab/ for:
+- quic-dotnet-dev: HTTP/3 implementation package
+- quic-dotnet-raw-dev: raw QUIC implementation package
 
-Use ProtocolLab Lab Package v1:
-- package extension .plabpkg
-- root manifest protocol-lab-package.json
-- schemaVersion protocol-lab-package-v1
-- packageId quic-dotnet-dev
-- kind implementation
-- entryManifests includes implementations/quic-dotnet-dev.yaml
-- include linux-x64 and win-x64 environments if the repo can publish both; otherwise implement the current host RID first
-- package published adapter binaries, not source
-- call <protocol-lab-root>/scripts/lab/New-ProtocolLabPackage.ps1 to create the package
-- call <protocol-lab-root>/scripts/lab/Submit-ProtocolLabPackageRun.ps1 to upload, submit, poll, and download results
+Use schemaVersion protocol-lab-package-v2 and kind implementation. Declare
+providedImplementations with protocols and scenarios. Keep raw QUIC limited to
+quic.transport.multiplex.100x64kb and quic.transport.duplex-streams.
 
-The implementation manifest should be process-backed adapter-v1 and should launch scripts/run-current-platform.ps1 with pwsh. The scripts should dispatch to bin/linux-x64 or bin/win-x64. Use the actual adapter project and binary names from this repo.
+Package published adapter binaries and package-local launch scripts. Do not
+depend on public protocol-lab concrete adapter projects. Call the public
+protocol-lab scripts only for neutral package build/submission helpers and
+validate package manifests against schemas/package/v2/package.schema.json.
 
-Default the run script to:
-- ImplementationId quic-dotnet-dev
-- SuiteId h3-local-v1
-- ScenarioId http.core.plaintext
-- Protocol h3
-- LoadProfileId smoke
-
-Keep all generated package sources, packages, and results under artifacts/protocol-lab/.
+Before submission, prove Adapter Contract v1 conformance for each package
+lane. For any package-carried test executor, also prove Test Executor Contract
+v1 conformance.
 ```

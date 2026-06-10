@@ -16,7 +16,7 @@ trafficShape: bidirectional-stream
 id: quic.transport.duplex-streams
 name: QUIC Duplex Streams
 family: quic.transport
-description: Validate and benchmark simultaneous bidirectional QUIC stream payload transfer once a raw QUIC validator and load generator exist.
+description: Validate and benchmark simultaneous bidirectional QUIC stream payload transfer through the raw QUIC load-tool contract.
 protocol: quic
 implementationRole: server
 requiredCapabilities:
@@ -35,7 +35,10 @@ quicTransport:
 validation:
   required: true
   checks:
-    - unsupported-until-quic-validator
+    - raw-quic-load-tool-metrics
+    - bytes-sent-received-match-expected
+    - completed-streams-match-expected
+    - zero-timeouts-and-errors
     - bidirectional-payloads-complete
 benchmark:
   warmupSeconds: 5
@@ -69,7 +72,7 @@ requiredMetrics:
 artifactRequirements:
   - load-tool.stdout.txt
   - load-tool.stderr.txt
-  - qlog
+  - qlog-unavailable-note
 tags:
   - phase6
   - quic

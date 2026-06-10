@@ -19,10 +19,10 @@ performance optimization.
 - Actionable `check` output for .NET, repo-local tools, Docker, h2load, curl,
   managed H3 proof/load, `dotnet-counters`, and manifests.
 - Kestrel HTTP/3 validation for `http.core.plaintext` and `http.core.json`.
-- Incursa HTTP/3 validation through the repo-owned Incursa HTTP/3 adapter and
-  manifest.
-- Managed-lab HTTP/3 comparison for Kestrel, Incursa, and quic-go.
-- Docker h2load external-reference HTTP/3 comparison for Kestrel and Incursa.
+- Managed-lab HTTP/3 comparison for Kestrel and quic-go public reference
+  targets.
+- Docker h2load external-reference HTTP/3 comparison for public reference
+  targets.
 - Optional quic-go HTTP/3 Docker target support for the expanded local
   comparison suite.
 - Counter-enabled Docker h2load HTTP/3 comparison when `dotnet-counters` is
@@ -71,8 +71,6 @@ capture, and non-isolated resources.
 ## Known Limitations
 
 - Docker Desktop is required for the external-reference h2load acceptance path.
-- The Incursa H3 stages require the adapter target declared in
-  `implementations\incursa-http3.yaml` to be available locally.
 - curl may lack `--http3-only`; ProtocolLab falls back to managed exact HTTP/3
   validation when available.
 - Counter capture depends on repo-local `dotnet-counters` restore and runtime
@@ -88,7 +86,7 @@ capture, and non-isolated resources.
 - nginx target execution.
 - Network impairment.
 - Publishable isolated-host benchmark automation.
-- Incursa optimization work.
+- Implementation optimization work.
 
 ## Tag Command
 

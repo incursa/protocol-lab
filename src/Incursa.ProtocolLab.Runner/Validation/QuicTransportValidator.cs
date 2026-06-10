@@ -1,20 +1,21 @@
 // Copyright (c) 2026 Incursa LLC.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
-using System.IO;
-using System.Net;
-using System.Net.Security;
-using System.Net.Sockets;
-using System.Security.Authentication;
+using System.Globalization;
 using System.Text.Json;
 using Incursa.ProtocolLab.Adapter.Contracts;
 using Incursa.ProtocolLab.Model;
-using Incursa.Quic;
 
 namespace Incursa.ProtocolLab.Runner;
 
 internal static class QuicTransportValidator
 {
+    private static readonly HashSet<string> LoadValidatedScenarioIds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "quic.transport.multiplex.100x64kb",
+        "quic.transport.duplex-streams"
+    };
+
     public static async Task<ScenarioValidationResult> ValidateAsync(
         RunCell cell,
         string? baseUrl,
@@ -30,7 +31,13 @@ internal static class QuicTransportValidator
         if (cell.Scenario.QuicTransport is null)
         {
             return CreateResult(cell, ValidationStatus.Unsupported,
-                "QUIC transport validation is only available for quic.transport scenarios.");
+                "QUIC transport validation is only available for scenarios with quicTransport metadata.");
+        }
+
+        if (IsCatalogRawTransportScenario(cell) && !LoadValidatedScenarioIds.Contains(cell.Scenario.Id))
+        {
+            return CreateResult(cell, ValidationStatus.Unsupported,
+                $"Raw QUIC execution for scenario '{cell.Scenario.Id}' is not enabled yet. Enabled load-validated scenarios: {string.Join(", ", LoadValidatedScenarioIds.OrderBy(static id => id, StringComparer.OrdinalIgnoreCase))}.");
         }
 
         if (string.IsNullOrWhiteSpace(baseUrl))
@@ -67,21 +74,21 @@ internal static class QuicTransportValidator
             {
                 Category = "endpoint",
                 Description = "QUIC endpoint port",
-                ExpectedValue = uri.Port.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                ActualValue = uri.Port.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                ExpectedValue = uri.Port.ToString(CultureInfo.InvariantCulture),
+                ActualValue = uri.Port.ToString(CultureInfo.InvariantCulture)
             }
         };
 
-        var warnings = new List<string>();
+        var warnings = new List<string> { BenchmarkEvidenceReasons.AdapterBackedTarget };
         var errors = new List<string>();
         var proofArtifacts = new List<ValidationProofArtifact>();
+        var transport = cell.Scenario.QuicTransport;
 
         if (uri.Port <= 0)
         {
             errors.Add("QUIC endpoint base URL must include a valid port.");
         }
 
-        var transport = cell.Scenario.QuicTransport;
         if (transport.ConnectionCount <= 0)
         {
             errors.Add("quicTransport.connectionCount must be greater than zero.");
@@ -112,150 +119,10 @@ internal static class QuicTransportValidator
             });
         }
 
-        warnings.Add(BenchmarkEvidenceReasons.AdapterBackedTarget);
-
-        var skipSmoke = paths is null ||
-            cell.Implementation.Id.StartsWith("fixture-", StringComparison.OrdinalIgnoreCase);
-
-        if (paths is null)
-        {
-            return CreateResult(
-                cell,
-                ValidationStatus.Passed,
-                "QUIC transport endpoint URI was structurally valid.",
-                warnings: warnings,
-                observations: observations);
-        }
-
-        if (!skipSmoke && !QuicConnection.IsSupported)
-        {
-            return CreateResult(
-                cell,
-                ValidationStatus.InfrastructureFailure,
-                "Incursa.Quic is not supported on this machine.",
-                warnings: warnings,
-                observations: observations);
-        }
-
-        if (!skipSmoke)
-        {
-            try
-            {
-                await RunTransportSmokeAsync(cell, uri, transport, certificateMode, warnings, observations);
-            }
-            catch (Exception ex) when (ex is AuthenticationException or IOException or OperationCanceledException or QuicException or SocketException or NotSupportedException or InvalidOperationException)
-            {
-                warnings.Add($"QUIC transport smoke failed: {ex.GetType().Name}: {ex.Message}");
-            }
-        }
-        else
-        {
-            warnings.Add("QUIC smoke validation was skipped for fixture-backed implementation metadata.");
-        }
-
         if (paths is not null)
         {
-            if (File.Exists(paths.TargetExecutionJson))
-            {
-                proofArtifacts.Add(new ValidationProofArtifact
-                {
-                    Name = "target-execution",
-                    Path = paths.TargetExecutionJson,
-                    Category = "execution"
-                });
-
-                try
-                {
-                    var targetExecution = ResultJson.Deserialize<TargetExecutionResult>(await File.ReadAllTextAsync(paths.TargetExecutionJson));
-                    if (targetExecution is null)
-                    {
-                        errors.Add("Target execution artifact could not be parsed.");
-                    }
-                    else if (!string.IsNullOrWhiteSpace(targetExecution.TargetEffectiveBaseUrl) &&
-                        !string.Equals(targetExecution.TargetEffectiveBaseUrl, baseUrl, StringComparison.OrdinalIgnoreCase))
-                    {
-                        errors.Add($"Target effective base URL '{targetExecution.TargetEffectiveBaseUrl}' did not match the validated QUIC endpoint '{baseUrl}'.");
-                    }
-
-                    if (targetExecution is not null && !string.IsNullOrWhiteSpace(targetExecution.TargetContract))
-                    {
-                        observations.Add(new ValidationObservation
-                        {
-                            Category = "target",
-                            Description = "Target contract",
-                            ActualValue = targetExecution.TargetContract
-                        });
-                    }
-                }
-                catch (Exception ex) when (ex is JsonException or IOException or InvalidDataException)
-                {
-                    errors.Add($"Target execution artifact could not be parsed: {ex.Message}");
-                }
-            }
-
-            if (File.Exists(paths.AdapterEndpointsJson))
-            {
-                proofArtifacts.Add(new ValidationProofArtifact
-                {
-                    Name = "adapter-endpoints",
-                    Path = paths.AdapterEndpointsJson,
-                    Category = "adapter"
-                });
-
-                try
-                {
-                    var endpoints = JsonSerializer.Deserialize<AdapterEndpointsResponse>(
-                        await File.ReadAllTextAsync(paths.AdapterEndpointsJson),
-                        ProtocolLabAdapterJson.Options);
-
-                    var endpoint = endpoints?.Endpoints.FirstOrDefault(candidate =>
-                        string.Equals(candidate.Scheme, "quic", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(candidate.Protocol, "quic", StringComparison.OrdinalIgnoreCase));
-
-                    if (endpoint is null)
-                    {
-                        errors.Add("Adapter did not expose a quic endpoint.");
-                    }
-                    else
-                    {
-                        observations.Add(new ValidationObservation
-                        {
-                            Category = "adapter",
-                            Description = "Adapter endpoint scheme",
-                            ExpectedValue = "quic",
-                            ActualValue = endpoint.Scheme
-                        });
-                        observations.Add(new ValidationObservation
-                        {
-                            Category = "adapter",
-                            Description = "Adapter endpoint protocol",
-                            ExpectedValue = "quic",
-                            ActualValue = endpoint.Protocol
-                        });
-
-                        if (!string.Equals(endpoint.Host, uri.Host, StringComparison.OrdinalIgnoreCase))
-                        {
-                            errors.Add($"Adapter QUIC endpoint host '{endpoint.Host}' did not match the validated endpoint host '{uri.Host}'.");
-                        }
-
-                        if (endpoint.Port != uri.Port)
-                        {
-                            errors.Add($"Adapter QUIC endpoint port '{endpoint.Port}' did not match the validated endpoint port '{uri.Port}'.");
-                        }
-
-                        if (endpoint.Extensions.TryGetValue("transport", out var transportValue) &&
-                            transportValue.ValueKind == JsonValueKind.String &&
-                            !string.Equals(transportValue.GetString(), "udp", StringComparison.OrdinalIgnoreCase))
-                        {
-                            errors.Add($"Adapter QUIC endpoint transport '{transportValue.GetString()}' was not udp.");
-                        }
-                    }
-                }
-                catch (Exception ex) when (ex is JsonException or IOException or InvalidDataException)
-                {
-                    errors.Add($"Adapter endpoints artifact could not be parsed: {ex.Message}");
-                }
-            }
+            await ValidateTargetExecutionArtifactAsync(paths, baseUrl, observations, proofArtifacts, errors);
+            await ValidateAdapterEndpointArtifactAsync(paths, uri, observations, proofArtifacts, errors);
         }
 
         if (errors.Count > 0)
@@ -270,9 +137,11 @@ internal static class QuicTransportValidator
                 proofArtifacts: proofArtifacts);
         }
 
-        var summary = proofArtifacts.Count > 0
-            ? "QUIC transport endpoint matched the adapter endpoint metadata."
-            : "QUIC transport endpoint URI was structurally valid.";
+        var summary = IsCatalogRawTransportScenario(cell)
+            ? "QUIC transport endpoint matched adapter metadata; raw load-tool validation is required before accepting benchmark data."
+            : proofArtifacts.Count > 0
+                ? "QUIC transport endpoint matched the adapter endpoint metadata."
+                : "QUIC transport endpoint URI was structurally valid.";
 
         return CreateResult(
             cell,
@@ -281,6 +150,250 @@ internal static class QuicTransportValidator
             warnings: warnings,
             observations: observations,
             proofArtifacts: proofArtifacts);
+    }
+
+    public static ScenarioValidationResult ValidateLoadMetrics(
+        RunCell cell,
+        ScenarioValidationResult endpointValidation,
+        HttpMetrics metrics,
+        bool parsedMetricsAvailable,
+        string loadToolStdoutPath,
+        string loadToolStderrPath,
+        int? qlogFileCount)
+    {
+        if (!IsCatalogRawTransportScenario(cell) || !LoadValidatedScenarioIds.Contains(cell.Scenario.Id))
+        {
+            return endpointValidation;
+        }
+
+        var observations = endpointValidation.Observations.ToList();
+        var proofArtifacts = endpointValidation.ProofArtifacts.ToList();
+        var warnings = endpointValidation.Warnings.ToList();
+        var errors = endpointValidation.Errors.ToList();
+
+        proofArtifacts.Add(new ValidationProofArtifact
+        {
+            Name = "load-tool-stdout",
+            Path = loadToolStdoutPath,
+            Category = "load-tool",
+            Description = "Raw QUIC load-tool stdout for this attempt."
+        });
+        proofArtifacts.Add(new ValidationProofArtifact
+        {
+            Name = "load-tool-stderr",
+            Path = loadToolStderrPath,
+            Category = "load-tool",
+            Description = "Raw QUIC load-tool stderr for this attempt."
+        });
+
+        if ((qlogFileCount ?? 0) <= 0)
+        {
+            warnings.Add("Raw QUIC qlog artifacts were not produced by the selected load-tool/target pair; qlog evidence is unavailable for this cell.");
+        }
+
+        if (!parsedMetricsAvailable)
+        {
+            errors.Add("Raw QUIC load-tool output did not contain parseable metrics.");
+        }
+
+        var expectedBatch = BuildExpectedBatch(cell);
+        AddObservation(observations, "raw-quic", "Expected bytes per complete scenario batch", expectedBatch.ExpectedBytes?.ToString(CultureInfo.InvariantCulture));
+        AddObservation(observations, "raw-quic", "Expected streams per complete scenario batch", expectedBatch.ExpectedStreams.ToString(CultureInfo.InvariantCulture));
+        AddObservation(observations, "raw-quic", "Actual bytes sent", metrics.BytesSent?.ToString(CultureInfo.InvariantCulture));
+        AddObservation(observations, "raw-quic", "Actual bytes received", metrics.BytesReceived?.ToString(CultureInfo.InvariantCulture));
+        AddObservation(observations, "raw-quic", "Actual completed streams", metrics.CompletedStreams?.ToString(CultureInfo.InvariantCulture) ?? metrics.SuccessfulRequests?.ToString(CultureInfo.InvariantCulture));
+        AddObservation(observations, "raw-quic", "Failed requests", (metrics.FailedRequests ?? 0).ToString(CultureInfo.InvariantCulture));
+        AddObservation(observations, "raw-quic", "Timeout requests", (metrics.TimeoutRequests ?? 0).ToString(CultureInfo.InvariantCulture));
+
+        if ((metrics.FailedRequests ?? 0) != 0)
+        {
+            errors.Add($"Raw QUIC failed request count was {metrics.FailedRequests.GetValueOrDefault().ToString(CultureInfo.InvariantCulture)}, expected 0.");
+        }
+
+        if ((metrics.TimeoutRequests ?? 0) != 0)
+        {
+            errors.Add($"Raw QUIC timeout request count was {metrics.TimeoutRequests.GetValueOrDefault().ToString(CultureInfo.InvariantCulture)}, expected 0.");
+        }
+
+        if (expectedBatch.ExpectedStreams > 0)
+        {
+            var completedStreams = metrics.CompletedStreams ?? metrics.SuccessfulRequests;
+            if (!completedStreams.HasValue)
+            {
+                errors.Add("Raw QUIC completed stream count was not reported.");
+            }
+            else if (completedStreams.Value <= 0 || completedStreams.Value % expectedBatch.ExpectedStreams != 0)
+            {
+                errors.Add($"Raw QUIC completed streams were {completedStreams.Value.ToString(CultureInfo.InvariantCulture)}, expected a positive multiple of {expectedBatch.ExpectedStreams.ToString(CultureInfo.InvariantCulture)}.");
+            }
+        }
+
+        if (expectedBatch.ExpectedBytes.HasValue && expectedBatch.ExpectedBytes.Value > 0)
+        {
+            var bytesSent = metrics.BytesSent;
+            var bytesReceived = metrics.BytesReceived;
+            if (!bytesSent.HasValue || !bytesReceived.HasValue)
+            {
+                errors.Add("Raw QUIC bytes sent and bytes received must both be reported.");
+            }
+            else
+            {
+                var totalBytes = bytesSent.Value + bytesReceived.Value;
+                if (IsBidirectional(cell) && bytesSent.Value != bytesReceived.Value)
+                {
+                    errors.Add($"Raw QUIC bytes sent ({bytesSent.Value.ToString(CultureInfo.InvariantCulture)}) did not match bytes received ({bytesReceived.Value.ToString(CultureInfo.InvariantCulture)}).");
+                }
+
+                if (totalBytes <= 0 || totalBytes % expectedBatch.ExpectedBytes.Value != 0)
+                {
+                    errors.Add($"Raw QUIC total bytes were {totalBytes.ToString(CultureInfo.InvariantCulture)}, expected a positive multiple of {expectedBatch.ExpectedBytes.Value.ToString(CultureInfo.InvariantCulture)}.");
+                }
+            }
+        }
+
+        if (errors.Count > 0)
+        {
+            return endpointValidation with
+            {
+                Status = ValidationStatus.Failed,
+                Summary = "Raw QUIC load-tool validation gates failed.",
+                Errors = errors.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+                Warnings = warnings.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+                Observations = observations,
+                ProofArtifacts = proofArtifacts
+            };
+        }
+
+        return endpointValidation with
+        {
+            Status = ValidationStatus.Passed,
+            Summary = "Raw QUIC endpoint and load-tool validation gates passed.",
+            Errors = [],
+            Warnings = warnings.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+            Observations = observations,
+            ProofArtifacts = proofArtifacts
+        };
+    }
+
+    private static async Task ValidateTargetExecutionArtifactAsync(
+        ArtifactPaths paths,
+        string baseUrl,
+        List<ValidationObservation> observations,
+        List<ValidationProofArtifact> proofArtifacts,
+        List<string> errors)
+    {
+        if (!File.Exists(paths.TargetExecutionJson))
+        {
+            return;
+        }
+
+        proofArtifacts.Add(new ValidationProofArtifact
+        {
+            Name = "target-execution",
+            Path = paths.TargetExecutionJson,
+            Category = "execution"
+        });
+
+        try
+        {
+            var targetExecution = ResultJson.Deserialize<TargetExecutionResult>(await File.ReadAllTextAsync(paths.TargetExecutionJson));
+            if (targetExecution is null)
+            {
+                errors.Add("Target execution artifact could not be parsed.");
+            }
+            else if (!string.IsNullOrWhiteSpace(targetExecution.TargetEffectiveBaseUrl) &&
+                !string.Equals(targetExecution.TargetEffectiveBaseUrl, baseUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                errors.Add($"Target effective base URL '{targetExecution.TargetEffectiveBaseUrl}' did not match the validated QUIC endpoint '{baseUrl}'.");
+            }
+
+            if (targetExecution is not null && !string.IsNullOrWhiteSpace(targetExecution.TargetContract))
+            {
+                observations.Add(new ValidationObservation
+                {
+                    Category = "target",
+                    Description = "Target contract",
+                    ActualValue = targetExecution.TargetContract
+                });
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or InvalidDataException)
+        {
+            errors.Add($"Target execution artifact could not be parsed: {ex.Message}");
+        }
+    }
+
+    private static async Task ValidateAdapterEndpointArtifactAsync(
+        ArtifactPaths paths,
+        Uri uri,
+        List<ValidationObservation> observations,
+        List<ValidationProofArtifact> proofArtifacts,
+        List<string> errors)
+    {
+        if (!File.Exists(paths.AdapterEndpointsJson))
+        {
+            return;
+        }
+
+        proofArtifacts.Add(new ValidationProofArtifact
+        {
+            Name = "adapter-endpoints",
+            Path = paths.AdapterEndpointsJson,
+            Category = "adapter"
+        });
+
+        try
+        {
+            var endpoints = JsonSerializer.Deserialize<AdapterEndpointsResponse>(
+                await File.ReadAllTextAsync(paths.AdapterEndpointsJson),
+                ProtocolLabAdapterJson.Options);
+
+            var endpoint = endpoints?.Endpoints.FirstOrDefault(candidate =>
+                string.Equals(candidate.Scheme, "quic", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(candidate.Protocol, "quic", StringComparison.OrdinalIgnoreCase));
+
+            if (endpoint is null)
+            {
+                errors.Add("Adapter did not expose a quic endpoint.");
+                return;
+            }
+
+            observations.Add(new ValidationObservation
+            {
+                Category = "adapter",
+                Description = "Adapter endpoint scheme",
+                ExpectedValue = "quic",
+                ActualValue = endpoint.Scheme
+            });
+            observations.Add(new ValidationObservation
+            {
+                Category = "adapter",
+                Description = "Adapter endpoint protocol",
+                ExpectedValue = "quic",
+                ActualValue = endpoint.Protocol
+            });
+
+            if (!string.Equals(endpoint.Host, uri.Host, StringComparison.OrdinalIgnoreCase))
+            {
+                errors.Add($"Adapter QUIC endpoint host '{endpoint.Host}' did not match the validated endpoint host '{uri.Host}'.");
+            }
+
+            if (endpoint.Port != uri.Port)
+            {
+                errors.Add($"Adapter QUIC endpoint port '{endpoint.Port}' did not match the validated endpoint port '{uri.Port}'.");
+            }
+
+            if (endpoint.Extensions.TryGetValue("transport", out var transportValue) &&
+                transportValue.ValueKind == JsonValueKind.String &&
+                !string.Equals(transportValue.GetString(), "udp", StringComparison.OrdinalIgnoreCase))
+            {
+                errors.Add($"Adapter QUIC endpoint transport '{transportValue.GetString()}' was not udp.");
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or InvalidDataException)
+        {
+            errors.Add($"Adapter endpoints artifact could not be parsed: {ex.Message}");
+        }
     }
 
     private static ScenarioValidationResult CreateResult(
@@ -307,291 +420,47 @@ internal static class QuicTransportValidator
         };
     }
 
-    private static async Task RunTransportSmokeAsync(
-        RunCell cell,
-        Uri uri,
-        QuicTransportSpec transport,
-        string certificateMode,
-        List<string> warnings,
-        List<ValidationObservation> observations)
+    private static bool IsCatalogRawTransportScenario(RunCell cell)
     {
-        var sampleConnections = Math.Clamp(Math.Max(cell.Connections, 1), 1, 2);
-        if (string.Equals(transport.StreamType, "none", StringComparison.OrdinalIgnoreCase))
+        return string.Equals(cell.Scenario.Family, "quic.transport", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsBidirectional(RunCell cell)
+    {
+        return string.Equals(cell.Scenario.QuicTransport?.PayloadDirection, "bidirectional", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(cell.Scenario.QuicTransport?.PayloadDirection, "bidirectional-stream", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static RawQuicExpectedBatch BuildExpectedBatch(RunCell cell)
+    {
+        var transport = cell.Scenario.QuicTransport;
+        if (transport is null)
         {
-            sampleConnections = Math.Max(sampleConnections, 2);
+            return new RawQuicExpectedBatch(null, 0);
         }
-        var sampleStreams = string.Equals(transport.StreamType, "none", StringComparison.OrdinalIgnoreCase)
+
+        var expectedStreams = Math.Max(0, cell.StreamsPerConnection);
+        var payloadBytes = Math.Max(0, transport.PayloadSizeBytes ?? 0);
+        var directionMultiplier = IsBidirectional(cell) ? 2 : 1;
+        var computedExpectedBytes = expectedStreams == 0
             ? 0
-            : Math.Clamp(Math.Max(cell.StreamsPerConnection, 1), 1, 4);
-        var payloadSize = Math.Max(0, transport.PayloadSizeBytes ?? 0);
-        var payload = CreateDeterministicBytes(payloadSize);
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-        var connectionOptions = CreateConnectionOptions(uri, certificateMode);
+            : (long)expectedStreams * payloadBytes * directionMultiplier;
+        var expectedBytes = computedExpectedBytes > 0
+            ? computedExpectedBytes
+            : transport.ExpectedBytes;
 
+        return new RawQuicExpectedBatch(expectedBytes, expectedStreams);
+    }
+
+    private static void AddObservation(List<ValidationObservation> observations, string category, string description, string? actualValue)
+    {
         observations.Add(new ValidationObservation
         {
-            Category = "quic",
-            Description = "Smoke sample connections",
-            ActualValue = sampleConnections.ToString(System.Globalization.CultureInfo.InvariantCulture)
-        });
-
-        if (string.Equals(transport.StreamType, "none", StringComparison.OrdinalIgnoreCase))
-        {
-            await RunHandshakeSmokeAsync(connectionOptions, sampleConnections, cancellationTokenSource.Token, observations);
-            await Task.Delay(TimeSpan.FromSeconds(5), cancellationTokenSource.Token);
-            return;
-        }
-
-        observations.Add(new ValidationObservation
-        {
-            Category = "quic",
-            Description = "Smoke sample streams per connection",
-            ActualValue = sampleStreams.ToString(System.Globalization.CultureInfo.InvariantCulture)
-        });
-
-        if (string.Equals(transport.OpenPattern, "churn", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(transport.Behavior, "connection-churn", StringComparison.OrdinalIgnoreCase))
-        {
-            await RunChurnSmokeAsync(connectionOptions, sampleConnections, sampleStreams, payload, transport.StreamType, cancellationTokenSource.Token, observations);
-            await Task.Delay(TimeSpan.FromSeconds(5), cancellationTokenSource.Token);
-            return;
-        }
-
-        await RunConnectionSmokeAsync(connectionOptions, sampleConnections, sampleStreams, payload, transport.StreamType, transport.OpenPattern, cancellationTokenSource.Token, observations);
-        await Task.Delay(TimeSpan.FromSeconds(5), cancellationTokenSource.Token);
-    }
-
-    private static async Task RunHandshakeSmokeAsync(
-        QuicClientConnectionOptions connectionOptions,
-        int sampleConnections,
-        CancellationToken cancellationToken,
-        List<ValidationObservation> observations)
-    {
-        for (var index = 0; index < sampleConnections; index++)
-        {
-            var connectStopwatch = System.Diagnostics.Stopwatch.StartNew();
-            await using var connection = await QuicConnection.ConnectAsync(connectionOptions, cancellationToken);
-            connectStopwatch.Stop();
-
-            observations.Add(new ValidationObservation
-            {
-                Category = "quic",
-                Description = $"Handshake smoke #{index + 1}",
-                ActualValue = connectStopwatch.Elapsed.TotalMilliseconds.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
-            });
-        }
-    }
-
-    private static async Task RunConnectionSmokeAsync(
-        QuicClientConnectionOptions connectionOptions,
-        int sampleConnections,
-        int sampleStreams,
-        byte[] payload,
-        string streamType,
-        string openPattern,
-        CancellationToken cancellationToken,
-        List<ValidationObservation> observations)
-    {
-        for (var connectionIndex = 0; connectionIndex < sampleConnections; connectionIndex++)
-        {
-            var connectStopwatch = System.Diagnostics.Stopwatch.StartNew();
-            await using var connection = await QuicConnection.ConnectAsync(connectionOptions, cancellationToken);
-            connectStopwatch.Stop();
-
-            observations.Add(new ValidationObservation
-            {
-                Category = "quic",
-                Description = $"Handshake smoke #{connectionIndex + 1}",
-                ActualValue = connectStopwatch.Elapsed.TotalMilliseconds.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
-            });
-
-            if (sampleStreams <= 0)
-            {
-                continue;
-            }
-
-            if (string.Equals(openPattern, "concurrent", StringComparison.OrdinalIgnoreCase))
-            {
-                var tasks = Enumerable.Range(0, sampleStreams)
-                    .Select(streamIndex => RunStreamSmokeAsync(connection, payload, streamType, streamIndex + 1, cancellationToken, observations))
-                    .ToArray();
-                await Task.WhenAll(tasks);
-            }
-            else
-            {
-                for (var streamIndex = 0; streamIndex < sampleStreams; streamIndex++)
-                {
-                    await RunStreamSmokeAsync(connection, payload, streamType, streamIndex + 1, cancellationToken, observations);
-                }
-            }
-        }
-    }
-
-    private static async Task RunChurnSmokeAsync(
-        QuicClientConnectionOptions connectionOptions,
-        int sampleConnections,
-        int sampleStreams,
-        byte[] payload,
-        string streamType,
-        CancellationToken cancellationToken,
-        List<ValidationObservation> observations)
-    {
-        var totalIterations = Math.Max(sampleConnections * sampleStreams, 1);
-        for (var iteration = 0; iteration < totalIterations; iteration++)
-        {
-            var connectStopwatch = System.Diagnostics.Stopwatch.StartNew();
-            await using var connection = await QuicConnection.ConnectAsync(connectionOptions, cancellationToken);
-            connectStopwatch.Stop();
-
-            observations.Add(new ValidationObservation
-            {
-                Category = "quic",
-                Description = $"Churn smoke handshake #{iteration + 1}",
-                ActualValue = connectStopwatch.Elapsed.TotalMilliseconds.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
-            });
-
-            if (!string.Equals(streamType, "none", StringComparison.OrdinalIgnoreCase))
-            {
-                await RunStreamSmokeAsync(connection, payload, streamType, iteration + 1, cancellationToken, observations);
-            }
-        }
-    }
-
-    private static async Task RunStreamSmokeAsync(
-        QuicConnection connection,
-        byte[] payload,
-        string streamType,
-        int sampleIndex,
-        CancellationToken cancellationToken,
-        List<ValidationObservation> observations)
-    {
-        var streamKind = string.Equals(streamType, "unidirectional", StringComparison.OrdinalIgnoreCase)
-            ? QuicStreamType.Unidirectional
-            : QuicStreamType.Bidirectional;
-
-        await using var stream = await connection.OpenOutboundStreamAsync(streamKind, cancellationToken);
-
-        var transactionStopwatch = System.Diagnostics.Stopwatch.StartNew();
-        if (payload.Length > 0)
-        {
-            await stream.WriteAsync(payload.AsMemory(), cancellationToken);
-        }
-
-        await stream.CompleteWritesAsync(cancellationToken);
-
-        long bytesReceived = 0;
-        long bytesSent = payload.Length;
-        var firstByteElapsed = TimeSpan.Zero;
-
-        if (streamKind == QuicStreamType.Bidirectional)
-        {
-            var firstRead = true;
-            var buffer = new byte[Math.Max(1, Math.Min(payload.Length, 64 * 1024))];
-            var received = new List<byte>(payload.Length == 0 ? 1 : payload.Length);
-
-            while (true)
-            {
-                var readStopwatch = firstRead ? System.Diagnostics.Stopwatch.StartNew() : null;
-                var bytesRead = await stream.ReadAsync(buffer.AsMemory(), cancellationToken);
-                if (firstRead)
-                {
-                    readStopwatch!.Stop();
-                    firstByteElapsed = readStopwatch.Elapsed;
-                    firstRead = false;
-                }
-
-                if (bytesRead <= 0)
-                {
-                    break;
-                }
-
-                received.AddRange(buffer.AsSpan(0, bytesRead).ToArray());
-                bytesReceived += bytesRead;
-            }
-
-            if (payload.Length > 0 && !received.Take(payload.Length).SequenceEqual(payload))
-            {
-                throw new InvalidDataException("QUIC smoke stream echo did not match the sent payload.");
-            }
-
-            observations.Add(new ValidationObservation
-            {
-                Category = "quic",
-                Description = $"Bidirectional stream smoke #{sampleIndex}",
-                ActualValue = bytesReceived.ToString(System.Globalization.CultureInfo.InvariantCulture)
-            });
-
-            observations.Add(new ValidationObservation
-            {
-                Category = "quic",
-                Description = $"Bidirectional stream TTFB #{sampleIndex}",
-                ActualValue = firstByteElapsed.TotalMilliseconds.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
-            });
-        }
-        else
-        {
-            observations.Add(new ValidationObservation
-            {
-                Category = "quic",
-                Description = $"Unidirectional stream smoke #{sampleIndex}",
-                ActualValue = bytesSent.ToString(System.Globalization.CultureInfo.InvariantCulture)
-            });
-        }
-
-        transactionStopwatch.Stop();
-        observations.Add(new ValidationObservation
-        {
-            Category = "quic",
-            Description = $"Stream transaction duration #{sampleIndex}",
-            ActualValue = transactionStopwatch.Elapsed.TotalMilliseconds.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
+            Category = category,
+            Description = description,
+            ActualValue = actualValue
         });
     }
 
-    private static QuicClientConnectionOptions CreateConnectionOptions(Uri uri, string certificateMode)
-    {
-        return new QuicClientConnectionOptions
-        {
-            RemoteEndPoint = CreateRemoteEndPoint(uri),
-            DefaultCloseErrorCode = 0,
-            DefaultStreamErrorCode = 0,
-            ClientAuthenticationOptions = new SslClientAuthenticationOptions
-            {
-                TargetHost = string.IsNullOrWhiteSpace(uri.Host) ? "localhost" : uri.Host,
-                AllowRenegotiation = false,
-                AllowTlsResume = false,
-                AllowRsaPkcs1Padding = false,
-                AllowRsaPssPadding = false,
-                EnabledSslProtocols = SslProtocols.Tls13,
-                EncryptionPolicy = EncryptionPolicy.RequireEncryption,
-                ApplicationProtocols = [new SslApplicationProtocol("plab-raw-quic")],
-                RemoteCertificateValidationCallback = static (_, _, _, _) => true
-            }
-        };
-    }
-
-    private static EndPoint CreateRemoteEndPoint(Uri uri)
-    {
-        if (IPAddress.TryParse(uri.Host, out var address))
-        {
-            return new IPEndPoint(address, uri.Port);
-        }
-
-        return new DnsEndPoint(uri.Host, uri.Port);
-    }
-
-    private static byte[] CreateDeterministicBytes(int size)
-    {
-        if (size <= 0)
-        {
-            return [];
-        }
-
-        var bytes = new byte[size];
-        for (var index = 0; index < bytes.Length; index++)
-        {
-            bytes[index] = (byte)(index % 251);
-        }
-
-        return bytes;
-    }
+    private sealed record RawQuicExpectedBatch(long? ExpectedBytes, int ExpectedStreams);
 }

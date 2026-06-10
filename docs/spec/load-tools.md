@@ -257,12 +257,12 @@ execution. The `--target-mode docker` option starts the benchmark target as a
 container. The existing `--load-tool-mode docker` option starts the load
 generator as a container.
 
-For the Kestrel and Incursa Docker target paths, each target container publishes
-its H3 UDP port to the host. Host validation proves `https://127.0.0.1:5443`
-for Kestrel and `https://127.0.0.1:5444` for Incursa, while Docker h2load
-reaches the same targets through the existing `host.docker.internal` rewrite.
-Result JSON records target mode, target image, container name, target network
-mode, published ports, internal ports, target command, and target inspect path.
+Public reference Docker targets publish their H3 UDP ports to the host. Host
+validation proves the manifest-declared H3 URL before Docker h2load reaches the
+same target through either the `host.docker.internal` rewrite or a shared
+Docker network route. Result JSON records target mode, target image, container
+name, target network mode, published ports, internal ports, target command, and
+target inspect path.
 
 Phase 3C adds `--target-network-mode shared-docker-network` for Docker target
 plus Docker h2load cells. In that mode, ProtocolLab creates a generated
@@ -327,11 +327,11 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --run-id local-kestrel-h3-managed-phase2f
 ```
 
-Incursa H3 managed-lab benchmark:
+Public local comparison:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations incursa-http3 `
+  --implementations kestrel-http3,quic-go-http3 `
   --scenarios http.core.plaintext,http.core.json `
   --protocol h3 `
   --load-tool managed-httpclient-h3-load `
@@ -340,30 +340,14 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --warmup 2 `
   --repetitions 3 `
   --output .artifacts\runs `
-  --run-id local-incursa-h3-managed-phase2f
-```
-
-Combined local comparison:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3 `
-  --scenarios http.core.plaintext,http.core.json `
-  --protocol h3 `
-  --load-tool managed-httpclient-h3-load `
-  --concurrency 16 `
-  --duration 10 `
-  --warmup 2 `
-  --repetitions 3 `
-  --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-phase2f
+  --run-id local-h3-kestrel-quic-go-phase2f
 ```
 
 External-reference h2load H3 attempt through Docker:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3 `
+  --implementations kestrel-http3 `
   --scenarios http.core.plaintext,http.core.json `
   --protocol h3 `
   --load-tool h2load `
@@ -374,7 +358,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --warmup 2 `
   --repetitions 3 `
   --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-h2load-phase2g
+  --run-id local-h3-kestrel-h2load-phase2g
 ```
 
 This command is accepted only when Docker can run the repo-owned `h2load` image
@@ -386,7 +370,7 @@ External-reference h2load H3 with runtime counters:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3 `
+  --implementations kestrel-http3 `
   --scenarios http.core.plaintext,http.core.json `
   --protocol h3 `
   --load-tool h2load `
@@ -399,14 +383,14 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --capture-counters `
   --counter-refresh-interval 1 `
   --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-counters-phase2k
+  --run-id local-h3-kestrel-counters-phase2k
 ```
 
 Resource-limited Docker h2load can be requested with CLI overrides:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3 `
+  --implementations kestrel-http3,caddy-http3,nginx-http3 `
   --target-mode docker `
   --target-network-mode shared-docker-network `
   --scenarios http.core.plaintext,http.core.json `
@@ -423,7 +407,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --load-tool-cpus 2 `
   --load-tool-memory 1g `
   --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-shared-network-limited
+  --run-id local-h3-public-references-shared-network-limited
 ```
 
 ProtocolLab records requested/effective Docker limits and cleanup state, but
@@ -434,7 +418,7 @@ Load-generator Docker metrics can be enabled for Docker h2load:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3 `
+  --implementations kestrel-http3,caddy-http3,nginx-http3 `
   --target-mode docker `
   --target-network-mode shared-docker-network `
   --scenarios http.core.plaintext,http.core.json `
@@ -444,7 +428,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --capture-load-tool-metrics `
   --load-tool-metrics-interval 1 `
   --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-loadgen-metrics
+  --run-id local-h3-public-references-loadgen-metrics
 ```
 
 The runner preserves raw Docker stats output and parses CPU, memory, network,

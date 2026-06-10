@@ -15,7 +15,6 @@ public sealed class SuiteDefinitionTests
         Assert.Equal("h3-local-v1", suite.Id);
         Assert.Equal("h3", suite.Protocol);
         Assert.Contains("kestrel-http3", suite.Implementations);
-        Assert.Contains("incursa-http3", suite.Implementations);
         Assert.Contains("http.core.plaintext", suite.Scenarios);
         Assert.Contains("http.core.json", suite.Scenarios);
         Assert.Contains(suite.LoadTools, tool => tool.Id == "managed-httpclient-h3-load" && tool.Mode == "managed");
@@ -35,7 +34,6 @@ public sealed class SuiteDefinitionTests
         Assert.Equal("h3-local-v1-comparison", suite.Id);
         Assert.Equal("local-comparison", suite.LoadProfileId);
         Assert.Contains("kestrel-http3", suite.Implementations);
-        Assert.Contains("incursa-http3", suite.Implementations);
         Assert.Contains("quic-go-http3", suite.Implementations);
         Assert.Empty(suite.UnsupportedImplementations);
         Assert.Equal(12, suite.Scenarios.Count);
@@ -55,7 +53,7 @@ public sealed class SuiteDefinitionTests
         Assert.Equal(3, suite.Defaults.Repetitions);
         Assert.Equal(128, suite.Defaults.Connections);
         Assert.Equal(100, suite.Defaults.StreamsPerConnection);
-        Assert.Contains("quic-go", suite.Notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("package v2", suite.Notes, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("full stable", suite.Notes, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -69,13 +67,9 @@ public sealed class SuiteDefinitionTests
         Assert.Equal("local-comparison", suite.LoadProfileId);
         Assert.Equal("process", suite.TargetMode);
         Assert.Equal("published-port", suite.TargetNetworkMode);
-        Assert.Contains("incursa-raw-quic-adapter-v1", suite.Implementations);
-        Assert.Contains("msquic-dotnet-raw-adapter-v1", suite.Implementations);
-        Assert.Equal(5, suite.Scenarios.Count);
-        Assert.Contains("quic.transport.handshake-cold", suite.Scenarios);
-        Assert.Contains("quic.transport.stream-throughput.1mb", suite.Scenarios);
+        Assert.Empty(suite.Implementations);
+        Assert.Equal(2, suite.Scenarios.Count);
         Assert.Contains("quic.transport.multiplex.100x64kb", suite.Scenarios);
-        Assert.Contains("quic.transport.connection-churn", suite.Scenarios);
         Assert.Contains("quic.transport.duplex-streams", suite.Scenarios);
         Assert.Contains(suite.LoadTools, tool => tool.Id == "quic-go-raw-load" && tool.Mode == "process" && tool.Category == "managed-lab");
         Assert.Equal(30, suite.Defaults.DurationSeconds);
@@ -83,7 +77,7 @@ public sealed class SuiteDefinitionTests
         Assert.Equal(3, suite.Defaults.Repetitions);
         Assert.Equal(32, suite.Defaults.Connections);
         Assert.Equal(16, suite.Defaults.StreamsPerConnection);
-        Assert.Contains("raw QUIC", suite.Notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("package-backed", suite.Notes, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -95,8 +89,6 @@ public sealed class SuiteDefinitionTests
         Assert.Equal("docker", suite.TargetMode);
         Assert.Equal("published-port", suite.TargetNetworkMode);
         Assert.Contains("kestrel-http3", suite.Implementations);
-        Assert.Contains("incursa-http3", suite.Implementations);
-        Assert.DoesNotContain(suite.UnsupportedImplementations, implementation => implementation.Id == "incursa-http3");
         Assert.Contains(suite.LoadTools, tool => tool.Id == "h2load" && tool.Mode == "docker");
     }
 
@@ -109,26 +101,8 @@ public sealed class SuiteDefinitionTests
         Assert.Equal("docker", suite.TargetMode);
         Assert.Equal("shared-docker-network", suite.TargetNetworkMode);
         Assert.Contains("kestrel-http3", suite.Implementations);
-        Assert.Contains("incursa-http3", suite.Implementations);
         Assert.Contains(suite.LoadTools, tool => tool.Id == "h2load" && tool.Mode == "docker");
         Assert.Contains("shared Docker network", suite.Notes, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public void Parses_kestrel_adapter_fixture_suite()
-    {
-        var suite = YamlFile.Load<SuiteDefinition>(
-            Path.Combine(TestPaths.RepoRoot, "tests", "Incursa.ProtocolLab.Tests", "Fixtures", "RunnerContractLab", "suites", "runner-kestrel-adapter.fixture.yaml"));
-
-        Assert.Equal("runner-kestrel-adapter-fixture", suite.Id);
-        Assert.Equal("process", suite.TargetMode);
-        Assert.Equal("published-port", suite.TargetNetworkMode);
-        Assert.Contains("fixture-kestrel-adapter-v1", suite.Implementations);
-        Assert.Contains("fixture.kestrel.success", suite.Scenarios);
-        Assert.Contains("fixture.kestrel.inspect-headers", suite.Scenarios);
-        Assert.Contains(suite.LoadTools, tool => tool.Id == "fixture-load-success" && tool.Mode == "process");
-        Assert.Equal("h1", suite.Protocol);
-        Assert.Contains("protocol endpoint", suite.Notes, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -177,7 +151,6 @@ public sealed class SuiteDefinitionTests
 
         Assert.Equal("h3-local-docker-target-baselines", suite.Id);
         Assert.Contains("kestrel-http3", suite.Implementations);
-        Assert.Contains("incursa-http3", suite.Implementations);
         Assert.Contains("caddy-http3", suite.Implementations);
         Assert.Contains("nginx-http3", suite.Implementations);
         Assert.Equal("shared-docker-network", suite.TargetNetworkMode);

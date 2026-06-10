@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Test Executor Contract v1 Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "executorIdentity",
+    "versionCompatibility",
+    "claimedCapabilities",
+    "supportedTestSelectors",
+    "supportedScenarioSelectors",
+    "supportedProtocolFamilies",
+    "supportedExecutionModes",
+    "requiredTargetEndpointBindings",
+    "supportedArtifactTypes",
+    "metricsAvailability"
+  ],
+  "properties": {
+    "executorIdentity": { "$ref": "./common.schema.json#/$defs/identity" },
+    "versionCompatibility": { "$ref": "./common.schema.json#/$defs/versionCompatibility" },
+    "claimedCapabilities": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/capability" }
+    },
+    "supportedTestSelectors": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/selector" }
+    },
+    "supportedScenarioSelectors": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/selector" }
+    },
+    "supportedProtocolFamilies": { "$ref": "./common.schema.json#/$defs/stringArray" },
+    "supportedExecutionModes": { "$ref": "./common.schema.json#/$defs/stringArray" },
+    "requiredTargetEndpointBindings": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/endpointBinding" }
+    },
+    "supportedArtifactTypes": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/artifactType" }
+    },
+    "metricsAvailability": { "$ref": "./common.schema.json#/$defs/metricsAvailability" },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

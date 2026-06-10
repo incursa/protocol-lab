@@ -46,6 +46,7 @@ public sealed class ArtifactPathTests
         Assert.EndsWith(Path.Combine(expectedCellRoot, "protocol-proof.stderr.txt"), paths.ProtocolProofStderr);
         Assert.EndsWith(Path.Combine(expectedCellRoot, "load-tool.stdout.txt"), paths.LoadToolStdout);
         Assert.EndsWith(Path.Combine(expectedCellRoot, "load-tool.stderr.txt"), paths.LoadToolStderr);
+        Assert.EndsWith(Path.Combine(expectedCellRoot, "load-tool-command.txt"), paths.LoadToolCommandTxt);
         Assert.EndsWith(Path.Combine(expectedCellRoot, "load-tool-docker-inspect.json"), paths.LoadToolDockerInspectJson);
         Assert.EndsWith(Path.Combine(expectedCellRoot, "load-tool-docker-stats.raw.txt"), paths.LoadToolDockerStatsRawTxt);
         Assert.EndsWith(Path.Combine(expectedCellRoot, "load-tool-docker-stats.jsonl"), paths.LoadToolDockerStatsJsonl);

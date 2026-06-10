@@ -29,11 +29,11 @@ Future real adapters should run the adapter conformance suite described in
 [`docs/runner/adapter-conformance.md`](adapter-conformance.md) before the
 runner is allowed to consume them.
 
-The first real adapter, `Kestrel Adapter v1`, is documented in
-[`docs/runner/kestrel-adapter.md`](kestrel-adapter.md). The fixture lab keeps
-separate manifests for the real adapter control plane so runner tests can prove
-the control-plane URL, returned protocol endpoint URL, metrics snapshots, and
-artifact discovery without conflating them with the direct Kestrel target path.
+Production adapters are intentionally outside the public repository. Public
+fixture manifests stay fake/reference-only so runner tests can prove the
+control-plane URL, returned protocol endpoint URL, metrics snapshots, and
+artifact discovery without coupling the contract suite to a concrete production
+implementation.
 
 ## What It Proves
 

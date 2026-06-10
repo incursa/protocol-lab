@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Test Executor Contract v1 Artifacts Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["session", "availability", "artifacts"],
+  "properties": {
+    "session": { "$ref": "./common.schema.json#/$defs/sessionSummary" },
+    "availability": { "$ref": "./common.schema.json#/$defs/resourceAvailability" },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/artifact" }
+    },
+    "operation": { "$ref": "./common.schema.json#/$defs/operationResult" },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

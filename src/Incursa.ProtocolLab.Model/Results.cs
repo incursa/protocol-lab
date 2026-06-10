@@ -331,6 +331,7 @@ public sealed record HttpMetrics
     public long? SuccessfulRequests { get; init; }
     public long? FailedRequests { get; init; }
     public long? TimeoutRequests { get; init; }
+    public long? CompletedStreams { get; init; }
     public Dictionary<string, long> StatusCodeCounts { get; init; } = [];
     public long? BytesReceived { get; init; }
     public long? BytesSent { get; init; }

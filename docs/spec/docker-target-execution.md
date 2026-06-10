@@ -29,19 +29,6 @@ The default tag is:
 incursa/protocol-lab-kestrel-bench-server:local
 ```
 
-Build the local Incursa HTTP/3 target image from the repo-owned adapter
-project:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build\Build-IncursaHttp3BenchServerImage.ps1
-```
-
-The default tag is:
-
-```text
-incursa/protocol-lab-incursa-http3-bench-server:local
-```
-
 Build the optional local Caddy HTTP/3 target image:
 
 ```powershell
@@ -104,7 +91,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
 
 ## Networking
 
-Phase 3A/3B supports `published-port` mode. Phase 3C adds optional
+Phase 3A supports `published-port` mode. Phase 3C adds optional
 `shared-docker-network` mode for Docker target plus Docker load-tool benchmark
 traffic. Published-port mode remains the default.
 
@@ -116,14 +103,6 @@ The Kestrel target container publishes:
 Host validation calls `https://127.0.0.1:5443`. Docker h2load calls the same
 logical target after the existing load-tool rewrite changes loopback hosts to
 `host.docker.internal`.
-
-The Incursa target container publishes:
-
-- `5444/udp` for HTTPS/HTTP/3.
-
-Host validation calls `https://127.0.0.1:5444`. Docker h2load calls the same
-logical target through `host.docker.internal` rewriting and sends SNI
-`localhost`.
 
 The Caddy target container publishes:
 
@@ -155,8 +134,8 @@ the logical URL host and SNI as `localhost` and uses `--connect-to` to route the
 connection to the target container alias and internal UDP port. For example:
 
 ```text
-effective URL: https://localhost:5444/plaintext
-connect-to: incursa-http3:5444
+effective URL: https://localhost:5445/plaintext
+connect-to: caddy-http3:8443
 SNI: localhost
 ```
 
@@ -170,11 +149,6 @@ The Kestrel Docker target generates a short-lived local certificate at
 container startup when `PROTOCOL_LAB_GENERATE_LOCAL_CERT=true`. Private key
 material is not committed. ProtocolLab records local certificate bypass and
 marks the result as local evidence only.
-
-The Incursa Docker target uses the runtime-generated
-short-lived loopback self-signed certificate. Private key material is not
-committed. ProtocolLab records certificate mode
-`loopback-self-signed-certificate`.
 
 The Caddy Docker target uses Caddy `tls internal`, generating local CA
 material inside the container at runtime. Private key material is not
@@ -248,47 +222,6 @@ Docker target runs add warnings such as:
   captured
 - `target-container-metrics-missing` or `target-container-cpu-not-captured`
   when target Docker stats were requested or expected but unavailable
-
-## Incursa Docker Target
-
-Phase 3B adds Incursa Docker target execution through
-`implementations/incursa-http3.yaml` and the repo-owned Dockerfile in
-`src/Incursa.ProtocolLab.Adapters.IncursaHttp3`. Process mode remains the
-default and starts the same endpoint project through `dotnet`.
-
-Incursa Docker validation:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- validate `
-  --implementations incursa-http3 `
-  --target-mode docker `
-  --scenarios http.core.plaintext,http.core.json `
-  --protocol h3 `
-  --output .artifacts\runs `
-  --run-id local-incursa-h3-docker-target-validate
-```
-
-Incursa Docker target with Docker h2load:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations incursa-http3 `
-  --target-mode docker `
-  --scenarios http.core.plaintext,http.core.json `
-  --protocol h3 `
-  --load-tool h2load `
-  --load-tool-mode docker `
-  --connections 16 `
-  --streams-per-connection 10 `
-  --duration 5 `
-  --warmup 1 `
-  --repetitions 1 `
-  --output .artifacts\runs `
-  --run-id local-incursa-h3-docker-target-h2load
-```
-
-See `docs/spec/incursa-docker-target-contract.md` for the full Incursa
-contract and troubleshooting notes.
 
 ## Caddy Docker Target
 
@@ -374,12 +307,12 @@ troubleshooting notes.
 
 ## Shared-Network Smoke Command
 
-Run Kestrel, Incursa, optional Caddy, and optional nginx Docker targets with
-Docker h2load on a generated shared network:
+Run Kestrel, optional Caddy, and optional nginx Docker targets with Docker
+h2load on a generated shared network:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3,caddy-http3,nginx-http3 `
+  --implementations kestrel-http3,caddy-http3,nginx-http3 `
   --target-mode docker `
   --target-network-mode shared-docker-network `
   --scenarios http.core.plaintext,http.core.json `
@@ -392,7 +325,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --warmup 1 `
   --repetitions 1 `
   --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-caddy-nginx-shared-network-h2load
+  --run-id local-h3-public-references-shared-network-h2load
 ```
 
 This remains local `external-reference-local` evidence with comparability
@@ -404,7 +337,7 @@ impairment control, or publishable benchmark automation.
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3 `
+  --implementations kestrel-http3,caddy-http3 `
   --target-mode docker `
   --target-network-mode shared-docker-network `
   --scenarios http.core.plaintext,http.core.json `
@@ -421,7 +354,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --load-tool-cpus 2 `
   --load-tool-memory 1g `
   --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-shared-network-limited
+  --run-id local-h3-public-references-shared-network-limited
 ```
 
 Resource controls are recorded as requested/effective Docker metadata and

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Test Executor Contract v1 Prepare Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["testId", "scenarioId", "scenarioVersion", "protocol", "testDocument", "scenarioDocument", "targetEndpoints", "runId", "cellId", "artifactOutputExpectations"],
+  "properties": {
+    "testId": { "type": "string", "minLength": 1 },
+    "scenarioId": { "type": "string", "minLength": 1 },
+    "scenarioVersion": { "type": "string", "minLength": 1 },
+    "protocol": { "type": "string", "minLength": 1 },
+    "testDocument": {},
+    "scenarioDocument": {},
+    "targetEndpoints": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/targetEndpoint" }
+    },
+    "runId": { "type": "string", "minLength": 1 },
+    "cellId": { "type": "string", "minLength": 1 },
+    "artifactOutputExpectations": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/artifactExpectation" }
+    },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

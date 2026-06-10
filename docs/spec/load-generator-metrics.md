@@ -48,7 +48,7 @@ Enable explicitly:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3,caddy-http3,nginx-http3 `
+  --implementations kestrel-http3,caddy-http3,nginx-http3 `
   --target-mode docker `
   --target-network-mode shared-docker-network `
   --scenarios http.core.plaintext,http.core.json `

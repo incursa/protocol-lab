@@ -50,11 +50,11 @@ scenarios/
 | `h3.protocol.multiplex-100-streams` | experimental | protocolValidation | protocol | h3 |
 | `h3.protocol.qpack-repeated-headers` | experimental | protocolValidation | protocol | h3 |
 | `h3.protocol.cancel-mid-response` | experimental | protocolValidation | protocol | h3 |
-| `quic.transport.handshake-cold` | experimental | protocolValidation | transport | quic |
-| `quic.transport.stream-throughput.1mb` | experimental | protocolValidation | transport | quic |
-| `quic.transport.multiplex.100x64kb` | experimental | protocolValidation | transport | quic |
-| `quic.transport.connection-churn` | experimental | protocolValidation | transport | quic |
-| `quic.transport.duplex-streams` | experimental | protocolValidation | transport | quic |
+| `quic.transport.multiplex.100x64kb` | stable, load-validated | protocolValidation | transport | quic |
+| `quic.transport.duplex-streams` | stable, load-validated | protocolValidation | transport | quic |
+| `quic.transport.handshake-cold` | stable, unsupported | protocolValidation | transport | quic |
+| `quic.transport.stream-throughput.1mb` | stable, unsupported | protocolValidation | transport | quic |
+| `quic.transport.connection-churn` | stable, unsupported | protocolValidation | transport | quic |
 
 ## Placeholder scenarios (not runnable by default)
 

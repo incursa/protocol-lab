@@ -2,7 +2,7 @@
   "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
   "artifact_id": "VER-PL-ADAPTER-KESTREL-0001",
   "artifact_type": "verification",
-  "title": "Kestrel Adapter v1 Verification",
+  "title": "Historical Kestrel Adapter v1 Verification",
   "domain": "protocol-lab",
   "status": "passed",
   "owner": "protocol-lab-maintainers",
@@ -20,11 +20,11 @@
     "REQ-PL-RUNNER-0009",
     "REQ-PL-RUNNER-0016"
   ],
-  "scope": "This verification covers the first real Kestrel adapter control plane and its runner-backed fixture path. It does not claim Incursa-specific adapter coverage, Docker-required execution, or any redesign of the runner boundary.",
-  "verification_method": "Exercise the real adapter through the adapter conformance suite, run the adapter-backed Kestrel runner fixtures, inspect the persisted adapter control-plane artifacts, and validate the repository with the standard restore/build/test and Workbench commands.",
+  "scope": "This historical verification covered the first real Kestrel adapter control plane before production adapter projects were retired from the public repository. It is retained as evidence that Adapter Contract v1 was exercised once against a real implementation, but current public readiness depends on the schema and fake/reference conformance surfaces instead of this retired adapter project.",
+  "verification_method": "Historical run: exercise the real adapter through the adapter conformance suite, run the adapter-backed Kestrel runner fixtures, inspect the persisted adapter control-plane artifacts, and validate the repository with the standard restore/build/test and Workbench commands.",
   "preconditions": [
-    "The Kestrel adapter project exists.",
-    "The Kestrel benchmark server remains runnable through its direct target path.",
+    "The Kestrel adapter project existed in the public repository at the time of this verification.",
+    "The Kestrel benchmark server was runnable through its direct target path at the time of this verification.",
     "The adapter contract and conformance suite already exist."
   ],
   "procedure": [
@@ -35,7 +35,7 @@
     "Confirm the returned protocol endpoint URL differs from the control-plane URL.",
     "Run `workbench validate --profile core`."
   ],
-  "expected_result": "The real Kestrel adapter passes the conformance suite for supported scenarios, reports unsupported scenarios structurally, preserves cleanup behavior, and remains distinct from the direct Kestrel target path while keeping the runner implementation-neutral.",
+  "expected_result": "The historical real Kestrel adapter passed the conformance suite for supported scenarios, reported unsupported scenarios structurally, preserved cleanup behavior, and remained distinct from the direct Kestrel target path while keeping the runner implementation-neutral.",
   "evidence": [
     "`dotnet test tests/Incursa.ProtocolLab.Tests/Incursa.ProtocolLab.Tests.csproj --filter FullyQualifiedName~KestrelAdapterConformanceTests|FullyQualifiedName~RunnerAdapterFixtureLabTests.Kestrel_` passed 7/7 focused Kestrel adapter tests.",
     "`dotnet restore Incursa.ProtocolLab.sln` completed successfully.",
@@ -43,5 +43,5 @@
     "`dotnet test Incursa.ProtocolLab.sln --no-build` passed 178/178 tests.",
     "`workbench validate --profile core` completed successfully after the SpecTrace records were corrected."
   ],
-  "status_summary": "Verification passed for the first real Kestrel adapter control plane and its runner-backed fixture path."
+  "status_summary": "Historical verification passed for the first real Kestrel adapter control plane and its runner-backed fixture path. The public repository no longer carries that production adapter project; current Adapter v1 readiness is covered by the public schema and fake/reference conformance verification."
 }

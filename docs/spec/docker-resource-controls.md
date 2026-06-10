@@ -40,7 +40,7 @@ provided, Docker command construction remains unchanged.
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3,caddy-http3,nginx-http3 `
+  --implementations kestrel-http3,caddy-http3,nginx-http3 `
   --target-mode docker `
   --target-network-mode shared-docker-network `
   --scenarios http.core.plaintext,http.core.json `
@@ -58,7 +58,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --load-tool-memory 1g `
   --capture-load-tool-metrics `
   --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-caddy-nginx-shared-network-limited
+  --run-id local-h3-public-references-shared-network-limited
 ```
 
 The same controls apply to Caddy and nginx when `caddy-http3` or

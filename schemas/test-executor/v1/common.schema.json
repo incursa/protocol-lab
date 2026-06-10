@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Test Executor Contract v1 Common Definitions",
+  "type": "object",
+  "$defs": {
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string" },
+        "revision": { "type": "string" },
+        "vendor": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "versionCompatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contractVersion", "compatibleContractVersions"],
+      "properties": {
+        "contractVersion": { "type": "string", "minLength": 1 },
+        "compatibleContractVersions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "runnerCompatibility": { "type": "object", "additionalProperties": true },
+        "executorVersion": { "type": "string" },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "healthStatus": {
+      "type": "string",
+      "enum": ["ready", "degraded", "not_ready", "unavailable", "unsupported"]
+    },
+    "sessionState": {
+      "type": "string",
+      "enum": ["created", "preparing", "prepared", "starting", "running", "stopping", "stopped", "failed", "unsupported", "disposed"]
+    },
+    "operationResultCategory": {
+      "type": "string",
+      "enum": ["succeeded", "pending", "unsupported", "rejected", "failed"]
+    },
+    "resourceAvailability": {
+      "type": "string",
+      "enum": ["available", "partial", "unavailable", "unsupported"]
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["supported", "conditional", "partial", "experimental", "unsupported"]
+        },
+        "version": { "type": "string" },
+        "mode": { "type": "string" },
+        "description": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selectorType", "expression"],
+      "properties": {
+        "selectorType": { "type": "string", "minLength": 1 },
+        "expression": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "endpointBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bindingId", "purpose", "endpointType"],
+      "properties": {
+        "bindingId": { "type": "string", "minLength": 1 },
+        "purpose": { "type": "string", "minLength": 1 },
+        "endpointType": { "type": "string", "minLength": 1 },
+        "protocols": { "$ref": "#/$defs/stringArray" },
+        "required": { "type": "boolean", "default": true },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "targetEndpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bindingId", "endpointId", "purpose", "scheme", "protocol", "host", "port"],
+      "properties": {
+        "bindingId": { "type": "string", "minLength": 1 },
+        "endpointId": { "type": "string", "minLength": 1 },
+        "purpose": { "type": "string", "minLength": 1 },
+        "scheme": { "type": "string", "minLength": 1 },
+        "protocol": { "type": "string", "minLength": 1 },
+        "host": { "type": "string", "minLength": 1 },
+        "port": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "path": { "type": "string" },
+        "authority": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "artifactType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "producedByStates": { "$ref": "#/$defs/stringArray" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "artifactExpectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactType"],
+      "properties": {
+        "artifactType": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean", "default": true },
+        "destinationHint": { "type": "string" },
+        "contentType": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactId", "artifactType", "status"],
+      "properties": {
+        "artifactId": { "type": "string", "minLength": 1 },
+        "artifactType": { "type": "string", "minLength": 1 },
+        "status": { "$ref": "#/$defs/resourceAvailability" },
+        "path": { "type": "string" },
+        "uri": { "type": "string" },
+        "contentType": { "type": "string" },
+        "final": { "type": "boolean" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metricId", "scope", "value"],
+      "properties": {
+        "metricId": { "type": "string", "minLength": 1 },
+        "scope": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string" },
+        "value": { "type": ["string", "number", "boolean", "null", "object", "array"] },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "metricsAvailability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available"],
+      "properties": {
+        "available": { "type": "boolean" },
+        "availableKinds": { "$ref": "#/$defs/stringArray" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "sessionSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sessionId", "state"],
+      "properties": {
+        "sessionId": { "type": "string", "minLength": 1 },
+        "state": { "$ref": "#/$defs/sessionState" },
+        "testId": { "type": "string" },
+        "scenarioId": { "type": "string" },
+        "protocol": { "type": "string" },
+        "runId": { "type": "string" },
+        "cellId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "warnings": { "$ref": "#/$defs/stringArray" },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
+    "operationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category"],
+      "properties": {
+        "category": { "$ref": "#/$defs/operationResultCategory" },
+        "message": { "type": "string" },
+        "code": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "details": { "type": "object", "additionalProperties": true },
+        "warnings": { "$ref": "#/$defs/stringArray" },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    }
+  }
+}

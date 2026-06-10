@@ -158,7 +158,8 @@ public sealed class ScenarioParsingTests
         Assert.Equal(16, scenario.QuicTransport.StreamCount);
         Assert.Equal(2_097_152, scenario.QuicTransport.ExpectedBytes);
         Assert.Contains("quicDuplex", scenario.RequiredCapabilities);
-        Assert.Contains("unsupported-until-quic-validator", scenario.Validation.Checks);
+        Assert.DoesNotContain("unsupported-until-quic-validator", scenario.Validation.Checks);
+        Assert.Contains("raw-quic-load-tool-metrics", scenario.Validation.Checks);
         Assert.Contains("quic.stream.bytesReceived", scenario.RequiredMetrics);
     }
 

@@ -4,18 +4,15 @@ Initializes a local ProtocolLab checkout for v1 development and acceptance.
 
 .DESCRIPTION
 Restores repo-local .NET tools, verifies Docker when enabled, optionally builds
-the repo-owned h2load HTTP/3 Docker image and target images, builds the solution, and runs
-ProtocolLab check. The script does not run benchmarks, stage files, commit
-changes, or write tracked artifacts.
+the repo-owned h2load HTTP/3 Docker image and public reference target images,
+builds the solution, and runs ProtocolLab check. The script does not run
+benchmarks, stage files, commit changes, or write tracked artifacts.
 
 .PARAMETER BuildH2LoadImage
 Build and prove the repo-owned incursa/protocol-lab-h2load-http3:local image.
 
 .PARAMETER BuildTargetImages
 Build the repo-local Kestrel Docker target image used by ProtocolLab target Docker mode.
-
-.PARAMETER BuildIncursaTargetImage
-Build the Incursa HTTP/3 Docker target image from the repo-owned adapter project.
 
 .PARAMETER SkipDocker
 Skip Docker verification. Cannot be combined with image build switches.
@@ -33,7 +30,6 @@ Reserved for compatibility; native command output is streamed directly.
 param(
     [switch]$BuildH2LoadImage,
     [switch]$BuildTargetImages,
-    [switch]$BuildIncursaTargetImage,
     [switch]$SkipDocker,
     [switch]$SkipBuild,
     [switch]$SkipCheck,
@@ -46,7 +42,6 @@ $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $Solution = Join-Path $RepoRoot "Incursa.ProtocolLab.sln"
 $H2LoadImageScript = Join-Path $RepoRoot "scripts\build\Build-H2LoadHttp3Image.ps1"
 $KestrelTargetImageScript = Join-Path $RepoRoot "scripts\build\Build-KestrelBenchServerImage.ps1"
-$IncursaTargetImageScript = Join-Path $RepoRoot "scripts\build\Build-IncursaHttp3BenchServerImage.ps1"
 
 function Write-Step {
     param([string]$Message)
@@ -117,16 +112,9 @@ if (-not $SkipDocker) {
         Invoke-ProtocolLabCommand -Label "Build Kestrel Docker target image" -FilePath "powershell" -Arguments @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $KestrelTargetImageScript) -Required
     }
 
-    if ($BuildIncursaTargetImage) {
-        if (-not (Test-Path -LiteralPath $IncursaTargetImageScript)) {
-            throw "Incursa target image build script not found: $IncursaTargetImageScript"
-        }
-
-        Invoke-ProtocolLabCommand -Label "Build Incursa HTTP/3 Docker target image" -FilePath "powershell" -Arguments @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $IncursaTargetImageScript) -Required
-    }
 }
-elseif ($BuildH2LoadImage -or $BuildTargetImages -or $BuildIncursaTargetImage) {
-    throw "-BuildH2LoadImage, -BuildTargetImages, and -BuildIncursaTargetImage cannot be combined with -SkipDocker."
+elseif ($BuildH2LoadImage -or $BuildTargetImages) {
+    throw "-BuildH2LoadImage and -BuildTargetImages cannot be combined with -SkipDocker."
 }
 
 if (-not $SkipBuild) {

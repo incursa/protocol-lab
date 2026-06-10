@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Test Executor Contract v1 Problem Details",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "title", "status"],
+  "properties": {
+    "type": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "status": { "type": "integer", "minimum": 100, "maximum": 599 },
+    "detail": { "type": "string" },
+    "instance": { "type": "string" },
+    "code": { "type": "string" },
+    "executorStatus": { "$ref": "./common.schema.json#/$defs/healthStatus" },
+    "operation": { "type": "string" },
+    "sessionId": { "type": "string" },
+    "unsupportedReason": { "type": "string" },
+    "retryable": { "type": "boolean" },
+    "metadata": { "type": "object", "additionalProperties": true },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

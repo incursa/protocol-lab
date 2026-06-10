@@ -86,9 +86,10 @@ public sealed class LoadToolContractV1Tests
         Assert.True(tool.PreservesRawOutput);
         Assert.Equal("go", tool.Executable);
         Assert.Contains("-C", tool.DefaultArguments);
-        Assert.Contains("src/Incursa.ProtocolLab.Adapters.QuicGo", tool.DefaultArguments);
+        Assert.Contains("tools/test-executors/quic-go-raw-load", tool.DefaultArguments);
         Assert.Contains("run", tool.DefaultArguments);
         Assert.Contains("./cmd/quic-go-raw-load", tool.DefaultArguments);
+        Assert.Equal("", tool.WorkingDirectory);
         Assert.Equal("localhost", tool.Sni);
         Assert.Contains("Go-backed raw QUIC load generator", tool.Notes, StringComparison.OrdinalIgnoreCase);
     }
@@ -278,7 +279,7 @@ public sealed class LoadToolContractV1Tests
             SupportedTrafficShapes = ["bidirectional-stream"],
             SupportedRoles = ["client"],
             Executable = "go",
-            DefaultArguments = ["-C", "src/Incursa.ProtocolLab.Adapters.QuicGo", "run", "./cmd/quic-go-raw-load"],
+            DefaultArguments = ["-C", "tools/test-executors/quic-go-raw-load", "run", "./cmd/quic-go-raw-load"],
             Sni = "localhost"
         };
 
@@ -293,8 +294,8 @@ public sealed class LoadToolContractV1Tests
             },
             new ScenarioDefinition
             {
-                Id = "quic.transport.handshake-cold",
-                Name = "QUIC Cold Handshake",
+                Id = "quic.transport.multiplex.100x64kb",
+                Name = "Raw QUIC Multiplex",
                 Family = "quic.transport",
                 Protocol = "quic",
                 TrafficShape = "bidirectional-stream",
@@ -482,6 +483,7 @@ public sealed class LoadToolContractV1Tests
             "successfulRequests": 12,
             "failedRequests": 0,
             "timeoutRequests": 0,
+            "completedStreams": 12,
             "bytesReceived": 4096,
             "bytesSent": 4096,
             "throughputBytesPerSecond": 8192.0,
@@ -504,6 +506,7 @@ public sealed class LoadToolContractV1Tests
         Assert.True(parsed.ParsedMetricsAvailable);
         Assert.Equal(123.4, parsed.Metrics.RequestsPerSecond);
         Assert.Equal(12, parsed.Metrics.TotalRequests);
+        Assert.Equal(12, parsed.Metrics.CompletedStreams);
         Assert.Equal(4096, parsed.Metrics.BytesReceived);
         Assert.Equal(4096, parsed.Metrics.BytesSent);
         Assert.Equal(8192d, parsed.Metrics.ThroughputBytesPerSecond);
@@ -546,6 +549,7 @@ public sealed class LoadToolContractV1Tests
                 Process = new LoadToolProcessExecution
                 {
                     Executable = "test-tool",
+                    WorkingDirectory = "tools/test-tool",
                     DefaultArguments = ["--verbose"],
                     VersionCommand = ["--version"],
                     AvailabilityCheck = "path"
@@ -579,6 +583,7 @@ public sealed class LoadToolContractV1Tests
         Assert.Contains("benchmark", manifest.Purposes);
         Assert.Contains("Test limitation", manifest.Limitations);
         Assert.Equal("test-tool", manifest.Executable);
+        Assert.Equal("tools/test-tool", manifest.WorkingDirectory);
         Assert.Contains("--verbose", manifest.DefaultArguments);
     }
 
@@ -648,6 +653,7 @@ public sealed class LoadToolContractV1Tests
             RequiredArtifacts = ["load.stdout.log"],
             OptionalArtifacts = ["load.metrics.json"],
             Executable = "h2load",
+            WorkingDirectory = "tools/h2load",
             DefaultArguments = ["--some-flag"],
             VersionCommand = ["--version"],
             AvailabilityCheck = "path",
@@ -673,6 +679,7 @@ public sealed class LoadToolContractV1Tests
         Assert.Equal(original.RequiredArtifacts, converted.RequiredArtifacts);
         Assert.Equal(original.OptionalArtifacts, converted.OptionalArtifacts);
         Assert.Equal(original.Executable, converted.Executable);
+        Assert.Equal(original.WorkingDirectory, converted.WorkingDirectory);
         Assert.Equal(original.AvailabilityCheck, converted.AvailabilityCheck);
         Assert.Equal(original.Limitations, converted.Limitations);
     }

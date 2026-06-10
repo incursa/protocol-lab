@@ -79,11 +79,16 @@ Validation results are not performance results. If validation fails,
 benchmark data for that implementation and scenario is invalid and must not
 be accepted.
 
-### Load Tools
+### Test Executors And Local Load Tools
 
-Load tools are pluggable adapters. The implemented load tools are `h2load`,
-`oha`, and the managed HTTP/3 `HttpClient` load path. Custom H3 and QUIC
-load tools remain deferred.
+Test executors are pluggable tester packages. The public Test Executor
+Contract v1 defines their HTTP control plane, manifest, session lifecycle,
+metrics, artifacts, unsupported outcomes, and cleanup behavior.
+
+The local runner still carries load-tool catalog support for fixture and
+developer workflows. New package-backed tester semantics use
+`test-executor` packages and `test-executors/` entry manifests, not
+`load-runner` or package-level load-tool semantics.
 
 ### Adapter Control Planes
 
@@ -116,7 +121,7 @@ The intended flow is:
 4. Start the implementation server or target process/container.
 5. Wait for readiness.
 6. Run validation.
-7. If validation passes, invoke the selected load tool.
+7. If validation passes, invoke the selected test executor or local load tool.
 8. Capture client stdout and stderr.
 9. Capture server logs and configured exports.
 10. Capture qlog, SSL key logs, pcap, and runner metadata where available.
@@ -136,35 +141,21 @@ Reports summarize validation outcomes, benchmark metrics, parse status,
 errors, warnings, claim level, and artifact paths. Repetition-aware reports
 show median, best, and worst values.
 
-### Server Implementations
+### Implementation Packages
 
-`KestrelBenchServer` is the first baseline server because it can provide
-HTTP/1.1, HTTP/2, and HTTP/3 coverage using ASP.NET Core.
+Production implementations are expected to arrive as component packages from
+producer repositories. A producer may package an adapter that implements
+Adapter Contract v1, implementation manifests under `implementations/`, and
+implementation-specific artifacts. The public ProtocolLab repo defines the
+contract, schemas, neutral catalog concepts, package tooling, and
+conformance fixtures; it does not need to carry production adapter projects
+for Kestrel, Incursa, MSQUIC, quic-go, or any other implementation.
 
-`Kestrel Adapter v1` is the first real adapter control plane for that
-server. It runs as a separate HTTP/1.1 JSON process, starts the benchmark
-server as a child endpoint process, and returns the protocol endpoint URL to
-the runner. The adapter documentation lives in
-[`docs/runner/kestrel-adapter.md`](runner/kestrel-adapter.md).
-
-`IncursaBenchServer.Placeholder` documents the Incursa HTTP/3 integration
-point used by the runnable sample manifest. Incursa integrations can also
-provide raw QUIC transport server behavior, raw QUIC load-generation
-behavior, and custom protocol metric exports as those surfaces are
-scheduled.
-The Incursa HTTP/3 target contract is documented in
-`docs/spec/incursa-http3-target-contract.md`; the runner remains neutral and
-the target stays behind the same manifest contract as every other
-implementation.
-
-Caddy is the first optional non-.NET Docker HTTP/3 target and is documented
-in `docs/spec/caddy-http3-target.md`. nginx is the next optional Docker-only
-HTTP/3 target and is documented in `docs/spec/nginx-http3-target.md`; its
-image must prove HTTP/3 module support before validation or benchmarking.
-quic-go now lives as a runnable Go-based Docker HTTP/3 target in the adapter
-source tree so the expanded local comparison suite can include it without
-relying on placeholder-only manifests. Placeholder manifests must not
-advertise protocols or capabilities before support is real.
+The same boundary applies to tester packages. A producer may package a test
+executor that implements Test Executor Contract v1 and advertises
+`test-executors/` entry manifests. ProtocolLab resolves compatibility by
+declared IDs, protocols, endpoint bindings, scenarios, tests, and capability
+labels rather than by hardcoded implementation knowledge.
 
 ### Network Profiles
 
@@ -185,7 +176,8 @@ so profile definitions do not become runnable scenario cells.
   protocol traffic.
 - Implementations own protocol stacks, server behavior,
   implementation-specific optimization, and custom metrics.
-- Load tools own request generation and raw metric output.
+- Test executors own request generation, conformance checks, performance
+  checks, capability checks, metrics, and executor artifacts.
 - Result parsing owns best-effort conversion from raw tool output into
   normalized metrics.
 - Network impairment providers own latency, loss, bandwidth, and simulation

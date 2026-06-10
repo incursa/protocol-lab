@@ -27,11 +27,6 @@ Docker and local h2load assets unless paired with the acceptance skip switches.
 .PARAMETER VerifyUploadedObjects
 Ask the R2 uploader to verify uploaded objects after each run upload.
 
-.PARAMETER IncursaQuicSourceRoot
-Optional quic-dotnet source root passed to MSBuild as IncursaQuicSourceRoot so
-the sweep benchmarks the local Incursa QUIC source tree instead of restored
-packages.
-
 .PARAMETER NoRestore
 Pass --no-restore to dotnet build/test/run stages. Intended for tight
 source-reference loops after the first restore.
@@ -66,7 +61,6 @@ param(
     [int]$Connections,
     [int]$StreamsPerConnection,
     [string]$BaseUrl,
-    [string]$IncursaQuicSourceRoot,
     [switch]$NoRestore,
     [switch]$VerifyUploadedObjects,
     [ValidateRange(1, 64)]
@@ -385,10 +379,6 @@ foreach ($profile in $profiles) {
 
     if (-not [string]::IsNullOrWhiteSpace($BaseUrl)) {
         $arguments += @("-BaseUrl", $BaseUrl)
-    }
-
-    if (-not [string]::IsNullOrWhiteSpace($IncursaQuicSourceRoot)) {
-        $arguments += @("-IncursaQuicSourceRoot", $IncursaQuicSourceRoot)
     }
 
     if ($NoRestore) {

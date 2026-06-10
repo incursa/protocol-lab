@@ -1,6 +1,7 @@
 # Architecture — Adapter Model
 
-**Status:** Implemented (v1 control plane contract + conformance suite + Kestrel and Incursa HTTP/3 adapters complete; Incursa Raw QUIC and MsQuic/.NET remain fixture-only; adapter discovery and broader adapter registry remain proposed)
+**Status:** Implemented contract and conformance surface. Production adapter
+implementations are intentionally outside the public contract repository.
 
 ## Purpose
 
@@ -18,10 +19,10 @@ consistent REST contract without embedding lifecycle logic in the runner.
 
 - **Contract types:** `src/Incursa.ProtocolLab.Adapter.Contracts` — `Incursa.ProtocolLab.Adapter.Contracts`
 - **Conformance suite:** `src/Incursa.ProtocolLab.Adapter.Conformance` — `Incursa.ProtocolLab.Adapter.Conformance`
-- **Kestrel adapter:** `src/Incursa.ProtocolLab.Adapters.Kestrel`
-- **Incursa HTTP/3 adapter:** `src/Incursa.ProtocolLab.Adapters.IncursaHttp3`
-- **Incursa Raw QUIC adapter:** `src/Incursa.ProtocolLab.Adapters.IncursaRawQuic`
-- **MsQuic .NET adapter:** `src/Incursa.ProtocolLab.Adapters.MsQuicDotNet`
+
+The public repository may contain fake/reference fixtures for contract tests,
+but it does not define production adapter packages or protocol
+implementation-specific lifecycle code.
 
 ## Control Plane Contract (v1)
 
@@ -112,40 +113,12 @@ before the runner is taught to consume them.
 See [`docs/runner/adapter-conformance.md`](../runner/adapter-conformance.md)
 for the conformance specification.
 
-## Implemented Adapters
+## Adapter Implementations
 
-### Kestrel Adapter v1
-
-Runs as a separate HTTP/1.1 JSON process. Starts the Kestrel benchmark
-server as a child endpoint process. Returns the protocol endpoint URL
-(H1/H2/H3) to the runner. The adapter keeps the benchmark server lifecycle
-independent of the runner process.
-
-**Status:** Implemented
-
-### Incursa HTTP/3 Adapter v1
-
-Manages an Incursa HTTP/3 endpoint through the same control plane contract.
-Lifecycle is managed through the adapter; protocol traffic goes to the
-adapter-reported endpoint URL.
-
-**Status:** Implemented
-
-### Incursa Raw QUIC Adapter v1
-
-Implemented - fixture only. The control plane is operational and exercises
-the raw QUIC fixture surface; real QUIC traffic and benchmark claims remain
-deferred.
-
-**Status:** Implemented - fixture only
-
-### MsQuic .NET Adapter v1
-
-Implemented - fixture only. The control plane is operational and exercises
-the raw QUIC fixture surface; real QUIC traffic and benchmark claims remain
-deferred.
-
-**Status:** Implemented - fixture only
+Adapter implementations are package producers. They may be maintained by
+ProtocolLab operators, implementation owners, or third parties, but the public
+repository only defines the API they must expose and the conformance fixtures
+used to prove that API.
 
 ## Adapter Lifecycle Flow
 

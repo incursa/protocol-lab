@@ -5,7 +5,6 @@ targetMode: docker
 targetNetworkMode: shared-docker-network
 implementations:
   - kestrel-http3
-  - incursa-http3
 scenarios:
   - http.core.plaintext
   - http.core.json

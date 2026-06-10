@@ -1,0 +1,40 @@
+id: quic.transport.duplex-streams
+name: QUIC Duplex Streams
+family: quic.transport
+version: "1.0"
+description: Fixture-root copy of the enabled raw QUIC duplex transport scenario.
+status: stable
+kind: protocolValidation
+layer: transport
+protocol: quic
+implementationRole: server
+trafficShape: bidirectional-stream
+requiredCapabilities:
+  - quicTransport
+  - quicStreams
+  - quicDuplex
+quicTransport:
+  behavior: duplex-streams
+  connectionCount: 1
+  streamType: bidirectional
+  streamCount: 16
+  payloadSizeBytes: 65536
+  payloadDirection: bidirectional
+  openPattern: concurrent
+  expectedBytes: 2097152
+validation:
+  required: true
+  checks:
+    - raw-quic-load-tool-metrics
+benchmark:
+  warmupSeconds: 0
+  durationSeconds: 1
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 16
+networkProfile: clean
+tags:
+  - fixture
+  - quic

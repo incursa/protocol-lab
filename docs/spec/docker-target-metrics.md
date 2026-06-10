@@ -8,8 +8,8 @@ load-generator metrics.
 ## Scope
 
 Phase 3F captures Docker target container diagnostics only. It does not run
-`dotnet-counters` inside containers, add new target families, optimize Incursa,
-or change benchmark classification semantics.
+`dotnet-counters` inside containers, add new target families, optimize a
+specific implementation, or change benchmark classification semantics.
 
 Captured fields are best-effort Docker `stats` samples:
 
@@ -53,7 +53,7 @@ Enable explicitly:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3,caddy-http3,nginx-http3 `
+  --implementations kestrel-http3,caddy-http3,nginx-http3 `
   --target-mode docker `
   --target-network-mode shared-docker-network `
   --scenarios http.core.plaintext,http.core.json `
@@ -68,7 +68,7 @@ To capture both target and load-generator Docker metrics:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3,caddy-http3,nginx-http3 `
+  --implementations kestrel-http3,caddy-http3,nginx-http3 `
   --target-mode docker `
   --target-network-mode shared-docker-network `
   --scenarios http.core.plaintext,http.core.json `
@@ -91,7 +91,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\acceptance\Invoke-Pr
 
 Add `-IncludeCaddy` and/or `-IncludeNginx` to the acceptance command to
 include optional Caddy and nginx Docker target metrics stages. Without those
-switches, default acceptance remains Kestrel plus Incursa only.
+switches, default acceptance remains Kestrel only.
 
 ## Saturation Status
 

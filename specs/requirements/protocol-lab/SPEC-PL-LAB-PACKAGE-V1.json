@@ -1,6 +1,6 @@
 {
   "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
-  "artifact_id": "SPEC-PL-LAB-PACKAGE-V1",
+  "artifact_id": "SPEC-PL-LABPKG",
   "artifact_type": "specification",
   "title": "ProtocolLab Lab Package v1",
   "domain": "protocol-lab",
@@ -25,7 +25,7 @@
     {
       "id": "REQ-PL-LABPKG-0001",
       "title": "Package file identity",
-      "statement": "A ProtocolLab lab package MUST use the .plabpkg extension and MUST be a ZIP-compatible archive.",
+      "statement": "A ProtocolLab lab package MUST use the .plabpkg extension and be a ZIP-compatible archive.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",

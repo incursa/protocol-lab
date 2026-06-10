@@ -14,7 +14,6 @@ One or more benchmark suite names. Pass them as a comma-separated list such as
 `-Suite ci-public-report,h3-local-v1-comparison`. Supported values are:
   - ci-public-report
   - h3-local-v1-comparison
-  - quic-transport-v1-comparison
 
 .PARAMETER RunBuild
 Run dotnet build for the solution before any benchmark suites.
@@ -86,10 +85,6 @@ Optional streams-per-connection override for benchmark runs.
 .PARAMETER BaseUrl
 Optional base URL override for benchmark runs.
 
-.PARAMETER IncursaQuicSourceRoot
-Optional quic-dotnet source root passed to MSBuild as IncursaQuicSourceRoot so
-ProtocolLab consumes local Incursa QUIC project references instead of packages.
-
 .PARAMETER NoRestore
 Pass --no-restore to dotnet build/test/run stages. Intended for tight
 source-reference loops after the first restore.
@@ -131,7 +126,6 @@ param(
     [int]$Connections,
     [int]$StreamsPerConnection,
     [string]$BaseUrl,
-    [string]$IncursaQuicSourceRoot,
     [switch]$NoRestore,
     [switch]$DryRun,
     [switch]$FailOnError
@@ -158,22 +152,6 @@ $script:StreamsOverrideSpecified = $PSBoundParameters.ContainsKey("StreamsPerCon
 $script:BaseUrlSpecified = $PSBoundParameters.ContainsKey("BaseUrl")
 $script:ImplementationsOverrideSpecified = $PSBoundParameters.ContainsKey("Implementations")
 $script:ScenariosOverrideSpecified = $PSBoundParameters.ContainsKey("Scenarios")
-$script:IncursaQuicSourceRootSpecified = $PSBoundParameters.ContainsKey("IncursaQuicSourceRoot") -and -not [string]::IsNullOrWhiteSpace($IncursaQuicSourceRoot)
-$ResolvedIncursaQuicSourceRoot = if ($script:IncursaQuicSourceRootSpecified) {
-    if ([System.IO.Path]::IsPathRooted($IncursaQuicSourceRoot)) {
-        [System.IO.Path]::GetFullPath($IncursaQuicSourceRoot)
-    }
-    else {
-        [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $IncursaQuicSourceRoot))
-    }
-}
-else {
-    $null
-}
-if ($script:IncursaQuicSourceRootSpecified) {
-    $env:PROTOCOL_LAB_INCURSA_QUIC_SOURCE_ROOT = $ResolvedIncursaQuicSourceRoot
-}
-
 $BenchmarkProfiles = @{
     "ci-public-report" = [pscustomobject]@{
         RunIdSuffix = "ci-public-report"
@@ -189,23 +167,11 @@ $BenchmarkProfiles = @{
     }
     "h3-local-v1-comparison" = [pscustomobject]@{
         RunIdSuffix = "h3-local-v1-comparison"
-        Implementations = "kestrel-http3,incursa-http3,quic-go-http3"
+        Implementations = "kestrel-http3,quic-go-http3"
         Scenarios = "http.core.plaintext,http.core.json,http.core.status,http.payload.bytes.1kb,http.payload.bytes.64kb,http.payload.bytes.1mb,http.payload.stream.100x16kb,http.headers.inspect-request,http.headers.response.50x32,http.upload.echo.64kb,http.upload.hash.1mb,http.upload.sink.1mb"
         Protocol = "h3"
         LoadTool = "managed-httpclient-h3-load"
         LoadToolMode = "managed"
-        LoadProfile = "local-comparison"
-        TargetMode = "process"
-        TargetNetworkMode = "published-port"
-        TargetConfiguration = "Release"
-    }
-    "quic-transport-v1-comparison" = [pscustomobject]@{
-        RunIdSuffix = "quic-transport-v1-comparison"
-        Implementations = "incursa-raw-quic-adapter-v1,msquic-dotnet-raw-adapter-v1"
-        Scenarios = "quic.transport.handshake-cold,quic.transport.stream-throughput.1mb,quic.transport.multiplex.100x64kb,quic.transport.connection-churn,quic.transport.duplex-streams"
-        Protocol = "quic"
-        LoadTool = "quic-go-raw-load"
-        LoadToolMode = "process"
         LoadProfile = "local-comparison"
         TargetMode = "process"
         TargetNetworkMode = "published-port"
@@ -380,10 +346,6 @@ function New-BenchmarkRunArguments {
         $arguments += "--no-restore"
     }
 
-    if ($script:IncursaQuicSourceRootSpecified) {
-        $arguments += "-p:IncursaQuicSourceRoot=$ResolvedIncursaQuicSourceRoot"
-    }
-
     $arguments += @(
         "--",
         "run",
@@ -481,10 +443,6 @@ if ($RunBuild) {
         $buildArguments += "--no-restore"
     }
 
-    if ($script:IncursaQuicSourceRootSpecified) {
-        $buildArguments += "/p:IncursaQuicSourceRoot=$ResolvedIncursaQuicSourceRoot"
-    }
-
     Invoke-Stage -Name "Build solution" -FilePath "dotnet" -Arguments $buildArguments -ArtifactPath $null -PublicationPath $null
 }
 
@@ -494,10 +452,6 @@ if ($RunTests) {
         $testArguments += "--no-restore"
     }
 
-    if ($script:IncursaQuicSourceRootSpecified) {
-        $testArguments += "/p:IncursaQuicSourceRoot=$ResolvedIncursaQuicSourceRoot"
-    }
-
     Invoke-Stage -Name "Test solution" -FilePath "dotnet" -Arguments $testArguments -ArtifactPath $null -PublicationPath $null
 }
 
@@ -505,10 +459,6 @@ if ($RunCheck) {
     $checkArguments = @("run", "--project", "src\Incursa.ProtocolLab.Cli", "-c", $Configuration)
     if ($NoRestore) {
         $checkArguments += "--no-restore"
-    }
-
-    if ($script:IncursaQuicSourceRootSpecified) {
-        $checkArguments += "-p:IncursaQuicSourceRoot=$ResolvedIncursaQuicSourceRoot"
     }
 
     $checkArguments += @("--", "check")

@@ -2,7 +2,7 @@
 
 Phase 2K adds optional .NET runtime counter capture for process-based targets.
 It is diagnostic evidence for existing benchmark cells, not a new benchmark
-family and not an Incursa optimization phase.
+family and not an implementation optimization phase.
 
 ## Why Process Identity Matters
 
@@ -33,7 +33,7 @@ is missing. If that direct startup path cannot be established, the runner falls
 back to the existing `dotnet run --project` behavior and records a warning.
 
 This keeps manifests neutral: ProtocolLab still starts `dotnet` and does not
-reference Kestrel or Incursa assemblies directly.
+reference concrete implementation assemblies directly.
 
 ## Diagnostic Target Model
 
@@ -59,7 +59,7 @@ Counter capture is opt-in:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
-  --implementations kestrel-http3,incursa-http3 `
+  --implementations kestrel-http3 `
   --scenarios http.core.plaintext,http.core.json `
   --protocol h3 `
   --load-tool h2load `
@@ -72,7 +72,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- run `
   --capture-counters `
   --counter-refresh-interval 1 `
   --output .artifacts\runs `
-  --run-id local-h3-kestrel-incursa-counters-phase2k
+  --run-id local-h3-kestrel-counters-phase2k
 ```
 
 `dotnet-counters` may be provided as a repo-local tool, a global tool, or an

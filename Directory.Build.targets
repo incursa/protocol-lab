@@ -7,11 +7,10 @@
     <IncursaQuicSourceRoot>$([System.IO.Path]::GetFullPath('$(IncursaQuicSourceRoot)'))</IncursaQuicSourceRoot>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IncursaQuicSourceRoot)' != '' And '$(MSBuildProjectName)' != 'IncursaRawQuicServer'">
+  <ItemGroup Condition="'$(IncursaQuicSourceRoot)' != '' And '$(MSBuildProjectName)' == 'Incursa.ProtocolLab.Adapters.IncursaHttp3'">
     <PackageReference Remove="Incursa.Qpack;Incursa.Quic;Incursa.Quic.Http3;Incursa.Quic.Diagnostics.Qlog" />
     <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Qpack\Incursa.Qpack.csproj" />
     <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Quic\Incursa.Quic.csproj" />
     <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Quic.Http3\Incursa.Quic.Http3.csproj" />
-    <ProjectReference Include="$(IncursaQuicSourceRoot)\src\Incursa.Quic.Qlog\Incursa.Quic.Qlog.csproj" />
   </ItemGroup>
 </Project>

@@ -61,6 +61,7 @@ public sealed record LoadToolDockerExecution
 public sealed record LoadToolProcessExecution
 {
     public string Executable { get; init; } = "";
+    public string WorkingDirectory { get; init; } = "";
     public List<string> DefaultArguments { get; init; } = [];
     public List<string> VersionCommand { get; init; } = [];
     public string AvailabilityCheck { get; init; } = "path";
@@ -166,6 +167,7 @@ public sealed record LoadToolDefinition
                 Limitations = [..Limitations],
                 Notes = "",
                 Executable = Execution.Process.Executable,
+                WorkingDirectory = Execution.Process.WorkingDirectory,
                 DefaultArguments = [..Execution.Process.DefaultArguments],
                 VersionCommand = [..Execution.Process.VersionCommand],
                 AvailabilityCheck = Execution.Process.AvailabilityCheck,
@@ -226,6 +228,7 @@ public sealed class LoadToolManifest
 
     // ── execution (process) ──
     public string Executable { get; init; } = "";
+    public string WorkingDirectory { get; init; } = "";
     public List<string> DefaultArguments { get; init; } = [];
     public List<string> VersionCommand { get; init; } = [];
     public string AvailabilityCheck { get; init; } = "path";
@@ -295,6 +298,7 @@ public sealed class LoadToolManifest
                 Process = new LoadToolProcessExecution
                 {
                     Executable = Executable,
+                    WorkingDirectory = WorkingDirectory,
                     DefaultArguments = [..DefaultArguments],
                     VersionCommand = [..VersionCommand],
                     AvailabilityCheck = AvailabilityCheck

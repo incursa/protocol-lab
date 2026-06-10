@@ -1,0 +1,44 @@
+id: fixture-adapter-raw-quic-transport
+name: Fixture Adapter Raw QUIC Transport
+description: Dummy adapter-backed target that surfaces a raw QUIC transport endpoint through the adapter control plane for runner tests.
+image: ""
+targetKind: external
+targetContract: adapter-v1
+executable: ""
+project: ""
+workingDirectory: .
+dockerfile: ""
+buildContext: .
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: ""
+baseUrl: ""
+adapterControlPlaneBaseUrl: ""
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - quic
+supportedWorkloadFamilies:
+  - quic.transport
+ports: []
+environment: {}
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: none
+  url: ""
+  timeoutSeconds: 1
+shutdownBehavior: external
+capabilities:
+  - quicTransport
+  - quicStreams
+  - quicMultiplexing
+  - quicDuplex
+artifactExports:
+  - target.stdout.txt
+  - target.stderr.txt
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Fixture-only adapter-backed raw QUIC transport target. The control plane is fake and the load tool is fixture-only.

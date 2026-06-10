@@ -28,13 +28,11 @@ public sealed class RunnerAdapterFixtureLabTests
         Assert.Equal(0, list.ExitCode);
         Assert.Contains(list.Messages, message => message.Text.Contains("fixture-adapter-http", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(list.Messages, message => message.Text.Contains("contract=adapter-v1", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(list.Messages, message => message.Text.Contains("fixture-kestrel-adapter-v1", StringComparison.OrdinalIgnoreCase));
 
         Assert.Equal(0, check.ExitCode);
         Assert.Contains(check.Messages, message => message.Text.Contains("Adapter-backed implementations:", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(check.Messages, message => message.Text.Contains("fixture-adapter-http", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(check.Messages, message => message.Text.Contains("fixture-adapter-quic", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(check.Messages, message => message.Text.Contains("fixture-kestrel-adapter-v1", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -316,157 +314,6 @@ public sealed class RunnerAdapterFixtureLabTests
             Assert.Contains(target.AdapterEndpointTypes, value => string.Equals(value, "quic", StringComparison.OrdinalIgnoreCase));
             Assert.NotNull(benchmark.Evidence);
             Assert.Contains(benchmark.Evidence!.EvidenceReasons, value => string.Equals(value, BenchmarkEvidenceReasons.AdapterBackedTarget, StringComparison.OrdinalIgnoreCase));
-        }
-        finally
-        {
-            DeleteDirectory(output);
-        }
-    }
-
-    [Fact]
-    public async Task Kestrel_adapter_success_path_uses_the_protocol_endpoint_not_the_control_plane()
-    {
-        var output = CreateOutputDirectory("kestrel-adapter-success");
-        var runId = "kestrel-adapter-success";
-        const string controlPlaneBaseUrl = "http://127.0.0.1:53171";
-        var options = BuildOptions(output, runId, "fixture-kestrel-adapter-v1", "fixture.kestrel.success", "h1", "fixture-load-success", targetMode: "process");
-
-        try
-        {
-            var result = await RunInRepositoryRootAsync(() => new RunnerEngine().RunBenchmarkAsync(FixtureRoot, options));
-            var paths = GetCellPaths(output, runId, "fixture-kestrel-adapter-v1", "fixture.kestrel.success", "h1", 1, 1, 1);
-            var benchmark = ResultJson.Deserialize<BenchmarkResult>(await File.ReadAllTextAsync(paths.ResultJson));
-            var target = ResultJson.Deserialize<TargetExecutionResult>(await File.ReadAllTextAsync(paths.TargetExecutionJson));
-            var endpoints = JsonSerializer.Deserialize<AdapterEndpointsResponse>(await File.ReadAllTextAsync(paths.AdapterEndpointsJson), ProtocolLabAdapterJson.Options);
-
-            Assert.Equal(0, result.ExitCode);
-            Assert.Equal(ValidationStatus.Passed, benchmark!.ValidationResult.Status);
-            Assert.Equal(LoadToolExecutionStatuses.Succeeded, benchmark.BenchmarkExecutionStatus);
-            Assert.Equal("adapter-v1", benchmark.TargetContract);
-            Assert.Equal(controlPlaneBaseUrl, benchmark.AdapterControlPlaneBaseUrl);
-            Assert.NotNull(target!.AdapterSessionId);
-            Assert.NotNull(target.TargetEffectiveBaseUrl);
-            Assert.False(string.Equals(target.TargetEffectiveBaseUrl, controlPlaneBaseUrl, StringComparison.OrdinalIgnoreCase));
-            Assert.StartsWith("http://127.0.0.1:", target.TargetEffectiveBaseUrl, StringComparison.OrdinalIgnoreCase);
-            Assert.NotNull(endpoints);
-            var protocolEndpoint = Assert.Single(endpoints!.Endpoints);
-            Assert.NotEqual(53171, protocolEndpoint.Port);
-            Assert.True(File.Exists(paths.AdapterStopJson));
-            Assert.True(File.Exists(paths.AdapterDeleteJson));
-        }
-        finally
-        {
-            DeleteDirectory(output);
-        }
-    }
-
-    [Fact]
-    public async Task Kestrel_adapter_unsupported_scenario_remains_structured_unsupported()
-    {
-        var output = CreateOutputDirectory("kestrel-adapter-unsupported");
-        var runId = "kestrel-adapter-unsupported";
-        var options = BuildOptions(output, runId, "fixture-kestrel-adapter-v1", "fixture.kestrel.unsupported", "h1", "fixture-load-success", targetMode: "process");
-
-        try
-        {
-            var result = await RunInRepositoryRootAsync(() => new RunnerEngine().RunBenchmarkAsync(FixtureRoot, options));
-            var paths = GetCellPaths(output, runId, "fixture-kestrel-adapter-v1", "fixture.kestrel.unsupported", "h1", 1, 1, 1);
-            var benchmark = ResultJson.Deserialize<BenchmarkResult>(await File.ReadAllTextAsync(paths.ResultJson));
-            var target = ResultJson.Deserialize<TargetExecutionResult>(await File.ReadAllTextAsync(paths.TargetExecutionJson));
-
-            Assert.Equal(0, result.ExitCode);
-            Assert.Equal(ValidationStatus.Unsupported, benchmark!.ValidationResult.Status);
-            Assert.Equal(LoadToolExecutionStatuses.Skipped, benchmark.BenchmarkExecutionStatus);
-            Assert.Equal("adapter-v1", benchmark.TargetContract);
-            Assert.True(target!.Unsupported);
-            Assert.True(File.Exists(paths.AdapterStopJson));
-            Assert.True(File.Exists(paths.AdapterDeleteJson));
-        }
-        finally
-        {
-            DeleteDirectory(output);
-        }
-    }
-
-    [Fact]
-    public async Task Kestrel_adapter_metrics_and_artifacts_are_persisted()
-    {
-        var output = CreateOutputDirectory("kestrel-adapter-metrics");
-        var runId = "kestrel-adapter-metrics";
-        var options = BuildOptions(output, runId, "fixture-kestrel-adapter-v1", "fixture.kestrel.status", "h1", "fixture-load-success", targetMode: "process");
-
-        try
-        {
-            var result = await RunInRepositoryRootAsync(() => new RunnerEngine().RunBenchmarkAsync(FixtureRoot, options));
-            var paths = GetCellPaths(output, runId, "fixture-kestrel-adapter-v1", "fixture.kestrel.status", "h1", 1, 1, 1);
-            var metrics = JsonSerializer.Deserialize<AdapterMetricsResponse>(await File.ReadAllTextAsync(paths.AdapterMetricsJson), ProtocolLabAdapterJson.Options);
-            var artifacts = JsonSerializer.Deserialize<AdapterArtifactsResponse>(await File.ReadAllTextAsync(paths.AdapterArtifactsJson), ProtocolLabAdapterJson.Options);
-            var benchmark = ResultJson.Deserialize<BenchmarkResult>(await File.ReadAllTextAsync(paths.ResultJson));
-
-            Assert.Equal(0, result.ExitCode);
-            Assert.NotNull(metrics);
-            Assert.Equal(AdapterResourceAvailability.Available, metrics!.Availability);
-            Assert.Contains(metrics.Metrics, metric => metric.MetricId == "process.id");
-            Assert.Contains(metrics.Metrics, metric => metric.MetricId == "endpoint.port");
-            Assert.NotNull(artifacts);
-            Assert.Equal(AdapterResourceAvailability.Available, artifacts!.Availability);
-            Assert.Contains(artifacts.Artifacts, artifact => artifact.ArtifactType == "stdout");
-            Assert.Contains(artifacts.Artifacts, artifact => artifact.ArtifactType == "stderr");
-            Assert.Equal(ValidationStatus.Passed, benchmark!.ValidationResult.Status);
-        }
-        finally
-        {
-            DeleteDirectory(output);
-        }
-    }
-
-    [Fact]
-    public async Task Kestrel_adapter_start_failure_cleans_up_the_adapter_session()
-    {
-        var output = CreateOutputDirectory("kestrel-adapter-start-failure");
-        var runId = "kestrel-adapter-start-failure";
-        var options = BuildOptions(output, runId, "fixture-kestrel-adapter-start-failure", "fixture.kestrel.success", "h1", "fixture-load-success", targetMode: "process");
-
-        try
-        {
-            var result = await RunInRepositoryRootAsync(() => new RunnerEngine().RunBenchmarkAsync(FixtureRoot, options));
-            var paths = GetCellPaths(output, runId, "fixture-kestrel-adapter-start-failure", "fixture.kestrel.success", "h1", 1, 1, 1);
-            var benchmark = ResultJson.Deserialize<BenchmarkResult>(await File.ReadAllTextAsync(paths.ResultJson));
-            var target = ResultJson.Deserialize<TargetExecutionResult>(await File.ReadAllTextAsync(paths.TargetExecutionJson));
-
-            Assert.Equal(1, result.ExitCode);
-            Assert.Equal(ValidationStatus.Failed, benchmark!.ValidationResult.Status);
-            Assert.Equal(LoadToolExecutionStatuses.Skipped, benchmark.BenchmarkExecutionStatus);
-            Assert.True(target!.Failed);
-            Assert.True(File.Exists(paths.AdapterStopJson));
-            Assert.True(File.Exists(paths.AdapterDeleteJson));
-        }
-        finally
-        {
-            DeleteDirectory(output);
-        }
-    }
-
-    [Fact]
-    public async Task Kestrel_adapter_readiness_failure_cleans_up_the_adapter_session()
-    {
-        var output = CreateOutputDirectory("kestrel-adapter-readiness-failure");
-        var runId = "kestrel-adapter-readiness-failure";
-        var options = BuildOptions(output, runId, "fixture-kestrel-adapter-readiness-failure", "fixture.kestrel.success", "h1", "fixture-load-success", targetMode: "process");
-
-        try
-        {
-            var result = await RunInRepositoryRootAsync(() => new RunnerEngine().RunBenchmarkAsync(FixtureRoot, options));
-            var paths = GetCellPaths(output, runId, "fixture-kestrel-adapter-readiness-failure", "fixture.kestrel.success", "h1", 1, 1, 1);
-            var benchmark = ResultJson.Deserialize<BenchmarkResult>(await File.ReadAllTextAsync(paths.ResultJson));
-            var target = ResultJson.Deserialize<TargetExecutionResult>(await File.ReadAllTextAsync(paths.TargetExecutionJson));
-
-            Assert.Equal(1, result.ExitCode);
-            Assert.Equal(ValidationStatus.Failed, benchmark!.ValidationResult.Status);
-            Assert.Equal(LoadToolExecutionStatuses.Skipped, benchmark.BenchmarkExecutionStatus);
-            Assert.True(target!.Failed || !target.Ready);
-            Assert.True(File.Exists(paths.AdapterStopJson));
-            Assert.True(File.Exists(paths.AdapterDeleteJson));
         }
         finally
         {

@@ -21,6 +21,13 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $ImplementationId,
 
+    [Parameter(Mandatory = $true)]
+    [string] $TestExecutorId,
+
+    [string[]] $AdditionalPackagePath = @(),
+
+    [string[]] $PackageReference = @(),
+
     [string] $SuiteId = "h3-local-v1",
 
     [string[]] $ScenarioId = @("http.core.plaintext"),
@@ -118,15 +125,21 @@ function Get-ArtifactDownloadUri {
     return $null
 }
 
-$controller = $ControllerUri.TrimEnd("/")
+function Send-PackageArchive {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Path,
 
-if ($PSCmdlet.ParameterSetName -eq "UploadPackage") {
-    $packageFullPath = [System.IO.Path]::GetFullPath((Resolve-Path -LiteralPath $PackagePath).Path)
+        [Parameter(Mandatory = $true)]
+        [string] $Controller
+    )
+
+    $packageFullPath = [System.IO.Path]::GetFullPath((Resolve-Path -LiteralPath $Path).Path)
     if ([System.IO.Path]::GetExtension($packageFullPath) -ne ".plabpkg") {
         throw "PackagePath must end with .plabpkg: $packageFullPath"
     }
 
-    $uploadUri = Join-ControllerUri -BaseUri $controller -Path "/api/lab/packages"
+    $uploadUri = Join-ControllerUri -BaseUri $Controller -Path "/api/lab/packages"
     $uploadResponse = Invoke-RestMethod -Method Post -Uri $uploadUri -Form @{
         file = Get-Item -LiteralPath $packageFullPath
     }
@@ -137,27 +150,58 @@ if ($PSCmdlet.ParameterSetName -eq "UploadPackage") {
         }
     }
 
-    $PackageId = [string]$uploadResponse.packageId
-    $PackageVersion = [string]$uploadResponse.packageVersion
-    $Sha256 = [string]$uploadResponse.sha256
+    return [ordered]@{
+        packageId = [string]$uploadResponse.packageId
+        packageVersion = [string]$uploadResponse.packageVersion
+        sha256 = [string]$uploadResponse.sha256
+    }
+}
+
+$controller = $ControllerUri.TrimEnd("/")
+
+if ($PSCmdlet.ParameterSetName -eq "UploadPackage") {
+    $primaryPackage = Send-PackageArchive -Path $PackagePath -Controller $controller
+    $PackageId = $primaryPackage.packageId
+    $PackageVersion = $primaryPackage.packageVersion
+    $Sha256 = $primaryPackage.sha256
+}
+
+$packages = @(
+    [ordered]@{
+        packageId = $PackageId
+        packageVersion = $PackageVersion
+        sha256 = $Sha256
+    }
+)
+
+foreach ($additionalPath in $AdditionalPackagePath) {
+    $packages += Send-PackageArchive -Path $additionalPath -Controller $controller
+}
+
+foreach ($reference in $PackageReference) {
+    $parts = $reference -split ":", 3
+    if ($parts.Count -ne 3 -or [string]::IsNullOrWhiteSpace($parts[0]) -or [string]::IsNullOrWhiteSpace($parts[1]) -or [string]::IsNullOrWhiteSpace($parts[2])) {
+        throw "PackageReference values must use packageId:packageVersion:sha256 form. Invalid value: '$reference'."
+    }
+
+    $packages += [ordered]@{
+        packageId = $parts[0]
+        packageVersion = $parts[1]
+        sha256 = $parts[2]
+    }
 }
 
 $jobBody = [ordered]@{
     kind = "single-node-benchmark"
-    suiteId = $SuiteId
+    suiteIds = @($SuiteId)
     implementationIds = @($ImplementationId)
+    testExecutorIds = @($TestExecutorId)
     scenarioIds = @($ScenarioId)
-    protocol = $Protocol
+    protocols = @($Protocol)
     loadProfileId = $LoadProfileId
-    executionMode = $ExecutionMode
+    targetMode = $ExecutionMode
     requiredCapabilities = @($RequiredCapability)
-    packages = @(
-        [ordered]@{
-            packageId = $PackageId
-            packageVersion = $PackageVersion
-            sha256 = $Sha256
-        }
-    )
+    packages = $packages
 }
 
 $jobUri = Join-ControllerUri -BaseUri $controller -Path "/api/lab/jobs"
@@ -170,6 +214,7 @@ if ($NoWait) {
         packageId = $PackageId
         packageVersion = $PackageVersion
         sha256 = $Sha256
+        packages = $packages
         status = Get-JobStatus -Job $jobResponse
     } | ConvertTo-Json -Depth 8
     return
@@ -211,6 +256,7 @@ if (-not [string]::IsNullOrWhiteSpace($ArtifactOutputPath) -and -not [string]::I
     packageId = $PackageId
     packageVersion = $PackageVersion
     sha256 = $Sha256
+    packages = $packages
     artifactDownloadUri = $artifactDownloadUri
     artifactPath = $downloadedArtifactPath
     job = $lastJob

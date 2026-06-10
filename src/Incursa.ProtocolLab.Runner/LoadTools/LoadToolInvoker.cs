@@ -187,7 +187,7 @@ internal static class LoadToolInvoker
             return new LoadToolRun(1, "", $"Load tool mode '{tool.Mode}' is not executable in Phase 2B.");
         }
 
-        return await RunProcessAsync(tool.ExecutablePath, plan.Arguments);
+        return await RunProcessAsync(tool.ExecutablePath, plan.Arguments, plan.WorkingDirectory);
     }
 
     public static LoadToolExecutionPlan BuildExecutionPlan(
@@ -218,7 +218,7 @@ internal static class LoadToolInvoker
             arguments,
             FormatCommandLine(executable, arguments),
             BuildDockerCommandLine(tool, arguments, paths, route.DockerNetwork, resourceLimits, dockerContainerName),
-            Directory.GetCurrentDirectory(),
+            ResolveWorkingDirectory(tool.Manifest),
             targetUrl,
             effectiveTargetUrl,
             route.ConnectTarget,
@@ -240,7 +240,7 @@ internal static class LoadToolInvoker
 
     private static RequestedLoadShape BuildRequestedLoadShape(LoadToolManifest manifest, RunCell cell)
     {
-        var concurrency = string.Equals(manifest.Id, "quic-go-raw-load", StringComparison.OrdinalIgnoreCase) && ProtocolIds.IsQuic(cell.Protocol)
+        var concurrency = IsRawQuicLoadTool(manifest, cell.Protocol)
             ? cell.Connections * Math.Max(1, cell.StreamsPerConnection)
             : string.Equals(manifest.Id, "h2load", StringComparison.OrdinalIgnoreCase) && (ProtocolIds.IsHttp2(cell.Protocol) || ProtocolIds.IsHttp3(cell.Protocol))
             ? cell.Connections * cell.StreamsPerConnection
@@ -255,6 +255,13 @@ internal static class LoadToolInvoker
             WarmupSeconds = cell.WarmupSeconds,
             Repetitions = cell.Repetition
         };
+    }
+
+    private static bool IsRawQuicLoadTool(LoadToolManifest manifest, string protocol)
+    {
+        return string.Equals(manifest.Id, "quic-go-raw-load", StringComparison.OrdinalIgnoreCase) ||
+            (ProtocolIds.IsQuic(protocol) &&
+             string.Equals(manifest.GetEffectiveParserType(), "raw-quic-json", StringComparison.OrdinalIgnoreCase));
     }
 
     public static async Task<string?> CaptureVersionAsync(LoadToolManifest manifest, string executablePath)
@@ -367,6 +374,7 @@ internal static class LoadToolInvoker
         bool captureQlog = true)
     {
         var id = manifest.Id.ToLowerInvariant();
+        var isRawQuicLoad = IsRawQuicLoadTool(manifest, cell.Protocol);
         var rawQuicSniArguments = string.IsNullOrWhiteSpace(manifest.Sni)
             ? Array.Empty<string>()
             : ["--sni", manifest.Sni];
@@ -375,7 +383,7 @@ internal static class LoadToolInvoker
             "h2load" => [.. manifest.DefaultArguments, .. BuildH2loadProtocolArguments(manifest, cell.Protocol, paths, mode, connectTarget, captureQlog), .. BuildH2loadOutputArguments(cell, paths, mode), "-D", cell.DurationSeconds.ToString(CultureInfo.InvariantCulture), "--warm-up-time", cell.WarmupSeconds.ToString(CultureInfo.InvariantCulture), "-c", cell.Connections.ToString(CultureInfo.InvariantCulture), "-m", cell.StreamsPerConnection.ToString(CultureInfo.InvariantCulture), targetUrl.ToString()],
             "oha" => [.. manifest.DefaultArguments, .. BuildOhaProtocolArguments(cell.Protocol), "-z", $"{cell.DurationSeconds.ToString(CultureInfo.InvariantCulture)}s", "-c", cell.Connections.ToString(CultureInfo.InvariantCulture), targetUrl.ToString()],
             ManagedHttp3LoadGenerator.ToolId => ["--http-version", "3.0", "--version-policy", "RequestVersionExact", "--concurrency", cell.Connections.ToString(CultureInfo.InvariantCulture), "--duration", $"{cell.DurationSeconds.ToString(CultureInfo.InvariantCulture)}s", "--warmup", $"{cell.WarmupSeconds.ToString(CultureInfo.InvariantCulture)}s", targetUrl.ToString()],
-            "quic-go-raw-load" => [.. manifest.DefaultArguments,
+            _ when isRawQuicLoad => [.. manifest.DefaultArguments,
                 ..rawQuicSniArguments,
                 "--alpn", "plab-raw-quic",
                 "--behavior", cell.Scenario.QuicTransport?.Behavior ?? "",
@@ -429,11 +437,11 @@ internal static class LoadToolInvoker
 
             warnings.Add("managed-httpclient-h3-load does not guarantee exact connection count or exact stream-per-connection mapping; treat results as local managed-lab measurements.");
         }
-        else if (string.Equals(manifest.Id, "quic-go-raw-load", StringComparison.OrdinalIgnoreCase))
+        else if (IsRawQuicLoadTool(manifest, cell.Protocol))
         {
             supported.Add("streamsPerConnection");
             derived.Add("concurrency = connections * max(1, streamsPerConnection)");
-            warnings.Add("quic-go-raw-load uses the raw QUIC connection and stream counts as its concurrency controls.");
+            warnings.Add($"{manifest.Id} uses the raw QUIC connection and stream counts as its concurrency controls.");
         }
         else if (string.Equals(manifest.Id, "oha", StringComparison.OrdinalIgnoreCase))
         {
@@ -609,7 +617,7 @@ internal static class LoadToolInvoker
             : cell.StreamsPerConnection;
         var concurrency = string.Equals(manifest.Id, "h2load", StringComparison.OrdinalIgnoreCase) && (ProtocolIds.IsHttp2(protocol) || ProtocolIds.IsHttp3(protocol))
             ? cell.Connections * cell.StreamsPerConnection
-            : string.Equals(manifest.Id, "quic-go-raw-load", StringComparison.OrdinalIgnoreCase) && ProtocolIds.IsQuic(protocol)
+            : IsRawQuicLoadTool(manifest, protocol)
             ? cell.Connections * Math.Max(1, cell.StreamsPerConnection)
             : cell.Connections;
 
@@ -625,8 +633,8 @@ internal static class LoadToolInvoker
             [
                 string.Equals(manifest.Id, ManagedHttp3LoadGenerator.ToolId, StringComparison.OrdinalIgnoreCase)
                     ? "managed-httpclient-h3-load maps the run to managed HttpClient concurrency and duration; exact connection count and streamsPerConnection are not guaranteed."
-                    : string.Equals(manifest.Id, "quic-go-raw-load", StringComparison.OrdinalIgnoreCase)
-                    ? "quic-go-raw-load maps the run to raw QUIC connection and stream concurrency; streamsPerConnection controls either stream batches or connection churn depending on the scenario."
+                    : IsRawQuicLoadTool(manifest, protocol)
+                    ? $"{manifest.Id} maps the run to raw QUIC connection and stream concurrency; streamsPerConnection controls either stream batches or connection churn depending on the scenario."
                     : string.Equals(manifest.Id, "oha", StringComparison.OrdinalIgnoreCase)
                     ? "oha maps the run to concurrency and duration; streamsPerConnection is not a separate HTTP/1.1 concept."
                     : "h2load maps connections to clients and streamsPerConnection to max concurrent streams where the negotiated protocol supports streams."
@@ -1180,10 +1188,21 @@ internal static class LoadToolInvoker
         return 50;
     }
 
-    private static async Task<LoadToolRun> RunProcessAsync(string executable, IReadOnlyList<string> arguments)
+    private static string ResolveWorkingDirectory(LoadToolManifest manifest)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.WorkingDirectory))
+        {
+            return Directory.GetCurrentDirectory();
+        }
+
+        return Path.GetFullPath(manifest.WorkingDirectory);
+    }
+
+    private static async Task<LoadToolRun> RunProcessAsync(string executable, IReadOnlyList<string> arguments, string? workingDirectory = null)
     {
         var startInfo = new ProcessStartInfo(executable)
         {
+            WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? Directory.GetCurrentDirectory() : workingDirectory,
             RedirectStandardError = true,
             RedirectStandardOutput = true,
             UseShellExecute = false

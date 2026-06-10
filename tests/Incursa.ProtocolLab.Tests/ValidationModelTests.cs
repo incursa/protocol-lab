@@ -228,18 +228,18 @@ public sealed class ValidationModelTests
             },
             new ScenarioDefinition
             {
-                Id = "quic.transport.stream-throughput.1mb",
+                Id = "quic.transport.duplex-streams",
                 Family = "quic.transport",
                 Protocol = "quic",
                 ImplementationRole = "server",
                 RequiredCapabilities = ["quicTransport", "quicStreams"],
-                QuicTransport = new QuicTransportSpec { Behavior = "stream-throughput" }
+                QuicTransport = new QuicTransportSpec { Behavior = "duplex-streams" }
             },
             "quic",
             1,
             1,
             1,
-                30,
+            30,
             5,
             "clean");
 

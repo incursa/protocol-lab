@@ -19,7 +19,7 @@ full benchmark suite catalog. The benchmark wrappers expose `Quick`,
 | --- | --- | --- | --- | --- | --- |
 | `ci-public-report` | `h3` | process | `managed-httpclient-h3-load` | Small local regression bundle used by the public-report workflow. | `Invoke-ProtocolLabBenchmarkSet.ps1` |
 | `h3-local-v1-comparison` | `h3` | process | `managed-httpclient-h3-load` | Full stable local HTTP/3 comparison coverage across core, payload, headers, and upload scenarios. | `Invoke-ProtocolLabBenchmarkSet.ps1` |
-| `quic-transport-v1-comparison` | `quic` | process | `quic-go-raw-load` | Stable raw QUIC comparison coverage across handshake, throughput, multiplexing, churn, and duplex scenarios. | `Invoke-ProtocolLabBenchmarkSet.ps1` |
+| `quic-transport-v1-comparison` | `quic` | package-backed | `quic-go-raw-load` test executor package | Raw QUIC comparison input. Multiplex and duplex are enabled in the public package contract; implementations enter through package v2/private overlays. | package/controller submission |
 
 ## Acceptance Suites
 
@@ -33,12 +33,14 @@ Use `scripts/acceptance/Invoke-ProtocolLabAcceptance.ps1` for these suites.
 | `h3-local-v1-docker-target-shared-network-limited` | `h3` | docker | `h2load` | Shared-network Docker target acceptance with example CPU and memory limits. | `Invoke-ProtocolLabAcceptance.ps1` |
 | `h3-local-docker-target-caddy` | `h3` | docker | `h2load` | Optional Caddy HTTP/3 Docker target suite. | `Invoke-ProtocolLabAcceptance.ps1` |
 | `h3-local-docker-target-nginx` | `h3` | docker | `h2load` | Optional nginx HTTP/3 Docker target suite. | `Invoke-ProtocolLabAcceptance.ps1` |
-| `h3-local-docker-target-baselines` | `h3` | docker | `h2load` | Local Docker baseline comparison suite for Kestrel, Incursa, Caddy, and nginx. | `Invoke-ProtocolLabAcceptance.ps1` |
+| `h3-local-docker-target-baselines` | `h3` | docker | `h2load` | Local Docker baseline comparison suite for Kestrel, Caddy, and nginx public reference targets. | `Invoke-ProtocolLabAcceptance.ps1` |
 
 ## Notes
 
 - The benchmark suites are local-regression and local-comparison evidence
   paths. They are not publishable benchmark claims by themselves.
+- Raw QUIC suites are package-backed; use package v2/controller submission
+  rather than the runner-only benchmark wrapper.
 - The acceptance suites are documented inputs for the acceptance workflow.
 - Docker behavior is encoded in the suite metadata and acceptance runner
   options, so you do not need to guess which environment to use.

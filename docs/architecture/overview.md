@@ -151,9 +151,9 @@ Suites (YAML) -------------+              Target Lifecycle (start/ready)
 | Artifact layout | Implemented | Deterministic paths, 60+ artifact types |
 | Evidence classification | Implemented | 5-class system with comparability gates |
 | Reporting | Implemented | Markdown summaries, aggregate JSON, claim levels, run index, public publication bundles |
-| Adapter control plane | Implemented | v1 contract + conformance suite; Kestrel, Incursa HTTP/3, Incursa Raw QUIC fixture, and MsQuic/.NET fixture adapters |
+| Adapter control plane | Implemented | v1 contract + conformance suite plus fake/reference fixture adapters |
 | Network impairment | Modeled | Provider model exists; execution is deferred |
 | WebTransport/MASQUE | Modeled | Scenario families are modeled; validators and load generators are deferred |
-| Raw QUIC | Implemented - fixture only | Fixture adapter-backed QUIC scenarios and adapters exist; real QUIC traffic remains deferred |
+| Raw QUIC | Implemented - narrow reference slice | Fixture adapter-backed QUIC scenarios plus package-backed reference test-executor coverage for multiplex and duplex scenarios; production implementations are external packages |
 | Hosted execution | Deferred | Not implemented in the public repo; handled as private/internal work |
 | CI execution profile | Implemented as model | The enum exists, but execution wiring remains deferred |

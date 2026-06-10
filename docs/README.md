@@ -8,7 +8,7 @@ here as if they were public contracts.
 
 ## Getting Started
 
-- [Quickstart](quickstart.md) - bootstrap, build, validation, and acceptance
+- [Quickstart](quickstart.md) - bootstrap, build, contract validation, and package proof
 - [Repository Layout](repository-layout.md) - physical directory conventions
 
 ## Project Direction
@@ -17,20 +17,23 @@ here as if they were public contracts.
 - [Roadmap](protocol-lab/roadmap.md) - phased development plan and current implementation status
 - [Product Boundaries](protocol-lab/product-boundaries.md) - public/community versus internal boundary
 - [First Public Release Checklist](protocol-lab/first-public-release-checklist.md) - public release gate and verification checklist
-- [v1 Definition of Done](v1-definition-of-done.md) - v1 acceptance criteria
+- [Public Contract Definition of Done](v1-definition-of-done.md) - public contract readiness criteria
 
 ## Architecture
 
 - [Overview](architecture/overview.md) - component map, data flow, key decisions
+- [Lab Roles](architecture/lab-roles.md) - lab, adapter, test executor, and package boundaries
 - [Runner Model](architecture/runner-model.md) - orchestration, lifecycle, validation, execution
 - [Scenario Model](architecture/scenario-model.md) - scenarios, workload families, matrix expansion
 - [Adapter Model](architecture/adapter-model.md) - adapter control plane contract and lifecycle
+- [Test Executor Contract v1](architecture/test-executor-contract-v1.md) - tester/executor control plane API specification
 - [Load Model](architecture/load-model.md) - load tools, load shapes, load profiles
 - [Artifact Model](architecture/artifact-model.md) - deterministic layout, paths, and preservation
 - [Measurement Model](architecture/measurement-model.md) - execution profile, effective load shape, provenance model, comparability
 - [Report Model](architecture/report-model.md) - claim levels, publishable gating, environment manifest, report pipeline
-- [Architecture](architecture.md) - foundational architecture summary and current implementation coverage
+- [Architecture](architecture.md) - foundational architecture summary and public contract boundaries
 - [Adapter Contract v1](architecture/adapter-contract-v1.md) - full control plane API specification
+- [Package v2](lab/package-v2.md) - schema-backed component package contract
 
 ## Reports
 
@@ -47,10 +50,7 @@ here as if they were public contracts.
 - [Runner Overview](runner/overview.md) - runner boundaries and design
 - [Fixture Lab](runner/fixture-lab.md) - runner contract fixture lab
 - [Adapter Conformance](runner/adapter-conformance.md) - adapter conformance suite
-- [Kestrel Adapter](runner/kestrel-adapter.md) - Kestrel adapter v1
-- [Incursa HTTP/3 Adapter](runner/incursa-http3-adapter.md)
-- [Incursa Raw QUIC Adapter](runner/incursa-raw-quic-adapter.md)
-- [MsQuic .NET Adapter](runner/msquic-dotnet-adapter.md)
+- [Test Executor Conformance](runner/test-executor-conformance.md) - test executor conformance suite
 - [Raw QUIC Foundation](runner/raw-quic-foundation.md)
 
 ## Scenarios
@@ -75,8 +75,6 @@ here as if they were public contracts.
 - [Load Generator Metrics](spec/load-generator-metrics.md)
 - [Docker Target Metrics](spec/docker-target-metrics.md)
 - [Runtime Counter Capture](spec/runtime-counter-capture.md)
-- [Incursa HTTP/3 Target Contract](spec/incursa-http3-target-contract.md)
-- [Incursa Docker Target Contract](spec/incursa-docker-target-contract.md)
 - [Kestrel HTTP/3 Proof](spec/kestrel-http3-proof.md)
 - [Caddy HTTP/3 Target](spec/caddy-http3-target.md)
 - [nginx HTTP/3 Target](spec/nginx-http3-target.md)

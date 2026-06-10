@@ -49,22 +49,26 @@ The lab is designed to support:
 
 | Family | Status | Description |
 |--------|--------|-------------|
-| `http.application` | Implemented | HTTP request/response benchmarks across HTTP/1.1, HTTP/2, HTTP/3 |
-| `h3.protocol` | Modeled | HTTP/3-specific protocol behavior (QPACK, cancellation, multiplexing). Load generation remains deferred |
-| `quic.transport` | Implemented - fixture only | Raw QUIC transport behavior and fixture-only adapter coverage |
+| `http.application` | Contracted and locally modeled | HTTP request/response benchmarks across HTTP/1.1, HTTP/2, HTTP/3 |
+| `h3.protocol` | Modeled | HTTP/3-specific protocol behavior (QPACK, cancellation, multiplexing). Production executors arrive as packages |
+| `quic.transport` | Narrow package fixture | Raw QUIC transport behavior is enabled only for the current multiplex and duplex package-backed cells |
 | `webtransport` | Modeled | WebTransport sessions. Validators and load generators remain deferred |
 | `masque` | Modeled | MASQUE CONNECT-UDP tunnels. Validators and load generators remain deferred |
 
 ## Execution Environments (Current and Future)
 
 **Implemented:**
-- Local process execution (targets start as child processes on the host)
-- Docker target execution with published-port and shared-network networking
-- Docker load-tool execution (repo-owned h2load image)
-- Managed-lab HTTP/3 load generation (in-process HttpClient)
+- Adapter Contract v1 and Test Executor Contract v1
+- package v2 schemas and tooling for implementation, test-executor,
+  scenario-pack, and toolchain packages
+- conformance fixtures for adapters and test executors
+- Local runner support for fixture and developer workflows
+- Docker load-tool execution for local runner workflows
+- Managed-lab HTTP/3 load generation for local runner workflows
 - Optional `dotnet-counters` runtime diagnostics
 
 **Future or internal/private:**
+- Production adapter and test-executor packages from producer repositories
 - Docker Compose or orchestrated multi-container topologies
 - CI execution profile with private retention policy choices
 - Hosted execution backend (controlled environment, attested provenance)
@@ -100,10 +104,11 @@ measurement versus when it is trying to support a controlled claim.
 ## Relationship to Incursa
 
 ProtocolLab is a standalone project. It does not require Incursa protocol
-assemblies to build or run. Incursa HTTP/3 and Incursa QUIC remain canonical
-targets - their manifests, containers, and benchmarks are first-class - but
-the runner treats them through the same generic contracts as Kestrel, Caddy,
-nginx, and any future implementation.
+assemblies to build or run. Incursa HTTP/3 and Incursa QUIC can be
+first-class package producers, but their production adapters and executors
+belong outside the public contract repository. The runner and hosted lab must
+treat them through the same adapter, test-executor, package, scenario,
+capability, and artifact contracts as any other implementation.
 
 The public repo remains the community-facing surface. The sibling internal
 repo carries hosted or commercial extensions, private diagnostics, and

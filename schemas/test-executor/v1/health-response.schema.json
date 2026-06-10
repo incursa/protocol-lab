@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Test Executor Contract v1 Health Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["executorIdentity", "status", "versionCompatibility"],
+  "properties": {
+    "executorIdentity": { "$ref": "./common.schema.json#/$defs/identity" },
+    "status": { "$ref": "./common.schema.json#/$defs/healthStatus" },
+    "versionCompatibility": { "$ref": "./common.schema.json#/$defs/versionCompatibility" },
+    "message": { "type": "string" },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "capabilities": {
+      "type": "array",
+      "items": { "$ref": "./common.schema.json#/$defs/capability" }
+    },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

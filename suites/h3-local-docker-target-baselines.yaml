@@ -1,11 +1,10 @@
 id: h3-local-docker-target-baselines
 name: ProtocolLab local HTTP/3 Docker target baseline suite
-description: Local shared-network Docker h2load comparison suite for Kestrel, Incursa, Caddy, and nginx HTTP/3 targets.
+description: Local shared-network Docker h2load comparison suite for public reference Kestrel, Caddy, and nginx HTTP/3 targets.
 targetMode: docker
 targetNetworkMode: shared-docker-network
 implementations:
   - kestrel-http3
-  - incursa-http3
   - caddy-http3
   - nginx-http3
 scenarios:

@@ -87,4 +87,5 @@ Expected: All tests pass.
 - No real QUIC traffic is generated; all QUIC scenarios use fixture/deterministic proofs.
 - The runner accepts `quic://` scheme endpoints from adapters.
 - Raw QUIC load tools are fixture-only and do not generate QUIC packets.
-- Existing HTTP, Kestrel, and Incursa HTTP/3 adapter tests are preserved.
+- Existing HTTP, adapter-fixture, and public reference-target tests are
+  preserved.

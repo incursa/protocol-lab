@@ -12,7 +12,8 @@ shared contracts, docs, and local validation behavior.
 - scenario-driven validation and benchmarking for HTTP and transport
   protocols
 - an implementation-neutral runner and CLI
-- repo-owned adapters, manifests, scenarios, and target servers
+- contract schemas, neutral manifests, scenarios, package tooling, and
+  fake/reference fixtures
 - local artifact capture with validation output, summaries, and aggregate JSON
 - support for process, Docker, and external-reference targets
 - public shared contracts that are also published as NuGet packages for
@@ -27,17 +28,18 @@ shared contracts, docs, and local validation behavior.
 - a private or commercial backend hidden behind the public repo
 - a replacement for the internal operational repo
 
-## Current Supported Scenarios
+## Current Public Surface
 
-ProtocolLab v1 is locally operational. Current support includes:
+ProtocolLab is being kept contract-first. Current public support includes:
 
-- Kestrel HTTP/1 validation
-- Kestrel HTTP/3 validation
-- Incursa HTTP/3 validation through the repo-owned adapter project and endpoint target
-- raw QUIC fixture-only adapter coverage for protocol-boundary work
-- managed-lab HTTP/3 comparison with `managed-httpclient-h3-load`, including the full stable local comparison suite across core, payload, headers, and upload scenarios
-- external-reference HTTP/3 comparison with the repo-owned Docker `h2load --h3` image
-- optional Docker target execution for Kestrel, Incursa, Caddy, nginx, and quic-go
+- Adapter Contract v1 under `/protocol-lab/adapter/v1`.
+- Test Executor Contract v1 under `/protocol-lab/test-executor/v1`.
+- package v2 schemas and tooling for `implementation`, `test-executor`,
+  `scenario-pack`, and `toolchain` packages.
+- neutral scenario, suite, metric, artifact, endpoint, capability, and
+  provenance model definitions.
+- fake/reference fixtures and conformance harnesses for contract validation.
+- managed-lab and reference test-executor paths used by local fixture proof.
 - optional `dotnet-counters` diagnostics and Docker container metrics
 - qlog capture for Docker h2load when the image proves `--qlog-file-base`
 
@@ -78,14 +80,15 @@ consumers:
 - `Incursa.ProtocolLab.Adapter.Contracts`
 - `Incursa.ProtocolLab.Adapter.Conformance`
 
-Runners, servers, and implementation targets remain source-only in this repo.
+Production implementation adapters and test executors are package producers
+outside this public contract repository.
 
 ## Run Validation
 
-Validate a specific target and scenario with the CLI:
+Validate a submitted implementation target and scenario with the CLI:
 
 ```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- validate --implementations kestrel-http3 --scenarios http.core.plaintext --protocol h3
+dotnet run --project src\Incursa.ProtocolLab.Cli -- validate --implementations <implementation-id> --scenarios <scenario-id> --protocol <protocol-id>
 ```
 
 `validate` proves the target and scenario before any benchmark data is
@@ -93,21 +96,31 @@ accepted.
 
 ## Run a Basic Benchmark
 
-A simple local benchmark uses the managed HTTP/3 load generator and does not
-require Docker:
+A local benchmark names the implementation, scenario, protocol, and selected
+test executor:
 
 ```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations kestrel-http3 --scenarios http.core.plaintext,http.core.json --protocol h3 --load-tool managed-httpclient-h3-load --concurrency 16 --duration 10 --warmup 2 --repetitions 1
+dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations <implementation-id> --scenarios <scenario-id> --protocol <protocol-id> --test-executor <test-executor-id> --concurrency 16 --duration 10 --warmup 2 --repetitions 1
 ```
 
-For the external-reference H3 path, use the repo-owned Docker `h2load --h3`
-image:
+For package-backed controller submissions, build or obtain the component
+packages first and submit explicit package references:
 
 ```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations kestrel-http3,incursa-http3 --scenarios http.core.plaintext,http.core.json --protocol h3 --load-tool h2load --load-tool-mode docker
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\lab\Submit-ProtocolLabPackageRun.ps1 `
+  -ControllerUri <controller-uri> `
+  -PackagePath <implementation-package.plabpkg> `
+  -PackageReference <test-executor-package-id:version:sha256> `
+  -PackageReference <scenario-package-id:version:sha256> `
+  -ImplementationId <implementation-id> `
+  -TestExecutorId <test-executor-id> `
+  -SuiteId <suite-id> `
+  -Protocol <protocol-id>
 ```
 
-For broader local comparison coverage, use `suites/h3-local-v1-comparison.yaml` with `--load-profile local-comparison`; it includes quic-go alongside Kestrel and Incursa while covering the full stable H3 app matrix across core, payload, headers, and upload scenarios.
+The public repository defines the contracts and neutral catalogs. Production
+implementation and test-executor packages live outside the public contract
+repository.
 
 ## Local Workflow
 

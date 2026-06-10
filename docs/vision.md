@@ -52,13 +52,16 @@ The harness answers a narrower question set today:
 
 The public repo currently supports:
 
-- local process and Docker target execution
-- Kestrel HTTP/1.1, HTTP/2, and HTTP/3 validation and local measurement
-- Incursa HTTP/3 validation through the shared adapter contract
-- raw QUIC fixture-only adapter coverage for protocol-boundary work
-- external-reference Docker `h2load --h3` comparisons
-- managed-lab HTTP/3 comparisons via in-process `HttpClient`
-- optional runtime counters and Docker container metrics
+- Adapter Contract v1 and reusable adapter conformance fixtures
+- Test Executor Contract v1 and reusable test-executor conformance fixtures
+- package v2 schemas and tooling for implementation, test-executor,
+  scenario-pack, and toolchain packages
+- neutral scenario, suite, capability, metric, artifact, endpoint, and
+  provenance concepts
+- local runner and load-tool catalog support for fixture/developer workflows
+- raw QUIC package fixtures for the currently enabled multiplex and duplex
+  transport cells
+- optional runtime counters and Docker container metrics for local workflows
 
 Hosted execution, attested provenance, and other private/internal capabilities
 are handled in the sibling internal repository.

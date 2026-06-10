@@ -4,7 +4,6 @@ description: Documentation/input suite for the full stable local HTTP/3 comparis
 loadProfileId: local-comparison
 implementations:
   - kestrel-http3
-  - incursa-http3
   - quic-go-http3
 scenarios:
   - http.core.plaintext
@@ -33,4 +32,4 @@ defaults:
 counterCapture:
   enabledByDefault: false
   tool: dotnet-counters
-notes: Full stable local comparison input. It covers the stable HTTP/3 app matrix for Kestrel, Incursa, and quic-go while keeping the managed local comparison load profile consistent across the three runnable HTTP/3 targets.
+notes: Full stable local comparison input for public reference targets. Product implementations such as QUIC.NET enter through package v2 implementation packages or private catalog overlays.

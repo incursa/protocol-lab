@@ -38,129 +38,6 @@ public sealed class ManifestParsingTests
         Assert.False(manifest.QlogSupport);
     }
 
-    [Theory]
-    [InlineData("kestrel-adapter-v1.yaml", null, null)]
-    [InlineData("fixture-kestrel-adapter-start-failure.yaml", "servers/KestrelBenchServer/DefinitelyMissing.csproj", null)]
-    [InlineData("fixture-kestrel-adapter-readiness-failure.yaml", null, "/never-ready")]
-    public void Parses_kestrel_adapter_manifests(
-        string fileName,
-        string? benchmarkServerProjectPath,
-        string? readinessProbePath)
-    {
-        var root = fileName.StartsWith("fixture-", StringComparison.OrdinalIgnoreCase)
-            ? Path.Combine(TestPaths.RepoRoot, "tests", "Incursa.ProtocolLab.Tests", "Fixtures", "RunnerContractLab", "implementations")
-            : Path.Combine(TestPaths.RepoRoot, "implementations");
-
-        var manifest = YamlFile.Load<ImplementationManifest>(Path.Combine(root, fileName));
-
-        Assert.Equal("adapter-v1", manifest.TargetContract);
-        Assert.Equal("process", manifest.TargetKind);
-        Assert.Equal("http://127.0.0.1:53171", manifest.BaseUrl);
-        Assert.Equal("http://127.0.0.1:53171", manifest.AdapterControlPlaneBaseUrl);
-        Assert.Contains("server", manifest.Roles);
-        Assert.Contains("h1", manifest.SupportedProtocols);
-        Assert.Contains("h2", manifest.SupportedProtocols);
-        Assert.Contains("h3", manifest.SupportedProtocols);
-        Assert.Contains("fixture.kestrel", manifest.SupportedWorkloadFamilies);
-        Assert.Equal("http://127.0.0.1:53171", manifest.Environment["ASPNETCORE_URLS"]);
-        Assert.Equal("/protocol-lab/adapter/v1/health", manifest.ReadinessCheck.Url);
-        Assert.Contains("httpPlaintext", manifest.Capabilities);
-        Assert.Contains("httpHeaders", manifest.Capabilities);
-
-        if (benchmarkServerProjectPath is not null)
-        {
-            Assert.Equal(benchmarkServerProjectPath, manifest.Environment["PROTOCOL_LAB_KESTREL_BENCHMARK_PROJECT_PATH"]);
-        }
-
-        if (readinessProbePath is not null)
-        {
-            Assert.Equal(readinessProbePath, manifest.Environment["PROTOCOL_LAB_KESTREL_READINESS_PROBE_PATH"]);
-        }
-    }
-
-    [Fact]
-    public void Parses_incursa_runnable_manifest()
-    {
-        var manifest = YamlFile.Load<ImplementationManifest>(
-            Path.Combine(TestPaths.RepoRoot, "implementations", "incursa-http3.yaml"));
-
-        Assert.Equal("incursa-http3", manifest.Id);
-        Assert.Equal("Incursa HTTP/3", manifest.Name);
-        Assert.Equal("process", manifest.TargetKind);
-        Assert.Equal("incursa/protocol-lab-incursa-http3-bench-server:local", manifest.Image);
-        Assert.Equal("dotnet", manifest.Executable);
-        Assert.Equal("src/Incursa.ProtocolLab.Adapters.IncursaHttp3/Incursa.ProtocolLab.Adapters.IncursaHttp3.csproj", manifest.Project);
-        Assert.Equal("src/Incursa.ProtocolLab.Adapters.IncursaHttp3/Dockerfile", manifest.Dockerfile);
-        Assert.Equal(".", manifest.BuildContext);
-        Assert.Equal("https://localhost:5444", manifest.BaseUrl);
-        Assert.Equal("https://localhost:5444", manifest.ProtocolBaseUrls["h3"]);
-        Assert.Equal("https://127.0.0.1:5444", manifest.DockerBaseUrl);
-        Assert.Equal("https://127.0.0.1:5444", manifest.DockerProtocolBaseUrls["h3"]);
-        Assert.Equal("loopback-self-signed-certificate", manifest.CertificateMode);
-        Assert.Contains("server", manifest.Roles);
-        Assert.Contains("h3", manifest.SupportedProtocols);
-        Assert.Contains("http.application", manifest.SupportedWorkloadFamilies);
-        Assert.Contains("httpPlaintext", manifest.Capabilities);
-        Assert.Contains("httpJson", manifest.Capabilities);
-        Assert.Contains("httpStatus", manifest.Capabilities);
-        Assert.Contains("httpBytes", manifest.Capabilities);
-        Assert.Contains("httpStreaming", manifest.Capabilities);
-        Assert.Contains("httpUpload", manifest.Capabilities);
-        Assert.Contains("httpHeaders", manifest.Capabilities);
-        Assert.Contains("--mode", manifest.CommandArguments);
-        Assert.Contains("endpoint", manifest.CommandArguments);
-        Assert.Contains("--port", manifest.CommandArguments);
-        Assert.Contains("5444", manifest.CommandArguments);
-        Assert.Equal("endpoint", manifest.Environment["PROTOCOL_LAB_INCURSA_MODE"]);
-        Assert.Equal("5444", manifest.Environment["PROTOCOL_LAB_H3_PORT"]);
-        Assert.Equal("endpoint", manifest.DockerEnvironment["PROTOCOL_LAB_INCURSA_MODE"]);
-        Assert.Equal("5444", manifest.DockerEnvironment["PROTOCOL_LAB_H3_PORT"]);
-        Assert.Contains("--mode", manifest.DockerCommandArguments);
-        Assert.Contains("endpoint", manifest.DockerCommandArguments);
-        Assert.Contains("--port", manifest.DockerCommandArguments);
-        Assert.Contains("5444", manifest.DockerCommandArguments);
-        Assert.Equal("http", manifest.ReadinessCheck.Type);
-        Assert.Equal("/plaintext", manifest.ReadinessCheck.Url);
-        Assert.Equal(30, manifest.ReadinessCheck.TimeoutSeconds);
-        Assert.DoesNotContain("protocol-metrics/", manifest.ArtifactExports);
-        Assert.False(manifest.QlogSupport);
-        Assert.False(manifest.SslKeyLogSupport);
-    }
-
-    [Fact]
-    public void Parses_incursa_adapter_manifest()
-    {
-        var manifest = YamlFile.Load<ImplementationManifest>(
-            Path.Combine(TestPaths.RepoRoot, "implementations", "incursa-http3-adapter-v1.yaml"));
-
-        Assert.Equal("incursa-http3-adapter-v1", manifest.Id);
-        Assert.Equal("Incursa HTTP/3 Adapter v1", manifest.Name);
-        Assert.Equal("adapter-v1", manifest.TargetContract);
-        Assert.Equal("process", manifest.TargetKind);
-        Assert.Equal("src/Incursa.ProtocolLab.Adapters.IncursaHttp3/Incursa.ProtocolLab.Adapters.IncursaHttp3.csproj", manifest.Project);
-        Assert.Equal("http://127.0.0.1:53172", manifest.BaseUrl);
-        Assert.Equal("http://127.0.0.1:53172", manifest.AdapterControlPlaneBaseUrl);
-        Assert.Contains("server", manifest.Roles);
-        Assert.Contains("h3", manifest.SupportedProtocols);
-        Assert.Contains("http.application", manifest.SupportedWorkloadFamilies);
-        Assert.Contains("fixture.incursa-http3", manifest.SupportedWorkloadFamilies);
-        Assert.Contains("adapter-control-plane", manifest.Capabilities);
-        Assert.Contains("http3.server", manifest.Capabilities);
-        Assert.Contains("quic.server", manifest.Capabilities);
-        Assert.Contains("httpPlaintext", manifest.Capabilities);
-        Assert.Contains("httpJson", manifest.Capabilities);
-        Assert.Contains("httpStatus", manifest.Capabilities);
-        Assert.Contains("httpBytes", manifest.Capabilities);
-        Assert.Contains("httpStreaming", manifest.Capabilities);
-        Assert.Contains("httpUpload", manifest.Capabilities);
-        Assert.Contains("httpHeaders", manifest.Capabilities);
-        Assert.Equal("http", manifest.ReadinessCheck.Type);
-        Assert.Equal("/protocol-lab/adapter/v1/health", manifest.ReadinessCheck.Url);
-        Assert.Equal("none", manifest.CertificateMode);
-        Assert.False(manifest.QlogSupport);
-        Assert.False(manifest.SslKeyLogSupport);
-    }
-
     [Fact]
     public void Parses_caddy_runnable_docker_manifest()
     {
@@ -278,15 +155,10 @@ public sealed class ManifestParsingTests
     {
         var manifests = ManifestCatalog.Load(Path.Combine(TestPaths.RepoRoot, "implementations"));
 
-        Assert.Equal(9, manifests.Count);
+        Assert.Equal(4, manifests.Count);
         Assert.Contains(manifests, manifest => manifest.Id == "kestrel-http3");
-        Assert.Contains(manifests, manifest => manifest.Id == "incursa-http3");
         Assert.Contains(manifests, manifest => manifest.Id == "nginx-http3");
         Assert.Contains(manifests, manifest => manifest.Id == "caddy-http3");
         Assert.Contains(manifests, manifest => manifest.Id == "quic-go-http3");
-        Assert.Contains(manifests, manifest => manifest.Id == "kestrel-adapter-v1");
-        Assert.Contains(manifests, manifest => manifest.Id == "incursa-http3-adapter-v1");
-        Assert.Contains(manifests, manifest => manifest.Id == "msquic-dotnet-raw-adapter-v1");
-        Assert.Contains(manifests, manifest => manifest.Id == "incursa-raw-quic-adapter-v1");
     }
 }

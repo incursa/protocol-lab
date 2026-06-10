@@ -96,10 +96,11 @@ Phase 1 records the fairness contract before broad benchmarking exists. These ru
   benchmark run.
 - Results must include errors and timeouts next to throughput.
 - Any skipped scenario must explain why.
-- Incursa-specific optimizations are allowed only in Incursa implementation containers, not in the neutral runner.
-- Incursa HTTP/3 validation through the local process target is a protocol and
+- Implementation-specific optimizations are allowed only in implementation
+  packages or private overlays, not in the neutral public runner.
+- Implementation validation through a local process target is a protocol and
   endpoint proof only. It becomes a local performance baseline only when an
-  accepted H3-capable load generator runs and preserves raw artifacts.
+  accepted capable load generator runs and preserves raw artifacts.
 - Local shared-host results are useful for regression and profiling direction,
   but they are not publishable benchmark evidence.
 - ProtocolLab v1 acceptance is a reproducibility and local-regression gate. It

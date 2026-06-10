@@ -33,7 +33,9 @@ public sealed class CliRunTests
             Assert.Contains("managed H3 proof:", output);
             Assert.Contains("managed H3 load:", output);
             Assert.Contains("Kestrel manifest:", output);
-            Assert.Contains("Incursa manifest:", output);
+            Assert.Contains("Caddy manifest:", output);
+            Assert.Contains("nginx manifest:", output);
+            Assert.DoesNotContain("Incursa manifest:", output);
             Assert.Contains("Warnings and remediation:", output);
         }
         finally

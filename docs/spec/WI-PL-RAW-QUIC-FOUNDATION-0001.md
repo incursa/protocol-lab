@@ -17,8 +17,7 @@ MSQuic raw QUIC real adapters in this branch.
 - [x] No real Incursa or MSQuic adapter is implemented yet.
 - [x] No raw QUIC logic is added directly to the runner.
 - [x] Unsupported feature handling remains structured.
-- [x] Existing fake adapter, Kestrel adapter, and Incursa HTTP/3 adapter tests
-      remain green.
+- [x] Existing fake adapter and public reference-target tests remain green.
 
 ## Files Added or Changed
 

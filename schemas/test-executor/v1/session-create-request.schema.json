@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolLab Test Executor Contract v1 Session Create Request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "requestedSessionId": { "type": "string" },
+    "runId": { "type": "string" },
+    "cellId": { "type": "string" },
+    "sessionLabel": { "type": "string" },
+    "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  }
+}

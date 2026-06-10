@@ -1,0 +1,169 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-LABPKG2",
+  "artifact_type": "specification",
+  "title": "ProtocolLab Component Package v2",
+  "domain": "protocol-lab",
+  "capability": "lab-package-v2",
+  "status": "approved",
+  "owner": "protocol-lab-maintainers",
+  "tags": [
+    "protocol-lab",
+    "lab",
+    "package",
+    "test-executor",
+    "scenario-pack"
+  ],
+  "related_artifacts": [
+    "SPEC-PL-LABPKG",
+    "SPEC-PL-RUNNER",
+    "SPEC-PL-REPORT"
+  ],
+  "purpose": "Define the public component package contract that lets ProtocolLab compose versioned implementations, test executors, and scenario packs without baking protocol capability into hosted lab workers.",
+  "scope": "This specification covers protocol-lab-package-v2 manifest identity, package kinds, dependency declarations, package-relative catalog entry manifests, package provenance, and package set compatibility. It does not define legacy package migration, untrusted sandboxing, package signing, package storage APIs, automatic dependency fetching, or private fleet scheduling policy.",
+  "requirements": [
+    {
+      "id": "REQ-PL-LABPKG2-0001",
+      "title": "V2 root manifest",
+      "statement": "A v2 ProtocolLab component package MUST contain protocol-lab-package.json with schemaVersion protocol-lab-package-v2, packageId, packageVersion, kind, entryManifests, environments, and dependencies.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0002",
+      "title": "Package kinds",
+      "statement": "The v2 manifest kind MUST be one of implementation, test-executor, scenario-pack, or toolchain.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0003",
+      "title": "Catalog entry overlays",
+      "statement": "A v2 package MAY provide package-relative entry manifests for implementations, test executors, scenarios, and suites.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0004",
+      "title": "Runtime dependency declarations",
+      "statement": "A v2 package MUST declare runtime prerequisites through dependencies and package-provided test-executor capability requirements so hosted schedulers can match generic worker primitives rather than protocol-specific baked executor flags.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0007",
+      "title": "Component compatibility semantics",
+      "statement": "A v2 component package MUST declare kind-specific provided component metadata: implementation packages declare providedImplementations, test-executor packages declare providedTestExecutors, scenario-pack packages declare providedSuites or providedScenarios, and toolchain packages declare dependencies.requiredCapabilities.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG2-0002",
+          "REQ-PL-LABPKG2-0003",
+          "REQ-PL-LABPKG2-0004"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0005",
+      "title": "Run provenance",
+      "statement": "Every hosted run result that uses component packages SHOULD record each resolved package's packageId, packageVersion, SHA-256, kind, selected entrypoint, effective manifest IDs, test-executor command artifact, and test-executor working directory.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "optional",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0006",
+      "title": "No legacy v2 aliases",
+      "statement": "A protocol-lab-package-v2 manifest MUST use kind test-executor and providedTestExecutors for tester packages.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "optional",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0008",
+      "title": "Catalog overlay materialization",
+      "statement": "Lab workers MUST materialize package entry manifests into a generated per-attempt catalog overlay without modifying the checkout.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG2-0003"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0009",
+      "title": "Package-relative entry paths",
+      "statement": "Entry manifest paths MUST be relative paths inside the package and must not be rooted paths, URI paths, or contain traversal segments.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG2-0003"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0010",
+      "title": "Incompatible component rejection",
+      "statement": "Workers MUST reject incompatible component sets rather than substituting a different protocol lane.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "optional"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG2-0007"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0011",
+      "title": "No legacy package semantics",
+      "statement": "New v2 docs, schemas, tooling, and hosted ingestion MUST NOT use load-runner, load-tool package kinds, or providedLoadTools as v2 package semantics.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "optional",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      }
+    }
+  ]
+}

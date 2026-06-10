@@ -191,7 +191,8 @@ If the local platform lacks MsQuic, a usable HTTPS certificate, curl HTTP/3
 support, or an H3-capable load tool, the run must report that limitation
 honestly rather than falling back.
 
-The same protocol-proof contract is reused by `incursa-http3` in Phase 2E.
-Kestrel remains the isolated proof target; Incursa uses the generic manifest,
-target orchestration, and managed exact-H3 validation path without adding
-runner dependencies on Incursa assemblies.
+The same protocol-proof contract is reused by package-provided implementation
+manifests. Kestrel remains the isolated public proof target; product
+implementations use generic manifest, target orchestration, and managed
+exact-H3 validation paths without adding runner dependencies on implementation
+assemblies.

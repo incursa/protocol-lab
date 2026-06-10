@@ -1,43 +1,64 @@
 # ProtocolLab Public Repository Readiness
 
-Status: Partially ready
+Status: Contract-first readiness gate
 
 ## Summary
 
-- The public tree is public-safe: searches for private checkout markers, private path markers, branding markers, secret/token/password patterns, and forbidden file globs found no leak indicators in the canonical public checkout.
-- `dotnet restore`, `dotnet build`, `dotnet test`, and `workbench validate --profile core` passed in a disposable public worktree.
-- The acceptance smoke lane failed in `Incursa H3 validation` with `Target did not become ready within 30 seconds` and `HttpClient.Timeout of 2 seconds`, so the public repo is not fully green yet.
-- The canonical public checkout still has pre-existing local edits from the split work. I preserved them and did not use them as build inputs.
+The public repository is ready when it can be consumed as the canonical
+contract, schema, package-tooling, fixture, and documentation source for
+ProtocolLab. Public readiness no longer depends on repo-owned production
+Kestrel, Incursa, MSQUIC, or quic-go adapter projects.
 
-## Commands Run
+## Required Proof
+
+- Public/private boundary scan has no private checkout markers, private path
+  markers, secret/token/password patterns, or forbidden file globs.
+- `dotnet restore`, `dotnet build`, and `dotnet test` pass from a clean
+  checkout.
+- `workbench validate --profile core` passes when Workbench is available.
+- Adapter Contract v1 schema and conformance tests pass.
+- Test Executor Contract v1 schema and conformance tests pass.
+- package v2 schema tests pass, including rejection of legacy `load-runner`
+  and `providedLoadTools` semantics.
+- Raw QUIC component package dry run emits explicit `test-executor` and
+  `scenario-pack` packages with package-relative entry manifests.
+- Architecture guardrails pass, including checks that the public runner/CLI
+  do not reference concrete adapter assemblies or concrete protocol
+  implementation libraries.
+
+## Commands
 
 ```powershell
 git status --short --branch
 git remote -v
-# private marker scan: no matches
-# forbidden-file scan: no matches
+# private marker scan
+# forbidden-file scan
 dotnet tool restore
 dotnet restore Incursa.ProtocolLab.sln
 dotnet build Incursa.ProtocolLab.sln -v minimal
 dotnet test Incursa.ProtocolLab.sln --no-build -v minimal
 workbench validate --profile core
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\acceptance\Invoke-ProtocolLabAcceptance.ps1 -RunIdPrefix post-split-public-smoke -SkipExternal -SkipCounters -DurationSeconds 5 -WarmupSeconds 1 -Repetitions 1
 ```
 
-## Results
+Focused contract proof:
 
-- Git remotes: pass
-- Git status: not clean because of pre-existing local edits in the canonical checkout
-- Leak scan: pass
-- Restore/build/test: pass
-- Repo validation: pass
-- Acceptance smoke: fail
+```powershell
+dotnet test tests\Incursa.ProtocolLab.Tests\Incursa.ProtocolLab.Tests.csproj --filter "FullyQualifiedName~ArchitectureGuardrailTests|FullyQualifiedName~PublicContractSchemaTests|FullyQualifiedName~LabPackageScriptTests|FullyQualifiedName~AdapterConformanceSuiteTests|FullyQualifiedName~AdapterSchemaValidatorTests|FullyQualifiedName~TestExecutorConformanceSuiteTests|FullyQualifiedName~TestExecutorSchemaValidatorTests"
+```
 
-## Blockers
+Raw QUIC package dry run:
 
-- `Incursa HTTP/3` readiness timed out during the smoke acceptance lane.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\lab\New-ProtocolLabRawQuicComponentPackages.ps1 `
+  -PackageVersion public-readiness `
+  -SourceBackedTestExecutor `
+  -OutputRoot .artifacts\lab-packages\raw-quic-components-public-readiness `
+  -Force
+```
 
-## Next Actions
+## Non-Goals
 
-1. Retry the Incursa H3 acceptance lane after adjusting the readiness timeout or validating the local host conditions.
-2. Re-run acceptance once the smoke lane is green.
+- Hosted execution proof belongs to `protocol-lab-internal`.
+- Production implementation adapters belong to producer repositories.
+- Production test executors belong to producer repositories.
+- Package registry lookup and automatic dependency fetching are future work.

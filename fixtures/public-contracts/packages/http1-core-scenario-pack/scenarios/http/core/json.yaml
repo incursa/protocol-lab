@@ -1,9 +1,9 @@
 schemaVersion: "1.0"
-id: http.core.plaintext
-title: HTTP Plaintext
-name: HTTP Plaintext
+id: http.core.json
+title: HTTP JSON
+name: HTTP JSON
 family: http.application
-description: Validate and benchmark a fixed small plaintext HTTP response over an HTTP server endpoint.
+description: Validate a fixed small JSON HTTP response over an HTTP/1 server endpoint.
 status: stable
 kind: workload
 layer: application
@@ -13,60 +13,51 @@ roles:
 requires:
   capabilities:
     - http.server
-    - httpPlaintext
+    - httpJson
   protocols:
     - h1
-    - h2
-    - h3
   roles:
     - server
 trafficShape: request-response
 implementationRole: server
 requiredCapabilities:
-  - httpPlaintext
+  - httpJson
 endpoint:
   method: GET
-  path: /plaintext
+  path: /json
   query: {}
   requestHeaders: {}
   requestBodyGeneration: none
   expectedStatus: 200
   expectedHeaders:
-    content-type: text/plain
-  expectedBodyRule: exact
-  expectedBody: Hello, World!
-  expectedBodySize: 13
+    content-type: application/json
+  expectedBodyRule: jsonEquivalent
+  expectedBody: '{"message":"Hello, World!"}'
+  expectedJsonProperties:
+    message: Hello, World!
+  expectedJsonKeys:
+    - message
 validation:
   required: true
   checks:
     - status
     - content-type
-    - body
-    - body-size
+    - json-body
+    - json-equivalent
+    - json-property:message
   http:
     expectedStatus: 200
-    expectedBody: Hello, World!
-benchmark:
-  warmupSeconds: 5
-  durationSeconds: 30
-  repetitions: 1
-  connections:
-    - 1
-  streamsPerConnection:
-    - 1
+    expectedBody: '{"message":"Hello, World!"}'
 benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
     - smoke
-    - local-regression
-    - local-comparison
   primaryMetrics:
     - requestsPerSecond
     - latencyP50
     - latencyP95
     - latencyP99
     - errorRate
-  notes: Compatible with HTTP/1, HTTP/2, and HTTP/3 request/response load profiles when the selected executor preserves the fixed GET /plaintext request and validates the response before accepting benchmark metrics.
 artifacts:
   required:
     - validation.json
@@ -74,17 +65,16 @@ artifacts:
     - load-tool.stdout.txt
     - load-tool.stderr.txt
   optional:
-    - request-sample.json
+    - response-body.json
     - counters
 networkProfile: clean
 requiredMetrics:
   - requestsPerSecond
-  - latencyMeanMs
 artifactRequirements:
   - load-tool.stdout.txt
   - load-tool.stderr.txt
 tags:
-  - phase1
   - http
   - h1
-  - plaintext
+  - core
+  - json

@@ -1,7 +1,16 @@
 # ProtocolLab Suite Catalog
 
 This catalog lists the suite files that are used by the local scripts in this
-repository.
+repository or selected by package-backed run submissions.
+
+## Package-Backed Selector Suites
+
+These suites select scenarios and load profiles without pinning implementation
+or test executor packages.
+
+| Suite ID | Protocol | Target mode | Load tool | Purpose | Runner |
+| --- | --- | --- | --- | --- | --- |
+| `http1-core-smoke` | `h1` | package-backed or local override | selected test executor | Fast package-neutral HTTP/1 smoke validation for plaintext, JSON, and 1KB payload scenarios. | package/controller submission or explicit local command options |
 
 ## Benchmark Suites
 

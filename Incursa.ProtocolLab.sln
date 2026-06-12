@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Incursa.ProtocolLab.Runner"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Incursa.ProtocolLab.Adapter.Conformance", "src\Incursa.ProtocolLab.Adapter.Conformance\Incursa.ProtocolLab.Adapter.Conformance.csproj", "{B82CE588-52EA-4946-85C4-1C187777BE55}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceHttp1TestExecutor", "tools\test-executors\reference-http1\src\ReferenceHttp1TestExecutor.csproj", "{2BFE91F9-5688-4B98-8EAB-856B0058AD93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +105,18 @@ Global
 		{B82CE588-52EA-4946-85C4-1C187777BE55}.Release|x64.Build.0 = Release|Any CPU
 		{B82CE588-52EA-4946-85C4-1C187777BE55}.Release|x86.ActiveCfg = Release|Any CPU
 		{B82CE588-52EA-4946-85C4-1C187777BE55}.Release|x86.Build.0 = Release|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Debug|x64.Build.0 = Debug|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Debug|x86.Build.0 = Debug|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Release|x64.ActiveCfg = Release|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Release|x64.Build.0 = Release|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Release|x86.ActiveCfg = Release|Any CPU
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,5 +128,6 @@ Global
 		{CE743BD4-EED0-4684-B78D-AC37514EC4CE} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{495EE90B-3306-4C8A-814E-17B55D582735} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{B82CE588-52EA-4946-85C4-1C187777BE55} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{2BFE91F9-5688-4B98-8EAB-856B0058AD93} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 EndGlobal

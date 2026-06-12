@@ -11,4 +11,10 @@ public conformance command:
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-test-executor
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-adapter-implementation
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-scenario-pack
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\http1-core-scenario-pack
 ```
+
+Run plan examples live under `run-plans/valid` and `run-plans/invalid`.
+They prove that run plan v1 is a selector and provenance document: valid
+plans pin package bytes and select package-provided IDs, while invalid plans
+try to omit package hashes, omit work selection, or inline scenario behavior.

@@ -2,6 +2,13 @@
 
 This guide explains how to create and maintain scenario files in ProtocolLab.
 
+In the public vocabulary, a **test case** is the implementation-neutral
+behavior being specified, and a **scenario** is the current YAML artifact that
+serializes that test case. See
+[Test Case And Run Plan Model](../architecture/test-case-run-plan-model.md)
+for the full grammar, including scenario packs, suites, load profiles, and
+run plans.
+
 ## Authoring rules
 
 1. **Scenarios define behavior, not implementation.** Do not reference adapter names, Docker, hostnames, ports, or local paths in scenario files.
@@ -19,6 +26,10 @@ This guide explains how to create and maintain scenario files in ProtocolLab.
 7. **Load tools match traffic shape.** The `trafficShape` field helps the runner select compatible load tools.
 
 8. **Protocol-specific proof belongs in validation artifacts.** Put protocol proof details in `validation.http`, `validation.http3`, or `validation.quic`, not in the runner.
+
+9. **Scenarios are not run plans.** Do not put package references,
+   implementation IDs, test executor IDs, SHA-256 values, controller
+   placement, or repeatable job policy in scenario files.
 
 ## Scenario file template
 
@@ -97,6 +108,10 @@ tags:
 5. Run `protocol-lab check` to validate the new scenario file.
 6. Run `protocol-lab list scenarios` to confirm the scenario appears correctly.
 7. Add adapter capabilities to existing implementation manifests as needed.
+
+8. Add or update a run plan only when the goal is to pin exact package
+   versions and selected IDs for repeatable execution. Do not encode that
+   selection in the scenario itself.
 
 ## Status meanings
 

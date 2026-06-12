@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "protocol-lab-http1-core-scenarios",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "scenario-pack",
+  "displayName": "ProtocolLab HTTP/1 Core Scenario Pack",
+  "entryManifests": [
+    "scenarios/http/core/plaintext.yaml",
+    "scenarios/http/core/json.yaml",
+    "scenarios/http/payload/bytes-1kb.yaml",
+    "suites/http1-core-smoke.yaml"
+  ],
+  "providedScenarios": [
+    {
+      "scenarioId": "http.core.plaintext",
+      "displayName": "HTTP Plaintext",
+      "protocols": [
+        "h1"
+      ]
+    },
+    {
+      "scenarioId": "http.core.json",
+      "displayName": "HTTP JSON",
+      "protocols": [
+        "h1"
+      ]
+    },
+    {
+      "scenarioId": "http.payload.bytes.1kb",
+      "displayName": "HTTP Bytes 1KB",
+      "protocols": [
+        "h1"
+      ]
+    }
+  ],
+  "providedSuites": [
+    {
+      "suiteId": "http1-core-smoke",
+      "displayName": "HTTP/1 Core Smoke",
+      "protocols": [
+        "h1"
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "bash",
+        "path": "scripts/noop.sh",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": true,
+    "requiresGo": false,
+    "requiredCapabilities": []
+  }
+}

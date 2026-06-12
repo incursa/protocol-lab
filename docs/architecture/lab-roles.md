@@ -2,6 +2,10 @@
 
 ProtocolLab separates the lab from the protocol implementations and from the tools that exercise them.
 
+For the canonical vocabulary that distinguishes test cases, scenarios,
+scenario packs, suites, load profiles, package kinds, and run plans, see
+[Test Case And Run Plan Model](test-case-run-plan-model.md).
+
 ## Roles
 
 | Role | Owned by | Contract |
@@ -27,6 +31,10 @@ A package-backed job becomes executable only after the controller resolves all o
 - package environment and worker capabilities
 
 If any selected input cannot be satisfied by the submitted packages plus the base catalog, the job is rejected or the cell is marked unsupported. ProtocolLab must not silently choose a different implementation, test executor, or protocol lane.
+
+Packages declare support positively. Anything outside the declared scenarios,
+protocols, endpoint bindings, or capabilities is unsupported or unavailable;
+it is not permission for the lab to substitute a nearby component.
 
 ## Public ID And Selector Rules
 

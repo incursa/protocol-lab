@@ -30,10 +30,10 @@ scenarios/
 
 | ID | Status | Kind | Layer | Protocol |
 |----|--------|------|-------|----------|
-| `http.core.plaintext` | stable | workload | application | h3 |
-| `http.core.json` | stable | workload | application | h3 |
+| `http.core.plaintext` | stable | workload | application | h1 |
+| `http.core.json` | stable | workload | application | h1 |
 | `http.core.status` | stable | workload | application | h3 |
-| `http.payload.bytes.1kb` | stable | workload | application | h3 |
+| `http.payload.bytes.1kb` | stable | workload | application | h1 |
 | `http.payload.bytes.64kb` | stable | workload | application | h3 |
 | `http.payload.bytes.1mb` | stable | workload | application | h3 |
 | `http.payload.stream.100x16kb` | stable | workload | application | h3 |
@@ -42,6 +42,11 @@ scenarios/
 | `http.upload.echo.64kb` | stable | workload | application | h3 |
 | `http.upload.hash.1mb` | stable | workload | application | h3 |
 | `http.upload.sink.1mb` | stable | workload | application | h3 |
+
+The HTTP core plaintext, JSON, and 1KB payload scenarios use `h1` as their
+primary protocol for the HTTP/1 core lane, but their requirements remain valid
+for `h1`, `h2`, and `h3` when a selected executor and implementation both
+declare support.
 
 ## Experimental scenarios
 

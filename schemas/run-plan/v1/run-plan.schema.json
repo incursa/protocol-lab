@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/run-plan/v1/run-plan.schema.json",
+  "title": "ProtocolLab Run Plan v1",
+  "description": "Repeatable ProtocolLab job manifest that pins package bytes and selects existing package-provided components.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runPlanId",
+    "runPlanVersion",
+    "packages",
+    "implementationIds",
+    "testExecutorIds",
+    "protocols",
+    "loadProfileId",
+    "targetMode",
+    "targetNetworkMode",
+    "requiredCapabilities"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "protocol-lab-run-plan-v1"
+    },
+    "runPlanId": {
+      "$ref": "#/$defs/token"
+    },
+    "runPlanVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "packages": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/packageReference"
+      }
+    },
+    "implementationIds": {
+      "$ref": "#/$defs/nonEmptyTokenArray"
+    },
+    "testExecutorIds": {
+      "$ref": "#/$defs/nonEmptyTokenArray"
+    },
+    "suiteIds": {
+      "$ref": "#/$defs/nonEmptyTokenArray"
+    },
+    "scenarioIds": {
+      "$ref": "#/$defs/nonEmptyTokenArray"
+    },
+    "protocols": {
+      "$ref": "#/$defs/nonEmptyTokenArray"
+    },
+    "loadProfileId": {
+      "$ref": "#/$defs/token"
+    },
+    "targetMode": {
+      "type": "string",
+      "enum": ["process", "docker", "external"]
+    },
+    "targetNetworkMode": {
+      "type": "string",
+      "enum": ["published-port", "shared-docker-network"]
+    },
+    "requiredCapabilities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/capabilityRequirement"
+      }
+    },
+    "repetitions": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "comparisonGroups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/comparisonGroup"
+      }
+    },
+    "publicationIntent": {
+      "type": "string",
+      "enum": ["local-only", "publishable-report"]
+    },
+    "labels": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "traceReferences": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "anyOf": [
+    {
+      "required": ["suiteIds"]
+    },
+    {
+      "required": ["scenarioIds"]
+    }
+  ],
+  "$defs": {
+    "token": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    },
+    "nonEmptyTokenArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/token"
+      }
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "packageReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packageId", "packageVersion", "sha256"],
+      "properties": {
+        "packageId": {
+          "$ref": "#/$defs/token"
+        },
+        "packageVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "capabilityRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/token"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "comparisonGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["groupId"],
+      "properties": {
+        "groupId": {
+          "$ref": "#/$defs/token"
+        },
+        "suiteIds": {
+          "$ref": "#/$defs/nonEmptyTokenArray"
+        },
+        "scenarioIds": {
+          "$ref": "#/$defs/nonEmptyTokenArray"
+        },
+        "sameExecutorRequired": {
+          "type": "boolean"
+        },
+        "sameLoadProfileRequired": {
+          "type": "boolean"
+        }
+      },
+      "anyOf": [
+        {
+          "required": ["suiteIds"]
+        },
+        {
+          "required": ["scenarioIds"]
+        }
+      ]
+    }
+  }
+}

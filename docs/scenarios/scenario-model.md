@@ -4,12 +4,20 @@
 
 A ProtocolLab scenario describes a **behavior** that can be validated and benchmarked. Scenarios are written in YAML and conform to the v1 scenario model. Each scenario defines what protocol behavior is expected, independent of any adapter, load tool, execution backend, or host machine.
 
+Conceptually, that behavior is a **test case**. The scenario is the current
+catalog file format for one test case. The broader execution vocabulary is
+defined in
+[Test Case And Run Plan Model](../architecture/test-case-run-plan-model.md).
+
 ## What a scenario is NOT
 
 - **Not tied to an implementation.** Scenario IDs must not contain `incursa`, `kestrel`, `msquic`, `caddy`, `nginx`, `docker`, `h2load`, or similar implementation names.
 - **Not a load profile.** Duration, connection count, thread count, and concurrency belong in load profiles, not scenarios.
 - **Not a validation script.** Validation logic lives in adapters and validators. Scenarios declare what to check, not how.
 - **Not host-specific.** Hostnames, ports, Docker details, and local paths must not appear in scenario files.
+- **Not a run plan.** Package IDs, package versions, SHA-256 values,
+  implementation selection, test executor selection, and controller policy
+  belong in run plans or job requests.
 
 ## Model fields
 

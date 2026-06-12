@@ -18,8 +18,8 @@ trafficShape: request-response
 id: http.core.json
 name: HTTP JSON
 family: http.application
-description: Validate and benchmark a small JSON HTTP response serialized per request.
-protocol: h3
+description: Validate and benchmark a fixed small JSON HTTP response over an HTTP server endpoint.
+protocol: h1
 implementationRole: server
 requiredCapabilities:
   - httpJson
@@ -28,17 +28,27 @@ endpoint:
   path: /json
   query: {}
   requestHeaders: {}
+  requestBodyGeneration: none
   expectedStatus: 200
   expectedHeaders:
     content-type: application/json
   expectedBodyRule: jsonEquivalent
   expectedBody: '{"message":"Hello, World!"}'
+  expectedJsonProperties:
+    message: Hello, World!
+  expectedJsonKeys:
+    - message
 validation:
   required: true
   checks:
     - status
     - content-type
     - json-body
+    - json-equivalent
+    - json-property:message
+  http:
+    expectedStatus: 200
+    expectedBody: '{"message":"Hello, World!"}'
 http:
   expectedStatus: 200
   expectedBody: '{"message":"Hello, World!"}'
@@ -53,18 +63,24 @@ benchmark:
 benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
+    - smoke
+    - local-regression
+    - local-comparison
   primaryMetrics:
     - requestsPerSecond
     - latencyP50
     - latencyP95
     - latencyP99
     - errorRate
+  notes: Compatible with HTTP/1, HTTP/2, and HTTP/3 request/response load profiles when the selected executor preserves the fixed GET /json request and validates JSON equivalence before accepting benchmark metrics.
 artifacts:
   required:
     - validation.json
     - result.json
+    - load-tool.stdout.txt
+    - load-tool.stderr.txt
   optional:
-    - qlog
+    - response-body.json
     - counters
 networkProfile: clean
 requiredMetrics:
@@ -76,4 +92,5 @@ artifactRequirements:
 tags:
   - phase1
   - http
+  - h1
   - json

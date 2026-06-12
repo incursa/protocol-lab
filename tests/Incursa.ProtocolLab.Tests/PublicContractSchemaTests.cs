@@ -324,10 +324,201 @@ public sealed class PublicContractSchemaTests
     }
 
     [Fact]
+    public async Task Run_plan_v1_schema_accepts_representative_package_backed_plan()
+    {
+        var schema = await LoadSchemaAsync(Path.Combine(TestPaths.RepoRoot, "schemas", "run-plan", "v1", "run-plan.schema.json"));
+        var payload = """
+        {
+          "schemaVersion": "protocol-lab-run-plan-v1",
+          "runPlanId": "h3-core-smoke-reference",
+          "runPlanVersion": "2026.06.10",
+          "displayName": "HTTP/3 core smoke reference run",
+          "packages": [
+            {
+              "packageId": "protocol-lab-h3-core-scenarios",
+              "packageVersion": "2026.06.10",
+              "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+            },
+            {
+              "packageId": "protocol-lab-managed-h3-test-executor",
+              "packageVersion": "2026.06.10",
+              "sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+            },
+            {
+              "packageId": "kestrel-http3",
+              "packageVersion": "2026.06.10",
+              "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+            }
+          ],
+          "suiteIds": ["h3-local-v1"],
+          "implementationIds": ["kestrel-http3"],
+          "testExecutorIds": ["managed-httpclient-h3-load"],
+          "protocols": ["h3"],
+          "loadProfileId": "smoke",
+          "targetMode": "process",
+          "targetNetworkMode": "published-port",
+          "requiredCapabilities": [
+            {
+              "name": "protocol-lab-cli",
+              "value": "true"
+            }
+          ],
+          "comparisonGroups": [
+            {
+              "groupId": "h3-core",
+              "suiteIds": ["h3-local-v1"],
+              "sameExecutorRequired": true,
+              "sameLoadProfileRequired": true
+            }
+          ],
+          "publicationIntent": "local-only",
+          "notes": "Reference package-backed smoke run."
+        }
+        """;
+
+        var errors = schema.Validate(payload);
+
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public async Task Run_plan_v1_schema_accepts_public_valid_fixtures()
+    {
+        var schema = await LoadSchemaAsync(Path.Combine(TestPaths.RepoRoot, "schemas", "run-plan", "v1", "run-plan.schema.json"));
+        var fixtureRoot = Path.Combine(TestPaths.RepoRoot, "fixtures", "public-contracts", "run-plans", "valid");
+        var fixtures = Directory.EnumerateFiles(fixtureRoot, "*.json").ToArray();
+
+        Assert.NotEmpty(fixtures);
+        foreach (var fixture in fixtures)
+        {
+            var errors = schema.Validate(await File.ReadAllTextAsync(fixture));
+            Assert.Empty(errors);
+        }
+    }
+
+    [Fact]
+    public async Task Run_plan_v1_schema_rejects_public_invalid_fixtures()
+    {
+        var schema = await LoadSchemaAsync(Path.Combine(TestPaths.RepoRoot, "schemas", "run-plan", "v1", "run-plan.schema.json"));
+        var fixtureRoot = Path.Combine(TestPaths.RepoRoot, "fixtures", "public-contracts", "run-plans", "invalid");
+        var fixtures = Directory.EnumerateFiles(fixtureRoot, "*.json").ToArray();
+
+        Assert.NotEmpty(fixtures);
+        foreach (var fixture in fixtures)
+        {
+            var errors = schema.Validate(await File.ReadAllTextAsync(fixture));
+            Assert.NotEmpty(errors);
+        }
+    }
+
+    [Fact]
+    public async Task Run_plan_v1_schema_rejects_package_reference_without_sha256()
+    {
+        var schema = await LoadSchemaAsync(Path.Combine(TestPaths.RepoRoot, "schemas", "run-plan", "v1", "run-plan.schema.json"));
+        var payload = """
+        {
+          "schemaVersion": "protocol-lab-run-plan-v1",
+          "runPlanId": "missing-package-hash",
+          "runPlanVersion": "2026.06.10",
+          "packages": [
+            {
+              "packageId": "protocol-lab-h3-core-scenarios",
+              "packageVersion": "2026.06.10"
+            }
+          ],
+          "scenarioIds": ["http.core.plaintext"],
+          "implementationIds": ["kestrel-http3"],
+          "testExecutorIds": ["managed-httpclient-h3-load"],
+          "protocols": ["h3"],
+          "loadProfileId": "smoke",
+          "targetMode": "process",
+          "targetNetworkMode": "published-port",
+          "requiredCapabilities": []
+        }
+        """;
+
+        var errors = schema.Validate(payload);
+
+        Assert.NotEmpty(errors);
+        Assert.Contains(errors, error => error.ToString().Contains("sha256", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task Run_plan_v1_schema_rejects_inline_scenario_behavior()
+    {
+        var schema = await LoadSchemaAsync(Path.Combine(TestPaths.RepoRoot, "schemas", "run-plan", "v1", "run-plan.schema.json"));
+        var payload = """
+        {
+          "schemaVersion": "protocol-lab-run-plan-v1",
+          "runPlanId": "inline-scenario",
+          "runPlanVersion": "2026.06.10",
+          "packages": [
+            {
+              "packageId": "protocol-lab-h3-core-scenarios",
+              "packageVersion": "2026.06.10",
+              "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+            }
+          ],
+          "scenarioIds": ["http.core.plaintext"],
+          "implementationIds": ["kestrel-http3"],
+          "testExecutorIds": ["managed-httpclient-h3-load"],
+          "protocols": ["h3"],
+          "loadProfileId": "smoke",
+          "targetMode": "process",
+          "targetNetworkMode": "published-port",
+          "requiredCapabilities": [],
+          "scenarios": [
+            {
+              "id": "http.core.plaintext",
+              "path": "/plaintext"
+            }
+          ]
+        }
+        """;
+
+        var errors = schema.Validate(payload);
+
+        Assert.NotEmpty(errors);
+        Assert.Contains(errors, error => error.ToString().Contains("scenarios", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task Run_plan_v1_schema_requires_suite_or_scenario_selection()
+    {
+        var schema = await LoadSchemaAsync(Path.Combine(TestPaths.RepoRoot, "schemas", "run-plan", "v1", "run-plan.schema.json"));
+        var payload = """
+        {
+          "schemaVersion": "protocol-lab-run-plan-v1",
+          "runPlanId": "missing-work-selection",
+          "runPlanVersion": "2026.06.10",
+          "packages": [
+            {
+              "packageId": "protocol-lab-h3-core-scenarios",
+              "packageVersion": "2026.06.10",
+              "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+            }
+          ],
+          "implementationIds": ["kestrel-http3"],
+          "testExecutorIds": ["managed-httpclient-h3-load"],
+          "protocols": ["h3"],
+          "loadProfileId": "smoke",
+          "targetMode": "process",
+          "targetNetworkMode": "published-port",
+          "requiredCapabilities": []
+        }
+        """;
+
+        var errors = schema.Validate(payload);
+
+        Assert.NotEmpty(errors);
+    }
+
+    [Fact]
     public void Public_contract_schema_files_are_valid_json()
     {
         var schemaFiles = Directory.EnumerateFiles(Path.Combine(TestPaths.RepoRoot, "schemas", "test-executor", "v1"), "*.json")
-            .Concat(Directory.EnumerateFiles(Path.Combine(TestPaths.RepoRoot, "schemas", "package", "v2"), "*.json"));
+            .Concat(Directory.EnumerateFiles(Path.Combine(TestPaths.RepoRoot, "schemas", "package", "v2"), "*.json"))
+            .Concat(Directory.EnumerateFiles(Path.Combine(TestPaths.RepoRoot, "schemas", "run-plan", "v1"), "*.json"));
 
         foreach (var schemaFile in schemaFiles)
         {

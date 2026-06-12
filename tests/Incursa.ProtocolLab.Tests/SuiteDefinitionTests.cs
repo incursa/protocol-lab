@@ -79,6 +79,26 @@ public sealed class SuiteDefinitionTests
     }
 
     [Fact]
+    public void Parses_http1_core_smoke_suite_without_package_references()
+    {
+        var suite = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "http1-core-smoke.yaml"));
+
+        Assert.Equal("http1-core-smoke", suite.Id);
+        Assert.Equal("h1", suite.Protocol);
+        Assert.Equal("smoke", suite.LoadProfileId);
+        Assert.Empty(suite.Implementations);
+        Assert.Empty(suite.LoadTools);
+        Assert.Equal(["http.core.plaintext", "http.core.json", "http.payload.bytes.1kb"], suite.Scenarios);
+        Assert.Equal(5, suite.Defaults.DurationSeconds);
+        Assert.Equal(1, suite.Defaults.WarmupSeconds);
+        Assert.Equal(1, suite.Defaults.Repetitions);
+        Assert.Equal(1, suite.Defaults.Connections);
+        Assert.Equal(1, suite.Defaults.StreamsPerConnection);
+        Assert.Contains("Package-neutral", suite.Notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("does not pin package references", suite.Notes, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Parses_quic_transport_v1_comparison_suite_with_raw_quic_targets()
     {
         var suite = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "quic-transport-v1-comparison.yaml"));

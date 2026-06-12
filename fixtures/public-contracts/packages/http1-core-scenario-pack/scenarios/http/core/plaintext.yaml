@@ -3,7 +3,7 @@ id: http.core.plaintext
 title: HTTP Plaintext
 name: HTTP Plaintext
 family: http.application
-description: Validate and benchmark a fixed small plaintext HTTP response over an HTTP server endpoint.
+description: Validate a fixed small plaintext HTTP response over an HTTP/1 server endpoint.
 status: stable
 kind: workload
 layer: application
@@ -16,8 +16,6 @@ requires:
     - httpPlaintext
   protocols:
     - h1
-    - h2
-    - h3
   roles:
     - server
 trafficShape: request-response
@@ -46,27 +44,16 @@ validation:
   http:
     expectedStatus: 200
     expectedBody: Hello, World!
-benchmark:
-  warmupSeconds: 5
-  durationSeconds: 30
-  repetitions: 1
-  connections:
-    - 1
-  streamsPerConnection:
-    - 1
 benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
     - smoke
-    - local-regression
-    - local-comparison
   primaryMetrics:
     - requestsPerSecond
     - latencyP50
     - latencyP95
     - latencyP99
     - errorRate
-  notes: Compatible with HTTP/1, HTTP/2, and HTTP/3 request/response load profiles when the selected executor preserves the fixed GET /plaintext request and validates the response before accepting benchmark metrics.
 artifacts:
   required:
     - validation.json
@@ -79,12 +66,11 @@ artifacts:
 networkProfile: clean
 requiredMetrics:
   - requestsPerSecond
-  - latencyMeanMs
 artifactRequirements:
   - load-tool.stdout.txt
   - load-tool.stderr.txt
 tags:
-  - phase1
   - http
   - h1
+  - core
   - plaintext

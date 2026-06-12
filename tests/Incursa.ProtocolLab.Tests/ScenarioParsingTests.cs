@@ -15,7 +15,7 @@ public sealed class ScenarioParsingTests
 
         Assert.Equal("http.core.plaintext", scenario.Id);
         Assert.Equal("http.application", scenario.Family);
-        Assert.Equal("h3", scenario.Protocol);
+        Assert.Equal("h1", scenario.Protocol);
         Assert.Equal("1.0", scenario.SchemaVersion);
         Assert.Equal("stable", scenario.Status);
         Assert.Equal("workload", scenario.Kind);
@@ -29,9 +29,43 @@ public sealed class ScenarioParsingTests
         Assert.Equal("Hello, World!", scenario.Endpoint.ExpectedBody);
         Assert.NotNull(scenario.Requires);
         Assert.NotEmpty(scenario.Requires.Protocols);
+        Assert.Contains("h1", scenario.GetEffectiveProtocols());
+        Assert.Contains("h2", scenario.GetEffectiveProtocols());
+        Assert.Contains("h3", scenario.GetEffectiveProtocols());
         Assert.NotNull(scenario.Artifacts);
         Assert.Contains("validation.json", scenario.Artifacts.Required);
         Assert.Contains("result.json", scenario.Artifacts.Required);
+        Assert.Contains("load-tool.stdout.txt", scenario.Artifacts.Required);
+        Assert.Contains("load-tool.stderr.txt", scenario.Artifacts.Required);
+    }
+
+    [Fact]
+    public void Http1_core_smoke_scenarios_are_protocol_neutral_http_application_tests()
+    {
+        var scenarios = new[]
+        {
+            YamlFile.Load<ScenarioDefinition>(Path.Combine(TestPaths.RepoRoot, "scenarios", "http", "core", "plaintext.yaml")),
+            YamlFile.Load<ScenarioDefinition>(Path.Combine(TestPaths.RepoRoot, "scenarios", "http", "core", "json.yaml")),
+            YamlFile.Load<ScenarioDefinition>(Path.Combine(TestPaths.RepoRoot, "scenarios", "http", "payload", "bytes-1kb.yaml"))
+        };
+
+        Assert.All(scenarios, scenario =>
+        {
+            Assert.Equal("h1", scenario.Protocol);
+            Assert.Equal("http.application", scenario.Family);
+            Assert.Equal("server", scenario.ImplementationRole);
+            Assert.NotNull(scenario.Endpoint);
+            Assert.True(scenario.Validation.Required);
+            Assert.Contains("h1", scenario.GetEffectiveProtocols());
+            Assert.Contains("h2", scenario.GetEffectiveProtocols());
+            Assert.Contains("h3", scenario.GetEffectiveProtocols());
+            Assert.Contains("validation.json", scenario.Artifacts.Required);
+            Assert.Contains("result.json", scenario.Artifacts.Required);
+            Assert.Contains("load-tool.stdout.txt", scenario.Artifacts.Required);
+            Assert.Contains("load-tool.stderr.txt", scenario.Artifacts.Required);
+            Assert.Contains("requestsPerSecond", scenario.BenchmarkCompat!.PrimaryMetrics);
+            Assert.Contains("smoke", scenario.BenchmarkCompat.CompatibleLoadShapes);
+        });
     }
 
     [Fact]

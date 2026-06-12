@@ -25,6 +25,7 @@ here as if they were public contracts.
 - [Lab Roles](architecture/lab-roles.md) - lab, adapter, test executor, and package boundaries
 - [Runner Model](architecture/runner-model.md) - orchestration, lifecycle, validation, execution
 - [Scenario Model](architecture/scenario-model.md) - scenarios, workload families, matrix expansion
+- [Test Case And Run Plan Model](architecture/test-case-run-plan-model.md) - settled vocabulary for test cases, scenarios, packages, load profiles, and repeatable run plans
 - [Adapter Model](architecture/adapter-model.md) - adapter control plane contract and lifecycle
 - [Test Executor Contract v1](architecture/test-executor-contract-v1.md) - tester/executor control plane API specification
 - [Load Model](architecture/load-model.md) - load tools, load shapes, load profiles

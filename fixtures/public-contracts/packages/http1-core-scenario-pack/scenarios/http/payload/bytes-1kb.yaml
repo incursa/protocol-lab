@@ -10,15 +10,13 @@ requires:
     - http.server
   protocols:
     - h1
-    - h2
-    - h3
   roles:
     - server
 trafficShape: download
 id: http.payload.bytes.1kb
 name: HTTP Bytes 1KB
 family: http.application
-description: Validate and benchmark a deterministic 1KB byte payload downloaded from an HTTP server endpoint.
+description: Validate a deterministic 1KB byte payload downloaded from an HTTP/1 server endpoint.
 protocol: h1
 implementationRole: server
 requiredCapabilities:
@@ -44,18 +42,10 @@ validation:
   http:
     expectedStatus: 200
     expectedBody: <deterministicBytes>
-benchmark:
-  warmupSeconds: 5
-  durationSeconds: 30
-  repetitions: 1
-  connections: [1]
-  streamsPerConnection: [1]
 benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
     - smoke
-    - local-regression
-    - local-comparison
   primaryMetrics:
     - requestsPerSecond
     - latencyP50
@@ -63,7 +53,6 @@ benchmarkCompat:
     - latencyP99
     - errorRate
     - bytesReceived
-  notes: Compatible with HTTP/1, HTTP/2, and HTTP/3 download load profiles when the selected executor preserves the fixed GET /bytes/1024 request and validates status, content type, payload size, and deterministic bytes before accepting benchmark metrics.
 artifacts:
   required:
     - validation.json
@@ -81,7 +70,6 @@ artifactRequirements:
   - load-tool.stdout.txt
   - load-tool.stderr.txt
 tags:
-  - phase2
   - http
   - h1
   - payload

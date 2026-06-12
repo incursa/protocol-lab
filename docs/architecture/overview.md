@@ -10,6 +10,7 @@ separately:
 
 - [Runner Model](runner-model.md)
 - [Scenario Model](scenario-model.md)
+- [Test Case And Run Plan Model](test-case-run-plan-model.md)
 - [Adapter Model](adapter-model.md)
 - [Load Model](load-model.md)
 - [Artifact Model](artifact-model.md)
@@ -123,6 +124,11 @@ Suites (YAML) -------------+              Target Lifecycle (start/ready)
    rendering. The runner owns orchestration and execution logic. The model
    owns shared types. Adapter contracts own the control-plane surface. Server
    implementations own protocol behavior.
+
+10. **Spec-first package composition.** New protocol lanes start with a
+    test-case/scenario specification, then a test executor, then a reference
+    implementation package, and finally a repeatable run plan that pins exact
+    package identities and selected IDs.
 
 ## Project Boundaries
 

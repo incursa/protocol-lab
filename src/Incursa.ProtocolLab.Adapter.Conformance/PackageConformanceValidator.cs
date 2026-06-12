@@ -214,6 +214,7 @@ public sealed class PackageConformanceValidator
                     }
 
                     ValidateTopLevelIdMatchesProvidedIds(json, providedScenarioIds, entryManifest, "scenario-id-match", add);
+                    ValidateScenarioManifestDoesNotContainRunPlanSemantics(json, entryManifest, add);
                     continue;
                 }
 
@@ -223,6 +224,53 @@ public sealed class PackageConformanceValidator
                 }
             }
         }
+    }
+
+    private static void ValidateScenarioManifestDoesNotContainRunPlanSemantics(
+        string json,
+        string path,
+        Action<PackageConformanceStepResult> add)
+    {
+        using var document = JsonDocument.Parse(json);
+        var forbiddenFields = new[]
+        {
+            "runPlanId",
+            "runPlanVersion",
+            "packages",
+            "packageReferences",
+            "packageId",
+            "packageVersion",
+            "sha256",
+            "suiteIds",
+            "scenarioIds",
+            "implementationIds",
+            "implementations",
+            "testExecutorIds",
+            "testExecutors",
+            "loadProfileId",
+            "targetMode",
+            "targetNetworkMode",
+            "controller",
+            "controllerNode",
+            "controllerPlacement",
+            "jobPolicy"
+        };
+
+        var presentFields = forbiddenFields
+            .Where(field => document.RootElement.TryGetProperty(field, out _))
+            .ToArray();
+
+        if (presentFields.Length == 0)
+        {
+            add(Passed("scenario-no-run-plan-semantics", "Scenario entry manifest does not contain run-plan selectors or package/controller policy.", path));
+            return;
+        }
+
+        add(Failed(
+            "scenario-no-run-plan-semantics",
+            "Scenario entry manifest must not contain run-plan selectors, package references, implementation IDs, executor IDs, load profile selection, or controller policy.",
+            path,
+            [$"forbidden fields: {string.Join(", ", presentFields)}"]));
     }
 
     private static IReadOnlyList<string> ReadProvidedIds(JsonElement root, string arrayName, string idName)

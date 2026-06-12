@@ -4,6 +4,11 @@ ProtocolLab Component Package v2 extends the trusted `.plabpkg` format beyond im
 
 V2 packages do not make a run publishable by themselves. They provide bytes and catalog entries for a trusted lab worker; the run still needs the normal ProtocolLab validation, artifact capture, and evidence classification.
 
+For the execution vocabulary around test cases, scenarios, scenario packs,
+suites, load profiles, test executors, implementation packages, toolchains,
+and run plans, see
+[Test Case And Run Plan Model](../architecture/test-case-run-plan-model.md).
+
 ## Component Kinds
 
 The root `protocol-lab-package.json` uses `schemaVersion: "protocol-lab-package-v2"` and one of these `kind` values:
@@ -56,6 +61,7 @@ Neutral examples live under `fixtures/public-contracts/packages/`:
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-test-executor
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-adapter-implementation
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-scenario-pack
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\http1-core-scenario-pack
 ```
 
 The implementation fixture proves package v2 metadata and entry layout only.
@@ -88,6 +94,12 @@ the controller must reject the job or the worker must return an explicit
 unsupported/unavailable outcome. It must not infer a replacement from names,
 package kind, runtime, or protocol family.
 
+The `http1-core-scenario-pack` fixture is a minimal scenario-pack example. It
+provides `http.core.plaintext`, `http.core.json`,
+`http.payload.bytes.1kb`, and an `http1-core-smoke` suite without
+implementation IDs, test executor IDs, package references, or controller/job
+policy in the scenario files.
+
 ## Compatibility Semantics
 
 A package-backed job is compatible only when the selected job inputs can be satisfied by the referenced packages:
@@ -105,6 +117,17 @@ Package-backed job submissions should carry explicit selected IDs, including
 `implementationIds`, `testExecutorIds`, `suiteIds` or `scenarioIds`, and
 `protocols`. Package references provide available components; they do not
 authorize the controller to pick a compatible-looking executor implicitly.
+
+## Relationship To Run Plans
+
+Package v2 defines component archives. A run plan is a separate repeatable job
+manifest that references exact package identities and SHA-256 values, then
+selects implementation IDs, test executor IDs, suite or scenario IDs,
+protocols, load profile, and execution policy.
+
+Do not encode run-plan semantics inside a package manifest. Package manifests
+declare what the package provides. Run plans declare which package-provided
+components should be used for a specific repeatable run.
 
 ## Provenance Artifacts
 

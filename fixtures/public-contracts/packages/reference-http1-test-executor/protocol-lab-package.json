@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "protocol-lab-reference-http1-test-executor",
+  "packageVersion": "0.1.0-fixture",
+  "kind": "test-executor",
+  "displayName": "ProtocolLab Reference HTTP/1 Test Executor",
+  "entryManifests": [
+    "test-executors/protocol-lab-reference-http1-test-executor.yaml"
+  ],
+  "providedTestExecutors": [
+    {
+      "testExecutorId": "protocol-lab-reference-http1-test-executor",
+      "displayName": "ProtocolLab Reference HTTP/1 Test Executor",
+      "protocols": [
+        "h1"
+      ],
+      "scenarios": [
+        "http.core.plaintext",
+        "http.core.json",
+        "http.payload.bytes.1kb"
+      ],
+      "tests": [
+        "http.core.plaintext",
+        "http.core.json",
+        "http.payload.bytes.1kb"
+      ],
+      "requiredCapabilities": []
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/linux-x64/protocol-lab-reference-http1-test-executor",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    },
+    {
+      "os": "windows",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/win-x64/protocol-lab-reference-http1-test-executor.exe",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": false,
+    "requiresGo": false,
+    "requiredCapabilities": []
+  }
+}

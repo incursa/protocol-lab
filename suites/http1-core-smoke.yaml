@@ -1,0 +1,19 @@
+id: http1-core-smoke
+name: ProtocolLab HTTP/1 core smoke suite
+description: Fast package-neutral HTTP/1 request/response validation for the core plaintext, JSON, and 1KB payload scenarios.
+loadProfileId: smoke
+scenarios:
+  - http.core.plaintext
+  - http.core.json
+  - http.payload.bytes.1kb
+protocol: h1
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: dotnet-counters
+notes: Package-neutral suite selector for the HTTP/1 core lane. Implementations and test executors enter through run plans, package v2 inventory, or local command options; this suite does not pin package references.

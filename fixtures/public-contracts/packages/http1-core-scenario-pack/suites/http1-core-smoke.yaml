@@ -1,0 +1,19 @@
+id: http1-core-smoke
+name: HTTP/1 Core Smoke
+description: Package-neutral HTTP/1 smoke suite for core plaintext, JSON, and 1KB payload test cases.
+loadProfileId: smoke
+scenarios:
+  - http.core.plaintext
+  - http.core.json
+  - http.payload.bytes.1kb
+protocol: h1
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: Scenario-pack selector only. Implementations, test executors, package references, controller placement, and job policy belong in a future run plan or job request.

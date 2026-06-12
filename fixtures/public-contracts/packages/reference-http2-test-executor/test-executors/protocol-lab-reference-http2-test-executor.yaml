@@ -1,0 +1,68 @@
+executorIdentity:
+  id: protocol-lab-reference-http2-test-executor
+  name: ProtocolLab Reference HTTP/2 Test Executor
+  version: 0.1.0
+  vendor: Incursa
+versionCompatibility:
+  contractVersion: test-executor-v1
+  compatibleContractVersions:
+    - test-executor-v1
+  executorVersion: 0.1.0
+claimedCapabilities:
+  - id: http2.core.plaintext
+    status: supported
+  - id: http2.core.json
+    status: supported
+  - id: http2.streaming.response
+    status: supported
+supportedTestSelectors:
+  - selectorType: test-id
+    expression: http2.core.plaintext
+  - selectorType: test-id
+    expression: http2.core.json
+  - selectorType: test-id
+    expression: http2.streaming.response
+supportedScenarioSelectors:
+  - selectorType: scenario-id
+    expression: http2.core.plaintext
+  - selectorType: scenario-id
+    expression: http2.core.json
+  - selectorType: scenario-id
+    expression: http2.streaming.response
+supportedProtocolFamilies:
+  - h2
+supportedExecutionModes:
+  - single-cell
+  - process
+requiredTargetEndpointBindings:
+  - bindingId: primary
+    purpose: test-endpoint
+    endpointType: http
+    protocols:
+      - h2
+supportedArtifactTypes:
+  - type: validation.json
+    producedByStates:
+      - stopped
+      - failed
+  - type: result.json
+    producedByStates:
+      - stopped
+      - failed
+  - type: load-tool.stdout.txt
+    producedByStates:
+      - stopped
+      - failed
+  - type: load-tool.stderr.txt
+    producedByStates:
+      - stopped
+      - failed
+  - type: load-tool-execution.json
+    producedByStates:
+      - stopped
+      - failed
+metricsAvailability:
+  available: true
+  availableKinds:
+    - session
+    - validation

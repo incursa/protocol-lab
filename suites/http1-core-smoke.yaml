@@ -1,6 +1,8 @@
 id: http1-core-smoke
 name: ProtocolLab HTTP/1 core smoke suite
 description: Fast package-neutral HTTP/1 request/response validation for the core plaintext, JSON, and 1KB payload scenarios.
+purpose: conformance
+resultKind: conformance
 loadProfileId: smoke
 scenarios:
   - http.core.plaintext

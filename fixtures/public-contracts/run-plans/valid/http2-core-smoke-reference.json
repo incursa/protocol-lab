@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "protocol-lab-run-plan-v1",
+  "runPlanId": "http2-core-smoke-reference",
+  "runPlanVersion": "2026.06.12",
+  "displayName": "HTTP/2 core smoke reference run",
+  "packages": [
+    {
+      "packageId": "protocol-lab-http2-core-scenarios",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "packageId": "protocol-lab-reference-http2-test-executor",
+      "packageVersion": "0.1.0-fixture",
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+    },
+    {
+      "packageId": "kestrel-http2",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+    }
+  ],
+  "suiteIds": [
+    "http2-core-smoke"
+  ],
+  "scenarioIds": [
+    "http2.core.plaintext",
+    "http2.core.json",
+    "http2.streaming.response"
+  ],
+  "implementationIds": [
+    "kestrel-http2"
+  ],
+  "testExecutorIds": [
+    "protocol-lab-reference-http2-test-executor"
+  ],
+  "protocols": [
+    "h2"
+  ],
+  "loadProfileId": "smoke",
+  "targetMode": "process",
+  "targetNetworkMode": "published-port",
+  "requiredCapabilities": [
+    {
+      "name": "protocol-lab-cli",
+      "value": "true"
+    }
+  ],
+  "comparisonGroups": [
+    {
+      "groupId": "http2-core",
+      "scenarioIds": [
+        "http2.core.plaintext",
+        "http2.core.json",
+        "http2.streaming.response"
+      ],
+      "sameExecutorRequired": true,
+      "sameLoadProfileRequired": true
+    }
+  ],
+  "publicationIntent": "local-only",
+  "labels": [
+    "result-kind:conformance",
+    "suite-purpose:conformance",
+    "protocol-family:h2"
+  ],
+  "notes": "Spec-first HTTP/2 fixture proving selector compatibility for plaintext, JSON, and streaming response test cases."
+}

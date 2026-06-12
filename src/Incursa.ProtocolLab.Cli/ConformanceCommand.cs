@@ -26,6 +26,7 @@ internal static class ConformanceCommand
             return command switch
             {
                 "package" => await RunPackageAsync(commandArgs, options, effectiveRoot).ConfigureAwait(false),
+                "run-plan" => await RunRunPlanAsync(commandArgs, options, effectiveRoot).ConfigureAwait(false),
                 "adapter" => await RunAdapterAsync(options, effectiveRoot).ConfigureAwait(false),
                 "test-executor" => await RunTestExecutorAsync(options, effectiveRoot).ConfigureAwait(false),
                 _ => Unknown(command)
@@ -60,6 +61,41 @@ internal static class ConformanceCommand
 
         Render(report);
         return report.Outcome == PackageConformanceOutcome.Passed ? 0 : 1;
+    }
+
+    private static async Task<int> RunRunPlanAsync(string[] args, CliOptions options, string root)
+    {
+        var runPlanPath = options.Get("run-plan");
+        if (string.IsNullOrWhiteSpace(runPlanPath))
+        {
+            Console.Error.WriteLine("conformance run-plan requires --run-plan <path>.");
+            return 1;
+        }
+
+        var packagePaths = GetOptionValues(args, "package")
+            .Select(Path.GetFullPath)
+            .ToArray();
+        if (packagePaths.Length == 0)
+        {
+            Console.Error.WriteLine("conformance run-plan requires at least one --package <path>.");
+            return 1;
+        }
+
+        var validator = new RunPlanConformanceValidator();
+        var report = await validator.ValidateAsync(
+            Path.GetFullPath(runPlanPath),
+            new RunPlanConformanceOptions
+            {
+                RunPlanSchemaPath = Path.Combine(root, "schemas", "run-plan", "v1", "run-plan.schema.json"),
+                PackageSchemaPath = Path.Combine(root, "schemas", "package", "v2", "package.schema.json"),
+                TestExecutorSchemaRootPath = Path.Combine(root, "schemas", "test-executor", "v1"),
+                ScenarioSchemaPath = Path.Combine(root, "schemas", "scenario.schema.json"),
+                PackagePaths = packagePaths,
+                ValidatePackages = !HasSwitch(args, "skip-package-validation")
+            }).ConfigureAwait(false);
+
+        Render(report);
+        return report.Outcome == RunPlanConformanceOutcome.Passed ? 0 : 1;
     }
 
     private static async Task<int> RunAdapterAsync(CliOptions options, string root)
@@ -190,6 +226,20 @@ internal static class ConformanceCommand
         }
     }
 
+    private static void Render(RunPlanConformanceReport report)
+    {
+        Console.WriteLine($"ProtocolLab run plan conformance: {report.Outcome}");
+        if (!string.IsNullOrWhiteSpace(report.RunPlanId))
+        {
+            Console.WriteLine($"Run plan: {report.RunPlanId} {report.RunPlanVersion}");
+        }
+
+        foreach (var step in report.Steps)
+        {
+            RenderStep(step.Outcome == RunPlanConformanceOutcome.Passed, step.Step, step.Message, step.Path, step.Diagnostics);
+        }
+    }
+
     private static void Render(AdapterConformanceReport report)
     {
         Console.WriteLine($"ProtocolLab Adapter v1 conformance: {report.Outcome}");
@@ -255,6 +305,18 @@ internal static class ConformanceCommand
         return args.Any(arg => string.Equals(arg, "--" + name, StringComparison.OrdinalIgnoreCase));
     }
 
+    private static IEnumerable<string> GetOptionValues(string[] args, string name)
+    {
+        var option = "--" + name;
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (string.Equals(args[i], option, StringComparison.OrdinalIgnoreCase))
+            {
+                yield return args[i + 1];
+            }
+        }
+    }
+
     private static bool IsTrue(string? value)
     {
         return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
@@ -277,6 +339,7 @@ internal static class ConformanceCommand
         Console.WriteLine("""
         protocol-lab conformance commands:
           conformance package --package <path> [--root <repo-root>] [--skip-entry-schema-validation]
+          conformance run-plan --run-plan <path> --package <path> [--package <path> ...] [--root <repo-root>] [--skip-package-validation]
           conformance adapter --base-url <url> [--scenario-id <id>] [--scenario-version <version>] [--role <role>] [--protocol <id>] [--endpoint-type <type>] [--artifact-type <type>] [--timeout-seconds <seconds>]
           conformance test-executor --base-url <url> [--test-id <id>] [--scenario-id <id>] [--scenario-version <version>] [--protocol <id>] [--target-scheme <scheme>] [--target-host <host>] [--target-port <port>] [--target-path <path>] [--timeout-seconds <seconds>] [--require-metrics] [--require-artifacts]
         """);

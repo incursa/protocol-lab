@@ -1,6 +1,8 @@
 id: http1-core-smoke
 name: HTTP/1 Core Smoke
 description: Package-neutral HTTP/1 smoke suite for core plaintext, JSON, and 1KB payload test cases.
+purpose: conformance
+resultKind: conformance
 loadProfileId: smoke
 scenarios:
   - http.core.plaintext

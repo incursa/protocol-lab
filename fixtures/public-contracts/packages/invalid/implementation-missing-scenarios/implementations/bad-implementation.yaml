@@ -1,0 +1,24 @@
+id: bad-implementation
+name: Bad Implementation
+description: Invalid fixture because providedImplementations omits scenario compatibility IDs.
+targetKind: external
+targetContract: process
+supportedProtocols:
+  - h1
+supportedWorkloadFamilies:
+  - http.application
+roles:
+  - server
+ports: []
+environment: {}
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: none
+  url: ""
+  timeoutSeconds: 1
+shutdownBehavior: external
+capabilities: []
+artifactExports: []
+qlogSupport: false
+sslKeyLogSupport: false

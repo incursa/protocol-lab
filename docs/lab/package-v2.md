@@ -53,7 +53,9 @@ The command validates the root manifest against
 existence, validates `test-executor` entry manifests against
 `schemas/test-executor/v1/manifest.schema.json`, validates scenario entries
 against `schemas/scenario.schema.json`, and checks that entry manifest IDs
-match the package `provided*` metadata.
+match the package `provided*` metadata. It also requires implementation and
+test-executor packages to expose scenario compatibility IDs so controllers can
+check a selected package set before any package becomes selectable.
 
 Neutral examples live under `fixtures/public-contracts/packages/`:
 
@@ -62,6 +64,7 @@ dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --packag
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-adapter-implementation
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-scenario-pack
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\http1-core-scenario-pack
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-toolchain
 ```
 
 The implementation fixture proves package v2 metadata and entry layout only.
@@ -88,6 +91,17 @@ Contract v1 for that executor.
 
 Scenario packs may provide suites, scenarios, or both. A suite-level
 `testExecutors` list constrains which test executors can satisfy that suite.
+Suite metadata may also declare `purpose` and `resultKind`:
+
+- `conformance` means the suite answers whether selected behavior is valid.
+- `benchmark` means the suite answers how performance looks under the selected
+  load profile after behavior validation.
+
+Controllers, workers, and site importers should preserve this suite metadata
+or equivalent run-plan labels in artifacts and reports. They must not infer
+the result kind from throughput, latency, or duration. A slow valid run is not
+a conformance failure, and a fast invalid run is still invalid.
+
 If the selected package set does not provide the requested implementation,
 test executor, suite, scenario, protocol, endpoint binding, or capability,
 the controller must reject the job or the worker must return an explicit
@@ -96,7 +110,8 @@ package kind, runtime, or protocol family.
 
 The `http1-core-scenario-pack` fixture is a minimal scenario-pack example. It
 provides `http.core.plaintext`, `http.core.json`,
-`http.payload.bytes.1kb`, and an `http1-core-smoke` suite without
+`http.payload.bytes.1kb`, a `conformance-smoke` suite, a `benchmark-smoke`
+suite, and the legacy `http1-core-smoke` conformance suite without
 implementation IDs, test executor IDs, package references, or controller/job
 policy in the scenario files.
 
@@ -117,6 +132,33 @@ Package-backed job submissions should carry explicit selected IDs, including
 `implementationIds`, `testExecutorIds`, `suiteIds` or `scenarioIds`, and
 `protocols`. Package references provide available components; they do not
 authorize the controller to pick a compatible-looking executor implicitly.
+
+## Admission Validation
+
+Internal package stores and hosted controllers should use the public validators
+as admission gates:
+
+1. On package upload, run package conformance against the uploaded package
+   directory or `.plabpkg`. Reject the package before inventory admission when
+   the report is not `Passed`.
+2. Only packages that pass conformance should be listed as selectable
+   inventory.
+3. Before a run plan enters preview or job creation, run run-plan conformance
+   against the resolved package set:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance run-plan `
+  --run-plan fixtures\public-contracts\run-plans\valid\http1-conformance-smoke-reference.json `
+  --package fixtures\public-contracts\packages\http1-core-scenario-pack `
+  --package fixtures\public-contracts\packages\reference-http1-test-executor `
+  --package fixtures\public-contracts\packages\reference-http1-implementation
+```
+
+The run-plan validator checks the run-plan schema, validates each supplied
+package, resolves pinned package IDs and versions, expands selected suites,
+and verifies that selected implementation, test-executor, scenario/test, and
+protocol IDs are all provided by the selected packages. A failed report means
+the plan is not admissible for job creation.
 
 ## Relationship To Run Plans
 

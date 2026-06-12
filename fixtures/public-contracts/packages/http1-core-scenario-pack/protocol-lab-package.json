@@ -8,7 +8,9 @@
     "scenarios/http/core/plaintext.yaml",
     "scenarios/http/core/json.yaml",
     "scenarios/http/payload/bytes-1kb.yaml",
-    "suites/http1-core-smoke.yaml"
+    "suites/http1-core-smoke.yaml",
+    "suites/conformance-smoke.yaml",
+    "suites/benchmark-smoke.yaml"
   ],
   "providedScenarios": [
     {
@@ -37,6 +39,26 @@
     {
       "suiteId": "http1-core-smoke",
       "displayName": "HTTP/1 Core Smoke",
+      "purpose": "conformance",
+      "resultKind": "conformance",
+      "protocols": [
+        "h1"
+      ]
+    },
+    {
+      "suiteId": "conformance-smoke",
+      "displayName": "HTTP/1 Conformance Smoke",
+      "purpose": "conformance",
+      "resultKind": "conformance",
+      "protocols": [
+        "h1"
+      ]
+    },
+    {
+      "suiteId": "benchmark-smoke",
+      "displayName": "HTTP/1 Benchmark Smoke",
+      "purpose": "benchmark",
+      "resultKind": "benchmark",
       "protocols": [
         "h1"
       ]

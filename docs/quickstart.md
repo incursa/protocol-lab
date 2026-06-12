@@ -48,12 +48,23 @@ Run the public conformance command against the neutral package fixtures:
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-test-executor
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-adapter-implementation
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-scenario-pack
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package fixtures\public-contracts\packages\neutral-toolchain
 ```
 
 Validate your own package root directory or `.plabpkg` archive the same way:
 
 ```powershell
 dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package <package-root-or-plabpkg>
+```
+
+Validate a resolved run plan against the package roots or archives it pins:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance run-plan `
+  --run-plan fixtures\public-contracts\run-plans\valid\http1-conformance-smoke-reference.json `
+  --package fixtures\public-contracts\packages\http1-core-scenario-pack `
+  --package fixtures\public-contracts\packages\reference-http1-test-executor `
+  --package fixtures\public-contracts\packages\reference-http1-implementation
 ```
 
 Then start your adapter or test-executor control plane locally and run the

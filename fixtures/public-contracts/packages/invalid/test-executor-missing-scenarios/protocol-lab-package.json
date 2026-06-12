@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "bad-test-executor",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "test-executor",
+  "entryManifests": [
+    "test-executors/bad-test-executor.yaml"
+  ],
+  "providedTestExecutors": [
+    {
+      "testExecutorId": "bad-test-executor",
+      "protocols": [
+        "h1"
+      ],
+      "requiredCapabilities": []
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/bad-placeholder",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": false,
+    "requiredCapabilities": []
+  }
+}

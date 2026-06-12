@@ -42,6 +42,23 @@ The selected IDs must refer to entries provided by the pinned packages. The run
 plan itself does not define or override scenario behavior, tests, load shapes,
 executor flags, endpoint details, or implementation behavior.
 
+Validate a run plan with the public conformance command after resolving the
+referenced package archives or package roots:
+
+```powershell
+dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance run-plan `
+  --run-plan fixtures\public-contracts\run-plans\valid\http1-conformance-smoke-reference.json `
+  --package fixtures\public-contracts\packages\http1-core-scenario-pack `
+  --package fixtures\public-contracts\packages\reference-http1-test-executor `
+  --package fixtures\public-contracts\packages\reference-http1-implementation
+```
+
+Controllers should call the same validator, or the equivalent
+`RunPlanConformanceValidator`, before previewing or creating a job. A plan that
+fails schema validation, references a package not supplied to the validator, or
+selects IDs not provided by the resolved packages must be rejected before job
+creation.
+
 ## Package References
 
 Package references are immutable provenance anchors:
@@ -90,6 +107,20 @@ Run plans may include `displayName`, `repetitions`, `comparisonGroups`,
 `publicationIntent`, `labels`, `traceReferences`, and `notes`. These fields
 describe execution policy or provenance. They do not create new scenario or
 test behavior.
+
+Use suite package metadata and labels to carry result classification through
+controllers, workers, artifacts, and the site. The public HTTP/1 fixtures use:
+
+- `conformance-smoke` with `purpose: conformance`,
+  `resultKind: conformance`, and `labels: ["result-kind:conformance"]`
+- `benchmark-smoke` with `purpose: benchmark`, `resultKind: benchmark`, and
+  `labels: ["result-kind:benchmark"]`
+
+Conformance answers whether behavior is valid. Benchmark answers how
+performance looks under a load profile. A slow valid run is not a conformance
+failure, and a fast invalid run is still invalid. Site importers should
+distinguish these surfaces from suite/run-plan metadata, not by guessing from
+metrics.
 
 ## Unsupported And Unavailable Outcomes
 

@@ -86,6 +86,8 @@ public sealed class SuiteDefinitionTests
         Assert.Equal("http1-core-smoke", suite.Id);
         Assert.Equal("h1", suite.Protocol);
         Assert.Equal("smoke", suite.LoadProfileId);
+        Assert.Equal("conformance", suite.Purpose);
+        Assert.Equal("conformance", suite.ResultKind);
         Assert.Empty(suite.Implementations);
         Assert.Empty(suite.LoadTools);
         Assert.Equal(["http.core.plaintext", "http.core.json", "http.payload.bytes.1kb"], suite.Scenarios);
@@ -96,6 +98,27 @@ public sealed class SuiteDefinitionTests
         Assert.Equal(1, suite.Defaults.StreamsPerConnection);
         Assert.Contains("Package-neutral", suite.Notes, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("does not pin package references", suite.Notes, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Parses_separate_conformance_and_benchmark_smoke_suites()
+    {
+        var conformance = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "conformance-smoke.yaml"));
+        var benchmark = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "benchmark-smoke.yaml"));
+
+        Assert.Equal("conformance-smoke", conformance.Id);
+        Assert.Equal("conformance", conformance.Purpose);
+        Assert.Equal("conformance", conformance.ResultKind);
+        Assert.Equal("benchmark-smoke", benchmark.Id);
+        Assert.Equal("benchmark", benchmark.Purpose);
+        Assert.Equal("benchmark", benchmark.ResultKind);
+        Assert.Equal(conformance.Scenarios, benchmark.Scenarios);
+        Assert.Equal("smoke", conformance.LoadProfileId);
+        Assert.Equal("smoke", benchmark.LoadProfileId);
+        Assert.Equal(1, conformance.Defaults.Connections);
+        Assert.Equal(4, benchmark.Defaults.Connections);
+        Assert.Contains("slow valid", conformance.Notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("fast invalid", benchmark.Notes, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

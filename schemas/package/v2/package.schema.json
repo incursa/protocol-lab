@@ -298,6 +298,14 @@
       "properties": {
         "suiteId": { "$ref": "#/$defs/token" },
         "displayName": { "type": "string" },
+        "purpose": {
+          "type": "string",
+          "enum": ["conformance", "benchmark"]
+        },
+        "resultKind": {
+          "type": "string",
+          "enum": ["conformance", "benchmark"]
+        },
         "protocols": { "$ref": "#/$defs/stringArray" },
         "testExecutors": { "$ref": "#/$defs/stringArray" }
       }

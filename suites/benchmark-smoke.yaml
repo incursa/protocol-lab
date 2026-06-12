@@ -1,0 +1,21 @@
+id: benchmark-smoke
+name: ProtocolLab benchmark smoke suite
+description: Short package-neutral performance smoke for the HTTP/1 core plaintext, JSON, and 1KB payload scenarios.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: smoke
+scenarios:
+  - http.core.plaintext
+  - http.core.json
+  - http.payload.bytes.1kb
+protocol: h1
+defaults:
+  durationSeconds: 10
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 4
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: dotnet-counters
+notes: Package-neutral benchmark selector. A fast invalid run is invalid; validation status remains separate from performance metrics.

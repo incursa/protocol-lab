@@ -1,0 +1,22 @@
+schemaVersion: "1.0"
+id: http.core.actual
+title: Bad Scenario
+description: Invalid fixture because the scenario id does not match providedScenarios.
+status: draft
+kind: workload
+layer: application
+protocol: h1
+roles:
+  - server
+requires:
+  capabilities:
+    - http.server
+  protocols:
+    - h1
+  roles:
+    - server
+trafficShape: request-response
+validation:
+  required: true
+  checks:
+    - status

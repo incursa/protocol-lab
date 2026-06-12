@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "protocol-lab-reference-http2-test-executor",
+  "packageVersion": "0.1.0-fixture",
+  "kind": "test-executor",
+  "displayName": "ProtocolLab Reference HTTP/2 Test Executor",
+  "entryManifests": [
+    "test-executors/protocol-lab-reference-http2-test-executor.yaml"
+  ],
+  "providedTestExecutors": [
+    {
+      "testExecutorId": "protocol-lab-reference-http2-test-executor",
+      "displayName": "ProtocolLab Reference HTTP/2 Test Executor",
+      "protocols": [
+        "h2"
+      ],
+      "scenarios": [
+        "http2.core.plaintext",
+        "http2.core.json",
+        "http2.streaming.response"
+      ],
+      "tests": [
+        "http2.core.plaintext",
+        "http2.core.json",
+        "http2.streaming.response"
+      ],
+      "requiredCapabilities": []
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/linux-x64/protocol-lab-reference-http2-test-executor",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    },
+    {
+      "os": "windows",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/win-x64/protocol-lab-reference-http2-test-executor.exe",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": false,
+    "requiresGo": false,
+    "requiredCapabilities": []
+  }
+}

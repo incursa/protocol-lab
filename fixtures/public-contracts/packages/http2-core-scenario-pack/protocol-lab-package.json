@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "protocol-lab-http2-core-scenarios",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "scenario-pack",
+  "displayName": "ProtocolLab HTTP/2 Core Scenario Pack",
+  "entryManifests": [
+    "scenarios/http2/core/plaintext.yaml",
+    "scenarios/http2/core/json.yaml",
+    "scenarios/http2/streaming/response.yaml",
+    "suites/http2-core-smoke.yaml"
+  ],
+  "providedScenarios": [
+    {
+      "scenarioId": "http2.core.plaintext",
+      "displayName": "HTTP/2 Plaintext",
+      "protocols": [
+        "h2"
+      ]
+    },
+    {
+      "scenarioId": "http2.core.json",
+      "displayName": "HTTP/2 JSON",
+      "protocols": [
+        "h2"
+      ]
+    },
+    {
+      "scenarioId": "http2.streaming.response",
+      "displayName": "HTTP/2 Streaming Response",
+      "protocols": [
+        "h2"
+      ]
+    }
+  ],
+  "providedSuites": [
+    {
+      "suiteId": "http2-core-smoke",
+      "displayName": "HTTP/2 Core Smoke",
+      "purpose": "conformance",
+      "resultKind": "conformance",
+      "protocols": [
+        "h2"
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "bash",
+        "path": "scripts/noop.sh",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": true,
+    "requiresGo": false,
+    "requiredCapabilities": []
+  }
+}

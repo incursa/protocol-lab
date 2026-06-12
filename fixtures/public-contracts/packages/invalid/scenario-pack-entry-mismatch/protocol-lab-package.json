@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "bad-scenario-pack",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "scenario-pack",
+  "entryManifests": [
+    "scenarios/bad.yaml"
+  ],
+  "providedScenarios": [
+    {
+      "scenarioId": "http.core.expected",
+      "protocols": [
+        "h1"
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "bash",
+        "path": "scripts/noop.sh",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": true,
+    "requiredCapabilities": []
+  }
+}

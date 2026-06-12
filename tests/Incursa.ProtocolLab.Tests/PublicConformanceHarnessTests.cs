@@ -14,22 +14,92 @@ public sealed class PublicConformanceHarnessTests
     [InlineData("neutral-test-executor")]
     [InlineData("reference-http1-test-executor")]
     [InlineData("neutral-adapter-implementation")]
+    [InlineData("reference-http1-implementation")]
     [InlineData("neutral-scenario-pack")]
     [InlineData("http1-core-scenario-pack")]
+    [InlineData("neutral-toolchain")]
     public async Task Public_contract_package_fixtures_pass_package_v2_conformance(string fixtureName)
     {
         var validator = new PackageConformanceValidator();
         var report = await validator.ValidateAsync(
             Path.Combine(TestPaths.RepoRoot, "fixtures", "public-contracts", "packages", fixtureName),
-            new PackageConformanceOptions
-            {
-                PackageSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "package", "v2", "package.schema.json"),
-                TestExecutorSchemaRootPath = Path.Combine(TestPaths.RepoRoot, "schemas", "test-executor", "v1"),
-                ScenarioSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "scenario.schema.json")
-            });
+            PackageOptions());
 
         Assert.Equal(PackageConformanceOutcome.Passed, report.Outcome);
         Assert.All(report.Steps, step => Assert.Equal(PackageConformanceOutcome.Passed, step.Outcome));
+    }
+
+    [Theory]
+    [InlineData("implementation-missing-scenarios", "implementation-compatibility-metadata")]
+    [InlineData("test-executor-missing-scenarios", "test-executor-compatibility-metadata")]
+    [InlineData("scenario-pack-entry-mismatch", "scenario-id-match")]
+    [InlineData("toolchain-missing-required-capabilities", "toolchain-capability-metadata")]
+    public async Task Public_contract_invalid_package_fixtures_fail_package_v2_conformance(string fixtureName, string expectedStep)
+    {
+        var validator = new PackageConformanceValidator();
+        var report = await validator.ValidateAsync(
+            Path.Combine(TestPaths.RepoRoot, "fixtures", "public-contracts", "packages", "invalid", fixtureName),
+            PackageOptions());
+
+        Assert.Equal(PackageConformanceOutcome.Failed, report.Outcome);
+        Assert.Contains(report.Steps, step =>
+            step.Step == expectedStep &&
+            step.Outcome == PackageConformanceOutcome.Failed);
+    }
+
+    [Theory]
+    [InlineData("http1-core-smoke-reference.json")]
+    [InlineData("http1-conformance-smoke-reference.json")]
+    [InlineData("http1-benchmark-smoke-reference.json")]
+    public async Task Public_contract_valid_run_plan_fixture_passes_run_plan_conformance_against_package_set(string runPlanFixture)
+    {
+        var validator = new RunPlanConformanceValidator();
+        var report = await validator.ValidateAsync(
+            Path.Combine(TestPaths.RepoRoot, "fixtures", "public-contracts", "run-plans", "valid", runPlanFixture),
+            RunPlanOptions(
+                "http1-core-scenario-pack",
+                "reference-http1-test-executor",
+                "reference-http1-implementation"));
+
+        Assert.Equal(RunPlanConformanceOutcome.Passed, report.Outcome);
+        Assert.All(report.Steps, step => Assert.Equal(RunPlanConformanceOutcome.Passed, step.Outcome));
+    }
+
+    [Fact]
+    public async Task Public_contract_run_plan_conformance_rejects_unknown_selected_scenario()
+    {
+        var validator = new RunPlanConformanceValidator();
+        var report = await validator.ValidateAsync(
+            Path.Combine(TestPaths.RepoRoot, "fixtures", "public-contracts", "run-plans", "incompatible", "unknown-scenario-selection.json"),
+            RunPlanOptions(
+                "http1-core-scenario-pack",
+                "reference-http1-test-executor",
+                "reference-http1-implementation"));
+
+        Assert.Equal(RunPlanConformanceOutcome.Failed, report.Outcome);
+        Assert.Contains(report.Steps, step =>
+            step.Step == "run-plan-selector-compatibility" &&
+            step.Outcome == RunPlanConformanceOutcome.Failed &&
+            step.Diagnostics is not null &&
+            step.Diagnostics.Any(diagnostic => diagnostic.Contains("http.core.not-real", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
+    public async Task Public_contract_run_plan_conformance_rejects_missing_resolved_package()
+    {
+        var validator = new RunPlanConformanceValidator();
+        var report = await validator.ValidateAsync(
+            Path.Combine(TestPaths.RepoRoot, "fixtures", "public-contracts", "run-plans", "valid", "http1-core-smoke-reference.json"),
+            RunPlanOptions(
+                "http1-core-scenario-pack",
+                "reference-http1-test-executor"));
+
+        Assert.Equal(RunPlanConformanceOutcome.Failed, report.Outcome);
+        Assert.Contains(report.Steps, step =>
+            step.Step == "run-plan-package-references" &&
+            step.Outcome == RunPlanConformanceOutcome.Failed &&
+            step.Diagnostics is not null &&
+            step.Diagnostics.Any(diagnostic => diagnostic.Contains("kestrel-http1", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
@@ -47,9 +117,20 @@ public sealed class PublicConformanceHarnessTests
             root.GetProperty("providedScenarios").EnumerateArray()
                 .Select(item => item.GetProperty("scenarioId").GetString()!)
                 .ToArray());
-        Assert.Contains(root.GetProperty("providedSuites").EnumerateArray(), suite =>
+        var suites = root.GetProperty("providedSuites").EnumerateArray().ToArray();
+        Assert.Contains(suites, suite =>
             suite.GetProperty("suiteId").GetString() == "http1-core-smoke" &&
+            suite.GetProperty("purpose").GetString() == "conformance" &&
+            suite.GetProperty("resultKind").GetString() == "conformance" &&
             !suite.TryGetProperty("testExecutors", out _));
+        Assert.Contains(suites, suite =>
+            suite.GetProperty("suiteId").GetString() == "conformance-smoke" &&
+            suite.GetProperty("purpose").GetString() == "conformance" &&
+            suite.GetProperty("resultKind").GetString() == "conformance");
+        Assert.Contains(suites, suite =>
+            suite.GetProperty("suiteId").GetString() == "benchmark-smoke" &&
+            suite.GetProperty("purpose").GetString() == "benchmark" &&
+            suite.GetProperty("resultKind").GetString() == "benchmark");
         Assert.False(root.TryGetProperty("providedImplementations", out _));
         Assert.False(root.TryGetProperty("providedTestExecutors", out _));
 
@@ -90,10 +171,18 @@ public sealed class PublicConformanceHarnessTests
             .ToArray();
         var rootSuite = YamlFile.Load<SuiteDefinition>(Path.Combine(TestPaths.RepoRoot, "suites", "http1-core-smoke.yaml"));
         var packageSuite = YamlFile.Load<SuiteDefinition>(Path.Combine(packageRoot, "suites", "http1-core-smoke.yaml"));
+        var conformanceSuite = YamlFile.Load<SuiteDefinition>(Path.Combine(packageRoot, "suites", "conformance-smoke.yaml"));
+        var benchmarkSuite = YamlFile.Load<SuiteDefinition>(Path.Combine(packageRoot, "suites", "benchmark-smoke.yaml"));
 
         Assert.Equal(rootSuite.Scenarios, providedScenarioIds);
         Assert.Equal(rootSuite.Scenarios, packagedScenarioIds);
         Assert.Equal(rootSuite.Scenarios, packageSuite.Scenarios);
+        Assert.Equal(rootSuite.Scenarios, conformanceSuite.Scenarios);
+        Assert.Equal(rootSuite.Scenarios, benchmarkSuite.Scenarios);
+        Assert.Equal("conformance", conformanceSuite.Purpose);
+        Assert.Equal("conformance", conformanceSuite.ResultKind);
+        Assert.Equal("benchmark", benchmarkSuite.Purpose);
+        Assert.Equal("benchmark", benchmarkSuite.ResultKind);
 
         foreach (var scenarioId in packagedScenarioIds)
         {
@@ -176,12 +265,7 @@ public sealed class PublicConformanceHarnessTests
             var validator = new PackageConformanceValidator();
             var report = await validator.ValidateAsync(
                 packageRoot,
-                new PackageConformanceOptions
-                {
-                    PackageSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "package", "v2", "package.schema.json"),
-                    TestExecutorSchemaRootPath = Path.Combine(TestPaths.RepoRoot, "schemas", "test-executor", "v1"),
-                    ScenarioSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "scenario.schema.json")
-                });
+                PackageOptions());
 
             Assert.Equal(PackageConformanceOutcome.Failed, report.Outcome);
             Assert.Contains(report.Steps, step =>
@@ -231,7 +315,33 @@ public sealed class PublicConformanceHarnessTests
         Assert.Contains("conformance test-executor --base-url", testExecutorConformance, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("neutral-test-executor", packageV2, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("http1-core-scenario-pack", packageV2, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("conformance run-plan", packageV2, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("--run-plan fixtures", packageV2, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("neutral-adapter-implementation", fixtureReadme, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static PackageConformanceOptions PackageOptions()
+    {
+        return new PackageConformanceOptions
+        {
+            PackageSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "package", "v2", "package.schema.json"),
+            TestExecutorSchemaRootPath = Path.Combine(TestPaths.RepoRoot, "schemas", "test-executor", "v1"),
+            ScenarioSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "scenario.schema.json")
+        };
+    }
+
+    private static RunPlanConformanceOptions RunPlanOptions(params string[] packageFixtureNames)
+    {
+        return new RunPlanConformanceOptions
+        {
+            RunPlanSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "run-plan", "v1", "run-plan.schema.json"),
+            PackageSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "package", "v2", "package.schema.json"),
+            TestExecutorSchemaRootPath = Path.Combine(TestPaths.RepoRoot, "schemas", "test-executor", "v1"),
+            ScenarioSchemaPath = Path.Combine(TestPaths.RepoRoot, "schemas", "scenario.schema.json"),
+            PackagePaths = packageFixtureNames
+                .Select(name => Path.Combine(TestPaths.RepoRoot, "fixtures", "public-contracts", "packages", name))
+                .ToArray()
+        };
     }
 
     private static string Read(params string[] pathParts)

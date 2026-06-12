@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "kestrel-http2",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "implementation",
+  "displayName": "Kestrel HTTP/2 Reference Implementation Fixture",
+  "entryManifests": [
+    "implementations/kestrel-http2.yaml"
+  ],
+  "providedImplementations": [
+    {
+      "implementationId": "kestrel-http2",
+      "displayName": "Kestrel HTTP/2 Reference Implementation Fixture",
+      "protocols": [
+        "h2"
+      ],
+      "scenarios": [
+        "http2.core.plaintext",
+        "http2.core.json",
+        "http2.streaming.response"
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/kestrel-http2-placeholder",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": false,
+    "requiresGo": false,
+    "requiredCapabilities": []
+  }
+}

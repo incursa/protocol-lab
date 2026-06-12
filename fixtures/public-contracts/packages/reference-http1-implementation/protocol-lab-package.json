@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "kestrel-http1",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "implementation",
+  "displayName": "Kestrel HTTP/1 Reference Implementation Fixture",
+  "entryManifests": [
+    "implementations/kestrel-http1.yaml"
+  ],
+  "providedImplementations": [
+    {
+      "implementationId": "kestrel-http1",
+      "displayName": "Kestrel HTTP/1 Reference Implementation Fixture",
+      "protocols": [
+        "h1"
+      ],
+      "scenarios": [
+        "http.core.plaintext",
+        "http.core.json",
+        "http.payload.bytes.1kb"
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/kestrel-http1-placeholder",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": false,
+    "requiresGo": false,
+    "requiredCapabilities": []
+  }
+}

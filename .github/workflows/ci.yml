@@ -34,6 +34,10 @@ jobs:
       - name: Run repository check
         run: dotnet run --project src\Incursa.ProtocolLab.Cli -- check
 
+      - name: Validate public contract fixtures
+        shell: pwsh
+        run: ./scripts/validation/Test-PublicContractFixtures.ps1
+
       - name: Validate markdown links
         shell: pwsh
         run: |

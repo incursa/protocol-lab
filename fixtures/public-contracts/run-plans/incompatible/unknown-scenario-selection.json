@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "protocol-lab-run-plan-v1",
+  "runPlanId": "unknown-scenario-selection",
+  "runPlanVersion": "2026.06.12",
+  "packages": [
+    {
+      "packageId": "protocol-lab-http1-core-scenarios",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "packageId": "protocol-lab-reference-http1-test-executor",
+      "packageVersion": "0.1.0-fixture",
+      "sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+    },
+    {
+      "packageId": "kestrel-http1",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  ],
+  "scenarioIds": [
+    "http.core.not-real"
+  ],
+  "implementationIds": [
+    "kestrel-http1"
+  ],
+  "testExecutorIds": [
+    "protocol-lab-reference-http1-test-executor"
+  ],
+  "protocols": [
+    "h1"
+  ],
+  "loadProfileId": "smoke",
+  "targetMode": "process",
+  "targetNetworkMode": "published-port",
+  "requiredCapabilities": []
+}

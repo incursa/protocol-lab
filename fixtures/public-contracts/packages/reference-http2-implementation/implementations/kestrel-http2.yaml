@@ -1,0 +1,43 @@
+id: kestrel-http2
+name: Kestrel HTTP/2 Reference Implementation Fixture
+description: Neutral package fixture for an HTTP/2 server implementation.
+image: ""
+targetKind: external
+targetContract: process
+executable: ""
+project: ""
+workingDirectory: .
+dockerfile: ""
+buildContext: .
+containerName: ""
+dockerNetwork: ""
+dockerNetworkMode: published-port
+dockerBaseUrl: ""
+baseUrl: ""
+adapterControlPlaneBaseUrl: ""
+certificateMode: none
+roles:
+  - server
+supportedProtocols:
+  - h2
+supportedWorkloadFamilies:
+  - http.application
+ports: []
+environment: {}
+dockerEnvironment: {}
+commandArguments: []
+readinessCheck:
+  type: none
+  url: ""
+  timeoutSeconds: 1
+shutdownBehavior: external
+capabilities:
+  - http.server
+  - httpPlaintext
+  - httpJson
+  - httpStreaming
+artifactExports:
+  - target.log
+qlogSupport: false
+sslKeyLogSupport: false
+notes: Fixture metadata only; it proves package/run-plan selector compatibility and is not a runnable benchmark target.

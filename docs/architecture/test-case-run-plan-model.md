@@ -222,6 +222,8 @@ A suite may declare:
 - selected scenario IDs
 - default protocol
 - compatible test executor IDs
+- purpose, such as `conformance` or `benchmark`
+- result kind, such as `conformance` or `benchmark`
 - local defaults used when a run plan does not override them
 - notes explaining the intended workflow
 
@@ -235,10 +237,18 @@ A suite must not pin:
 
 Example suite purposes:
 
-- `http1-core-smoke`: fast HTTP/1 request/response validation
+- `conformance-smoke`: fast HTTP/1 request/response behavior validation
+- `benchmark-smoke`: short HTTP/1 performance smoke under a load profile
+- `http1-core-smoke`: legacy fast HTTP/1 request/response validation
 - `http2-core-smoke`: fast HTTP/2 request/response validation
 - `h3-local-v1`: local HTTP/3 acceptance coverage
 - `quic-transport-v1-comparison`: raw QUIC transport comparison coverage
+
+Conformance and benchmark suites must remain separate even when they select
+the same scenario IDs. Conformance answers whether behavior is valid.
+Benchmark answers how performance looks under the selected load profile. A
+slow valid run is not a conformance failure. A fast invalid run is still
+invalid and must not be accepted as benchmark evidence.
 
 ## Load Profile Semantics
 
@@ -458,7 +468,7 @@ A run plan does not own:
     }
   ],
   "suiteIds": [
-    "http1-core-smoke"
+    "conformance-smoke"
   ],
   "scenarioIds": [
     "http.core.plaintext",
@@ -582,7 +592,7 @@ These rules must remain true:
 
 - Add or refine `http.core.*` scenario specs so they are protocol-neutral
   across `h1`, `h2`, and `h3` where appropriate.
-- Create `http1-core-smoke` suite.
+- Create `conformance-smoke` and `benchmark-smoke` suites.
 - Create a small HTTP smoke executor package.
 - Create `kestrel-http1` or another boring reference implementation package.
 - Create a run plan that pins all three.

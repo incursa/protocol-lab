@@ -1,0 +1,22 @@
+executorIdentity:
+  id: bad-test-executor
+  name: Bad Test Executor
+  version: 0.0.0
+  vendor: Incursa
+versionCompatibility:
+  contractVersion: test-executor-v1
+  compatibleContractVersions:
+    - test-executor-v1
+  executorVersion: 0.0.0
+claimedCapabilities: []
+supportedTestSelectors: []
+supportedScenarioSelectors: []
+supportedProtocolFamilies:
+  - h1
+supportedExecutionModes:
+  - single-cell
+requiredTargetEndpointBindings: []
+supportedArtifactTypes: []
+metricsAvailability:
+  available: false
+  availableKinds: []

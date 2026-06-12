@@ -99,6 +99,8 @@ public sealed class PackageConformanceValidator
                 ValidateEntryPath(package, entryManifest, Add);
             }
 
+            ValidateProvidedCompatibilityMetadata(root, kind, Add);
+
             if (options.ValidateEntryManifestSchemas)
             {
                 await ValidateEntrySchemasAsync(package, root, kind, entryManifests, options, Add, cancellationToken).ConfigureAwait(false);
@@ -106,6 +108,153 @@ public sealed class PackageConformanceValidator
         }
 
         return new PackageConformanceReport(packagePath, overall, steps, packageId, packageVersion, kind);
+    }
+
+    private static void ValidateProvidedCompatibilityMetadata(
+        JsonElement root,
+        string? kind,
+        Action<PackageConformanceStepResult> add)
+    {
+        if (string.Equals(kind, "implementation", StringComparison.OrdinalIgnoreCase))
+        {
+            ValidateProvidedComponentArrays(
+                root,
+                "providedImplementations",
+                "implementationId",
+                requiredArrayNames: ["protocols", "scenarios"],
+                optionalArrayNames: [],
+                step: "implementation-compatibility-metadata",
+                add);
+            return;
+        }
+
+        if (string.Equals(kind, "test-executor", StringComparison.OrdinalIgnoreCase))
+        {
+            ValidateProvidedComponentArrays(
+                root,
+                "providedTestExecutors",
+                "testExecutorId",
+                requiredArrayNames: ["protocols", "scenarios"],
+                optionalArrayNames: ["tests"],
+                step: "test-executor-compatibility-metadata",
+                add);
+            return;
+        }
+
+        if (string.Equals(kind, "scenario-pack", StringComparison.OrdinalIgnoreCase))
+        {
+            ValidateProvidedComponentArrays(
+                root,
+                "providedScenarios",
+                "scenarioId",
+                requiredArrayNames: ["protocols"],
+                optionalArrayNames: [],
+                step: "scenario-pack-compatibility-metadata",
+                add,
+                allowMissingArray: true);
+            ValidateProvidedComponentArrays(
+                root,
+                "providedSuites",
+                "suiteId",
+                requiredArrayNames: ["protocols"],
+                optionalArrayNames: ["testExecutors"],
+                step: "scenario-pack-suite-compatibility-metadata",
+                add,
+                allowMissingArray: true);
+            return;
+        }
+
+        if (string.Equals(kind, "toolchain", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!root.TryGetProperty("dependencies", out var dependencies) ||
+                dependencies.ValueKind != JsonValueKind.Object ||
+                !dependencies.TryGetProperty("requiredCapabilities", out var requiredCapabilities) ||
+                requiredCapabilities.ValueKind != JsonValueKind.Array)
+            {
+                add(Failed("toolchain-capability-metadata", "Toolchain packages must declare dependencies.requiredCapabilities, even when empty.", "dependencies.requiredCapabilities"));
+                return;
+            }
+
+            add(Passed("toolchain-capability-metadata", "Toolchain package declares dependencies.requiredCapabilities.", "dependencies.requiredCapabilities"));
+        }
+    }
+
+    private static void ValidateProvidedComponentArrays(
+        JsonElement root,
+        string providedArrayName,
+        string idPropertyName,
+        IReadOnlyList<string> requiredArrayNames,
+        IReadOnlyList<string> optionalArrayNames,
+        string step,
+        Action<PackageConformanceStepResult> add,
+        bool allowMissingArray = false)
+    {
+        if (!root.TryGetProperty(providedArrayName, out var providedArray) || providedArray.ValueKind != JsonValueKind.Array)
+        {
+            if (!allowMissingArray)
+            {
+                add(Failed(step, $"Package must declare {providedArrayName} so compatibility can be checked.", providedArrayName));
+            }
+
+            return;
+        }
+
+        var diagnostics = new List<string>();
+        foreach (var item in providedArray.EnumerateArray())
+        {
+            var id = ReadString(item, idPropertyName) ?? "<missing>";
+            foreach (var requiredArrayName in requiredArrayNames)
+            {
+                if (!TryReadNonEmptyStringArray(item, requiredArrayName, out var values))
+                {
+                    diagnostics.Add($"{providedArrayName}.{id}.{requiredArrayName} must contain at least one value.");
+                    continue;
+                }
+
+                AddInvalidTokenDiagnostics(values, $"{providedArrayName}.{id}.{requiredArrayName}", diagnostics);
+            }
+
+            foreach (var optionalArrayName in optionalArrayNames)
+            {
+                if (!item.TryGetProperty(optionalArrayName, out var optionalArray))
+                {
+                    continue;
+                }
+
+                if (optionalArray.ValueKind != JsonValueKind.Array || !TryReadNonEmptyStringArray(item, optionalArrayName, out var values))
+                {
+                    diagnostics.Add($"{providedArrayName}.{id}.{optionalArrayName}, when present, must contain at least one value.");
+                    continue;
+                }
+
+                AddInvalidTokenDiagnostics(values, $"{providedArrayName}.{id}.{optionalArrayName}", diagnostics);
+            }
+        }
+
+        if (diagnostics.Count == 0)
+        {
+            add(Passed(step, "Package provided metadata carries explicit compatibility IDs.", providedArrayName));
+            return;
+        }
+
+        add(Failed(step, "Package provided metadata must expose explicit protocol and scenario/test compatibility IDs.", providedArrayName, diagnostics));
+    }
+
+    private static bool TryReadNonEmptyStringArray(JsonElement root, string propertyName, out IReadOnlyList<string> values)
+    {
+        values = ReadStringArray(root, propertyName);
+        return values.Count > 0;
+    }
+
+    private static void AddInvalidTokenDiagnostics(IEnumerable<string> values, string path, ICollection<string> diagnostics)
+    {
+        foreach (var value in values)
+        {
+            if (!IsToken(value))
+            {
+                diagnostics.Add($"{path} contains invalid token '{value}'.");
+            }
+        }
     }
 
     private static void ValidateEntryPath(
@@ -391,6 +540,21 @@ public sealed class PackageConformanceValidator
 
         var segments = path.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
         return !segments.Any(static segment => segment == "..");
+    }
+
+    private static bool IsToken(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        if (!char.IsLetterOrDigit(value[0]))
+        {
+            return false;
+        }
+
+        return value.All(static ch => char.IsLetterOrDigit(ch) || ch is '_' or '.' or ':' or '-');
     }
 
     private static string NormalizePackagePath(string path)

@@ -8,6 +8,8 @@ public sealed class SuiteDefinition
     public string Id { get; init; } = "";
     public string Name { get; init; } = "";
     public string Description { get; init; } = "";
+    public string Purpose { get; init; } = "";
+    public string ResultKind { get; init; } = "";
     public string TargetMode { get; init; } = "";
     public string TargetNetworkMode { get; init; } = "";
     public List<string> Implementations { get; init; } = [];

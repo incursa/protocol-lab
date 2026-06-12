@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "bad-implementation",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "implementation",
+  "entryManifests": [
+    "implementations/bad-implementation.yaml"
+  ],
+  "providedImplementations": [
+    {
+      "implementationId": "bad-implementation",
+      "protocols": [
+        "h1"
+      ]
+    }
+  ],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "process",
+        "path": "bin/bad-placeholder",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": false,
+    "requiredCapabilities": []
+  }
+}

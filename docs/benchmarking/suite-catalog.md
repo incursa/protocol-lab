@@ -10,7 +10,10 @@ or test executor packages.
 
 | Suite ID | Protocol | Target mode | Load tool | Purpose | Runner |
 | --- | --- | --- | --- | --- | --- |
+| `conformance-smoke` | `h1` | package-backed or local override | selected test executor | Fast package-neutral HTTP/1 behavior validation for plaintext, JSON, and 1KB payload scenarios. Result kind is `conformance`. | package/controller submission or explicit local command options |
+| `benchmark-smoke` | `h1` | package-backed or local override | selected test executor | Short package-neutral HTTP/1 performance smoke under the `smoke` load profile. Result kind is `benchmark`. | package/controller submission or explicit local command options |
 | `http1-core-smoke` | `h1` | package-backed or local override | selected test executor | Fast package-neutral HTTP/1 smoke validation for plaintext, JSON, and 1KB payload scenarios. | package/controller submission or explicit local command options |
+| `http2-core-smoke` | `h2` | package-backed or local override | selected test executor | Fast package-neutral HTTP/2 smoke validation for plaintext, JSON, and streaming response scenarios. | package/controller submission or explicit local command options |
 
 ## Benchmark Suites
 
@@ -48,6 +51,9 @@ Use `scripts/acceptance/Invoke-ProtocolLabAcceptance.ps1` for these suites.
 
 - The benchmark suites are local-regression and local-comparison evidence
   paths. They are not publishable benchmark claims by themselves.
+- Conformance suites answer validity. Benchmark suites answer performance
+  under a load profile. A slow valid run remains conformance-valid, while a
+  fast invalid run remains invalid.
 - Raw QUIC suites are package-backed; use package v2/controller submission
   rather than the runner-only benchmark wrapper.
 - The acceptance suites are documented inputs for the acceptance workflow.

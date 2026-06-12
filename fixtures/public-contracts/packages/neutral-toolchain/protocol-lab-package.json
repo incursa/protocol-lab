@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "neutral-toolchain",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "toolchain",
+  "displayName": "Neutral Toolchain Fixture",
+  "entryManifests": [],
+  "environments": [
+    {
+      "os": "linux",
+      "arch": "x64",
+      "entrypoint": {
+        "kind": "bash",
+        "path": "scripts/noop.sh",
+        "arguments": [],
+        "workingDirectory": "."
+      }
+    }
+  ],
+  "dependencies": {
+    "requiresDotNet": false,
+    "requiresDocker": false,
+    "requiresPwsh": false,
+    "requiresBash": true,
+    "requiresGo": false,
+    "requiredCapabilities": [
+      {
+        "name": "bash",
+        "value": "true"
+      }
+    ]
+  }
+}

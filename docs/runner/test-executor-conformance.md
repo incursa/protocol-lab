@@ -59,7 +59,8 @@ extensions:
       executable: oha
       workingDirectory: .
       defaultArguments:
-        - --json
+        - --output-format
+        - json
       versionCommand:
         - --version
       availabilityCheck: path

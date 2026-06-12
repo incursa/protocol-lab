@@ -311,6 +311,7 @@ public sealed class PackageConformanceValidator
                 }
 
                 ValidateIdentityMatchesProvidedIds(json, "executorIdentity", providedIds, entryManifest, "test-executor-id-match", add);
+                ValidateTestExecutorPackageProcessExtension(json, entryManifest, add);
             }
 
             return;
@@ -512,6 +513,61 @@ public sealed class PackageConformanceValidator
         return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
+    }
+
+    private static void ValidateTestExecutorPackageProcessExtension(
+        string manifestJson,
+        string entryManifest,
+        Action<PackageConformanceStepResult> add)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(manifestJson);
+            var root = document.RootElement;
+            if (!TryGetProperty(root, "extensions", out var extensions) ||
+                !TryGetProperty(extensions, "protocolLabPackage", out var packageExtension) ||
+                !TryGetProperty(packageExtension, "process", out var process) ||
+                !TryGetProperty(process, "executable", out var executable) ||
+                executable.ValueKind != JsonValueKind.String ||
+                string.IsNullOrWhiteSpace(executable.GetString()))
+            {
+                add(Failed(
+                    "test-executor-package-process-extension",
+                    "Test-executor package manifests must declare extensions.protocolLabPackage.process.executable so hosted workers can materialize the selected executor.",
+                    entryManifest));
+                return;
+            }
+
+            add(Passed(
+                "test-executor-package-process-extension",
+                "Test-executor package manifest declares a hosted worker process executable.",
+                entryManifest));
+        }
+        catch (JsonException ex)
+        {
+            add(Failed(
+                "test-executor-package-process-extension",
+                $"Test-executor manifest could not be inspected for the hosted worker process extension: {ex.Message}",
+                entryManifest));
+        }
+    }
+
+    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = property.Value;
+                    return true;
+                }
+            }
+        }
+
+        value = default;
+        return false;
     }
 
     private static string ConvertDocumentToJson(string path, string content)

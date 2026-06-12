@@ -49,6 +49,29 @@ manifest against `schemas/test-executor/v1/manifest.schema.json`. Passing the
 conformance suite proves the control plane; passing the schema checks proves
 the package/catalog metadata that schedulers consume.
 
+Hosted package-backed execution also needs package materialization metadata in
+the test-executor manifest:
+
+```yaml
+extensions:
+  protocolLabPackage:
+    process:
+      executable: oha
+      workingDirectory: .
+      defaultArguments:
+        - --json
+      versionCommand:
+        - --version
+      availabilityCheck: path
+      parser:
+        type: oha-json
+        id: oha-json
+```
+
+Use a package-local executable path when the package carries its own runner
+binary. Use a worker-provided executable name such as `oha` or `h2load` only
+when that tool is a declared lab worker prerequisite.
+
 ## Local verification
 
 Run the public CLI probe against a live Test Executor v1 control plane:

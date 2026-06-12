@@ -1,7 +1,7 @@
 {
   "schemaVersion": "protocol-lab-package-v2",
   "packageId": "protocol-lab-reference-http2-test-executor",
-  "packageVersion": "0.1.0-fixture",
+  "packageVersion": "0.1.1-fixture",
   "kind": "test-executor",
   "displayName": "ProtocolLab Reference HTTP/2 Test Executor",
   "entryManifests": [

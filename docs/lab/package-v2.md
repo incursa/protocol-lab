@@ -57,6 +57,13 @@ match the package `provided*` metadata. It also requires implementation and
 test-executor packages to expose scenario compatibility IDs so controllers can
 check a selected package set before any package becomes selectable.
 
+For hosted worker materialization, a `test-executor` entry manifest must also
+declare `extensions.protocolLabPackage.process.executable`. The value may name
+a package-local executable or a worker-provided tool such as `oha` or `h2load`.
+The worker uses this extension to build the package overlay load-tool manifest
+for the selected executor; without it, package-backed execution fails before a
+run artifact can be produced.
+
 Neutral examples live under `fixtures/public-contracts/packages/`:
 
 ```powershell

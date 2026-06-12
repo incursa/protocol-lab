@@ -1,7 +1,7 @@
 {
   "schemaVersion": "protocol-lab-package-v2",
   "packageId": "neutral-test-executor",
-  "packageVersion": "0.0.0-fixture",
+  "packageVersion": "0.0.1-fixture",
   "kind": "test-executor",
   "displayName": "Neutral Test Executor Fixture",
   "entryManifests": [

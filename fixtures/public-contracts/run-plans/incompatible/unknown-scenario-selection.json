@@ -10,7 +10,7 @@
     },
     {
       "packageId": "protocol-lab-reference-http1-test-executor",
-      "packageVersion": "0.1.0-fixture",
+      "packageVersion": "0.1.1-fixture",
       "sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
     },
     {

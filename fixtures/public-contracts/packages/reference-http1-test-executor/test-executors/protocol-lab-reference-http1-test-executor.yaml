@@ -66,3 +66,16 @@ metricsAvailability:
   availableKinds:
     - session
     - validation
+extensions:
+  protocolLabPackage:
+    process:
+      executable: oha
+      workingDirectory: .
+      defaultArguments:
+        - --json
+      versionCommand:
+        - --version
+      availabilityCheck: path
+      parser:
+        type: oha-json
+        id: oha-json

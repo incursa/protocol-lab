@@ -66,3 +66,15 @@ metricsAvailability:
   availableKinds:
     - session
     - validation
+extensions:
+  protocolLabPackage:
+    process:
+      executable: h2load
+      workingDirectory: .
+      defaultArguments: []
+      versionCommand:
+        - --version
+      availabilityCheck: path
+      parser:
+        type: h2load
+        id: h2load

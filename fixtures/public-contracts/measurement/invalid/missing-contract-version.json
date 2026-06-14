@@ -1,0 +1,26 @@
+{
+  "bundle_id": "telemetry-invalid-missing-contract-version",
+  "producer": {
+    "kind": "runner",
+    "id": "public-contract-runner-example",
+    "telemetry_system": "none"
+  },
+  "run_binding": {
+    "run_id": "run-invalid-001",
+    "cell_id": "cell-invalid-001",
+    "scenario_id": "http.core.plaintext",
+    "protocol": "http/1.1"
+  },
+  "measurement_profile": {
+    "profile_id": "smoke"
+  },
+  "created_at_utc": "2026-06-14T15:00:00Z",
+  "samples": [],
+  "summaries": [],
+  "artifacts": [],
+  "warnings": [],
+  "errors": [],
+  "redaction": {
+    "state": "producer-declared-safe"
+  }
+}

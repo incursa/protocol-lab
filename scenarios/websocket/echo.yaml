@@ -38,11 +38,11 @@ artifacts:
   required:
     - validation.json
   optional:
-    - qlog
+    - protocol-diagnostic-artifact
 networkProfile: clean
 artifactRequirements:
-  - load-tool.stdout.txt
-  - load-tool.stderr.txt
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
 tags:
   - phase7
   - websocket

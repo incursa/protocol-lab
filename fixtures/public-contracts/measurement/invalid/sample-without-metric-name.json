@@ -1,0 +1,19 @@
+{
+  "metric_kind": "gauge",
+  "value": 42,
+  "unit": "count",
+  "timestamp_utc": "2026-06-14T15:05:00Z",
+  "source": {
+    "kind": "runner",
+    "id": "public-contract-runner-example",
+    "telemetry_system": "none"
+  },
+  "scope": "runner",
+  "collector_id": "runner-observer",
+  "tags": {},
+  "provenance": {
+    "observed_by": "runner",
+    "method": "runner-observed sample"
+  },
+  "warnings": []
+}

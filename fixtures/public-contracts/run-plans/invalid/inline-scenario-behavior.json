@@ -22,8 +22,8 @@
     "h1"
   ],
   "loadProfileId": "smoke",
-  "targetMode": "process",
-  "targetNetworkMode": "published-port",
+  "targetMode": "implementation-resolved",
+  "targetNetworkMode": "published-endpoint",
   "requiredCapabilities": [],
   "scenarios": [
     {

@@ -5,27 +5,26 @@
   "title": "ProtocolLab Public Report Contract",
   "domain": "protocol-lab",
   "capability": "public-report",
-  "status": "draft",
+  "status": "approved",
   "owner": "protocol-lab-maintainers",
   "tags": [
     "protocol-lab",
-    "publication",
-    "reporting",
-    "schema",
-    "r2"
+    "report",
+    "public-contract"
   ],
   "related_artifacts": [
-    "ARC-PL-REPORT-0001",
-    "VER-PL-REPORT-0001"
+    "ARC-PL-REPORT",
+    "VER-PL-REPORT-0001",
+    "SPEC-PL-PUBLIC-CONTRACTS"
   ],
-  "purpose": "Define the canonical public report payload and supporting publication metadata for ProtocolLab report bundles stored in R2.",
-  "scope": "This specification covers public report JSON payload semantics, schema versioning, measurements, evidence, logs and artifacts, failure diagnostics, and the downstream processing boundary. It does not define private raw run retention, hosted execution, site indexing, latest selection, or commercial attestation policy.",
-  "context": "ProtocolLab publishes public-safe report bundles to R2 under public/runs/{runId}/. The site and other consumers need a stable shareable JSON contract that carries the complete report semantics, while browse indexes and latest selection are derived downstream from that payload.",
+  "purpose": "Define the public report payload and supporting metadata contracts used by ProtocolLab report consumers.",
+  "scope": "This specification covers public report identity, claim boundaries, evidence preservation, artifact references, and public-safety rules. It does not define a runner, upload workflow, object-store layout, site importer, or hosted lab implementation.",
+  "context": "ProtocolLab consumers need public-safe report documents that preserve evidence semantics without relying on private lab state.",
   "requirements": [
     {
       "id": "REQ-PL-REPORT-0001",
-      "title": "Canonical public payload",
-      "statement": "The publication workflow MUST include exactly one schema-versioned canonical public evidence report JSON payload that carries the report semantics for each published ProtocolLab run.",
+      "title": "Schema-versioned public report",
+      "statement": "A public ProtocolLab report MUST declare a stable schema version and validate against the matching public report schema.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
@@ -34,7 +33,7 @@
       },
       "trace": {
         "satisfied_by": [
-          "ARC-PL-REPORT-0001"
+          "ARC-PL-REPORT"
         ],
         "verified_by": [
           "VER-PL-REPORT-0001"
@@ -43,8 +42,8 @@
     },
     {
       "id": "REQ-PL-REPORT-0002",
-      "title": "Protocol-neutral cell coverage",
-      "statement": "The canonical public evidence report MUST represent every included result cell without assuming a specific protocol family, scenario family, target implementation, load tool, or execution backend.",
+      "title": "Evidence preservation",
+      "statement": "A public ProtocolLab report MUST preserve validation failures, unsupported outcomes, unavailable outcomes, diagnostic labels, and non-publishable claim status.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
@@ -53,26 +52,29 @@
       },
       "trace": {
         "satisfied_by": [
-          "ARC-PL-REPORT-0001"
+          "ARC-PL-REPORT"
         ],
         "verified_by": [
           "VER-PL-REPORT-0001"
+        ],
+        "related": [
+          "REQ-PL-PUBLIC-0006"
         ]
       }
     },
     {
       "id": "REQ-PL-REPORT-0003",
-      "title": "General measurement model",
-      "statement": "The canonical public evidence report MUST encode measurements as named, sourced, unit-bearing values so throughput, latency, quantity, memory, CPU, network, diagnostic, protocol, and future custom measurements can share the same shape.",
+      "title": "No claim upgrades",
+      "statement": "A public ProtocolLab report MUST NOT infer publishable, benchmark, or verified claims from throughput, duration, implementation identity, executor identity, or private lab knowledge.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
         "edge": "required",
-        "fuzz": "optional"
+        "fuzz": "not_applicable"
       },
       "trace": {
         "satisfied_by": [
-          "ARC-PL-REPORT-0001"
+          "ARC-PL-REPORT"
         ],
         "verified_by": [
           "VER-PL-REPORT-0001"
@@ -81,8 +83,8 @@
     },
     {
       "id": "REQ-PL-REPORT-0004",
-      "title": "Failure diagnostics",
-      "statement": "The canonical public evidence report MUST preserve validation status, benchmark execution status, warnings, errors, and public-safe artifact references for cells that fail, are unsupported, are skipped, or do not produce parsed measurements.",
+      "title": "Public-safe artifacts",
+      "statement": "A public ProtocolLab report MUST reference only artifacts that are safe for public consumption and MUST NOT expose private paths, credentials, internal hostnames, private service URLs, or private operational state.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
@@ -91,7 +93,7 @@
       },
       "trace": {
         "satisfied_by": [
-          "ARC-PL-REPORT-0001"
+          "ARC-PL-REPORT"
         ],
         "verified_by": [
           "VER-PL-REPORT-0001"
@@ -100,58 +102,23 @@
     },
     {
       "id": "REQ-PL-REPORT-0005",
-      "title": "Supporting metadata boundary",
-      "statement": "The publication workflow MUST treat publication manifest, artifact index, and per-run registry helper JSON as derived supporting metadata that do not redefine claim level, validation outcome, benchmark acceptance, or measurement semantics independently of the canonical public evidence report.",
+      "title": "Protocol lane separation",
+      "statement": "A public ProtocolLab report MUST keep raw QUIC transport results separate from managed HTTP/3 results.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
         "edge": "required",
-        "fuzz": "optional"
+        "fuzz": "not_applicable"
       },
       "trace": {
         "satisfied_by": [
-          "ARC-PL-REPORT-0001"
+          "ARC-PL-REPORT"
         ],
         "verified_by": [
           "VER-PL-REPORT-0001"
-        ]
-      }
-    },
-    {
-      "id": "REQ-PL-REPORT-0006",
-      "title": "Schema validation gate",
-      "statement": "The publication workflow MUST produce public report JSON files that validate against the repository-owned public report JSON schemas before those files are treated as publishable R2 payloads.",
-      "x_coverage_expectations": {
-        "positive": "required",
-        "negative": "required",
-        "edge": "required",
-        "fuzz": "optional"
-      },
-      "trace": {
-        "satisfied_by": [
-          "ARC-PL-REPORT-0001"
         ],
-        "verified_by": [
-          "VER-PL-REPORT-0001"
-        ]
-      }
-    },
-    {
-      "id": "REQ-PL-REPORT-0007",
-      "title": "Benchmark-run bundle production",
-      "statement": "The benchmark run workflow MUST produce the schema-validated public report bundle as part of each benchmark run without requiring R2 upload or downstream index writes.",
-      "x_coverage_expectations": {
-        "positive": "required",
-        "negative": "required",
-        "edge": "required",
-        "fuzz": "optional"
-      },
-      "trace": {
-        "satisfied_by": [
-          "ARC-PL-REPORT-0001"
-        ],
-        "verified_by": [
-          "VER-PL-REPORT-0001"
+        "related": [
+          "REQ-PL-PUBLIC-0007"
         ]
       }
     }

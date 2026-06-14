@@ -9,9 +9,7 @@
     "packageId",
     "packageVersion",
     "kind",
-    "entryManifests",
-    "environments",
-    "dependencies"
+    "entryManifests"
   ],
   "properties": {
     "schemaVersion": {
@@ -49,11 +47,6 @@
     "providedSuites": {
       "type": "array",
       "items": { "$ref": "#/$defs/providedSuite" }
-    },
-    "environments": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "$ref": "#/$defs/environment" }
     },
     "dependencies": {
       "$ref": "#/$defs/dependencies"
@@ -310,46 +303,11 @@
         "testExecutors": { "$ref": "#/$defs/stringArray" }
       }
     },
-    "environment": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["os", "arch", "entrypoint"],
-      "properties": {
-        "os": {
-          "type": "string",
-          "enum": ["linux", "windows", "macos"]
-        },
-        "arch": {
-          "type": "string",
-          "enum": ["x64", "arm64"]
-        },
-        "entrypoint": { "$ref": "#/$defs/entrypoint" }
-      }
-    },
-    "entrypoint": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["kind", "path", "arguments", "workingDirectory"],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": ["process", "bash", "pwsh"]
-        },
-        "path": { "$ref": "#/$defs/packageRelativePath" },
-        "arguments": { "$ref": "#/$defs/stringArray" },
-        "workingDirectory": { "$ref": "#/$defs/packageRelativePath" }
-      }
-    },
     "dependencies": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["requiresDotNet", "requiresDocker", "requiresPwsh", "requiresBash"],
+      "required": ["requiredCapabilities"],
       "properties": {
-        "requiresDotNet": { "type": "boolean" },
-        "requiresDocker": { "type": "boolean" },
-        "requiresPwsh": { "type": "boolean" },
-        "requiresBash": { "type": "boolean" },
-        "requiresGo": { "type": "boolean" },
         "requiredCapabilities": {
           "type": "array",
           "items": { "$ref": "#/$defs/capabilityRequirement" }

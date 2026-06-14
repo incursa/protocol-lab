@@ -17,5 +17,5 @@ defaults:
   streamsPerConnection: 1
 counterCapture:
   enabledByDefault: false
-  tool: dotnet-counters
-notes: Package-neutral suite selector for the HTTP/1 core lane. Implementations and test executors enter through run plans, package v2 inventory, or local command options; this suite does not pin package references.
+  tool: resource-summary
+notes: Package-neutral suite selector for the HTTP/1 core lane. Implementations and test executors enter through run plans or package v2 inventory; this suite does not pin package references.

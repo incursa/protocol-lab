@@ -1,0 +1,95 @@
+{
+  "contract_version": "telemetry-bundle-v1",
+  "bundle_id": "telemetry-runner-smoke-001",
+  "producer": {
+    "kind": "runner",
+    "id": "public-contract-runner-example",
+    "version": "0.0.0-contract",
+    "description": "Declarative runner-side smoke telemetry example.",
+    "telemetry_system": "none"
+  },
+  "run_binding": {
+    "run_id": "run-smoke-001",
+    "cell_id": "cell-http1-core-001",
+    "repetition": 0,
+    "scenario_id": "http.core.plaintext",
+    "scenario_version": "1.0.0",
+    "suite_id": "conformance-smoke",
+    "protocol": "http/1.1",
+    "implementation_id": "example-implementation",
+    "test_executor_id": "example-test-executor",
+    "load_profile_id": "smoke",
+    "execution_profile": "smoke"
+  },
+  "measurement_profile": {
+    "profile_id": "smoke",
+    "claim_level": "functional",
+    "measurement_expectations": ["minimal runner-observed status and duration"],
+    "comparability_floor": "none",
+    "heavy_instrumentation_disclosed": false
+  },
+  "comparability": {
+    "class": "none",
+    "statement": "Smoke telemetry proves only that the selected cell produced minimal runner-observed evidence."
+  },
+  "created_at_utc": "2026-06-14T12:00:00Z",
+  "samples": [
+    {
+      "metric_name": "cell.duration",
+      "metric_kind": "gauge",
+      "value": 128.4,
+      "unit": "ms",
+      "timestamp_utc": "2026-06-14T12:00:01Z",
+      "source": {
+        "kind": "runner",
+        "id": "public-contract-runner-example",
+        "telemetry_system": "none"
+      },
+      "scope": "runner",
+      "collector_id": "runner-observer",
+      "tags": {
+        "profile": "smoke"
+      },
+      "provenance": {
+        "observed_by": "runner",
+        "method": "runner clock around selected cell",
+        "confidence": "observed"
+      },
+      "warnings": []
+    }
+  ],
+  "summaries": [],
+  "collectors": [
+    {
+      "collector_id": "runner-observer",
+      "collector_version": "contract-example",
+      "collector_kind": "runner-observed",
+      "source": {
+        "kind": "runner",
+        "id": "public-contract-runner-example",
+        "telemetry_system": "none"
+      },
+      "scope": "runner",
+      "required": true,
+      "availability": "available",
+      "configuration_summary": {},
+      "overhead_risk": "low",
+      "warnings": []
+    }
+  ],
+  "artifacts": [],
+  "warnings": ["Smoke profile measurements may be incomplete and must not be used as benchmark evidence."],
+  "errors": [],
+  "redaction": {
+    "state": "producer-declared-safe",
+    "reviewed_at_utc": "2026-06-14T12:00:02Z",
+    "reviewed_by": "fixture-author"
+  },
+  "schema_references": [
+    {
+      "name": "telemetry-bundle",
+      "uri": "schemas/measurement/v1/telemetry-bundle.schema.json",
+      "version": "v1"
+    }
+  ]
+}

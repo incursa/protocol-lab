@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/measurement/v1/measurement-profile.schema.json",
+  "title": "ProtocolLab Measurement Profile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile_id"],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "enum": ["smoke", "diagnostic", "regression", "benchmark", "soak"]
+    },
+    "description": { "type": "string" },
+    "claim_level": {
+      "type": "string",
+      "enum": ["functional", "diagnostic", "trend", "benchmark", "stability"]
+    },
+    "measurement_expectations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "comparability_floor": {
+      "type": "string",
+      "enum": ["none", "same-run", "same-profile", "same-environment", "lab-controlled", "public-reference"]
+    },
+    "heavy_instrumentation_disclosed": { "type": "boolean" },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

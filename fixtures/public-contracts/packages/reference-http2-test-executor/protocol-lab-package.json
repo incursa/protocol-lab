@@ -27,34 +27,7 @@
       "requiredCapabilities": []
     }
   ],
-  "environments": [
-    {
-      "os": "linux",
-      "arch": "x64",
-      "entrypoint": {
-        "kind": "process",
-        "path": "bin/linux-x64/protocol-lab-reference-http2-test-executor",
-        "arguments": [],
-        "workingDirectory": "."
-      }
-    },
-    {
-      "os": "windows",
-      "arch": "x64",
-      "entrypoint": {
-        "kind": "process",
-        "path": "bin/win-x64/protocol-lab-reference-http2-test-executor.exe",
-        "arguments": [],
-        "workingDirectory": "."
-      }
-    }
-  ],
   "dependencies": {
-    "requiresDotNet": false,
-    "requiresDocker": false,
-    "requiresPwsh": false,
-    "requiresBash": false,
-    "requiresGo": false,
     "requiredCapabilities": []
   }
 }

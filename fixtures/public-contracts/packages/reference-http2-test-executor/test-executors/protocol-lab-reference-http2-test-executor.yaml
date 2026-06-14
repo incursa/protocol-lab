@@ -1,13 +1,13 @@
 executorIdentity:
   id: protocol-lab-reference-http2-test-executor
-  name: ProtocolLab Reference HTTP/2 Test Executor
-  version: 0.1.0
+  name: ProtocolLab Reference HTTP/2 Test Executor Fixture
+  version: 0.1.0-fixture
   vendor: Incursa
 versionCompatibility:
   contractVersion: test-executor-v1
   compatibleContractVersions:
     - test-executor-v1
-  executorVersion: 0.1.0
+  executorVersion: 0.1.0-fixture
 claimedCapabilities:
   - id: http2.core.plaintext
     status: supported
@@ -32,8 +32,7 @@ supportedScenarioSelectors:
 supportedProtocolFamilies:
   - h2
 supportedExecutionModes:
-  - single-cell
-  - process
+  - contract-declared
 requiredTargetEndpointBindings:
   - bindingId: primary
     purpose: test-endpoint
@@ -49,15 +48,11 @@ supportedArtifactTypes:
     producedByStates:
       - stopped
       - failed
-  - type: load-tool.stdout.txt
+  - type: load-generator.stdout.txt
     producedByStates:
       - stopped
       - failed
-  - type: load-tool.stderr.txt
-    producedByStates:
-      - stopped
-      - failed
-  - type: load-tool-execution.json
+  - type: load-generator.stderr.txt
     producedByStates:
       - stopped
       - failed
@@ -66,15 +61,16 @@ metricsAvailability:
   availableKinds:
     - session
     - validation
-extensions:
-  protocolLabPackage:
-    process:
-      executable: h2load
-      workingDirectory: .
-      defaultArguments: []
-      versionCommand:
-        - --version
-      availabilityCheck: path
-      parser:
-        type: h2load
-        id: h2load
+telemetry:
+  supported: true
+  supported_contract_versions:
+    - telemetry-bundle-v1
+  supported_scopes:
+    - test-executor
+    - load-generator
+  supported_artifact_kinds:
+    - log
+    - metrics
+  export_modes:
+    - artifact-bundle
+    - none

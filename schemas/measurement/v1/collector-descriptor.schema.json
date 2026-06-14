@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/measurement/v1/collector-descriptor.schema.json",
+  "title": "ProtocolLab Collector Descriptor v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["collector_id", "collector_version", "collector_kind", "source", "scope", "required", "availability", "overhead_risk", "warnings"],
+  "properties": {
+    "collector_id": { "type": "string", "minLength": 1 },
+    "collector_version": { "type": "string", "minLength": 1 },
+    "collector_kind": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["runner", "implementation", "test-executor", "load-generator", "environment", "protocol", "artifact", "other"]
+        },
+        "id": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "telemetry_system": { "type": "string", "minLength": 1 }
+      }
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["runner", "implementation", "test-executor", "load-generator", "environment", "protocol", "artifact", "other"]
+    },
+    "required": { "type": "boolean" },
+    "availability": {
+      "type": "string",
+      "enum": ["available", "partial", "unavailable", "unsupported", "unknown"]
+    },
+    "configuration_summary": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "overhead_risk": {
+      "type": "string",
+      "enum": ["none", "low", "medium", "high", "unknown"]
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

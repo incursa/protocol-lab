@@ -1,7 +1,7 @@
 # Security Policy
 
-ProtocolLab is a public repository for a local validation and benchmarking
-harness. Report suspected security issues privately.
+ProtocolLab is a public specification, schema, fixture, and contract
+repository. Report suspected security issues privately.
 
 ## Reporting
 
@@ -20,9 +20,10 @@ Please include:
 
 ## Scope
 
-The public repository does not run a hosted service. Security concerns here are
-usually about leaked paths, credentials, unsafe defaults, or scripts and docs
-that overreach the public boundary.
+The public repository does not run a hosted service and does not contain
+runtime tooling. Security concerns here are usually about leaked paths,
+credentials, unsafe defaults, unsafe publication guidance, or docs that
+overreach the public boundary.
 
 ## Response
 

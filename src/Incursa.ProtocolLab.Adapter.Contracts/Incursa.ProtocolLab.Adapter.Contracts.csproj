@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <IsPackable>true</IsPackable>
-    <PackageId>Incursa.ProtocolLab.Adapter.Contracts</PackageId>
-    <Description>Shared ProtocolLab adapter control-plane contracts and schema-facing types.</Description>
-  </PropertyGroup>
-
-</Project>

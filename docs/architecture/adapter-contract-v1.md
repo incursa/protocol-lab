@@ -8,13 +8,12 @@ service that prepares, starts, observes, and disposes a separate protocol
 endpoint.
 
 The control plane uses HTTP/1.1 with JSON request and response bodies so it can
-be implemented by C#, Go, Rust, Node, Python, or any other runtime without a
-shared SDK.
+be implemented by any runtime without a shared SDK.
 
 The contract is intentionally platform-agnostic and protocol-agnostic. It does
-not assume Docker, it does not assume the tested protocol is HTTP, and it does
-not require the control plane and the protocol endpoint to live in the same
-process.
+not assume a container runtime, it does not assume the tested protocol is HTTP,
+and it does not require the control plane and the protocol endpoint to live in
+the same process.
 
 ## Relationship To The Rest Of ProtocolLab
 
@@ -25,16 +24,16 @@ flowchart LR
     Adapter["Adapter control plane"]
     Endpoint["Protocol endpoint"]
     Validator["Validator"]
-    LoadTool["Load tool"]
+    LoadGenerator["Load generator"]
     Artifacts["Artifacts"]
 
     Runner -->|plans run cells and calls control plane| Adapter
-    Runner -->|starts adapter process, container, or host binding| Backend
+    Runner -->|binds adapter lifecycle through an implementation backend| Backend
     Backend --> Adapter
     Adapter -->|creates or controls| Endpoint
     Runner -->|validates scenario and readiness| Validator
     Validator -->|talks to test endpoint only| Endpoint
-    LoadTool -->|generates scenario traffic| Endpoint
+    LoadGenerator -->|generates scenario traffic| Endpoint
     Runner -->|reads and writes artifacts| Artifacts
     Adapter -->|may expose artifact locations or exports| Artifacts
 ```
@@ -42,19 +41,18 @@ flowchart LR
 The boundaries are deliberate:
 
 - The runner owns orchestration, lifecycle sequencing, compatibility
-  filtering, validation gating, load-tool invocation, artifact capture, and
-  reporting.
-- The execution backend owns how the adapter process, container, or host
-  binding is started and stopped.
+  filtering, validation gating, load generation coordination, artifact
+  capture, and reporting.
+- The execution backend owns how the adapter lifecycle is started and stopped.
 - The adapter owns the control plane and the session state for one scenario
   execution context.
 - The protocol endpoint owns the protocol behavior under test.
-- The validator and load tool talk to the protocol endpoint, not the adapter
+- The validator and load generator talk to the protocol endpoint, not the adapter
   control plane.
 - Artifacts are outputs, not control-plane state.
 
-The same adapter contract can be hosted by a process-local worker, a Docker
-container, an external host, or future bare-metal/LXC execution models.
+The same adapter contract can be satisfied by an implementation-owned backend,
+an externally hosted adapter endpoint, or a future isolated execution model.
 
 ## API Surface
 
@@ -279,8 +277,30 @@ At minimum it SHOULD indicate:
 - whether metrics are available at all
 - whether session-level metrics are available
 - whether endpoint-level metrics are available
-- whether process/container/external-host metrics are available
+- whether backend, endpoint, or environment metrics are available
 - whether metrics are only available in certain modes
+
+### Optional Telemetry Capability
+
+Adapters MAY advertise optional telemetry export capability in `telemetry`.
+The discovery shape is descriptive:
+
+- `telemetry.supported`
+- `telemetry.supported_contract_versions`
+- `telemetry.supported_scopes`
+- `telemetry.supported_artifact_kinds`
+- `telemetry.export_modes`: `inline`, `artifact-bundle`, `external-uri`, or
+  `none`
+
+The runner may ask for a telemetry bundle after a run. The adapter may return
+no telemetry. A telemetry export failure is diagnostic unless the run plan
+explicitly requires telemetry export. A telemetry bundle must not change
+conformance pass/fail results after the fact, but it may affect evidence
+quality, comparability, and diagnostic value.
+
+Implementation telemetry from an adapter is auxiliary evidence unless a run
+plan explicitly requires it. The adapter contract does not require any
+particular telemetry backend or raw artifact format.
 
 ## Session Lifecycle
 
@@ -504,11 +524,14 @@ endpoint type, it should return a regular JSON response with an
 The contract is designed to survive different execution backends without
 changing the HTTP API.
 
-- `process-local`: the runner starts an adapter process on the host.
-- `docker`: the runner starts an adapter container.
-- `external-host`: the runner connects to a pre-existing adapter endpoint.
-- `bare-metal` and `LXC`: future execution backends may follow the same
-  contract without changing the protocol.
+- `implementation-managed`: the implementation owns how the adapter endpoint
+  is made available.
+- `external-host`: the runner connects to an already available adapter
+  endpoint.
+- `isolated-backend`: an implementation-owned backend provides isolation
+  without changing the public adapter contract.
+- future execution backends may follow the same contract without
+  changing the protocol.
 
 The backend choice is an orchestration concern. It does not change the adapter
 routes, the request bodies, or the response schema.

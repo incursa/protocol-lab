@@ -58,8 +58,8 @@ benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
     - smoke
-    - local-regression
-    - local-comparison
+    - regression
+    - comparison
   primaryMetrics:
     - requestsPerSecond
     - latencyP50
@@ -71,8 +71,8 @@ artifacts:
   required:
     - validation.json
     - result.json
-    - load-tool.stdout.txt
-    - load-tool.stderr.txt
+    - load-generator.stdout.txt
+    - load-generator.stderr.txt
   optional:
     - request-sample.json
     - counters
@@ -81,8 +81,8 @@ requiredMetrics:
   - requestsPerSecond
   - latencyMeanMs
 artifactRequirements:
-  - load-tool.stdout.txt
-  - load-tool.stderr.txt
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
 tags:
   - phase1
   - http

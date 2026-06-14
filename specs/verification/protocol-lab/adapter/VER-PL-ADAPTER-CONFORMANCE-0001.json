@@ -2,42 +2,33 @@
   "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
   "artifact_id": "VER-PL-ADAPTER-CONFORMANCE-0001",
   "artifact_type": "verification",
-  "title": "ProtocolLab Adapter Conformance Suite Verification",
+  "title": "Adapter Contract v1 schema verification",
   "domain": "protocol-lab",
   "status": "passed",
   "owner": "protocol-lab-maintainers",
   "related_artifacts": [
-    "SPEC-PL-RUNNER",
-    "ARC-PL-RUNNER-0001",
-    "VER-PL-RUNNER-FIXTURES-0001",
-    "WI-PL-ADAPTER-CONFORMANCE-0001"
+    "SPEC-PL-PUBLIC-CONTRACTS"
   ],
+  "scope": "Verify that Adapter Contract v1 remains represented as public schemas and documentation after executable conformance code moved out of the public repository.",
   "verifies": [
-    "REQ-PL-RUNNER-0004",
-    "REQ-PL-RUNNER-0005",
-    "REQ-PL-RUNNER-0015",
-    "REQ-PL-RUNNER-0016"
+    "REQ-PL-PUBLIC-0001",
+    "REQ-PL-PUBLIC-0002",
+    "REQ-PL-PUBLIC-0003"
   ],
-  "scope": "This verification covers the deterministic adapter conformance and schema validation proof surface only. It does not claim real protocol adapter coverage, Docker requirement changes, or runner coupling to protocol assemblies.",
-  "verification_method": "Run the adapter conformance and schema-focused tests against the fake adapter host and deterministic handler-backed probes, then run the full solution build and test suite and validate the repository with Workbench.",
+  "verification_method": "Repository inspection.",
   "preconditions": [
-    "The adapter conformance harness exists.",
-    "The fake adapter host exposes the ProtocolLab Adapter Contract v1 control plane.",
-    "The repository still keeps the runner implementation-neutral."
+    "Adapter schemas are present under schemas/adapter/v1/."
   ],
   "procedure": [
-    "Run the adapter conformance and schema-focused test filters to prove the harness against the fake host and handler-backed probes.",
-    "Run `dotnet restore Incursa.ProtocolLab.sln`.",
-    "Run `dotnet build Incursa.ProtocolLab.sln --no-restore`.",
-    "Run `dotnet test Incursa.ProtocolLab.sln --no-build`.",
-    "Run `workbench validate --profile core`."
+    "Confirm Adapter Contract v1 schema files remain present.",
+    "Confirm executable adapter conformance source is absent from the public repository.",
+    "Confirm documentation describes adapters as implementation-owned participants."
   ],
-  "expected_result": "The conformance suite passes against the fake adapter fixture, rejects malformed and unsupported responses explicitly, distinguishes infrastructure and timeout failures, and remains fully documented without introducing real protocol implementations.",
+  "expected_result": "Adapter Contract v1 remains a public contract surface without public executable conformance code.",
   "evidence": [
-    "`dotnet restore Incursa.ProtocolLab.sln` completed successfully.",
-    "`dotnet build Incursa.ProtocolLab.sln --no-restore` completed successfully with 0 warnings and 0 errors.",
-    "`dotnet test Incursa.ProtocolLab.sln --no-build` passed 167/167 tests, including the new adapter conformance and schema validation coverage.",
-    "`workbench validate --profile core` completed successfully."
+    "schemas/adapter/v1/",
+    "docs/architecture/adapter-model.md",
+    "docs/architecture/adapter-contract-v1.md"
   ],
-  "status_summary": "Verification passed for the adapter conformance suite and schema validation layer."
+  "status_summary": "passed"
 }

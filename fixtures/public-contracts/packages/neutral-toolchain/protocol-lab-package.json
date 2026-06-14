@@ -5,27 +5,10 @@
   "kind": "toolchain",
   "displayName": "Neutral Toolchain Fixture",
   "entryManifests": [],
-  "environments": [
-    {
-      "os": "linux",
-      "arch": "x64",
-      "entrypoint": {
-        "kind": "bash",
-        "path": "scripts/noop.sh",
-        "arguments": [],
-        "workingDirectory": "."
-      }
-    }
-  ],
   "dependencies": {
-    "requiresDotNet": false,
-    "requiresDocker": false,
-    "requiresPwsh": false,
-    "requiresBash": true,
-    "requiresGo": false,
     "requiredCapabilities": [
       {
-        "name": "bash",
+        "name": "contract-fixture",
         "value": "true"
       }
     ]

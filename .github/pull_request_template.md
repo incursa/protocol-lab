@@ -1,29 +1,23 @@
-## Summary
+## Scope
 
-Describe the change and the user-visible impact.
+- [ ] Contract/schema change
+- [ ] Fixture/scenario/suite/load-profile change
+- [ ] Documentation/governance change
+- [ ] SpecTrace artifact change
 
-## Verification
+## Boundary Check
 
-- [ ] `dotnet tool restore`
-- [ ] `dotnet restore Incursa.ProtocolLab.sln`
-- [ ] `dotnet build Incursa.ProtocolLab.sln --no-restore`
-- [ ] `dotnet test Incursa.ProtocolLab.sln --no-build`
-- [ ] `dotnet run --project src\Incursa.ProtocolLab.Cli -- check`
-- [ ] Markdown link check passed
-- [ ] Leak scan passed
-- [ ] `workbench validate --profile core` passed, if available
+- [ ] No executable source code, scripts, implementation build files, SDKs, generated code, or source projects added.
+- [ ] Any workflow changes are limited to public governance or repository-health validation.
+- [ ] Public docs remain language-neutral and do not present this repository as a runner or hosted lab.
+- [ ] Internal/private dependencies, paths, services, and credentials are absent.
 
-## Public Release Guardrails
+## Traceability
 
-- [ ] Public docs avoid official, verified, or industry-standard claims
-- [ ] Public/community vs internal/commercial boundary is explicit
-- [ ] Any benchmark claim states the evidence class and its limitations
+- [ ] Canonical requirements, architecture, work items, and verification records are SpecTrace JSON when applicable.
+- [ ] Related schemas and fixtures are updated when contract semantics change.
 
-## Contribution Agreement
+## Contributor Agreement
 
-- [ ] I have read [CONTRIBUTOR-AGREEMENT.md](/CONTRIBUTOR-AGREEMENT.md)
-      and, if required, signed the agreement on this pull request.
-
-## Notes
-
-Add anything a reviewer should know about tradeoffs, risks, or follow-up work.
+- [ ] I have read `CONTRIBUTOR-AGREEMENT.md`.
+- [ ] I will follow `CODE_OF_CONDUCT.md`.

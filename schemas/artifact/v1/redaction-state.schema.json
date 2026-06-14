@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/artifact/v1/redaction-state.schema.json",
+  "title": "ProtocolLab Artifact Redaction State v1",
+  "type": "string",
+  "enum": [
+    "not-reviewed",
+    "producer-declared-safe",
+    "sanitized",
+    "contains-sensitive-data",
+    "internal-only",
+    "unknown"
+  ]
+}

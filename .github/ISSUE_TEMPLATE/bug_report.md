@@ -11,7 +11,7 @@ Describe the problem briefly.
 
 ## Steps To Reproduce
 
-1. Run these commands:
+1. Reference the affected contract, schema, fixture, scenario, suite, or documentation path:
 2. Observe:
 
 ## Expected Behavior
@@ -21,14 +21,12 @@ Describe the problem briefly.
 ## Environment
 
 - OS:
-- .NET version:
-- Docker version:
 - ProtocolLab commit or branch:
 
 ## Evidence
 
-- Relevant command output:
-- Relevant artifact paths:
+- Relevant contract, schema, fixture, or documentation excerpt:
+- Relevant artifact manifest paths, if applicable:
 
 ## Boundary Check
 

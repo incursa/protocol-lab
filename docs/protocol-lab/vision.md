@@ -1,127 +1,43 @@
-# ProtocolLab - Vision
+# ProtocolLab Vision
 
-**Status:** Current (public/community canonical; internal/private extensions live in the sibling repo)
+ProtocolLab defines public contracts for protocol measurement without tying
+those contracts to one language, runner, hosted lab, or implementation stack.
 
 ## Purpose
 
-ProtocolLab is a scenario-driven validation, benchmarking, and diagnostic lab
-for modern transport protocols including QUIC, HTTP/3, WebTransport, MASQUE,
-and related extensions. It connects functional validation with repeatable
-performance measurement so that protocol implementors and operators can
-understand correctness, efficiency, scalability, and comparative behavior.
+The project gives implementers a shared vocabulary for:
 
-The public repository is intended for self-serve local validation and
-measurement. It does not claim official certification, industry-standard
-status, or verified benchmark authority.
+- protocol test cases and scenarios
+- suites and load profiles
+- implementation and test-executor package metadata
+- run-plan selection and provenance
+- measurement and artifact contracts
+- public report safety and claim boundaries
 
-The lab is designed to support:
+The public repository is the neutral contract source. Concrete implementations
+consume it.
 
-- **Local developer validation** - a single engineer running `validate` and
-  `run` on a workstation.
-- **Docker and container execution** - targets and load tools running in
-  isolated containers with resource controls and metrics capture.
-- **CI execution** - automated pipeline invocation producing deterministic
-  artifact bundles.
-- **Internal/private hosted execution** - controlled runs with retained
-  artifacts, provenance, and environment controls in the sibling internal
-  repository.
+## Principles
 
-## Core Principles
+- Contracts before implementations.
+- Explicit unsupported and unavailable outcomes.
+- Raw QUIC and managed HTTP/3 remain separate lanes.
+- Public reports do not claim stronger evidence than their provenance permits.
+- Internal and third-party runners are implementations, not the public source
+  of truth.
+- Canonical requirements, architecture, work items, and verification records
+  use SpecTrace JSON.
 
-1. **The runner is implementation-neutral.** Targets are described through
-   manifests, processes, containers, ports, environment variables, and
-   artifact contracts. The runner does not reference protocol implementations
-   directly.
-2. **Public contracts are authored here first.** The internal repository
-   consumes public contracts instead of re-stating or redefining them.
-3. **Validation and benchmarking are related but separate concerns.**
-   Validation proves correctness. Benchmarking measures performance.
-   Benchmark data is accepted only after validation passes.
-4. **Unsupported scenarios are explicit outcomes**, not silent skips.
-5. **Raw artifacts are preserved even when parsing fails.** Parsed metrics are
-   best-effort and clearly marked.
-6. **Execution profile, effective load shape, and claim level are separate
-   concepts.** A result must not collapse them into one field.
-7. **Public/community results must not fabricate controlled or publishable
-   provenance.** Claim gating is part of the model, not a documentation note.
+## Public Layer
 
-## Workload Families
+The public layer contains schemas, fixtures, scenarios, suites, load profiles,
+SpecTrace artifacts, and documentation. It intentionally excludes executable
+source code, runnable automation, hosted lab operations, package publication,
+and implementation-specific tooling.
 
-| Family | Status | Description |
-|--------|--------|-------------|
-| `http.application` | Contracted and locally modeled | HTTP request/response benchmarks across HTTP/1.1, HTTP/2, HTTP/3 |
-| `h3.protocol` | Modeled | HTTP/3-specific protocol behavior (QPACK, cancellation, multiplexing). Production executors arrive as packages |
-| `quic.transport` | Narrow package fixture | Raw QUIC transport behavior is enabled only for the current multiplex and duplex package-backed cells |
-| `webtransport` | Modeled | WebTransport sessions. Validators and load generators remain deferred |
-| `masque` | Modeled | MASQUE CONNECT-UDP tunnels. Validators and load generators remain deferred |
+## Implementation Layer
 
-## Execution Environments (Current and Future)
-
-**Implemented:**
-- Adapter Contract v1 and Test Executor Contract v1
-- package v2 schemas and tooling for implementation, test-executor,
-  scenario-pack, and toolchain packages
-- conformance fixtures for adapters and test executors
-- Local runner support for fixture and developer workflows
-- Docker load-tool execution for local runner workflows
-- Managed-lab HTTP/3 load generation for local runner workflows
-- Optional `dotnet-counters` runtime diagnostics
-
-**Future or internal/private:**
-- Production adapter and test-executor packages from producer repositories
-- Docker Compose or orchestrated multi-container topologies
-- CI execution profile with private retention policy choices
-- Hosted execution backend (controlled environment, attested provenance)
-- Bare-metal and LXC backends
-- Network impairment through `docker-tc` and `ns3-simulator`
-
-## Validation vs Benchmarking
-
-Validation proves that a target is acceptable for a scenario - endpoint
-behavior, protocol negotiation, status codes, headers, and body content.
-Benchmarking measures load performance after validation passes.
-
-Protocol proof (for example, exact HTTP/3 negotiation without fallback) is
-part of validation, not benchmarking. A target that validates over HTTP/3 may
-still have no compatible H3 load generator; this is an explicit unsupported or
-unavailable outcome, not a silent skip.
-
-See [Validation vs Benchmarking](../spec/validation-vs-benchmarking.md) for
-the detailed separation rules.
-
-## Reporting and Provenance
-
-Reports distinguish local/self-run results from controlled/attested runs
-through evidence classification, comparability status, execution profile, and
-claim level. Local results from a shared-host environment are useful for
-regression and profiling but are not automatically publishable benchmark
-evidence.
-
-The public repo now records requested load shape, effective load shape, and
-report claim level separately. That makes it explicit when a run is a local
-measurement versus when it is trying to support a controlled claim.
-
-## Relationship to Incursa
-
-ProtocolLab is a standalone project. It does not require Incursa protocol
-assemblies to build or run. Incursa HTTP/3 and Incursa QUIC can be
-first-class package producers, but their production adapters and executors
-belong outside the public contract repository. The runner and hosted lab must
-treat them through the same adapter, test-executor, package, scenario,
-capability, and artifact contracts as any other implementation.
-
-The public repo remains the community-facing surface. The sibling internal
-repo carries hosted or commercial extensions, private diagnostics, and
-extended operational workflows. Those are separate layers and are not implied
-by this repository or its local results.
-
-## Product Boundaries
-
-The public-canonical surface of ProtocolLab is designed to be useful on its
-own for local validation, local benchmarking, CI automation, and self-serve
-comparisons. The private/internal layer adds hosted execution, attested
-provenance, retained artifact archives, extended scenarios, private CI
-integration, dashboards, and diagnostic analysis without removing or
-degrading the public-canonical surface.
-
-See [Product Boundaries](product-boundaries.md).
+The implementation layer may include runners, adapters, test executors,
+package stores, worker orchestration, hosted controllers, dashboards,
+diagnostics, and retained artifacts. An internal or third-party runner is one
+implementation of the public contracts.

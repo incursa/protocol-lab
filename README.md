@@ -1,272 +1,194 @@
-# Incursa Protocol Lab
-
-ProtocolLab is the public/community repository for a local validation and
-benchmarking harness for modern HTTP and transport protocol implementations.
-It is the canonical community-facing surface. The sibling internal repository
-contains private operational extensions, hosted execution work, and
-unreleased diagnostics, but the public repo remains the source of truth for
-shared contracts, docs, and local validation behavior.
-
-## What It Is
-
-- scenario-driven validation and benchmarking for HTTP and transport
-  protocols
-- an implementation-neutral runner and CLI
-- contract schemas, neutral manifests, scenarios, package tooling, and
-  fake/reference fixtures
-- local artifact capture with validation output, summaries, and aggregate JSON
-- support for process, Docker, and external-reference targets
-- public shared contracts that are also published as NuGet packages for
-  downstream/internal consumers
-
-## What It Is Not
-
-- official certification or compliance authority
-- industry-standard benchmark arbiter
-- verified benchmark authority
-- production-grade hosted execution
-- a private or commercial backend hidden behind the public repo
-- a replacement for the internal operational repo
-
-## Current Public Surface
-
-ProtocolLab is being kept contract-first. Current public support includes:
-
-- Adapter Contract v1 under `/protocol-lab/adapter/v1`.
-- Test Executor Contract v1 under `/protocol-lab/test-executor/v1`.
-- package v2 schemas and tooling for `implementation`, `test-executor`,
-  `scenario-pack`, and `toolchain` packages.
-- neutral scenario, suite, metric, artifact, endpoint, capability, and
-  provenance model definitions.
-- fake/reference fixtures and conformance harnesses for contract validation.
-- managed-lab and reference test-executor paths used by local fixture proof.
-- optional `dotnet-counters` diagnostics and Docker container metrics
-- qlog capture for Docker h2load when the image proves `--qlog-file-base`
-
-Local results are shared-host smoke or regression evidence. They are not
-publishable benchmark evidence unless the execution profile, metadata, and
-claim-level gates are satisfied.
-
-## Build and Validate
-
-For a clean checkout:
-
-```powershell
-dotnet tool restore
-dotnet restore Incursa.ProtocolLab.sln
-dotnet build Incursa.ProtocolLab.sln --no-restore
-dotnet test Incursa.ProtocolLab.sln --no-build
-```
-
-If you are using the Codex/Workbench environment, run the repository-shape
-validation as well:
-
-```powershell
-workbench validate --profile core
-```
-
-For a one-command bootstrap that also builds the repo-owned h2load image:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\bootstrap\Initialize-ProtocolLab.ps1 -BuildH2LoadImage
-```
-
-## NuGet Packages
-
-Shared ProtocolLab surfaces are published as NuGet packages for downstream
-consumers:
-
-- `Incursa.ProtocolLab.Model`
-- `Incursa.ProtocolLab.Adapter.Contracts`
-- `Incursa.ProtocolLab.Adapter.Conformance`
-
-Production implementation adapters and test executors are package producers
-outside this public contract repository.
-
-## Run Validation
-
-Validate package v2 metadata before handing a component package to any lab:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance package --package <package-root-or-plabpkg>
-```
-
-Validate a live Adapter v1 control plane:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance adapter --base-url <adapter-control-plane-url> --scenario-id <supported-scenario-id> --scenario-version 1.0 --protocol <protocol-id>
-```
-
-Validate a live Test Executor v1 control plane:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- conformance test-executor --base-url <test-executor-control-plane-url> --test-id <supported-test-id> --scenario-id <supported-scenario-id> --scenario-version 1.0 --protocol <protocol-id>
-```
-
-These conformance commands use only public schemas, public contract models, and
-local HTTP calls. They do not require `protocol-lab-internal`.
-
-Validate a submitted implementation target and scenario with the CLI:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- validate --implementations <implementation-id> --scenarios <scenario-id> --protocol <protocol-id>
-```
-
-`validate` proves the target and scenario before any benchmark data is
-accepted.
-
-## Run a Basic Benchmark
-
-A local benchmark names the implementation, scenario, protocol, and selected
-test executor:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- run --implementations <implementation-id> --scenarios <scenario-id> --protocol <protocol-id> --test-executor <test-executor-id> --concurrency 16 --duration 10 --warmup 2 --repetitions 1
-```
-
-For package-backed controller submissions, build or obtain the component
-packages first and submit explicit package references:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\lab\Submit-ProtocolLabPackageRun.ps1 `
-  -ControllerUri <controller-uri> `
-  -PackagePath <implementation-package.plabpkg> `
-  -PackageReference <test-executor-package-id:version:sha256> `
-  -PackageReference <scenario-package-id:version:sha256> `
-  -ImplementationId <implementation-id> `
-  -TestExecutorId <test-executor-id> `
-  -SuiteId <suite-id> `
-  -Protocol <protocol-id>
-```
-
-The public repository defines the contracts and neutral catalogs. Production
-implementation and test-executor packages live outside the public contract
-repository.
-
-## Local Workflow
-
-Use [docs/benchmarking/local-benchmark-workflow.md](docs/benchmarking/local-benchmark-workflow.md)
-for the exact commands to run build, test, check, selected benchmark suites,
-and publication.
-
-## Publish Completed Runs
-
-Benchmark `run` prepares a public-safe bundle automatically after it writes the
-completed run. The bundle reads `aggregate-results.json` and
-`evidence-report-v1.json`, sanitizes the report, and writes a staged
-publication bundle. It does not upload to R2 by default.
-
-To generate a local run and the corresponding public report bundle in one
-command:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\New-ProtocolLabPublicReportBundle.ps1
-```
-
-Use `publish-report` when you need to restage an existing completed run or
-validate the publication plan without running the benchmark again:
-
-```powershell
-dotnet run --project src\Incursa.ProtocolLab.Cli -- publish-report --run .artifacts\runs\{runId} --output .artifacts\publication\{runId} --visibility public --dry-run
-```
-
-Use `--allow-diagnostic-publication` when the bundle is intentionally
-diagnostic-only and should remain labeled that way in the output.
-
-To complete the Cloudflare handoff, run
-`scripts\publication\Publish-ProtocolLabReport.ps1`. It stages the bundle if
-needed, uploads the public files to `public/runs/{runId}/` in the
-`protocol-lab-reports` bucket through the R2 S3 API, and can verify the
-uploaded run-prefix objects. The downstream site owns processing, indexing,
-and latest selection after the R2 objects exist.
-
-To batch upload one or more completed local runs, use the wrapper script:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\publication\Publish-ProtocolLabRuns.ps1 `
-  -RunsRoot .artifacts\runs `
-  -PrefixFilter local-workflow `
-  -VerifyUploadedObjects
-```
-
-This scans completed run directories, uploads each one through the R2 handoff,
-and writes `.artifacts\runs\publication-summary.md`.
-
-The workflow consumes these GitHub secrets:
-
-- `CLOUDFLARE_ACCOUNT_ID`
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-
-The R2 endpoint is derived from `CLOUDFLARE_ACCOUNT_ID` unless a different
-non-secret endpoint is provided for a jurisdictional bucket.
-
-For local uploads, the uploader first uses existing process environment
-variables:
-
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_SESSION_TOKEN` when using temporary credentials
-- `CLOUDFLARE_ACCOUNT_ID` or `R2_ENDPOINT`
-- `AWS_DEFAULT_REGION=auto`
-
-If those are not set, it can load a credentials file named by
-`PROTOCOL_LAB_R2_CREDENTIALS_PATH`, a file passed with `-R2CredentialsPath`, or
-PowerShell SecretManagement secrets named `ProtocolLab-R2-AccessKeyId`,
-`ProtocolLab-R2-SecretAccessKey`, and `ProtocolLab-CloudflareAccountId`.
-
-See [docs/reports/publication-handoff.md](docs/reports/publication-handoff.md)
-for the exact layout and validation gates.
-
-## Evidence And Measurement Limits
-
-- Validation must pass before benchmark results are accepted.
-- `managed-httpclient-h3-load` is a local-lab load generator, not an
-  external-reference benchmark tool.
-- Docker target execution and local loopback certificates do not make a run
-  isolated-host or publishable.
-- The runner records requested load shape, effective load shape, execution
-  profile, and report claim level separately. Those fields are not the same
-  thing and should be read independently.
-- Raw stdout, stderr, and artifact directories are preserved even when parsing
-  fails.
-- Comparability warnings are part of the result and should be read before
-  drawing conclusions.
-- `Benchmark` claims are gated. `Verified` remains reserved for future
-  controlled/private attestation. Public/community runs should not fabricate
-  controlled provenance or publishable status.
-- Public report publication bundles are derivatives of completed runs, not
-  canonical source material. They must not leak private paths, secrets, or
-  internal-only artifacts.
-
-See [docs/spec/validation-vs-benchmarking.md](docs/spec/validation-vs-benchmarking.md)
-for the detailed separation rules.
-
-## Public And Internal Boundary
-
-This repository is the public/community surface. The sibling internal
-repository carries private operational workflows, hosted execution planning,
-and unreleased extensions. Public docs and contracts are authored here first;
-the internal repo consumes them instead of silently diverging.
-
-See [docs/protocol-lab/product-boundaries.md](docs/protocol-lab/product-boundaries.md)
-for the conceptual split.
-
-## Contributing
-
-Pull requests to this repository require the `Contributor Agreement` status
-check. Read [CONTRIBUTOR-AGREEMENT.md](CONTRIBUTOR-AGREEMENT.md) and
-[CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+# Incursa ProtocolLab
+
+ProtocolLab is the public, language-neutral specification and contract
+repository for protocol measurement work. It defines the schemas, fixtures,
+scenario definitions, suite definitions, artifact contracts, report contracts,
+and governance rules that implementations, adapters, test executors, hosted
+labs, telemetry bundles, and public reports must satisfy.
+
+This repository is not a runner, command-line tool, SDK, build system, hosted
+lab, package publisher, or implementation repository. Concrete runners and
+hosted labs are implementations of these public contracts.
+
+## Start Here
+
+1. Read this README for the repository boundary and public contract map.
+2. Read [Repository Layout](docs/repository-layout.md) and
+   [Terminology And Policies](docs/terminology-and-policies.md) for the
+   shared vocabulary and contract policies.
+3. Read [Product Boundaries](docs/protocol-lab/product-boundaries.md) to
+   understand the public repository versus implementation-owned systems.
+4. Use [Schemas](schemas/README.md), [Fixtures](fixtures/public-contracts/README.md),
+   and [Specs](specs/README.md) as the canonical contract indexes.
+5. Use the [Contract Coverage Matrix](docs/audits/contract-coverage-matrix.md)
+   and [Public Consumption Readiness Review](docs/audits/public-consumption-readiness-review.md)
+   to see what is stable today and what remains open.
+
+## Repository Scope
+
+The public repository owns:
+
+- canonical SpecTrace JSON requirements, architecture, work-item, and
+  verification artifacts
+- JSON Schema contracts for public JSON documents
+- OpenAPI/YAML contracts where an HTTP control plane is specified
+- declarative fixtures for valid, invalid, and incompatible contract examples
+- scenario, suite, and load-profile definitions
+- documentation for lifecycle, semantics, public/internal boundaries, and
+  participation rules
+- repository governance files
+
+The public repository does not own executable source code, runnable automation,
+private lab operations, local benchmark execution, package materialization,
+cloud uploads, implementation packages, or test-executor binaries.
+
+## Contract Surfaces
+
+ProtocolLab contracts are implementation-neutral. A conforming participant can
+be written in any language and can run in any environment as long as it
+satisfies the published documents and preserves explicit unsupported or
+unavailable states.
+
+Primary contract surfaces include:
+
+- Adapter Contract v1 under `schemas/adapter/v1/`
+- Test Executor Contract v1 under `schemas/test-executor/v1/`
+- Package v2 schemas under `schemas/package/v2/`
+- Run Plan v1 under `schemas/run-plan/v1/`
+- Measurement and telemetry contracts under `schemas/measurement/v1/`
+- Artifact and redaction contracts under `schemas/artifact/v1/`
+- Scenario, suite, load-profile, and public report schemas
+- Repository terminology and policy notes under `docs/terminology-and-policies.md`
+- SpecTrace artifacts under `specs/`
+
+No generated code, SDK package, local executable, or hosted service is the
+source of truth for these contracts.
+
+## Schemas
+
+JSON Schema is the default contract format for JSON documents in this
+repository. OpenAPI is allowed when the contract is an HTTP control-plane
+surface. Schema paths are stable public references and should be used by
+runners, adapters, test executors, report consumers, archive importers, and
+package validators.
+
+## Fixtures
+
+Fixtures under `fixtures/public-contracts/` provide declarative examples for
+contract readers and validators:
+
+- valid examples show accepted public shapes
+- invalid examples show schema failures
+- incompatible examples show selector or compatibility failures that are
+  structurally valid but not admissible
+
+Fixtures are not runnable implementations. They must not contain scripts,
+binaries, generated code, or executable source.
+
+## Scenario And Suite Definitions
+
+Scenarios describe durable protocol test cases. Suites group scenarios for a
+specific intent such as conformance or benchmark measurement. Load profiles
+describe intensity and measurement shape. These documents are declarative
+inputs, not instructions to start a local process, build a container, invoke a
+tool, or publish a result.
+
+## Measurement And Artifact Contracts
+
+ProtocolLab separates behavior validity, measurement claims, artifact
+provenance, and public-report safety. Report contracts define what a result can
+claim and what evidence must be present. Public reports must not infer stronger
+claims from throughput, duration, implementation names, or private lab state.
+
+Measurement profiles define the claim level that evidence can support:
+`smoke`, `diagnostic`, `regression`, `benchmark`, and `soak`. Normalized
+telemetry bundles describe reportable samples, summaries, provenance,
+warnings, and optional artifact references. Raw artifacts are preserved by
+safe, hash-addressable manifests. Implementation-side telemetry is auxiliary
+unless a run plan explicitly requires it, and no telemetry backend is canonical
+for ProtocolLab.
+
+## Implementation/Test Executor Participation Model
+
+Runners, hosted labs, adapters, implementations, and test executors participate
+by consuming the public contracts and producing contract-compliant artifacts.
+They may live in internal, third-party, or product-specific repositories. They
+must not require private ProtocolLab state to understand the public schemas and
+fixtures.
+
+Internal and third-party runners are possible implementations of these
+contracts. They may consume this repository. This repository must not depend on
+implementation-owned runners, services, private configuration, or private build
+outputs.
+
+Internal or third-party labs may run benchmarks, retain private artifacts,
+collect diagnostics, operate dashboards, integrate providers, and publish
+reports. Those activities are implementations of the public contracts, not
+features implemented by this repository.
+
+## Public/Internal Boundary
+
+The dependency direction is one-way:
+
+- internal and external implementations may consume public contracts
+- the public repository must not depend on implementation code, hosted lab
+  services, private configuration, or private artifacts
+
+See `docs/protocol-lab/product-boundaries.md` for the detailed boundary model.
+
+## Stability And Open Work
+
+The public contract surfaces indexed by
+`docs/audits/contract-coverage-matrix.md` are stable enough for
+implementation repositories, hosted labs, validators, report consumers, and
+package producers to consume as the current public source of truth.
+
+Current open questions are contract refinement choices, not permission to
+replace public contracts with implementation behavior. They include whether to
+add OpenAPI documents for adapter and test-executor control-plane routes,
+whether package component entry manifests need dedicated schemas, and whether
+a future public-report version should rename historical fields with migration
+guidance.
 
 ## Documentation
 
-- [Contributing](CONTRIBUTING.md) - contribution workflow, checks, and gates
-- [Contributor Agreement](CONTRIBUTOR-AGREEMENT.md) - the required public
-  agreement text and signing phrase
-- [docs/README.md](docs/README.md)
-- [docs/quickstart.md](docs/quickstart.md)
-- [docs/protocol-lab/first-public-release-checklist.md](docs/protocol-lab/first-public-release-checklist.md)
+- `docs/README.md` indexes supporting documentation.
+- `docs/repository-layout.md` summarizes the top-level folder purposes.
+- `docs/terminology-and-policies.md` defines shared terminology, versioning,
+  compatibility, fixture, schema, and SpecTrace usage policies.
+- `docs/lab/package-v2.md` describes the package contract.
+- `docs/lab/run-plan-v1.md` describes immutable run-plan documents.
+- `docs/protocol-lab/product-boundaries.md` defines the public/internal split.
+- `docs/architecture/measurement-model.md` summarizes the measurement,
+  telemetry, artifact, redaction, and comparability model.
+- `specs/requirements/protocol-lab/measurement-requirements.md` and
+  `specs/requirements/protocol-lab/artifact-requirements.md` summarize the
+  public measurement and artifact rules.
+- `specs/traceability/README.md` explains how SpecTrace links requirements to
+  schemas and fixtures.
+- `schemas/README.md` and `specs/README.md` index the public schema and
+  SpecTrace surfaces.
+- `docs/audits/contract-coverage-matrix.md` and
+  `docs/audits/contract-completeness-validation.md` summarize current
+  contract coverage and remaining questions.
+- `docs/audits/public-consumption-readiness-review.md` records the final
+  public reader and contract-readiness recommendation.
+- `AGENTS.md` gives Codex and other agent contributors safe operating
+  instructions for this spec-only repository.
+- `CODE_OF_CONDUCT.md`, `SUPPORT.md`,
+  `docs/contributor-agreement-automation.md`, and `.github/` describe public
+  governance and repository-health automation.
+
+## Contributing
+
+Contributions should change contracts, schemas, fixtures, scenarios, suites,
+documentation, or governance files. Implementation code and runnable
+automation belong in implementation repositories.
+
+Read `CONTRIBUTING.md`, `CONTRIBUTOR-AGREEMENT.md`,
+`CODE_OF_CONDUCT.md`, `SUPPORT.md`, and `SECURITY.md` before opening a pull
+request.
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+Apache-2.0. See `LICENSE`.

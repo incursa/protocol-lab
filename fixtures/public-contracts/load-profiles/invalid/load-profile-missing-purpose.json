@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v1",
+  "id": "smoke",
+  "title": "Missing purpose",
+  "status": "stable",
+  "durationSeconds": 5
+}

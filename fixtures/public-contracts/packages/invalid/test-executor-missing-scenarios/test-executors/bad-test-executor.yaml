@@ -1,22 +1,23 @@
 executorIdentity:
   id: bad-test-executor
-  name: Bad Test Executor
+  name: Invalid Test Executor Fixture
   version: 0.0.0
-  vendor: Incursa
 versionCompatibility:
   contractVersion: test-executor-v1
   compatibleContractVersions:
     - test-executor-v1
-  executorVersion: 0.0.0
 claimedCapabilities: []
 supportedTestSelectors: []
 supportedScenarioSelectors: []
 supportedProtocolFamilies:
-  - h1
+  - h3
 supportedExecutionModes:
-  - single-cell
+  - contract-declared
 requiredTargetEndpointBindings: []
 supportedArtifactTypes: []
 metricsAvailability:
   available: false
-  availableKinds: []
+telemetry:
+  supported: false
+  export_modes:
+    - none

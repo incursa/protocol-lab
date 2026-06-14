@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://protocol-lab.incursa.com/schemas/load-profile.schema.json",
+  "$id": "https://schemas.incursa.com/protocol-lab/load-profile/load-profile.schema.json",
   "title": "ProtocolLab Load Profile v1",
   "description": "Schema for ProtocolLab load profile definition files.",
   "type": "object",
@@ -19,7 +19,7 @@
     },
     "id": {
       "type": "string",
-      "description": "Stable load profile ID (e.g., smoke, local-comparison)",
+      "description": "Stable load profile ID (e.g., smoke, comparison)",
       "pattern": "^[a-z0-9][a-z0-9-]*$"
     },
     "title": {
@@ -120,7 +120,7 @@
       "properties": {
         "minimumTier": {
           "type": "string",
-          "enum": ["smoke", "local-regression", "local-comparison", "publishable"]
+          "enum": ["smoke", "regression", "comparison", "publishable"]
         },
         "publishable": {
           "type": "boolean"

@@ -1,7 +1,0 @@
-**/bin/
-**/obj/
-.artifacts/
-.git/
-TestResults/
-*.user
-*.suo

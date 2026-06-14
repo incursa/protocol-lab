@@ -1,0 +1,63 @@
+{
+  "contract_version": "telemetry-bundle-v1",
+  "bundle_id": "telemetry-invalid-benchmark-high-overhead",
+  "producer": {
+    "kind": "runner",
+    "id": "public-contract-runner-example",
+    "telemetry_system": "none"
+  },
+  "run_binding": {
+    "run_id": "run-invalid-benchmark-001",
+    "cell_id": "cell-invalid-benchmark-001",
+    "scenario_id": "http.core.plaintext",
+    "scenario_version": "1.0.0",
+    "suite_id": "benchmark-smoke",
+    "protocol": "http/1.1",
+    "implementation_id": "example-implementation",
+    "test_executor_id": "example-test-executor",
+    "load_profile_id": "benchmark-smoke",
+    "execution_profile": "benchmark",
+    "requested_load_shape": {
+      "duration_seconds": 30
+    },
+    "effective_load_shape": {
+      "duration_seconds": 30
+    }
+  },
+  "measurement_profile": {
+    "profile_id": "benchmark",
+    "claim_level": "benchmark",
+    "measurement_expectations": ["benchmark claim"],
+    "comparability_floor": "same-environment",
+    "heavy_instrumentation_disclosed": false
+  },
+  "created_at_utc": "2026-06-14T15:25:00Z",
+  "samples": [],
+  "summaries": [],
+  "collectors": [
+    {
+      "collector_id": "diagnostic-heavy-collector",
+      "collector_version": "1.0",
+      "collector_kind": "diagnostic",
+      "source": {
+        "kind": "collector",
+        "id": "diagnostic-heavy-collector",
+        "telemetry_system": "binary-trace"
+      },
+      "scope": "implementation",
+      "required": false,
+      "availability": "available",
+      "configuration_summary": {
+        "diagnostic_detail": "high"
+      },
+      "overhead_risk": "high",
+      "warnings": []
+    }
+  ],
+  "artifacts": [],
+  "warnings": [],
+  "errors": [],
+  "redaction": {
+    "state": "producer-declared-safe"
+  }
+}

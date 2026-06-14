@@ -18,7 +18,7 @@ supportedScenarioSelectors:
 supportedProtocolFamilies:
   - h3
 supportedExecutionModes:
-  - process
+  - contract-declared
 requiredTargetEndpointBindings:
   - bindingId: primary
     purpose: test-endpoint
@@ -33,17 +33,7 @@ metricsAvailability:
   available: true
   availableKinds:
     - session
-extensions:
-  protocolLabPackage:
-    process:
-      executable: oha
-      workingDirectory: .
-      defaultArguments:
-        - --output-format
-        - json
-      versionCommand:
-        - --version
-      availabilityCheck: path
-      parser:
-        type: oha-json
-        id: oha-json
+telemetry:
+  supported: false
+  export_modes:
+    - none

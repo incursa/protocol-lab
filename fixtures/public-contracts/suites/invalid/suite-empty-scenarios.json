@@ -1,0 +1,9 @@
+{
+  "id": "http1-core-smoke",
+  "name": "Invalid empty suite",
+  "purpose": "conformance",
+  "resultKind": "conformance",
+  "loadProfileId": "smoke",
+  "scenarios": [],
+  "protocol": "h1"
+}

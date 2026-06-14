@@ -2,46 +2,38 @@
   "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
   "artifact_id": "VER-PL-REPORT-0001",
   "artifact_type": "verification",
-  "title": "ProtocolLab Public Report Contract Verification",
+  "title": "ProtocolLab public report contract verification",
   "domain": "protocol-lab",
   "status": "passed",
   "owner": "protocol-lab-maintainers",
   "related_artifacts": [
     "SPEC-PL-REPORT",
-    "ARC-PL-REPORT-0001"
+    "ARC-PL-REPORT"
   ],
+  "scope": "Verify the public report contract is represented by storage-neutral schemas and documentation.",
   "verifies": [
     "REQ-PL-REPORT-0001",
     "REQ-PL-REPORT-0002",
     "REQ-PL-REPORT-0003",
     "REQ-PL-REPORT-0004",
-    "REQ-PL-REPORT-0005",
-    "REQ-PL-REPORT-0006",
-    "REQ-PL-REPORT-0007"
+    "REQ-PL-REPORT-0005"
   ],
-  "scope": "This verification covers generated public publication bundle schema conformance, the canonical-public-payload boundary, and the R2-only upload planning path. It does not prove live Cloudflare R2 state unless the optional credentialed upload smoke is run.",
-  "verification_method": "Run focused runner and publication tests that generate representative public bundles, validate JSON files against `schemas/public-report/v1`, and assert that the canonical evidence report carries schema version, per-cell measurements, and sanitized artifact paths.",
+  "verification_method": "Schema and documentation inspection.",
   "preconditions": [
-    ".NET SDK required by `Directory.Build.props` is available.",
-    "Repository public report schema files exist under `schemas/public-report/v1`.",
-    "The focused runner and publication tests can create completed runs under temporary artifact roots."
+    "Public report schemas remain under schemas/public-report/v1/.",
+    "Public report documentation is storage-neutral."
   ],
   "procedure": [
-    "Run `dotnet test Incursa.ProtocolLab.sln --filter \"FullyQualifiedName~RunnerContractTests|FullyQualifiedName~RunnerContractFixtureLabTests|FullyQualifiedName~AcceptanceScriptTests|FullyQualifiedName~ReportPublicationTests\"`.",
-    "Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\publication\\New-ProtocolLabPublicReportBundle.ps1` to create a local run and staged bundle.",
-    "Run `dotnet run --project src\\Incursa.ProtocolLab.Cli -- publish-report --run .artifacts\\runs\\{runId} --output .artifacts\\publication\\{runId} --visibility public --dry-run` for an available completed run.",
-    "Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\publication\\Upload-ProtocolLabReportBundle.ps1 -BundleRoot .artifacts\\publication\\{runId} -DryRun` for an available staged bundle.",
-    "Run `workbench validate --profile core`."
+    "Confirm public report schemas exist.",
+    "Confirm report documentation preserves public-safety and claim-boundary language.",
+    "Confirm report SpecTrace artifacts do not define implementation-owned upload or runner workflows."
   ],
-  "expected_result": "Generated public bundle JSON validates against the repository-owned public report schemas, the canonical evidence report includes per-cell measurements and diagnostics, supporting metadata remains derived, and SpecTrace validation passes.",
+  "expected_result": "Public report contracts remain schema-backed, storage-neutral, and aligned with public safety requirements.",
   "evidence": [
-    "ReportPublicationTests include schema validation for `evidence-report-v1.json`, `artifacts-index.json`, `publication-manifest.json`, `report-index-entry.json`, and `report-index.json`.",
-    "RunnerContractTests assert that benchmark `run` emits `evidence-report-v1.json` and a `public-report-bundle` artifact reference.",
-    "RunnerContractFixtureLabTests assert that fixture benchmark runs stage `evidence-report-v1.json` and `artifacts-index.json` under the publication output.",
-    "AcceptanceScriptTests confirm the local public report script passes `--publication-output`, preserves dry-run restaging via `--skip-publication-bundle`, preserves diagnostic publication labeling, and does not upload to R2.",
-    "ReportPublicationTests run the R2 uploader in dry-run mode against a generated bundle and assert only `public/runs/{runId}/...` object keys are planned.",
-    "ReportPublicationTests assert `protocol-lab.evidence-report.v1`, per-cell measurements, and bundle-relative artifact paths in generated `evidence-report-v1.json`.",
-    "Publication handoff documentation identifies the downstream site as the owner of processing and indexing after R2 has the run-prefix objects."
+    "schemas/public-report/v1/",
+    "docs/reports/publication-bundle.md",
+    "docs/reports/publication-handoff.md",
+    "docs/reports/public-report-safety.md"
   ],
-  "status_summary": "Public report contract verification is represented by focused tests and repository validation. Live R2 confirmation remains a CI or operator handoff concern."
+  "status_summary": "passed"
 }

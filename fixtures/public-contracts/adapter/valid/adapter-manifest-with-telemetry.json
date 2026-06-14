@@ -1,0 +1,53 @@
+{
+  "adapterIdentity": {
+    "id": "example-adapter",
+    "name": "Example Adapter",
+    "version": "1.0.0"
+  },
+  "implementationIdentity": {
+    "id": "example-implementation",
+    "name": "Example Implementation",
+    "version": "1.0.0"
+  },
+  "versionCompatibility": {
+    "contractVersion": "adapter-v1",
+    "compatibleContractVersions": ["adapter-v1"]
+  },
+  "supportedRoles": ["server"],
+  "claimedCapabilities": [
+    {
+      "id": "http.request-response",
+      "status": "supported"
+    }
+  ],
+  "supportedScenarioSelectors": [
+    {
+      "selectorType": "scenario-id",
+      "expression": "http.core.plaintext"
+    }
+  ],
+  "supportedEndpointTypes": [
+    {
+      "type": "http",
+      "protocols": ["h1"]
+    }
+  ],
+  "supportedArtifactTypes": [
+    {
+      "type": "log"
+    }
+  ],
+  "metricsAvailability": {
+    "available": true,
+    "sessionMetricsAvailable": true,
+    "endpointMetricsAvailable": true,
+    "availableKinds": ["summary"]
+  },
+  "telemetry": {
+    "supported": true,
+    "supported_contract_versions": ["telemetry-bundle-v1"],
+    "supported_scopes": ["implementation"],
+    "supported_artifact_kinds": ["metrics", "log"],
+    "export_modes": ["inline", "artifact-bundle"]
+  }
+}

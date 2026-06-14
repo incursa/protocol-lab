@@ -1,0 +1,56 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-CORE-CONTRACTS",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab Core Contract Coverage Model",
+  "domain": "protocol-lab",
+  "status": "approved",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-CORE-CONTRACTS",
+    "SPEC-PL-PUBLIC-CONTRACTS",
+    "VER-PL-CONTRACT-COVERAGE-0001"
+  ],
+  "purpose": "Describe how the public repository organizes core contract surfaces across SpecTrace requirements, schemas, fixtures, documentation, and traceability links.",
+  "satisfies": [
+    "PLAB-ADAPTER-001",
+    "PLAB-EXECUTOR-001",
+    "PLAB-SCENARIO-001",
+    "PLAB-SUITE-001",
+    "PLAB-LOADPROFILE-001",
+    "PLAB-RUNPLAN-001",
+    "PLAB-SCHEMA-001",
+    "PLAB-FIXTURE-001",
+    "PLAB-VERSIONING-001"
+  ],
+  "design_summary": "The public repository separates contract selection, capability discovery, declarative scenario and suite data, load intent, run-plan binding, evidence contracts, and fixture examples. JSON Schemas define machine-readable shapes. SpecTrace JSON artifacts define normative requirements and verification. Markdown supports discovery and explanation only.",
+  "key_components": [
+    "adapter contract schemas and fixtures",
+    "test-executor contract schemas and fixtures",
+    "scenario schema and fixtures",
+    "suite schema and fixtures",
+    "load-profile schema and fixtures",
+    "run-plan schema and fixtures",
+    "schema and fixture policy documentation",
+    "contract coverage matrix",
+    "traceability index"
+  ],
+  "data_and_state_considerations": "All core contract artifacts are static repository documents. Runtime state, worker placement, package materialization, launch mechanics, telemetry collection, and hosted lab behavior remain implementation-owned.",
+  "edge_cases_and_constraints": [
+    "A structurally valid run plan can still be incompatible when selected packages cannot satisfy requested scenarios or capabilities.",
+    "A valid suite selects scenarios but does not make performance claims by itself.",
+    "A valid load profile constrains load intent and evidence tier, but it does not define how traffic is generated.",
+    "Adapter and test-executor telemetry discovery is optional and cannot change conformance pass/fail status by itself.",
+    "Invalid fixtures should each demonstrate one clear contract failure."
+  ],
+  "alternatives_considered": [
+    "Shipping executable validators was rejected because public validation automation would reintroduce runner behavior.",
+    "Treating Markdown pages as canonical requirements was rejected because SpecTrace JSON is the repository-native requirements standard.",
+    "Defining generated SDKs as the contract source of truth was rejected because the contracts must remain language-neutral."
+  ],
+  "risks": [
+    "YAML examples need schema paths and fixtures to stay discoverable because this repository does not execute validation scripts.",
+    "Convenience traceability indexes can drift unless canonical SpecTrace artifacts remain the authority.",
+    "Optional telemetry examples can be mistaken for required backends unless non-dependency language remains explicit."
+  ]
+}

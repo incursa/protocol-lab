@@ -1,92 +1,107 @@
 # ProtocolLab Documentation
 
-ProtocolLab is a scenario-driven validation, benchmarking, and diagnostic lab
-for modern transport protocols. This documentation set covers the
-public/community surface of the project. Hosted, attested, or commercial
-extensions live in the sibling internal repository and must not be duplicated
-here as if they were public contracts.
-
-## Getting Started
-
-- [Quickstart](quickstart.md) - bootstrap, build, contract validation, and package proof
-- [Repository Layout](repository-layout.md) - physical directory conventions
+This documentation supports the public ProtocolLab contract repository. The
+canonical normative artifacts are SpecTrace JSON under `specs/`, JSON Schemas
+under `schemas/`, OpenAPI/YAML control-plane contracts where present, and
+declarative fixtures under `fixtures/public-contracts/`.
 
 ## Project Direction
 
-- [Vision](protocol-lab/vision.md) - project purpose, public/community boundary, and operating principles
-- [Roadmap](protocol-lab/roadmap.md) - phased development plan and current implementation status
-- [Product Boundaries](protocol-lab/product-boundaries.md) - public/community versus internal boundary
-- [First Public Release Checklist](protocol-lab/first-public-release-checklist.md) - public release gate and verification checklist
-- [Public Contract Definition of Done](v1-definition-of-done.md) - public contract readiness criteria
+- `protocol-lab/product-boundaries.md` - public contract layer versus
+  implementation layer
+- `protocol-lab/vision.md` - project purpose and principles
+- `protocol-lab/roadmap.md` - contract-surface roadmap
+- `protocol-lab/first-public-release-checklist.md` - contract repository
+  readiness checklist
+- `protocol-lab/public-repo-readiness.md` - public repository readiness state
+- `repository-layout.md` - top-level public repository layout and folder
+  purposes
+- `terminology-and-policies.md` - shared terminology, versioning,
+  compatibility, schema, fixture, SpecTrace, and neutrality policies
 
-## Architecture
+## New Reader Map
 
-- [Overview](architecture/overview.md) - component map, data flow, key decisions
-- [Lab Roles](architecture/lab-roles.md) - lab, adapter, test executor, and package boundaries
-- [Runner Model](architecture/runner-model.md) - orchestration, lifecycle, validation, execution
-- [Scenario Model](architecture/scenario-model.md) - scenarios, workload families, matrix expansion
-- [Test Case And Run Plan Model](architecture/test-case-run-plan-model.md) - settled vocabulary for test cases, scenarios, packages, load profiles, and repeatable run plans
-- [Adapter Model](architecture/adapter-model.md) - adapter control plane contract and lifecycle
-- [Test Executor Contract v1](architecture/test-executor-contract-v1.md) - tester/executor control plane API specification
-- [Load Model](architecture/load-model.md) - load tools, load shapes, load profiles
-- [Artifact Model](architecture/artifact-model.md) - deterministic layout, paths, and preservation
-- [Measurement Model](architecture/measurement-model.md) - execution profile, effective load shape, provenance model, comparability
-- [Report Model](architecture/report-model.md) - claim levels, publishable gating, environment manifest, report pipeline
-- [Architecture](architecture.md) - foundational architecture summary and public contract boundaries
-- [Adapter Contract v1](architecture/adapter-contract-v1.md) - full control plane API specification
-- [Package v2](lab/package-v2.md) - schema-backed component package contract
-- [Public Contract Fixtures](../fixtures/public-contracts/README.md) - neutral package examples for local conformance validation
+- What ProtocolLab is: `../README.md` and `protocol-lab/vision.md`
+- What this public repository contains: `repository-layout.md`
+- What this public repository intentionally excludes:
+  `protocol-lab/product-boundaries.md`
+- Implementation and test-executor participation:
+  `architecture/adapter-contract-v1.md` and
+  `architecture/test-executor-contract-v1.md`
+- Packages and run plans: `lab/package-v2.md` and `lab/run-plan-v1.md`
+- Scenarios, suites, and load profiles: `architecture/scenario-model.md`,
+  `architecture/test-case-run-plan-model.md`, and `architecture/load-model.md`
+- Measurement profiles, telemetry bundles, artifact bundles, and redaction:
+  `architecture/measurement-model.md` and `architecture/artifact-model.md`
+- Evidence and public reports: `architecture/report-model.md` and `reports/`
+- Versioning, compatibility, schemas, fixtures, and SpecTrace:
+  `terminology-and-policies.md`, `../schemas/README.md`, and
+  `../specs/README.md`
+- Current stable surfaces and open questions:
+  `audits/contract-coverage-matrix.md` and
+  `audits/public-consumption-readiness-review.md`
+
+## Architecture And Contracts
+
+- `architecture/overview.md`
+- `architecture/lab-roles.md`
+- `architecture/test-case-run-plan-model.md`
+- `architecture/scenario-model.md`
+- `architecture/adapter-contract-v1.md`
+- `architecture/test-executor-contract-v1.md`
+- `architecture/load-model.md`
+- `architecture/artifact-model.md`
+- `architecture/measurement-model.md`
+- `architecture/report-model.md`
+- `lab/package-v2.md`
+- `lab/run-plan-v1.md`
+- `../specs/requirements/protocol-lab/measurement-requirements.md`
+- `../specs/requirements/protocol-lab/artifact-requirements.md`
+- `../specs/architecture/protocol-lab/measurement-and-telemetry-model.md`
+- `../specs/verification/protocol-lab/measurement-contract-verification.md`
+- `../schemas/README.md`
+- `../specs/README.md`
+
+## Scenarios And Fixtures
+
+- `scenarios/authoring-guide.md`
+- `scenarios/catalog.md`
+- `scenarios/scenario-model.md`
+- `../fixtures/public-contracts/README.md`
+- `../fixtures/public-contracts/measurement/valid/`
+- `../fixtures/public-contracts/measurement/invalid/`
+- `../fixtures/public-contracts/artifacts/valid/`
+- `../fixtures/public-contracts/artifacts/invalid/`
 
 ## Reports
 
-- [Public Report Handoff](reports/publication-handoff.md) - local run to R2 upload path
-- [Public Report Publication Bundle](reports/publication-bundle.md) - staged bundle format and command flow
-- [Public Report Safety](reports/public-report-safety.md) - safety checks, labels, and exclusion rules
+- `reports/publication-bundle.md`
+- `reports/publication-handoff.md`
+- `reports/public-report-safety.md`
 
-## Decisions
+## Traceability
 
-- [ADR Index](decisions/README.md) - architecture decision records
+- `../specs/README.md`
+- `../specs/traceability/README.md`
+- `../specs/traceability/trace-links.json`
 
-## Runner
+## Governance
 
-- [Runner Overview](runner/overview.md) - runner boundaries and design
-- [Fixture Lab](runner/fixture-lab.md) - runner contract fixture lab
-- [Adapter Conformance](runner/adapter-conformance.md) - adapter conformance suite
-- [Test Executor Conformance](runner/test-executor-conformance.md) - test executor conformance suite
-- [Raw QUIC Foundation](runner/raw-quic-foundation.md)
+- `../CONTRIBUTING.md`
+- `../CONTRIBUTOR-AGREEMENT.md`
+- `contributor-agreement-automation.md`
+- `../CODE_OF_CONDUCT.md`
+- `../SUPPORT.md`
+- `../AGENTS.md`
+- `../SECURITY.md`
 
-## Scenarios
+## Audits
 
-- [Authoring Guide](scenarios/authoring-guide.md)
-- [Catalog](scenarios/catalog.md)
-- [Scenario Model](scenarios/scenario-model.md)
+- `audits/public-repository-structure-audit.md`
+- `audits/contract-coverage-matrix.md`
+- `audits/contract-completeness-validation.md`
+- `audits/public-consumption-readiness-review.md`
+- `audits/public-spec-release-readiness.md`
 
-## Specifications
-
-- [Requirements Trace](spec/requirements-trace.md) - requirements traceability matrix
-- [Validation vs Benchmarking](spec/validation-vs-benchmarking.md) - separation rules
-- [Phase Plan](spec/phase-plan.md) - detailed phase breakdown
-- [Non-Goals](spec/non-goals.md) - explicit non-goals
-- [Open Questions](spec/open-questions.md) - unresolved design questions
-- [Fairness Rules](spec/fairness-rules.md) - fairness constraints
-- [Load Tools](spec/load-tools.md) - load tool contract
-- [Future Workload Families](spec/future-workload-families.md) - WebTransport, MASQUE
-- [Database Workloads Decision](spec/database-workloads-decision.md)
-- [Docker Target Execution](spec/docker-target-execution.md)
-- [Docker Resource Controls](spec/docker-resource-controls.md)
-- [Load Generator Metrics](spec/load-generator-metrics.md)
-- [Docker Target Metrics](spec/docker-target-metrics.md)
-- [Runtime Counter Capture](spec/runtime-counter-capture.md)
-- [Kestrel HTTP/3 Proof](spec/kestrel-http3-proof.md)
-- [Caddy HTTP/3 Target](spec/caddy-http3-target.md)
-- [nginx HTTP/3 Target](spec/nginx-http3-target.md)
-- [Raw QUIC Load Generator Contract](spec/raw-quic-load-generator-contract.md)
-
-## Releases
-
-- [v1-local-operational](releases/protocol-lab-v1-local-operational.md) - release notes
-
-## Analysis
-
-Public analysis reports are not published in this repository. Public report
-publication bundles are documented separately under [Reports](#reports).
+Implementation code, executable validation commands, local benchmark workflows,
+and hosted lab operations belong outside this public repository.

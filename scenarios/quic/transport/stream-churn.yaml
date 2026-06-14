@@ -58,7 +58,7 @@ artifacts:
     - validation.json
     - result.json
   optional:
-    - qlog
+    - protocol-diagnostic-artifact
     - counters
 networkProfile: clean
 requiredMetrics:
@@ -66,9 +66,9 @@ requiredMetrics:
   - quic.stream.closedStreams
   - quic.stream.resetCount
 artifactRequirements:
-  - load-tool.stdout.txt
-  - load-tool.stderr.txt
-  - qlog
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+  - protocol-diagnostic-artifact
 tags:
   - phase6
   - quic

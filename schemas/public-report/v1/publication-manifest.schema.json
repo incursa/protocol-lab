@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://protocol-lab.incursa.com/schemas/public-report/v1/publication-manifest.schema.json",
+  "$id": "https://schemas.incursa.com/protocol-lab/public-report/v1/publication-manifest.schema.json",
   "title": "ProtocolLab Public Report Publication Manifest v1",
   "type": "object",
   "additionalProperties": false,
@@ -150,7 +150,7 @@
         "rejected",
         "notRunValidationFailed",
         "notRunUnsupported",
-        "notRunLoadToolFailed",
+        "notRunLoadGeneratorFailed",
         "notRunParserFailed"
       ],
       "properties": {
@@ -166,7 +166,7 @@
         "notRunUnsupported": {
           "$ref": "#/definitions/count"
         },
-        "notRunLoadToolFailed": {
+        "notRunLoadGeneratorFailed": {
           "$ref": "#/definitions/count"
         },
         "notRunParserFailed": {

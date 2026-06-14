@@ -1,0 +1,44 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-PUBLIC-REPOSITION-0001",
+  "artifact_type": "verification",
+  "title": "Public contract repository repositioning verification",
+  "domain": "protocol-lab",
+  "status": "passed",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-PUBLIC-CONTRACTS",
+    "ARC-PL-PUBLIC-CONTRACTS",
+    "WI-PL-PUBLIC-REPOSITION-0001"
+  ],
+  "scope": "Verify that the public repository is shaped as a language-neutral contract repository after the migration.",
+  "verifies": [
+    "REQ-PL-PUBLIC-0001",
+    "REQ-PL-PUBLIC-0002",
+    "REQ-PL-PUBLIC-0003",
+    "REQ-PL-PUBLIC-0004",
+    "REQ-PL-PUBLIC-0005",
+    "REQ-PL-PUBLIC-0006",
+    "REQ-PL-PUBLIC-0007"
+  ],
+  "verification_method": "Repository inspection and file-class scanning.",
+  "preconditions": [
+    "The migration changes are staged in the public repository checkout.",
+    "The sibling internal repository is available for implementation ownership context."
+  ],
+  "procedure": [
+    "Scan the public repository for forbidden executable source and script extensions.",
+    "Scan the public repository for committed workflow automation and implementation build files.",
+    "Scan README and documentation for instructions that tell users to execute local build, runner, CLI, package publication, upload, or benchmark workflows from this repository.",
+    "Parse JSON contract and SpecTrace artifacts.",
+    "Confirm schemas, fixtures, scenarios, suites, load profiles, and governance documents remain present."
+  ],
+  "expected_result": "The public repository contains contract and documentation artifacts only, with implementation/runtime ownership moved outside the public tree.",
+  "evidence": [
+    "repository file-class scans",
+    "JSON parse checks",
+    "docs/migration/code-moved-to-internal.md",
+    "specs/traceability/trace-links.json"
+  ],
+  "status_summary": "passed"
+}

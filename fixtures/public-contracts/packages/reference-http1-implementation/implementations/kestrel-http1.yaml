@@ -1,41 +1,28 @@
-id: kestrel-http1
-name: Kestrel HTTP/1 Reference Implementation Fixture
-description: Neutral package fixture for an HTTP/1 server implementation.
-image: ""
-targetKind: external
-targetContract: process
-executable: ""
-project: ""
-workingDirectory: .
-dockerfile: ""
-buildContext: .
-containerName: ""
-dockerNetwork: ""
-dockerNetworkMode: published-port
-dockerBaseUrl: ""
-baseUrl: ""
-adapterControlPlaneBaseUrl: ""
-certificateMode: none
+id: protocol-lab-reference-http1-implementation
+name: ProtocolLab Reference HTTP/1 Implementation Fixture
+description: Metadata fixture for an HTTP/1 implementation package.
+targetKind: implementation
+targetContract: adapter-v1
 roles:
   - server
 supportedProtocols:
   - h1
 supportedWorkloadFamilies:
-  - http.application
-ports: []
-environment: {}
-dockerEnvironment: {}
-commandArguments: []
-readinessCheck:
-  type: none
-  url: ""
-  timeoutSeconds: 1
-shutdownBehavior: external
+  - http.core
+  - http.payload
 capabilities:
-  - http.server
-  - httpPlaintext
+  - http.core.plaintext
+  - http.core.json
+  - http.payload.bytes.1kb
 artifactExports:
-  - target.log
-qlogSupport: false
-sslKeyLogSupport: false
+  - implementation.log
+telemetry:
+  supported: true
+  supported_contract_versions:
+    - telemetry-bundle-v1
+  supported_scopes:
+    - implementation
+  export_modes:
+    - artifact-bundle
+    - none
 notes: Fixture metadata only; it proves package/run-plan selector compatibility and is not a runnable benchmark target.

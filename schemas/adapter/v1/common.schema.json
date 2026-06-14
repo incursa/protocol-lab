@@ -288,6 +288,45 @@
         "extensions": { "$ref": "#/$defs/extensions" }
       }
     },
+    "telemetryCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supported", "export_modes"],
+      "properties": {
+        "supported": { "type": "boolean" },
+        "supported_contract_versions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "supported_scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["runner", "implementation", "test-executor", "load-generator", "environment", "protocol", "artifact", "other"]
+          }
+        },
+        "supported_artifact_kinds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["log", "trace", "metrics", "qlog", "pcap", "stdout", "stderr", "profile", "summary", "report", "raw", "other"]
+          }
+        },
+        "export_modes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["inline", "artifact-bundle", "external-uri", "none"]
+          },
+          "minItems": 1
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "extensions": { "$ref": "#/$defs/extensions" }
+      }
+    },
     "sessionSummary": {
       "type": "object",
       "additionalProperties": false,

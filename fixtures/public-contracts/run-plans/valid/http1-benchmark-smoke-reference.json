@@ -38,11 +38,11 @@
     "h1"
   ],
   "loadProfileId": "smoke",
-  "targetMode": "process",
-  "targetNetworkMode": "published-port",
+  "targetMode": "implementation-resolved",
+  "targetNetworkMode": "published-endpoint",
   "requiredCapabilities": [
     {
-      "name": "protocol-lab-cli",
+      "name": "protocol-lab.public-contracts",
       "value": "true"
     }
   ],
@@ -58,7 +58,7 @@
       "sameLoadProfileRequired": true
     }
   ],
-  "publicationIntent": "local-only",
+  "publicationIntent": "non-public",
   "labels": [
     "result-kind:benchmark",
     "suite-purpose:benchmark"

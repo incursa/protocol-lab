@@ -15,8 +15,17 @@ permissions:
 jobs:
   contributor-agreement:
     name: Agreement Gate
-    if: github.event_name == 'pull_request_target' || github.event.issue.pull_request
     runs-on: ubuntu-24.04
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        (
+          github.event.comment.body == 'recheck contributor agreement' ||
+          github.event.comment.body == 'I have read the Incursa Contributor Agreement and I hereby assign my contribution rights as described.'
+        )
+      )
 
     steps:
       - name: Check contributor agreement
@@ -27,7 +36,10 @@ jobs:
           storage-owner: incursa
           storage-repo: contributor-agreements
           storage-path: signatures/incursa-contributor-agreement-v1.json
+          storage-branch: main
           agreement-id: incursa-contributor-agreement-v1
           agreement-url: ${{ github.server_url }}/${{ github.repository }}/blob/main/CONTRIBUTOR-AGREEMENT.md
-          status-context: Contributor Agreement
-          allowlist: SamuelMcAravey,dependabot[bot],github-actions[bot],renovate[bot]
+          allowlist: SamuelMcAravey,dependabot[bot],github-actions[bot],renovate[bot],copilot-pull-request-reviewer[bot]
+          signature-comment: I have read the Incursa Contributor Agreement and I hereby assign my contribution rights as described.
+          recheck-comment: recheck contributor agreement
+          fail-on-unlinked-commit-author: true

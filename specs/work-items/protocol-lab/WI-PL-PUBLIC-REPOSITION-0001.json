@@ -1,0 +1,38 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "WI-PL-PUBLIC-REPOSITION-0001",
+  "artifact_type": "work_item",
+  "title": "Reposition public repository as contract-only",
+  "domain": "protocol-lab",
+  "status": "complete",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-PUBLIC-CONTRACTS",
+    "ARC-PL-PUBLIC-CONTRACTS",
+    "VER-PL-PUBLIC-REPOSITION-0001"
+  ],
+  "addresses": [
+    "REQ-PL-PUBLIC-0001",
+    "REQ-PL-PUBLIC-0002",
+    "REQ-PL-PUBLIC-0003",
+    "REQ-PL-PUBLIC-0004",
+    "REQ-PL-PUBLIC-0005",
+    "REQ-PL-PUBLIC-0006",
+    "REQ-PL-PUBLIC-0007"
+  ],
+  "design_links": [
+    "ARC-PL-PUBLIC-CONTRACTS"
+  ],
+  "summary": "Remove public implementation/runtime assets, rewrite the public repository story, preserve declarative contract assets, and record the migration boundary.",
+  "verification_links": [
+    "VER-PL-PUBLIC-REPOSITION-0001"
+  ],
+  "planned_changes": "Remove source, tests, scripts, workflow automation, tool implementations, server implementations, implementation manifests, and executable fixture scripts; rewrite README and public boundary docs; add migration and traceability records.",
+  "out_of_scope": [
+    "changing the internal runner implementation",
+    "adding replacement public executable validators",
+    "creating generated SDKs or runtime packages"
+  ],
+  "verification_plan": "Inspect repository files for forbidden extensions, runnable automation, stale command documentation, schema parse errors, and preserved declarative contract assets.",
+  "completion_notes": "The public repository now contains contracts and declarative examples only; implementation work belongs in consuming repositories."
+}

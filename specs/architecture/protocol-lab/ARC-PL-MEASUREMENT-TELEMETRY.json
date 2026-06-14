@@ -1,0 +1,74 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-MEASUREMENT-TELEMETRY",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab Measurement Telemetry And Artifact Model",
+  "domain": "protocol-lab",
+  "status": "approved",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-MEASUREMENT-TELEMETRY",
+    "SPEC-PL-ARTIFACTS",
+    "VER-PL-MEASUREMENT-CONTRACT-0001"
+  ],
+  "purpose": "Describe the public measurement, telemetry, artifact, redaction, comparability, and optional export model without defining runner implementation behavior.",
+  "satisfies": [
+    "PLAB-MEASURE-001",
+    "PLAB-MEASURE-002",
+    "PLAB-MEASURE-003",
+    "PLAB-MEASURE-004",
+    "PLAB-MEASURE-005",
+    "PLAB-MEASURE-006",
+    "PLAB-MEASURE-007",
+    "PLAB-MEASURE-008",
+    "PLAB-MEASURE-009",
+    "PLAB-MEASURE-010",
+    "PLAB-MEASURE-011",
+    "PLAB-ADAPTER-TELEMETRY-001",
+    "PLAB-EXECUTOR-TELEMETRY-001",
+    "PLAB-REPORT-MEASURE-001",
+    "PLAB-ARTIFACT-001",
+    "PLAB-ARTIFACT-002",
+    "PLAB-ARTIFACT-003",
+    "PLAB-ARTIFACT-004",
+    "PLAB-ARTIFACT-005",
+    "PLAB-ARTIFACT-006",
+    "PLAB-ARTIFACT-007"
+  ],
+  "design_summary": "ProtocolLab separates behavior validation from measurement evidence, raw artifacts, redaction safety, and public report claims. Normalized telemetry bundles carry samples, summaries, collector descriptors, producer metadata, source/scope separation, warnings, errors, and optional artifact references. Artifact bundles carry hash-addressable references to raw or derived evidence. Adapter and test-executor contracts may advertise optional telemetry export, but export absence is a valid state unless a run plan requires it.",
+  "key_components": [
+    "measurement profiles",
+    "telemetry bundles",
+    "measurement samples",
+    "measurement summaries",
+    "collector descriptors",
+    "comparability class statements",
+    "artifact references",
+    "artifact bundles",
+    "redaction states",
+    "optional adapter telemetry capability discovery",
+    "optional test-executor telemetry capability discovery"
+  ],
+  "data_and_state_considerations": "The public repository defines static contract shapes only. Runtime collection, retention, storage, uploads, raw trace parsing, and private diagnostic workflows belong to runners, hosted labs, implementations, adapters, test executors, or other implementation repositories.",
+  "edge_cases_and_constraints": [
+    "A smoke profile can produce sparse measurements and still be valid functional evidence.",
+    "A diagnostic profile can carry high-overhead evidence but cannot support clean benchmark claims without disclosure.",
+    "A benchmark profile needs explicit provenance and load-shape evidence.",
+    "A soak profile emphasizes duration, degradation, memory, and error trends rather than instantaneous benchmark ranking.",
+    "Implementation telemetry is auxiliary evidence unless a run plan explicitly makes it required.",
+    "Raw artifacts can use any media type, but public references must remain hash-addressable and redaction-aware.",
+    "Telemetry bundles must not introduce conformance pass/fail authority.",
+    "External telemetry systems can be named as producer systems without becoming canonical ProtocolLab models."
+  ],
+  "alternatives_considered": [
+    "Requiring one telemetry backend was rejected because it would make the public contract implementation-specific.",
+    "Embedding raw trace formats into normalized measurement schemas was rejected because raw artifacts should be referenced by manifest.",
+    "Using implementation-side timing as the benchmark default was rejected because runner-observed request timing is the stable cross-implementation evidence surface.",
+    "Making telemetry export mandatory for adapters and test executors was rejected because many valid conformance runs do not need implementation-side telemetry."
+  ],
+  "risks": [
+    "Too many optional fields can reduce comparability if reports omit profile and provenance context.",
+    "External telemetry correlation can be mistaken for canonical ProtocolLab identity unless documentation remains clear.",
+    "Artifact references can leak sensitive state if redaction states are not reviewed before public publication."
+  ]
+}

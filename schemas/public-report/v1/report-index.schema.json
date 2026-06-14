@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://protocol-lab.incursa.com/schemas/public-report/v1/report-index.schema.json",
+  "$id": "https://schemas.incursa.com/protocol-lab/public-report/v1/report-index.schema.json",
   "title": "ProtocolLab Public Report Index v1",
   "type": "object",
   "additionalProperties": false,

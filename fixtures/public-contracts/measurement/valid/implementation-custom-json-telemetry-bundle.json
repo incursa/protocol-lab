@@ -1,0 +1,90 @@
+{
+  "contract_version": "telemetry-bundle-v1",
+  "bundle_id": "telemetry-implementation-custom-json-001",
+  "producer": {
+    "kind": "implementation",
+    "id": "example-implementation",
+    "version": "1.2.3",
+    "description": "Implementation-provided auxiliary telemetry normalized into the public bundle shape.",
+    "telemetry_system": "custom-json"
+  },
+  "run_binding": {
+    "run_id": "run-diagnostic-001",
+    "cell_id": "cell-http1-custom-telemetry",
+    "repetition": 0,
+    "scenario_id": "http.core.json",
+    "scenario_version": "1.0.0",
+    "suite_id": "conformance-smoke",
+    "protocol": "http/1.1",
+    "implementation_id": "example-implementation",
+    "test_executor_id": "example-test-executor",
+    "load_profile_id": "smoke",
+    "execution_profile": "diagnostic"
+  },
+  "measurement_profile": {
+    "profile_id": "diagnostic",
+    "claim_level": "diagnostic",
+    "measurement_expectations": ["implementation-declared counters"],
+    "comparability_floor": "same-run",
+    "heavy_instrumentation_disclosed": false
+  },
+  "comparability": {
+    "class": "same-run",
+    "statement": "Implementation telemetry is auxiliary evidence for this run and is not canonical request timing evidence."
+  },
+  "created_at_utc": "2026-06-14T13:00:00Z",
+  "samples": [
+    {
+      "metric_name": "implementation.active_connections",
+      "metric_kind": "gauge",
+      "value": 12,
+      "unit": "connections",
+      "timestamp_utc": "2026-06-14T13:00:03Z",
+      "source": {
+        "kind": "implementation",
+        "id": "example-implementation",
+        "telemetry_system": "custom-json"
+      },
+      "scope": "implementation",
+      "collector_id": "implementation-custom-json-export",
+      "tags": {
+        "lane": "http1"
+      },
+      "provenance": {
+        "observed_by": "implementation",
+        "method": "implementation-declared custom JSON export normalized after run",
+        "confidence": "declared"
+      },
+      "warnings": []
+    }
+  ],
+  "summaries": [],
+  "collectors": [
+    {
+      "collector_id": "implementation-custom-json-export",
+      "collector_version": "1.0",
+      "collector_kind": "implementation-export",
+      "source": {
+        "kind": "implementation",
+        "id": "example-implementation",
+        "telemetry_system": "custom-json"
+      },
+      "scope": "implementation",
+      "required": false,
+      "availability": "available",
+      "configuration_summary": {
+        "export_mode": "inline"
+      },
+      "overhead_risk": "unknown",
+      "warnings": []
+    }
+  ],
+  "artifacts": [],
+  "warnings": ["Implementation telemetry is auxiliary evidence unless the run plan explicitly requires it."],
+  "errors": [],
+  "redaction": {
+    "state": "producer-declared-safe",
+    "reviewed_at_utc": "2026-06-14T13:01:00Z",
+    "reviewed_by": "fixture-author"
+  }
+}

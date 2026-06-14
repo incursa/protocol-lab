@@ -2,16 +2,16 @@ id: fixture-public-h3
 name: Neutral Public H3 Suite
 description: Neutral suite fixture for package v2 validation.
 targetMode: external
-targetNetworkMode: published-port
+targetNetworkMode: published-endpoint
 implementations:
   - neutral-adapter-implementation
 unsupportedImplementations: []
 scenarios:
   - fixture.public.h3-echo
 protocol: h3
-loadTools:
+testExecutors:
   - id: neutral-test-executor
-    mode: process
+    mode: contract-declared
     category: test-executor
 defaults:
   durationSeconds: 1

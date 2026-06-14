@@ -43,6 +43,10 @@
     "metricsAvailability": {
       "$ref": "./common.schema.json#/$defs/metricsAvailability"
     },
+    "telemetry": {
+      "$ref": "./common.schema.json#/$defs/telemetryCapability",
+      "description": "Optional telemetry bundle and artifact export capability discovery. Absence means no telemetry export is advertised."
+    },
     "defaultResponseContentTypes": {
       "$ref": "./common.schema.json#/$defs/stringArray",
       "description": "Optional response content types the adapter can emit."

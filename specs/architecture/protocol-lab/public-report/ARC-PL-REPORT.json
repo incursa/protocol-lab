@@ -1,51 +1,44 @@
 {
   "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
-  "artifact_id": "ARC-PL-REPORT-0001",
+  "artifact_id": "ARC-PL-REPORT",
   "artifact_type": "architecture",
-  "title": "ProtocolLab Public Report Architecture",
+  "title": "ProtocolLab Public Report Contract Architecture",
   "domain": "protocol-lab",
-  "status": "draft",
+  "status": "approved",
   "owner": "protocol-lab-maintainers",
   "related_artifacts": [
     "SPEC-PL-REPORT",
-    "VER-PL-REPORT-0001"
+    "VER-PL-REPORT-0001",
+    "SPEC-PL-PUBLIC-CONTRACTS"
   ],
+  "purpose": "Describe the storage-neutral public report contract boundary.",
   "satisfies": [
     "REQ-PL-REPORT-0001",
     "REQ-PL-REPORT-0002",
     "REQ-PL-REPORT-0003",
     "REQ-PL-REPORT-0004",
-    "REQ-PL-REPORT-0005",
-    "REQ-PL-REPORT-0006",
-    "REQ-PL-REPORT-0007"
+    "REQ-PL-REPORT-0005"
   ],
-  "purpose": "Describe the public report contract used by R2 publication bundles and downstream site consumers.",
-  "design_summary": "The canonical public report payload is `evidence-report-v1.json` with schema version `protocol-lab.evidence-report.v1`. It is generated from completed run evidence by the benchmark `run` workflow and by `publish-report` restaging, sanitized for public publication, and uploaded under `public/runs/{runId}/` in R2. The payload contains run identity, matrix coverage, validation summary, benchmark acceptance, per-cell validation and benchmark status, generic measurements, warnings, errors, and public artifact references. `publication-manifest.json`, `artifacts-index.json`, and per-run registry helper JSON are derived metadata used for bundle completeness and downstream processing.",
+  "design_summary": "Public report schemas define the semantic payload. Implementations produce and store report bundles outside this public repository while preserving public claim and provenance rules.",
   "key_components": [
-    "schemas/public-report/v1/evidence-report-v1.schema.json: primary JSON Schema for the canonical public payload.",
-    "schemas/public-report/v1/*.schema.json: supporting schemas for publication manifest, artifact index, and registry objects.",
-    "EvidenceReport: public model carrying schema version, per-cell detail, generic measurements, warnings, errors, and artifact references.",
-    "RunnerEngine.RunBenchmarkAsync: writes completed run artifacts, emits `evidence-report-v1.json`, and stages the schema-validated public report bundle unless explicitly skipped for dry-run planning.",
-    "ReportPublicationWorkflow: transforms completed run artifacts into the public-safe R2 bundle while preserving source report semantics.",
-    "New-ProtocolLabPublicReportBundle.ps1: local operator script that runs a short benchmark with automatic bundle staging or consumes an existing run root without Cloudflare side effects.",
-    "Upload-ProtocolLabReportBundle.ps1: uploads the staged bundle and verifies required R2 run-prefix objects.",
-    "Publish-ProtocolLabReport.ps1: compatibility wrapper for the R2-only upload path."
+    "public report JSON schemas",
+    "evidence report payload",
+    "publication manifest payload",
+    "artifact index payload",
+    "report index payload"
   ],
-  "data_and_state_considerations": "The R2 evidence report is the shareable semantic contract. ProtocolLab-owned metadata files point to canonical R2 payloads and summarize them but do not replace them. Downstream browse indexes and latest selection are site-owned derived state.",
+  "data_and_state_considerations": "Report consumers should treat the schema-versioned evidence report as the semantic source. Derived indexes and storage-specific locations are consumer or implementation state.",
   "edge_cases_and_constraints": [
-    "Unsupported and failed cells remain visible with status, reason, warnings, errors, and copied public-safe artifacts when available.",
-    "Measurements are a typed list of name/category/unit/source/value records so future protocol and diagnostic measurements do not require a new top-level schema branch.",
-    "Public artifact paths are sanitized to bundle-relative paths and private absolute paths are rejected by the publication workflow.",
-    "DiagnosticOnly and publishable=false remain explicit labels rather than being hidden for public presentation."
+    "Diagnostic reports remain diagnostic even when they are publicly visible.",
+    "Unsupported and unavailable outcomes remain visible to readers.",
+    "Raw QUIC and managed HTTP/3 result lanes remain distinct."
   ],
   "alternatives_considered": [
-    "Making any downstream index the canonical report store was rejected because derived indexes cannot reliably preserve the full shareable report contract.",
-    "Creating a second public report shape beside Evidence Report v1 was rejected because it would create competing report semantics for the site and publisher.",
-    "Freezing private raw run artifacts first was deferred because public shareability and site integration depend on the sanitized R2 contract."
+    "Defining a storage-specific upload path in the public contract was rejected because storage is an implementation concern.",
+    "Using derived browse indexes as the semantic source was rejected because derived state can omit evidence details."
   ],
   "risks": [
-    "Schema drift between C# report models and JSON Schema if tests do not validate generated bundles.",
-    "Future site code may accidentally treat derived index fields as canonical unless the handoff docs keep the R2 payload boundary explicit.",
-    "The initial schema may need non-breaking extensions as commercial controlled-run evidence adds attestation or long-running benchmark fields."
+    "Report consumers may accidentally upgrade claims unless they preserve claim-level fields.",
+    "Storage-specific implementations may need adapter documentation outside this public repository."
   ]
 }

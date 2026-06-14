@@ -19,24 +19,7 @@
       ]
     }
   ],
-  "environments": [
-    {
-      "os": "linux",
-      "arch": "x64",
-      "entrypoint": {
-        "kind": "process",
-        "path": "bin/neutral-adapter-placeholder",
-        "arguments": [],
-        "workingDirectory": "."
-      }
-    }
-  ],
   "dependencies": {
-    "requiresDotNet": false,
-    "requiresDocker": false,
-    "requiresPwsh": false,
-    "requiresBash": false,
-    "requiresGo": false,
     "requiredCapabilities": []
   }
 }

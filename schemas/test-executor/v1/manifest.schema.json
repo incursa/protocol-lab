@@ -41,6 +41,10 @@
       "items": { "$ref": "./common.schema.json#/$defs/artifactType" }
     },
     "metricsAvailability": { "$ref": "./common.schema.json#/$defs/metricsAvailability" },
+    "telemetry": {
+      "$ref": "./common.schema.json#/$defs/telemetryCapability",
+      "description": "Optional telemetry bundle and artifact export capability discovery. Absence means no telemetry export is advertised."
+    },
     "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
   }
 }

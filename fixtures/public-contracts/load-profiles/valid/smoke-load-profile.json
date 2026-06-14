@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v1",
+  "id": "smoke",
+  "title": "Smoke",
+  "status": "stable",
+  "purpose": "smoke",
+  "description": "Minimal load profile for fast functional proof.",
+  "durationSeconds": 5,
+  "warmupSeconds": 0,
+  "repetitions": 1,
+  "http": {
+    "connections": 1,
+    "concurrency": 1
+  },
+  "evidence": {
+    "minimumTier": "smoke",
+    "publishable": false
+  }
+}

@@ -1,43 +1,28 @@
-id: kestrel-http2
-name: Kestrel HTTP/2 Reference Implementation Fixture
-description: Neutral package fixture for an HTTP/2 server implementation.
-image: ""
-targetKind: external
-targetContract: process
-executable: ""
-project: ""
-workingDirectory: .
-dockerfile: ""
-buildContext: .
-containerName: ""
-dockerNetwork: ""
-dockerNetworkMode: published-port
-dockerBaseUrl: ""
-baseUrl: ""
-adapterControlPlaneBaseUrl: ""
-certificateMode: none
+id: protocol-lab-reference-http2-implementation
+name: ProtocolLab Reference HTTP/2 Implementation Fixture
+description: Metadata fixture for an HTTP/2 implementation package.
+targetKind: implementation
+targetContract: adapter-v1
 roles:
   - server
 supportedProtocols:
   - h2
 supportedWorkloadFamilies:
-  - http.application
-ports: []
-environment: {}
-dockerEnvironment: {}
-commandArguments: []
-readinessCheck:
-  type: none
-  url: ""
-  timeoutSeconds: 1
-shutdownBehavior: external
+  - http2.core
+  - http2.streaming
 capabilities:
-  - http.server
-  - httpPlaintext
-  - httpJson
-  - httpStreaming
+  - http2.core.plaintext
+  - http2.core.json
+  - http2.streaming.response
 artifactExports:
-  - target.log
-qlogSupport: false
-sslKeyLogSupport: false
+  - implementation.log
+telemetry:
+  supported: true
+  supported_contract_versions:
+    - telemetry-bundle-v1
+  supported_scopes:
+    - implementation
+  export_modes:
+    - artifact-bundle
+    - none
 notes: Fixture metadata only; it proves package/run-plan selector compatibility and is not a runnable benchmark target.

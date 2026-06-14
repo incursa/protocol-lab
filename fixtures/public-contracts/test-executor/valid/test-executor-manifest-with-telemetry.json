@@ -1,0 +1,56 @@
+{
+  "executorIdentity": {
+    "id": "example-test-executor",
+    "name": "Example Test Executor",
+    "version": "1.0.0"
+  },
+  "versionCompatibility": {
+    "contractVersion": "test-executor-v1",
+    "compatibleContractVersions": ["test-executor-v1"]
+  },
+  "claimedCapabilities": [
+    {
+      "id": "http.request-response.validation",
+      "status": "supported"
+    }
+  ],
+  "supportedTestSelectors": [
+    {
+      "selectorType": "test-id",
+      "expression": "http.core.plaintext"
+    }
+  ],
+  "supportedScenarioSelectors": [
+    {
+      "selectorType": "scenario-id",
+      "expression": "http.core.plaintext"
+    }
+  ],
+  "supportedProtocolFamilies": ["h1"],
+  "supportedExecutionModes": ["conformance"],
+  "requiredTargetEndpointBindings": [
+    {
+      "bindingId": "primary",
+      "purpose": "test-target",
+      "endpointType": "http",
+      "protocols": ["h1"],
+      "required": true
+    }
+  ],
+  "supportedArtifactTypes": [
+    {
+      "type": "summary"
+    }
+  ],
+  "metricsAvailability": {
+    "available": true,
+    "availableKinds": ["summary"]
+  },
+  "telemetry": {
+    "supported": true,
+    "supported_contract_versions": ["telemetry-bundle-v1"],
+    "supported_scopes": ["test-executor"],
+    "supported_artifact_kinds": ["summary", "metrics"],
+    "export_modes": ["inline"]
+  }
+}

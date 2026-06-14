@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/measurement/v1/telemetry-bundle.schema.json",
+  "title": "ProtocolLab Telemetry Bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "bundle_id",
+    "producer",
+    "run_binding",
+    "measurement_profile",
+    "created_at_utc",
+    "samples",
+    "summaries",
+    "artifacts",
+    "warnings",
+    "errors",
+    "redaction"
+  ],
+  "properties": {
+    "contract_version": { "type": "string", "const": "telemetry-bundle-v1" },
+    "bundle_id": { "type": "string", "minLength": 1 },
+    "producer": { "$ref": "#/$defs/producer" },
+    "run_binding": { "$ref": "#/$defs/run_binding" },
+    "measurement_profile": { "$ref": "./measurement-profile.schema.json" },
+    "comparability": { "$ref": "./comparability-class.schema.json" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "samples": {
+      "type": "array",
+      "items": { "$ref": "./measurement-sample.schema.json" }
+    },
+    "summaries": {
+      "type": "array",
+      "items": { "$ref": "./measurement-summary.schema.json" }
+    },
+    "collectors": {
+      "type": "array",
+      "items": { "$ref": "./collector-descriptor.schema.json" }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "../../artifact/v1/artifact-reference.schema.json" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "redaction": { "$ref": "#/$defs/redaction_summary" },
+    "schema_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "uri"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "uri": { "type": "string", "minLength": 1 },
+          "version": { "type": "string" }
+        }
+      }
+    },
+    "external_correlation": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "system": { "type": "string" },
+        "correlation_id": { "type": "string" },
+        "trace_id": { "type": "string" },
+        "span_id": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "measurement_profile": {
+            "properties": {
+              "profile_id": { "const": "benchmark" }
+            },
+            "required": ["profile_id"]
+          },
+          "collectors": {
+            "contains": {
+              "properties": {
+                "overhead_risk": { "const": "high" }
+              },
+              "required": ["overhead_risk"]
+            }
+          }
+        },
+        "required": ["measurement_profile", "collectors"]
+      },
+      "then": {
+        "properties": {
+          "warnings": { "minItems": 1 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["runner", "implementation", "test-executor", "load-generator", "collector", "environment", "other"]
+        },
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string" },
+        "description": { "type": "string" },
+        "telemetry_system": {
+          "type": "string",
+          "examples": ["opentelemetry", "prometheus", "custom-json", "binary-trace", "none"]
+        }
+      }
+    },
+    "run_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "cell_id", "scenario_id", "protocol"],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "cell_id": { "type": "string", "minLength": 1 },
+        "repetition": { "type": "integer", "minimum": 0 },
+        "scenario_id": { "type": "string", "minLength": 1 },
+        "scenario_version": { "type": "string" },
+        "suite_id": { "type": "string" },
+        "protocol": { "type": "string", "minLength": 1 },
+        "implementation_id": { "type": "string" },
+        "test_executor_id": { "type": "string" },
+        "load_profile_id": { "type": "string" },
+        "execution_profile": { "type": "string" },
+        "requested_load_shape": { "type": "object", "additionalProperties": true },
+        "effective_load_shape": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "redaction_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": { "$ref": "../../artifact/v1/redaction-state.schema.json" },
+        "reviewed_at_utc": { "type": "string", "format": "date-time" },
+        "reviewed_by": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

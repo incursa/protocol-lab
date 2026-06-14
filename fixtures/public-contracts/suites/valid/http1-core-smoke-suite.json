@@ -1,0 +1,22 @@
+{
+  "id": "http1-core-smoke",
+  "name": "ProtocolLab HTTP/1 core smoke suite",
+  "description": "Declarative suite fixture for HTTP/1 core smoke scenarios.",
+  "purpose": "conformance",
+  "resultKind": "conformance",
+  "loadProfileId": "smoke",
+  "scenarios": [
+    "http.core.plaintext",
+    "http.core.json",
+    "http.payload.bytes.1kb"
+  ],
+  "protocol": "h1",
+  "defaults": {
+    "durationSeconds": 5,
+    "warmupSeconds": 1,
+    "repetitions": 1,
+    "connections": 1,
+    "streamsPerConnection": 1
+  },
+  "notes": "Declarative suite selector only."
+}

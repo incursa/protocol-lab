@@ -65,9 +65,9 @@ artifacts:
     - validation.json
     - result.json
   optional:
-    - qlog
+    - protocol-diagnostic-artifact
     - counters
 networkProfile: clean
 requiredMetrics: [requestsPerSecond]
-artifactRequirements: [load-tool.stdout.txt, load-tool.stderr.txt]
+artifactRequirements: [load-generator.stdout.txt, load-generator.stderr.txt]
 tags: [phase2, http, headers]

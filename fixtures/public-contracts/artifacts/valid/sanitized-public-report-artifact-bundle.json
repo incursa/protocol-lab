@@ -1,0 +1,71 @@
+{
+  "contract_version": "artifact-bundle-v1",
+  "bundle_id": "artifact-bundle-public-report-001",
+  "run_binding": {
+    "run_id": "run-public-report-001",
+    "cell_id": "cell-http1-report-001",
+    "repetition": 0,
+    "scenario_id": "http.core.plaintext",
+    "scenario_version": "1.0.0",
+    "suite_id": "benchmark-smoke",
+    "protocol": "http/1.1",
+    "implementation_id": "example-implementation",
+    "test_executor_id": "example-test-executor",
+    "load_profile_id": "benchmark-smoke",
+    "execution_profile": "benchmark"
+  },
+  "created_at_utc": "2026-06-14T14:30:00Z",
+  "artifacts": [
+    {
+      "artifact_id": "public-report-summary-001",
+      "kind": "report",
+      "media_type": "application/json",
+      "path": "reports/public-report-summary-001.json",
+      "sha256": "abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+      "size_bytes": 4096,
+      "created_at_utc": "2026-06-14T14:30:02Z",
+      "producer": {
+        "kind": "runner",
+        "id": "public-contract-runner-example",
+        "version": "0.0.0-contract",
+        "telemetry_system": "none"
+      },
+      "redaction_state": "sanitized",
+      "contains_sensitive_data": false,
+      "retention_class": "public",
+      "description": "Sanitized report document suitable for public publication.",
+      "tags": {
+        "claim": "benchmark"
+      }
+    },
+    {
+      "artifact_id": "public-measurement-summary-001",
+      "kind": "summary",
+      "media_type": "application/json",
+      "path": "reports/public-measurement-summary-001.json",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "size_bytes": 2048,
+      "created_at_utc": "2026-06-14T14:30:03Z",
+      "producer": {
+        "kind": "runner",
+        "id": "public-contract-runner-example",
+        "version": "0.0.0-contract",
+        "telemetry_system": "none"
+      },
+      "redaction_state": "sanitized",
+      "contains_sensitive_data": false,
+      "retention_class": "public",
+      "description": "Sanitized normalized measurement summary referenced by the report.",
+      "tags": {
+        "profile": "benchmark"
+      }
+    }
+  ],
+  "warnings": [],
+  "errors": [],
+  "redaction": {
+    "state": "sanitized",
+    "reviewed_at_utc": "2026-06-14T14:31:00Z",
+    "reviewed_by": "fixture-author"
+  }
+}

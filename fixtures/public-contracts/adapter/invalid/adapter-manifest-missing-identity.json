@@ -1,0 +1,18 @@
+{
+  "implementationIdentity": {
+    "id": "example-implementation",
+    "name": "Example Implementation"
+  },
+  "versionCompatibility": {
+    "contractVersion": "adapter-v1",
+    "compatibleContractVersions": ["adapter-v1"]
+  },
+  "supportedRoles": ["server"],
+  "claimedCapabilities": [],
+  "supportedScenarioSelectors": [],
+  "supportedEndpointTypes": [],
+  "supportedArtifactTypes": [],
+  "metricsAvailability": {
+    "available": false
+  }
+}

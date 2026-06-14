@@ -60,8 +60,8 @@ artifacts:
   required:
     - validation.json
     - result.json
-    - load-tool.stdout.txt
-    - load-tool.stderr.txt
+    - load-generator.stdout.txt
+    - load-generator.stderr.txt
   optional:
     - request-sample.json
     - counters
@@ -69,8 +69,8 @@ networkProfile: clean
 requiredMetrics:
   - requestsPerSecond
 artifactRequirements:
-  - load-tool.stdout.txt
-  - load-tool.stderr.txt
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
 tags:
   - http
   - h2

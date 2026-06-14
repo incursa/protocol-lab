@@ -1,0 +1,19 @@
+{
+  "artifact_id": "artifact-invalid-public-sensitive",
+  "kind": "report",
+  "media_type": "application/json",
+  "path": "reports/unsafe-report.json",
+  "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "size_bytes": 512,
+  "created_at_utc": "2026-06-14T15:20:00Z",
+  "producer": {
+    "kind": "runner",
+    "id": "public-contract-runner-example",
+    "telemetry_system": "none"
+  },
+  "redaction_state": "sanitized",
+  "contains_sensitive_data": true,
+  "retention_class": "public",
+  "description": "Invalid because sanitized/public artifacts cannot also declare sensitive data.",
+  "tags": {}
+}

@@ -6,7 +6,8 @@ The Test Executor Contract defines the HTTP management API for packages that run
 
 - An adapter owns implementation lifecycle and returns target endpoints.
 - A test executor owns traffic generation, conformance checks, performance checks, capability checks, metrics, and executor artifacts.
-- ProtocolLab owns package selection, compatibility planning, worker placement, artifact collection, and result classification.
+- A runner or hosted lab owns package selection, compatibility planning, worker
+  placement, artifact collection, and result classification.
 
 The executor control plane is HTTP/1.1 JSON and is rooted at:
 
@@ -18,7 +19,7 @@ The executor control plane is HTTP/1.1 JSON and is rooted at:
 
 | Method | Route | Purpose |
 | --- | --- | --- |
-| `GET` | `/health` | Report executor process health and contract compatibility. |
+| `GET` | `/health` | Report executor health and contract compatibility. |
 | `GET` | `/manifest` | Advertise supported protocols, tests, scenarios, endpoint requirements, metrics, and artifacts. |
 | `POST` | `/sessions` | Create an executor session for one planned cell. |
 | `GET` | `/sessions/{sessionId}` | Return session state. |
@@ -47,8 +48,11 @@ The manifest identifies the executor and declares:
 - `requiredTargetEndpointBindings`: target endpoints that must be supplied during prepare.
 - `claimedCapabilities`: executor capabilities and limitations.
 - `metricsAvailability` and `supportedArtifactTypes`.
+- optional `telemetry` export capability.
 
-The manifest is descriptive, not authoritative scheduling policy. Controllers and workers still validate selected packages, scenarios, and worker capabilities before execution.
+The manifest is descriptive, not authoritative scheduling policy. Contract
+consumers still evaluate selected packages, scenarios, and available
+capabilities before accepting a planned cell.
 
 ## IDs And Selectors
 
@@ -65,8 +69,9 @@ underscore, period, colon, or hyphen.
 describe test matching. `supportedScenarioSelectors` must use selector
 metadata such as `scenario-id` to describe scenario matching. Wildcards,
 prefixes, tags, or custom expressions are allowed only as explicit metadata
-that both the executor and lab understand. A worker must not infer support from
-the executable name, implementation brand, package name, or protocol family.
+that both the executor and contract consumer understand. A contract consumer
+must not infer support from implementation brand, package name, runtime
+conventions, or protocol family.
 
 ## Prepare
 
@@ -82,20 +87,36 @@ Executors must return `unsupported` when they understand the request but cannot 
 ## Boundary Rules
 
 - Test executors must not start implementation targets directly unless the package also provides a separate adapter and the lab explicitly selects it.
-- Workers must not substitute a different executor or protocol lane when a selected executor is unavailable or incompatible.
+- Contract consumers must not substitute a different executor or protocol lane
+  when a selected executor is unavailable or incompatible.
 - Raw QUIC remains limited to the currently validated scenario cells until additional executor validation gates are added.
 - Executor metrics and artifacts are evidence inputs. They do not make a result publishable unless ProtocolLab validation and classification accept the cell.
 
+## Optional Telemetry Export
+
+Test executors MAY advertise optional telemetry export capability in
+`telemetry`. The discovery shape is descriptive:
+
+- `telemetry.supported`
+- `telemetry.supported_contract_versions`
+- `telemetry.supported_scopes`
+- `telemetry.supported_artifact_kinds`
+- `telemetry.export_modes`: `inline`, `artifact-bundle`, `external-uri`, or
+  `none`
+
+The runner may ask for a telemetry bundle after a run. A test executor may
+return no telemetry. A telemetry export failure is diagnostic unless the run
+plan explicitly requires telemetry export. A telemetry bundle must not change
+conformance pass/fail results after the fact, but it may affect evidence
+quality, comparability, and diagnostic value.
+
+Runner-observed request results are the canonical evidence for benchmark
+timing unless a specific test-executor contract explicitly defines another
+timing authority. Test-executor telemetry is auxiliary evidence unless a run
+plan or test-executor contract assigns it a stronger role.
+
 ## Conformance
 
-The reusable conformance surface lives in
-`Incursa.ProtocolLab.Adapter.Conformance` as `TestExecutorConformanceSuite`.
-It exercises health, manifest, session lifecycle, prepare/start/status,
-metrics, artifacts, stop, delete, unsupported results, problem-details,
-malformed responses, timeouts, and infrastructure failures.
-
-Package authors should run the suite against the executor control-plane URL
-before publishing or submitting a test-executor package.
-
-See [`docs/runner/test-executor-conformance.md`](../runner/test-executor-conformance.md)
-for the focused verification workflow.
+The public repository defines the schema and behavior contract. Executable
+conformance suites belong in implementation repositories and should consume
+the schemas under `schemas/test-executor/v1/`.

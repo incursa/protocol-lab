@@ -1,0 +1,152 @@
+name: Repository Health
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-health:
+    name: Public Contract Repository Health
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate public repository health
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import re
+          import sys
+
+          root = pathlib.Path(".").resolve()
+          errors = []
+
+          def rel(path: pathlib.Path) -> str:
+              return path.relative_to(root).as_posix()
+
+          def exists_repo_path(value: str) -> bool:
+              path = root / value.rstrip("/")
+              return path.exists()
+
+          for path in sorted(root.rglob("*.json")):
+              if ".git" in path.parts:
+                  continue
+              try:
+                  json.loads(path.read_text(encoding="utf-8"))
+              except Exception as exc:
+                  errors.append(f"{rel(path)}: invalid JSON: {exc}")
+
+          forbidden_dirs = {
+              "src", "tests", "scripts", "servers", "tools",
+              "implementations", "load-tools"
+          }
+          forbidden_exts = {
+              ".cs", ".csproj", ".fs", ".fsproj", ".vb", ".vbproj",
+              ".sln", ".slnx", ".props", ".targets", ".go", ".py", ".ps1",
+              ".sh", ".cmd", ".bat", ".js", ".jsx", ".ts", ".tsx", ".mjs",
+              ".cjs", ".java", ".kt", ".rs", ".rb", ".php"
+          }
+          forbidden_names = {"Dockerfile", "docker-compose.yml", "package.json"}
+
+          for name in sorted(forbidden_dirs):
+              if (root / name).exists():
+                  errors.append(f"{name}: forbidden implementation folder exists")
+
+          for path in sorted(root.rglob("*")):
+              if not path.is_file() or ".git" in path.parts:
+                  continue
+              rp = rel(path)
+              if path.name in forbidden_names:
+                  errors.append(f"{rp}: forbidden implementation/build file")
+              if path.suffix.lower() in forbidden_exts:
+                  errors.append(f"{rp}: forbidden implementation/source extension")
+
+          schema_base = "https://schemas.incursa.com/protocol-lab/"
+          for path in sorted((root / "schemas").rglob("*.schema.json")):
+              data = json.loads(path.read_text(encoding="utf-8"))
+              schema_id = data.get("$id")
+              if schema_id and not schema_id.startswith(schema_base):
+                  errors.append(f"{rel(path)}: $id must start with {schema_base}")
+
+          md_link = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+          for path in sorted(root.rglob("*.md")):
+              if ".git" in path.parts:
+                  continue
+              text = path.read_text(encoding="utf-8")
+              for line_no, line in enumerate(text.splitlines(), start=1):
+                  for match in md_link.finditer(line):
+                      target = match.group(1).strip()
+                      if target.startswith("<") and target.endswith(">"):
+                          target = target[1:-1]
+                      if not target or target.startswith("#"):
+                          continue
+                      if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+                          continue
+                      target_path = target.split("#", 1)[0]
+                      if not target_path:
+                          continue
+                      if not (path.parent / target_path).exists():
+                          errors.append(f"{rel(path)}:{line_no}: broken relative link {target}")
+
+          trace_path = root / "specs" / "traceability" / "trace-links.json"
+          if trace_path.exists():
+              trace = json.loads(trace_path.read_text(encoding="utf-8"))
+              path_keys = {"schemas", "fixtures", "architecture", "verification"}
+              for artifact in trace.get("canonicalArtifacts", []):
+                  if not exists_repo_path(artifact):
+                      errors.append(f"specs/traceability/trace-links.json: missing canonical artifact {artifact}")
+              for item in trace.get("requirements", []):
+                  item_id = item.get("id", "<missing-id>")
+                  for key in path_keys:
+                      for value in item.get(key, []):
+                          if not exists_repo_path(value):
+                              errors.append(f"specs/traceability/trace-links.json: {item_id} missing {key} path {value}")
+
+          stale_patterns = [
+              r"dotnet\s+(run|build|test|restore)\b",
+              r"docker\s+(build|run|compose)\b",
+              r"powershell\s+-NoProfile\b",
+              r"pwsh\s+-File\s+scripts[\\/]",
+              r"scripts[\\/][^\s`]+",
+              r"src[\\/]Incursa\.",
+              r"\.artifacts[\\/]",
+              r"localhost\b",
+              r"127\.0\.0\.1\b",
+          ]
+          stale_re = re.compile("|".join(f"(?:{p})" for p in stale_patterns), re.IGNORECASE)
+          scan_roots = [
+              root / "README.md",
+              root / "docs",
+              root / "specs",
+              root / "schemas",
+              root / "fixtures",
+              root / "scenarios",
+              root / "suites",
+              root / "load-profiles",
+          ]
+          for scan_root in scan_roots:
+              paths = [scan_root] if scan_root.is_file() else scan_root.rglob("*")
+              for path in paths:
+                  if not path.is_file() or path.suffix.lower() not in {".md", ".json", ".yaml", ".yml"}:
+                      continue
+                  for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+                      if stale_re.search(line):
+                          errors.append(f"{rel(path)}:{line_no}: stale implementation command or path")
+
+          if errors:
+              for error in errors:
+                  print(error)
+              sys.exit(1)
+          print("Repository health checks passed.")
+          PY

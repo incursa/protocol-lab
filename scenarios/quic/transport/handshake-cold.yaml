@@ -57,16 +57,16 @@ artifacts:
     - validation.json
     - result.json
   optional:
-    - qlog
+    - protocol-diagnostic-artifact
     - counters
 networkProfile: clean
 requiredMetrics:
   - quic.handshake.durationMs
   - quic.connection.successCount
 artifactRequirements:
-  - load-tool.stdout.txt
-  - load-tool.stderr.txt
-  - qlog
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+  - protocol-diagnostic-artifact
 tags:
   - phase6
   - quic

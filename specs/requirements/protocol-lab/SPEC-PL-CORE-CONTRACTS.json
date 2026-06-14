@@ -1,0 +1,171 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-CORE-CONTRACTS",
+  "artifact_type": "specification",
+  "title": "ProtocolLab Core Public Contract Surfaces",
+  "domain": "protocol-lab",
+  "capability": "core-contracts",
+  "status": "approved",
+  "owner": "protocol-lab-maintainers",
+  "tags": [
+    "protocol-lab",
+    "contracts",
+    "schemas",
+    "fixtures",
+    "language-neutral"
+  ],
+  "related_artifacts": [
+    "ARC-PL-CORE-CONTRACTS",
+    "VER-PL-CONTRACT-COVERAGE-0001",
+    "SPEC-PL-PUBLIC-CONTRACTS",
+    "SPEC-PL-LABPKG2",
+    "SPEC-PL-REPORT",
+    "SPEC-PL-MEASUREMENT-TELEMETRY",
+    "SPEC-PL-ARTIFACTS"
+  ],
+  "purpose": "Define the canonical requirements for the public ProtocolLab contract areas that are not owned by the measurement, artifact, package, report, or public-boundary specifications alone.",
+  "scope": "This specification covers adapter, test-executor, scenario, suite, load-profile, run-plan, schema, fixture, versioning, and compatibility contract requirements. It does not define any runner implementation, validation tool, generated SDK, hosted lab, telemetry backend, or executable workflow.",
+  "context": "The public repository needs stable, discoverable contract coverage across schemas, fixtures, documentation, and traceability without relying on executable validators.",
+  "requirements": [
+    {
+      "id": "PLAB-ADAPTER-001",
+      "title": "Adapter manifest capability discovery",
+      "statement": "Adapter Contract v1 manifests MUST describe adapter identity, implementation identity, contract compatibility, supported roles, claimed capabilities, scenario selectors, endpoint types, artifact types, and metrics availability without requiring a shared SDK or implementation language.",
+      "rationale": "Runners and hosted labs need a language-neutral way to determine whether an adapter can participate in a planned cell.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "schemas/adapter/v1/manifest.schema.json",
+          "fixtures/public-contracts/adapter/valid/adapter-manifest-with-telemetry.json",
+          "fixtures/public-contracts/adapter/invalid/adapter-manifest-missing-identity.json",
+          "docs/architecture/adapter-contract-v1.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-EXECUTOR-001",
+      "title": "Test executor manifest capability discovery",
+      "statement": "Test Executor Contract v1 manifests MUST describe executor identity, contract compatibility, claimed capabilities, test selectors, scenario selectors, protocol families, execution modes, required endpoint bindings, artifact types, and metrics availability without requiring a shared SDK or implementation language.",
+      "rationale": "Test executors must be selected by declared contract metadata rather than inferred names, packages, or runtime conventions.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "schemas/test-executor/v1/manifest.schema.json",
+          "fixtures/public-contracts/test-executor/valid/test-executor-manifest-with-telemetry.json",
+          "fixtures/public-contracts/test-executor/invalid/test-executor-manifest-missing-protocols.json",
+          "docs/architecture/test-executor-contract-v1.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-SCENARIO-001",
+      "title": "Scenario definitions",
+      "statement": "ProtocolLab scenario definitions MUST use stable scenario identifiers, declare protocol and role requirements, describe traffic shape, and define validation expectations as declarative contract data.",
+      "rationale": "Scenarios are durable public test cases and must not depend on runner-local implementation code.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "schemas/scenario.schema.json",
+          "fixtures/public-contracts/scenarios/valid/http-core-plaintext-scenario.json",
+          "fixtures/public-contracts/scenarios/invalid/scenario-missing-id.json",
+          "docs/architecture/scenario-model.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-SUITE-001",
+      "title": "Suite definitions",
+      "statement": "ProtocolLab suite definitions MUST group existing scenario identifiers for a stated purpose and result kind, and MUST reference a load profile rather than embedding implementation-specific execution behavior.",
+      "rationale": "Suites provide repeatable public selections while preserving separation between contract selection and runner execution.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "schemas/suite/v1/suite.schema.json",
+          "fixtures/public-contracts/suites/valid/http1-core-smoke-suite.json",
+          "fixtures/public-contracts/suites/invalid/suite-empty-scenarios.json",
+          "docs/architecture/test-case-run-plan-model.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-LOADPROFILE-001",
+      "title": "Load profile definitions",
+      "statement": "ProtocolLab load profiles MUST define declarative load intent, duration, repetition, protocol load-shape hints, evidence tier expectations, and artifact expectations without naming a required load generator implementation.",
+      "rationale": "Load profiles constrain evidence shape and comparability without prescribing how a runner generates traffic.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "schemas/load-profile/load-profile.schema.json",
+          "fixtures/public-contracts/load-profiles/valid/smoke-load-profile.json",
+          "fixtures/public-contracts/load-profiles/invalid/load-profile-missing-purpose.json",
+          "docs/architecture/load-model.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-RUNPLAN-001",
+      "title": "Run plan package and selector binding",
+      "statement": "Run Plan v1 documents MUST pin package identities and hashes, select implementations, test executors, suites or scenarios, protocols, load profile, target mode, target network mode, and required capabilities as immutable declarative work-selection metadata.",
+      "rationale": "Run plans need repeatable provenance and selector binding without embedding scenario behavior or launch mechanics.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "schemas/run-plan/v1/run-plan.schema.json",
+          "fixtures/public-contracts/run-plans/valid/http1-core-smoke-reference.json",
+          "fixtures/public-contracts/run-plans/invalid/missing-package-hash.json",
+          "fixtures/public-contracts/run-plans/incompatible/unknown-scenario-selection.json",
+          "docs/lab/run-plan-v1.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-SCHEMA-001",
+      "title": "Public JSON schema source of truth",
+      "statement": "Every major public JSON contract document SHOULD have a JSON Schema under schemas/ unless the contract is explicitly documented as prose-only or YAML/OpenAPI-only.",
+      "rationale": "Schemas provide language-neutral validation targets for implementations without shipping executable validators.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "schemas/README.md",
+          "docs/terminology-and-policies.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-FIXTURE-001",
+      "title": "Valid and invalid fixture coverage",
+      "statement": "Public contract fixtures SHOULD include valid examples and intentionally invalid examples for important required-field, enum, provenance, hash, and compatibility rules.",
+      "rationale": "Fixtures make contract intent reviewable without requiring scripts or validators in the public repository.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "fixtures/public-contracts/README.md",
+          "fixtures/public-contracts/"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-VERSIONING-001",
+      "title": "Versioning and compatibility rules",
+      "statement": "ProtocolLab public contracts MUST use stable contract-version identifiers and MUST preserve explicit unsupported, unavailable, and incompatible outcomes instead of allowing implicit fallback.",
+      "rationale": "Stable identifiers and explicit outcomes allow independent implementations to evolve without silently changing evidence semantics.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "docs/terminology-and-policies.md",
+          "schemas/run-plan/v1/run-plan.schema.json",
+          "fixtures/public-contracts/run-plans/incompatible/unknown-scenario-selection.json"
+        ]
+      }
+    }
+  ]
+}

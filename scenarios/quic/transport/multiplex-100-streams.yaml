@@ -16,7 +16,7 @@ trafficShape: bidirectional-stream
 id: quic.transport.multiplex.100x64kb
 name: QUIC Multiplex 100x64KB
 family: quic.transport
-description: Validate and benchmark 100 concurrent 64KB QUIC streams through the raw QUIC load-tool contract.
+description: Validate and benchmark 100 concurrent 64KB QUIC streams through the raw QUIC load-generator contract.
 protocol: quic
 implementationRole: server
 requiredCapabilities:
@@ -35,7 +35,7 @@ quicTransport:
 validation:
   required: true
   checks:
-    - raw-quic-load-tool-metrics
+    - raw-quic-load-generator-metrics
     - bytes-sent-received-match-expected
     - completed-streams-match-expected
     - zero-timeouts-and-errors
@@ -62,16 +62,16 @@ artifacts:
     - validation.json
     - result.json
   optional:
-    - qlog
+    - protocol-diagnostic-artifact
     - counters
 networkProfile: clean
 requiredMetrics:
   - quic.stream.maxActiveStreams
   - quic.stream.completedStreams
 artifactRequirements:
-  - load-tool.stdout.txt
-  - load-tool.stderr.txt
-  - qlog-unavailable-note
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+  - protocol-diagnostic-unavailable-note
 tags:
   - phase6
   - quic

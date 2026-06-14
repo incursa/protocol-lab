@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "protocol-lab.evidence-report.v1",
+  "runId": "run-2026-06-14-smoke",
+  "generatedAt": "2026-06-14T12:00:00Z",
+  "identity": {
+    "runId": "run-2026-06-14-smoke",
+    "timestamp": "2026-06-14T12:00:00Z",
+    "suiteId": "http1-core-smoke",
+    "suiteTitle": "ProtocolLab HTTP/1 core smoke suite",
+    "processorCount": 0,
+    "evidenceTier": "smoke",
+    "warnings": []
+  },
+  "matrixSummary": {
+    "totalCells": 1,
+    "supportedCells": 1,
+    "unsupportedCells": 0,
+    "missingCapability": 0,
+    "missingLoadGenerator": 0,
+    "incompatibleTrafficShape": 0,
+    "incompatibleLoadProfile": 0,
+    "experimentalDisabled": 0,
+    "placeholderNotRunnable": 0,
+    "otherUnsupported": 0,
+    "unsupportedCellDetails": []
+  },
+  "validationSummary": {
+    "passed": 1,
+    "failed": 0,
+    "unsupported": 0,
+    "notApplicable": 0,
+    "inconclusive": 0,
+    "infrastructureFailure": 0,
+    "proofArtifacts": [
+      {
+        "cellKey": "cell-001",
+        "status": "passed",
+        "artifacts": ["validation.json"]
+      }
+    ]
+  },
+  "benchmarkAcceptance": {
+    "acceptedBenchmarks": 0,
+    "rejectedBenchmarks": 0,
+    "notRunValidationFailed": 0,
+    "notRunUnsupported": 0,
+    "notRunLoadGeneratorFailed": 0,
+    "notRunParserFailed": 0,
+    "acceptedDetails": [],
+    "rejectedDetails": [],
+    "notRunDetails": []
+  },
+  "cells": [
+    {
+      "cellKey": "cell-001",
+      "implementationId": "example-implementation",
+      "implementationName": "Example Implementation",
+      "scenarioId": "http.core.plaintext",
+      "scenarioName": "HTTP plaintext response",
+      "family": "http",
+      "protocol": "h1",
+      "role": "server",
+      "executionProfile": "smoke",
+      "durationSeconds": 5,
+      "warmupSeconds": 0,
+      "repetition": 0,
+      "connections": 1,
+      "streamsPerConnection": 1,
+      "networkProfile": "clean",
+      "validation": {
+        "status": "passed",
+        "summary": "Scenario validation passed.",
+        "observations": [],
+        "proofArtifacts": [],
+        "warnings": [],
+        "errors": []
+      },
+      "benchmark": {
+        "status": "not-run",
+        "parsedMetricsAvailable": false,
+        "evidenceReasons": ["smoke profile does not claim benchmark evidence"],
+        "comparabilityWarnings": []
+      },
+      "measurements": [],
+      "artifacts": [
+        {
+          "name": "validation.json",
+          "path": "artifacts/cell-001/validation.json",
+          "exists": true
+        }
+      ],
+      "warnings": [],
+      "errors": []
+    }
+  ],
+  "comparisonGroups": [],
+  "warnings": [],
+  "artifactIndex": [
+    {
+      "cellKey": "cell-001",
+      "cellDirectory": "artifacts/cell-001",
+      "files": [
+        {
+          "name": "validation.json",
+          "path": "artifacts/cell-001/validation.json",
+          "exists": true
+        }
+      ]
+    }
+  ]
+}

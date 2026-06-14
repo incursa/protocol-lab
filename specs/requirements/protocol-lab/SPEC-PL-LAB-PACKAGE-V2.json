@@ -16,7 +16,7 @@
   ],
   "related_artifacts": [
     "SPEC-PL-LABPKG",
-    "SPEC-PL-RUNNER",
+    "SPEC-PL-PUBLIC-CONTRACTS",
     "SPEC-PL-REPORT"
   ],
   "purpose": "Define the public component package contract that lets ProtocolLab compose versioned implementations, test executors, and scenario packs without baking protocol capability into hosted lab workers.",
@@ -25,7 +25,7 @@
     {
       "id": "REQ-PL-LABPKG2-0001",
       "title": "V2 root manifest",
-      "statement": "A v2 ProtocolLab component package MUST contain protocol-lab-package.json with schemaVersion protocol-lab-package-v2, packageId, packageVersion, kind, entryManifests, environments, and dependencies.",
+      "statement": "A v2 ProtocolLab component package MUST contain protocol-lab-package.json with schemaVersion protocol-lab-package-v2, packageId, packageVersion, kind, and entryManifests.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
@@ -57,8 +57,8 @@
     },
     {
       "id": "REQ-PL-LABPKG2-0004",
-      "title": "Runtime dependency declarations",
-      "statement": "A v2 package MUST declare runtime prerequisites through dependencies and package-provided test-executor capability requirements so hosted schedulers can match generic worker primitives rather than protocol-specific baked executor flags.",
+      "title": "Capability dependency declarations",
+      "statement": "A v2 component package MAY declare package dependencies or required capabilities as metadata, but the public package contract MUST NOT require executable entrypoints, local launch commands, or implementation-specific runtime prerequisites.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
@@ -87,7 +87,7 @@
     {
       "id": "REQ-PL-LABPKG2-0005",
       "title": "Run provenance",
-      "statement": "Every hosted run result that uses component packages SHOULD record each resolved package's packageId, packageVersion, SHA-256, kind, selected entrypoint, effective manifest IDs, test-executor command artifact, and test-executor working directory.",
+      "statement": "Every hosted run result that uses component packages SHOULD record each resolved package's packageId, packageVersion, SHA-256, kind, effective manifest IDs, and selected component IDs.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "optional",
@@ -109,7 +109,7 @@
     {
       "id": "REQ-PL-LABPKG2-0008",
       "title": "Catalog overlay materialization",
-      "statement": "Lab workers MUST materialize package entry manifests into a generated per-attempt catalog overlay without modifying the checkout.",
+      "statement": "Implementations that consume component packages MUST materialize package entry manifests into generated per-attempt catalog overlays without modifying the public contract repository.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
@@ -141,7 +141,7 @@
     {
       "id": "REQ-PL-LABPKG2-0010",
       "title": "Incompatible component rejection",
-      "statement": "Workers MUST reject incompatible component sets rather than substituting a different protocol lane.",
+      "statement": "Implementations that consume component packages MUST reject incompatible component sets rather than substituting a different protocol lane.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",
@@ -157,7 +157,7 @@
     {
       "id": "REQ-PL-LABPKG2-0011",
       "title": "No legacy package semantics",
-      "statement": "New v2 docs, schemas, tooling, and hosted ingestion MUST NOT use load-runner, load-tool package kinds, or providedLoadTools as v2 package semantics.",
+      "statement": "New v2 docs, schemas, tooling, and hosted ingestion MUST NOT use load-generator, load-generator package kinds, or providedLoadGenerators as v2 package semantics.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "optional",

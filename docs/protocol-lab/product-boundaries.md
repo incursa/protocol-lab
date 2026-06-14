@@ -1,110 +1,101 @@
-# ProtocolLab - Product Boundaries
+# ProtocolLab Product Boundaries
 
-**Status:** Current (public/community repo is canonical; sibling internal repo consumes public contracts and extends them privately)
+**Status:** Current. The public repository is a language-neutral contract
+repository. Implementation repositories consume it.
 
 ## Overview
 
-ProtocolLab now has an actual public/private repository split:
+ProtocolLab has a public/implementation split:
 
-- `Incursa.ProtocolLab` is the public/community repository.
-- `Incursa.ProtocolLab.Internal` is the sibling internal repository.
+- the public repository is the specification, schema, fixture, scenario,
+  suite, load-profile, and documentation repository.
+- internal, third-party, or product-specific implementation repositories own
+  runtime behavior and operations.
 
-The public repo is the canonical source for shared contracts, public docs,
-and community-friendly validation behavior. The internal repo may depend on
-the public repo, but the public repo must not depend on internal code,
-private configuration, or private services.
+The public repository defines stable contracts. Implementation repositories may
+implement those contracts, operate hosted labs, retain operational artifacts,
+and add private diagnostics. The public repository must not depend on
+implementation code, implementation services, private configuration, private
+credentials, or private deployment state.
 
 ## Layer Model
 
+```text
++--------------------------------------------------+
+| Internal / Implementation Layer                  |
+| Hosted labs, concrete runners, package stores,   |
+| worker orchestration, private diagnostics,       |
+| retained operational artifacts                   |
++--------------------------------------------------+
+| Public / Contract Layer                          |
+| SpecTrace JSON, schemas, OpenAPI/YAML contracts, |
+| fixtures, scenarios, suites, load profiles,      |
+| public report and artifact contracts, docs       |
++--------------------------------------------------+
 ```
-+--------------------------------------------------+
-| Internal / Private Layer                         |
-| Hosted execution, retained artifacts,            |
-| private CI, dashboards, diagnostics,             |
-| extended scenarios, unreleased work              |
-+--------------------------------------------------+
-| Public / Community Layer                         |
-| Local validation, local benchmarking,            |
-| Docker execution, CI automation,                 |
-| shared contracts, open artifact format           |
-+--------------------------------------------------+
-```
 
-## Public / Community Layer
+## Public Contract Layer
 
-The public/community layer is the user-facing ProtocolLab surface. It is
-designed to be complete and useful on its own.
+The public layer owns language-neutral definitions:
 
-**Implemented capabilities:**
-- Local process and Docker target execution
-- Local validation with HTTP/3 protocol proof
-- Local benchmarking with `h2load`, `oha`, and managed `HttpClient` load tools
-- Deterministic artifact layout under `.artifacts/runs/{runId}`
-- Collision-proof run-cell identity in artifact paths
-- Evidence classification and comparability gates
-- Report claim levels with publishable gating
-- Markdown summaries and aggregate JSON reports
-- Adapter control plane contract for external lifecycle management
-- Suite definitions for repeatable run configurations
+- requirements and traceability in SpecTrace JSON
+- JSON Schema and OpenAPI/YAML contract files
+- declarative fixtures for valid, invalid, and incompatible contract examples
+- scenario and suite definitions
+- load-profile definitions
+- measurement, telemetry, artifact, redaction, comparability, and public-report
+  contracts
+- contribution, security, and governance documents
 
-**Public/community invariants:**
-- Public docs are authored here first.
-- Shared contracts are published from the public repo and consumed by the internal repo.
-- Public/community outputs must not fabricate controlled-run or publishable provenance.
-- Local/shared-host evidence is honest and useful, but it is not equivalent to an attested benchmark.
+The public layer does not own local process execution, container execution,
+continuous-integration automation, load-generator wrappers, local benchmarking,
+retained run artifacts, package publication, object-store upload scripts, or a
+canonical runner implementation.
 
-## Private / Internal Layer
+## Internal And External Implementation Layer
 
-The internal layer adds capabilities that are intentionally not part of the
-public/community surface:
+Implementation repositories may provide:
 
-- Hosted execution
-- Attested provenance and retained artifacts
-- Extended scenarios and private adapters
-- Private CI integration and retention policy control
-- Diagnostic analysis and deeper instrumentation
-- Internal scripts, release workflows, and unreleased work
+- runners and command surfaces
+- adapters and implementation packages
+- test executors
+- package materialization and worker orchestration
+- hosted controller APIs and operational dashboards
+- retained artifacts and attested provenance
+- private diagnostics and release automation
 
-## Boundary Enforcement
+Those implementations must consume the public contracts instead of redefining
+them privately.
 
-The following constraints keep the split honest:
+## Boundary Rules
 
-1. **Internal may depend on public.** Internal code should reference public
-   shared contracts or packages instead of carrying silent duplicates.
-2. **Public must not depend on internal.** No public runtime or docs path may
-   require internal assemblies, services, or data.
-3. **No fabricated provenance.** Public/community results must not imply
-   controlled, hosted, or publishable provenance unless the gating conditions
-   are actually met.
-4. **Separate configuration.** Internal execution configuration lives outside
-   the public CLI surface and public docs.
-5. **Contract-first integration.** Any hosted or private service must integrate
-   through documented contracts that the public repo already supports.
-6. **No implied commercial service.** Public docs, templates, and artifacts
-   must not imply that a commercial benchmark service is part of the public
-   repo.
+1. Internal may consume public contracts.
+2. Public must not consume internal code, services, configuration, or build
+   outputs.
+3. Public contracts must remain language-neutral.
+4. Unsupported and unavailable states must remain explicit.
+5. Raw QUIC and HTTP/3 lanes must not be collapsed into each other.
+6. Public report contracts must not imply controlled, hosted, or publishable
+   evidence unless the required provenance is present.
+7. Concrete runner behavior belongs outside this public repository.
 
-## Evidence Classification and Claim Boundaries
+## Participation Model
 
-The evidence-class system marks the boundary between self-serve and controlled
-data. Report claim levels then gate what a whole report is allowed to assert.
+A runner, adapter, implementation package, test executor, hosted controller,
+report consumer, archive importer, or telemetry bundle participates by
+satisfying public schemas and preserving public semantics. An
+implementation-owned runner is one participant, not the source of truth.
 
-| Evidence Class | Layer | Meaning |
-|---------------|-------|---------|
-| `local-smoke` | Public / Community | Quick functional check, no load measurement |
-| `local-lab` | Public / Community | Local benchmark on shared host, useful for regression |
-| `external-reference-local` | Public / Community | External tool (h2load) on shared host, useful for comparison |
-| `isolated-host` | Internal / Private | Controlled environment, single-tenant host |
-| `publishable` | Internal / Private | Attested, verified, retained, reproducible |
-
-Public/community runs produce `local-smoke`, `local-lab`, and
-`external-reference-local` evidence. Controlled benchmark claims belong to
-the internal/private workflow and must not be fabricated by the public repo.
+Implementation-side telemetry is optional auxiliary evidence unless a run plan
+explicitly requires it. The public layer defines normalized telemetry and
+artifact manifest shapes, not the collector, telemetry backend, raw artifact
+format, or storage implementation.
 
 ## Related Documents
 
-- [Measurement Model](../architecture/measurement-model.md) - how execution profile and provenance relate to measurements
-- [Report Model](../architecture/report-model.md) - how claim levels and publishable gating describe results
-- [Artifact Model](../architecture/artifact-model.md) - how artifact paths and preservation support auditability
-- [Vision](vision.md) - higher-level project intent and protocol boundaries
-- [Architecture Overview](../architecture/overview.md) - current component map and implementation coverage
+- [README](../../README.md)
+- [Package v2](../lab/package-v2.md)
+- [Run Plan v1](../lab/run-plan-v1.md)
+- [Test Case And Run Plan Model](../architecture/test-case-run-plan-model.md)
+- [Measurement Model](../architecture/measurement-model.md)
+- [SpecTrace Traceability](../../specs/traceability/README.md)

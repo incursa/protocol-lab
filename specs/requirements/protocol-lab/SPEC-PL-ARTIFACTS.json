@@ -1,0 +1,116 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-ARTIFACTS",
+  "artifact_type": "specification",
+  "title": "ProtocolLab Artifact And Redaction Contracts",
+  "domain": "protocol-lab",
+  "capability": "artifacts-redaction",
+  "status": "approved",
+  "owner": "protocol-lab-maintainers",
+  "tags": [
+    "protocol-lab",
+    "artifacts",
+    "redaction",
+    "language-neutral",
+    "contracts"
+  ],
+  "related_artifacts": [
+    "ARC-PL-MEASUREMENT-TELEMETRY",
+    "VER-PL-MEASUREMENT-CONTRACT-0001",
+    "SPEC-PL-MEASUREMENT-TELEMETRY"
+  ],
+  "purpose": "Define hash-addressable artifact references, artifact bundles, redaction states, and safety rules for ProtocolLab evidence.",
+  "scope": "This specification covers artifact manifests and bundles. It does not define artifact collection tools, storage services, upload workflows, directory writers, or retention services.",
+  "context": "ProtocolLab runs can produce raw and derived evidence. Public contracts need a safe manifest shape that can describe any artifact media type without requiring a specific artifact format.",
+  "requirements": [
+    {
+      "id": "PLAB-ARTIFACT-001",
+      "title": "Artifact reference fields",
+      "statement": "Artifact references MUST include artifact_id, kind, media_type, path, sha256, size_bytes, created_at_utc, producer, redaction_state, contains_sensitive_data, retention_class, description, and tags.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "related": [
+          "schemas/artifact/v1/artifact-reference.schema.json",
+          "fixtures/public-contracts/artifacts/valid/raw-binary-trace-artifact-bundle.json",
+          "fixtures/public-contracts/artifacts/invalid/artifact-reference-without-hash.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-ARTIFACT-002",
+      "title": "Raw artifact manifest boundary",
+      "statement": "Raw artifacts MUST be preserved by reference and content hash, and the public contract MUST NOT require a specific media type, collector, storage backend, or artifact transport.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "related": [
+          "schemas/artifact/v1/artifact-reference.schema.json",
+          "schemas/artifact/v1/artifact-bundle.schema.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-ARTIFACT-003",
+      "title": "Safe public redaction consistency",
+      "statement": "Artifacts marked producer-declared-safe, sanitized, or public MUST NOT declare contains_sensitive_data as true.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "related": [
+          "schemas/artifact/v1/artifact-reference.schema.json",
+          "fixtures/public-contracts/artifacts/invalid/sanitized-artifact-with-sensitive-data.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-ARTIFACT-004",
+      "title": "Artifact bundle run binding",
+      "statement": "Artifact bundles MUST bind artifact references to run_binding and SHOULD include run, cell, scenario, suite, protocol, implementation, test-executor, load-profile, and execution-profile fields when known.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "related": [
+          "schemas/artifact/v1/artifact-bundle.schema.json",
+          "fixtures/public-contracts/artifacts/valid/sanitized-public-report-artifact-bundle.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-ARTIFACT-005",
+      "title": "Artifact kind is descriptive",
+      "statement": "Artifact kind MAY describe logs, traces, metrics, qlog files, packet captures, process output, profiles, summaries, reports, raw blobs, or other evidence, but the public contract MUST NOT require any one kind.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "related": ["schemas/artifact/v1/artifact-reference.schema.json"]
+      }
+    },
+    {
+      "id": "PLAB-ARTIFACT-006",
+      "title": "Explicit redaction state",
+      "statement": "Artifact references and artifact bundles MUST carry explicit redaction state before they are used as public report evidence.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "related": [
+          "schemas/artifact/v1/redaction-state.schema.json",
+          "schemas/artifact/v1/artifact-bundle.schema.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-ARTIFACT-007",
+      "title": "No private material in public artifacts",
+      "statement": "Public artifact bundles SHOULD NOT contain private paths, credentials, secrets, hostnames, or implementation-only operational state.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "related": [
+          "docs/reports/public-report-safety.md",
+          "fixtures/public-contracts/artifacts/valid/sanitized-public-report-artifact-bundle.json"
+        ]
+      }
+    }
+  ]
+}

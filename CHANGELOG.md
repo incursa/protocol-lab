@@ -1,12 +1,21 @@
 # Changelog
 
-## v1-local-operational - 2026-05-27
+## public-spec-repository - 2026-06-14
 
-- Freezes ProtocolLab as a locally operational v1 HTTP/3 validation and local
-  acceptance harness.
-- Adds bootstrap, acceptance, consolidated run-index, quickstart, v1 definition
-  of done, release notes, and CI build/test workflow.
-- Confirms local results are not publishable benchmark evidence.
-- Defers raw QUIC, WebTransport, MASQUE, database workloads, nginx/Caddy/quic-go
-  execution, target Docker execution, network impairment, publishable isolated
-  host automation, and Incursa optimization.
+- Repositioned ProtocolLab as a public, language-neutral specification and
+  contract repository.
+- Preserved public contract assets for schemas, fixtures, scenarios, suites,
+  load profiles, measurement, telemetry, artifacts, public reports, and
+  SpecTrace traceability.
+- Removed public implementation, runner, script, workflow, package publication,
+  and local execution surfaces from the repository boundary.
+- Added repository structure, contract coverage, contract completeness, and
+  release-readiness audits.
+
+## historical-local-operational-state - 2026-05-27
+
+- Earlier public repository snapshots included local operational runner and
+  benchmark assets.
+- Those assets are no longer part of the public repository boundary. Runner,
+  hosted lab, diagnostics, package materialization, retained artifact, and
+  publication behavior now belongs in implementation repositories.

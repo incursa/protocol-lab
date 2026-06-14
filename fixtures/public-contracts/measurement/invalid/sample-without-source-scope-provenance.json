@@ -1,0 +1,10 @@
+{
+  "metric_name": "request.latency",
+  "metric_kind": "gauge",
+  "value": 10.5,
+  "unit": "ms",
+  "timestamp_utc": "2026-06-14T15:10:00Z",
+  "collector_id": "runner-observer",
+  "tags": {},
+  "warnings": []
+}

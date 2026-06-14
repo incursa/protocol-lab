@@ -13,24 +13,5 @@
         "h1"
       ]
     }
-  ],
-  "environments": [
-    {
-      "os": "linux",
-      "arch": "x64",
-      "entrypoint": {
-        "kind": "bash",
-        "path": "scripts/noop.sh",
-        "arguments": [],
-        "workingDirectory": "."
-      }
-    }
-  ],
-  "dependencies": {
-    "requiresDotNet": false,
-    "requiresDocker": false,
-    "requiresPwsh": false,
-    "requiresBash": true,
-    "requiredCapabilities": []
-  }
+  ]
 }

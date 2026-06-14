@@ -1,55 +1,36 @@
-# ProtocolLab Lab Roles
+# Lab Roles
 
-ProtocolLab separates the lab from the protocol implementations and from the tools that exercise them.
+ProtocolLab roles describe contract participants. They do not require a
+specific implementation repository or runtime.
 
-For the canonical vocabulary that distinguishes test cases, scenarios,
-scenario packs, suites, load profiles, package kinds, and run plans, see
-[Test Case And Run Plan Model](test-case-run-plan-model.md).
+## Public Contract Repository
 
-## Roles
+The public repository defines schemas, fixtures, scenarios, suites, load
+profiles, run plans, artifact contracts, report contracts, and SpecTrace
+requirements.
 
-| Role | Owned by | Contract |
-| --- | --- | --- |
-| Lab controller | Hosted/private lab | Job API and package ingestion. |
-| Lab worker | Hosted/private lab | Materializes packages, launches selected components, collects artifacts. |
-| Implementation adapter | Implementation package producer | Adapter Contract v1. |
-| Test executor | Test package producer | Test Executor Contract v1. |
-| Scenario pack | Scenario package producer | Package v2 catalog metadata and scenario/suite manifests. |
-| Toolchain package | Lab/operator package producer | Package v2 dependency metadata; execution support is deferred. |
+## Runner Or Hosted Lab
 
-The public repository defines contracts and schemas. It does not need to own production implementations, production test executors, or hosted worker infrastructure.
+A runner or hosted lab consumes public contracts, resolves package metadata,
+executes selected work, and produces artifacts. It is an implementation of the
+public contracts, not the public source of truth.
 
-## Compatibility Inputs
+## Adapter
 
-A package-backed job becomes executable only after the controller resolves all of these inputs:
+An adapter exposes an implementation-owned control plane for preparing,
+starting, observing, and cleaning up a target.
 
-- implementation id
-- test executor id
-- suite id or scenario id
-- protocol family
-- required endpoint bindings
-- package environment and worker capabilities
+## Test Executor
 
-If any selected input cannot be satisfied by the submitted packages plus the base catalog, the job is rejected or the cell is marked unsupported. ProtocolLab must not silently choose a different implementation, test executor, or protocol lane.
+A test executor performs selected tests against prepared implementation
+endpoints and reports metrics, artifacts, unsupported outcomes, and failures.
 
-Packages declare support positively. Anything outside the declared scenarios,
-protocols, endpoint bindings, or capabilities is unsupported or unavailable;
-it is not permission for the lab to substitute a nearby component.
+## Package Producer
 
-## Public ID And Selector Rules
+A package producer publishes implementation, test-executor, scenario-pack, or
+toolchain packages that satisfy the public package contract.
 
-ProtocolLab may reserve common IDs for broadly useful scenarios and tests.
-Package authors may define namespaced IDs for specialized capabilities.
+## Report Consumer
 
-Public IDs should be stable ASCII tokens that match the package v2 token
-shape: start with a letter or digit and then use only letters, digits,
-underscore, period, colon, or hyphen. Scenario IDs should be namespaced by
-family and behavior, for example `quic.transport.duplex-streams`. Test IDs
-name executor-owned checks. A test ID may equal a scenario ID for a one-to-one
-executor, but that is an explicit declaration, not an implicit rule.
-
-Selectors must declare what they match. Use `scenario-id` for scenario IDs and
-`test-id` for test IDs. Prefixes, wildcards, tags, or custom selector
-expressions are metadata that the selected package and lab must both
-understand. They must not be inferred from language runtime, implementation
-brand, executable name, or hardcoded protocol knowledge in the lab.
+A report consumer validates public report schemas and preserves claim-level,
+provenance, unsupported, and unavailable outcome semantics.

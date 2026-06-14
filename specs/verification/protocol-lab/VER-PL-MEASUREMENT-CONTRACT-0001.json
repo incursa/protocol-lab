@@ -1,0 +1,65 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-MEASUREMENT-CONTRACT-0001",
+  "artifact_type": "verification",
+  "title": "Measurement Telemetry And Artifact Contract Verification",
+  "domain": "protocol-lab",
+  "status": "passed",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-MEASUREMENT-TELEMETRY",
+    "SPEC-PL-ARTIFACTS",
+    "ARC-PL-MEASUREMENT-TELEMETRY"
+  ],
+  "scope": "Verify the public measurement, telemetry, artifact, redaction, comparability, and optional telemetry export contract layer.",
+  "verifies": [
+    "PLAB-MEASURE-001",
+    "PLAB-MEASURE-002",
+    "PLAB-MEASURE-003",
+    "PLAB-MEASURE-004",
+    "PLAB-MEASURE-005",
+    "PLAB-MEASURE-006",
+    "PLAB-MEASURE-007",
+    "PLAB-MEASURE-008",
+    "PLAB-MEASURE-009",
+    "PLAB-MEASURE-010",
+    "PLAB-MEASURE-011",
+    "PLAB-ADAPTER-TELEMETRY-001",
+    "PLAB-EXECUTOR-TELEMETRY-001",
+    "PLAB-REPORT-MEASURE-001",
+    "PLAB-ARTIFACT-001",
+    "PLAB-ARTIFACT-002",
+    "PLAB-ARTIFACT-003",
+    "PLAB-ARTIFACT-004",
+    "PLAB-ARTIFACT-005",
+    "PLAB-ARTIFACT-006",
+    "PLAB-ARTIFACT-007"
+  ],
+  "verification_method": "Repository inspection, JSON parse checks, forbidden file scan, and contract fixture inspection.",
+  "preconditions": [
+    "The repository remains a public specification and contract repository.",
+    "No runner implementation code or executable automation is added for this contract layer."
+  ],
+  "procedure": [
+    "Confirm measurement schemas exist under schemas/measurement/v1/.",
+    "Confirm artifact schemas exist under schemas/artifact/v1/.",
+    "Confirm valid and invalid fixtures exist under fixtures/public-contracts/measurement/ and fixtures/public-contracts/artifacts/.",
+    "Confirm adapter and test-executor schemas expose telemetry capability discovery as optional metadata.",
+    "Confirm documentation states that implementation telemetry is auxiliary unless explicitly required by a run plan.",
+    "Confirm documentation does not require any specific telemetry backend or raw artifact format.",
+    "Parse all JSON contract, fixture, and SpecTrace files.",
+    "Scan for forbidden source code and executable automation extensions."
+  ],
+  "expected_result": "The repository defines language-neutral telemetry and artifact contracts, examples, and traceability without adding runtime collectors, SDKs, scripts, workflows, source code, or implementation-specific packages.",
+  "evidence": [
+    "schemas/measurement/v1/telemetry-bundle.schema.json",
+    "schemas/artifact/v1/artifact-bundle.schema.json",
+    "fixtures/public-contracts/measurement/valid/",
+    "fixtures/public-contracts/measurement/invalid/",
+    "fixtures/public-contracts/artifacts/valid/",
+    "fixtures/public-contracts/artifacts/invalid/",
+    "docs/architecture/measurement-model.md",
+    "specs/traceability/trace-links.json"
+  ],
+  "status_summary": "passed"
+}

@@ -57,7 +57,7 @@ artifacts:
     - validation.json
     - result.json
   optional:
-    - qlog
+    - protocol-diagnostic-artifact
     - counters
 networkProfile: clean
 requiredMetrics:
@@ -65,9 +65,9 @@ requiredMetrics:
   - h3.stream.completedRequests
   - h3.stream.maxActiveStreams
 artifactRequirements:
-  - load-tool.stdout.txt
-  - load-tool.stderr.txt
-  - qlog
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+  - protocol-diagnostic-artifact
 tags:
   - phase5
   - h3

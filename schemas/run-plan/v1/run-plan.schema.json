@@ -61,11 +61,11 @@
     },
     "targetMode": {
       "type": "string",
-      "enum": ["process", "docker", "external"]
+      "enum": ["implementation-resolved", "external"]
     },
     "targetNetworkMode": {
       "type": "string",
-      "enum": ["published-port", "shared-docker-network"]
+      "enum": ["published-endpoint", "implementation-defined"]
     },
     "requiredCapabilities": {
       "type": "array",
@@ -85,7 +85,7 @@
     },
     "publicationIntent": {
       "type": "string",
-      "enum": ["local-only", "publishable-report"]
+      "enum": ["non-public", "publishable-report"]
     },
     "labels": {
       "$ref": "#/$defs/nonEmptyStringArray"

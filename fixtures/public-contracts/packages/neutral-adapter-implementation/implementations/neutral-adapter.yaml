@@ -1,40 +1,20 @@
 id: neutral-adapter-implementation
 name: Neutral Adapter Implementation Fixture
-description: Neutral package fixture for an external Adapter v1 implementation.
-image: ""
-targetKind: external
+description: Neutral package fixture for an Adapter v1 implementation.
+targetKind: adapter
 targetContract: adapter-v1
-executable: ""
-project: ""
-workingDirectory: .
-dockerfile: ""
-buildContext: .
-containerName: ""
-dockerNetwork: ""
-dockerNetworkMode: published-port
-dockerBaseUrl: ""
-baseUrl: ""
-adapterControlPlaneBaseUrl: ""
-certificateMode: none
 roles:
   - server
 supportedProtocols:
   - h3
 supportedWorkloadFamilies:
   - fixture.public
-ports: []
-environment: {}
-dockerEnvironment: {}
-commandArguments: []
-readinessCheck:
-  type: none
-  url: ""
-  timeoutSeconds: 1
-shutdownBehavior: external
 capabilities:
   - fixture.public.echo
 artifactExports:
   - adapter.log
-qlogSupport: false
-sslKeyLogSupport: false
-notes: Fixture metadata only; the live Adapter v1 lifecycle must be validated with the conformance adapter command.
+telemetry:
+  supported: false
+  export_modes:
+    - none
+notes: Fixture metadata only; it is not a runnable benchmark target.

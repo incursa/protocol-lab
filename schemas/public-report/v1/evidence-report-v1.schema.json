@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://protocol-lab.incursa.com/schemas/public-report/v1/evidence-report-v1.schema.json",
+  "$id": "https://schemas.incursa.com/protocol-lab/public-report/v1/evidence-report-v1.schema.json",
   "title": "ProtocolLab Evidence Report v1",
-  "description": "Canonical shareable ProtocolLab run evidence payload uploaded to R2 as evidence-report-v1.json.",
+  "description": "Canonical shareable ProtocolLab run evidence payload.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -148,7 +148,7 @@
         "supportedCells",
         "unsupportedCells",
         "missingCapability",
-        "missingLoadTool",
+        "missingLoadGenerator",
         "incompatibleTrafficShape",
         "incompatibleLoadProfile",
         "experimentalDisabled",
@@ -169,7 +169,7 @@
         "missingCapability": {
           "$ref": "#/definitions/count"
         },
-        "missingLoadTool": {
+        "missingLoadGenerator": {
           "$ref": "#/definitions/count"
         },
         "incompatibleTrafficShape": {
@@ -259,7 +259,7 @@
         "rejectedBenchmarks",
         "notRunValidationFailed",
         "notRunUnsupported",
-        "notRunLoadToolFailed",
+        "notRunLoadGeneratorFailed",
         "notRunParserFailed",
         "acceptedDetails",
         "rejectedDetails",
@@ -278,7 +278,7 @@
         "notRunUnsupported": {
           "$ref": "#/definitions/count"
         },
-        "notRunLoadToolFailed": {
+        "notRunLoadGeneratorFailed": {
           "$ref": "#/definitions/count"
         },
         "notRunParserFailed": {
@@ -415,13 +415,13 @@
         "loadProfilePurpose": {
           "type": "string"
         },
-        "loadTool": {
+        "LoadGenerator": {
           "type": "string"
         },
-        "loadToolMode": {
+        "LoadGeneratorMode": {
           "type": "string"
         },
-        "loadToolCategory": {
+        "LoadGeneratorCategory": {
           "type": "string"
         },
         "targetExecutionMode": {

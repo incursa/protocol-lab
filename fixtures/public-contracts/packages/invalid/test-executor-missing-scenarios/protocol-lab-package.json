@@ -15,23 +15,7 @@
       "requiredCapabilities": []
     }
   ],
-  "environments": [
-    {
-      "os": "linux",
-      "arch": "x64",
-      "entrypoint": {
-        "kind": "process",
-        "path": "bin/bad-placeholder",
-        "arguments": [],
-        "workingDirectory": "."
-      }
-    }
-  ],
   "dependencies": {
-    "requiresDotNet": false,
-    "requiresDocker": false,
-    "requiresPwsh": false,
-    "requiresBash": false,
     "requiredCapabilities": []
   }
 }

@@ -20,6 +20,6 @@ commercial layer.
 
 ## Acceptance Notes
 
-- What should be tested?
+- What contract behavior should be covered by fixtures or verification records?
 - What docs should change?
 - What evidence or limitations should be stated?

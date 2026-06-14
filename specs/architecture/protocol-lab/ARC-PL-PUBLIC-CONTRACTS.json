@@ -1,0 +1,49 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-PUBLIC-CONTRACTS",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab Public Contract Repository Architecture",
+  "domain": "protocol-lab",
+  "status": "approved",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-PUBLIC-CONTRACTS",
+    "WI-PL-PUBLIC-REPOSITION-0001",
+    "VER-PL-PUBLIC-REPOSITION-0001"
+  ],
+  "purpose": "Describe the public repository boundary after removing runner and runtime implementation assets.",
+  "satisfies": [
+    "REQ-PL-PUBLIC-0001",
+    "REQ-PL-PUBLIC-0002",
+    "REQ-PL-PUBLIC-0003",
+    "REQ-PL-PUBLIC-0004",
+    "REQ-PL-PUBLIC-0005",
+    "REQ-PL-PUBLIC-0006",
+    "REQ-PL-PUBLIC-0007"
+  ],
+  "design_summary": "The public repository is organized around authored contracts and declarative examples. Implementation repositories consume those contracts and provide executable behavior outside the public tree.",
+  "key_components": [
+    "SpecTrace JSON artifacts under specs/",
+    "JSON Schemas under schemas/",
+    "declarative fixtures under fixtures/public-contracts/",
+    "scenario definitions under scenarios/",
+    "suite definitions under suites/",
+    "load-profile definitions under load-profiles/",
+    "supporting documentation under docs/"
+  ],
+  "data_and_state_considerations": "The public repository contains static contract documents only. Runtime state, retained artifacts, package stores, controller state, worker state, and deployment state belong to implementation repositories or hosted services.",
+  "edge_cases_and_constraints": [
+    "Scenario-pack fixtures may be metadata-only and must not require script payloads.",
+    "Runtime package contracts may describe package payload expectations without committing executable payloads to this repository.",
+    "Traceability support files must point back to SpecTrace artifact fields rather than becoming an alternate trace model."
+  ],
+  "alternatives_considered": [
+    "Keeping a public reference runner was rejected because it implies a canonical implementation surface.",
+    "Keeping validation scripts was rejected because it leaves runnable automation in the public repository.",
+    "Duplicating moved code into another public folder was rejected because it preserves the implementation repository shape."
+  ],
+  "risks": [
+    "Existing documentation may still mention historical runner behavior unless kept aligned with this architecture.",
+    "Downstream implementation repositories need to consume schemas and fixtures directly because public executable validators were removed."
+  ]
+}

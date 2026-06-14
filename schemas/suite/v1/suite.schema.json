@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/suite/v1/suite.schema.json",
+  "title": "ProtocolLab Suite v1",
+  "description": "Schema for declarative ProtocolLab suite definition files.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "name",
+    "purpose",
+    "resultKind",
+    "loadProfileId",
+    "scenarios",
+    "protocol"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*(\\.[a-z0-9][a-z0-9-]*)*$"
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "purpose": {
+      "type": "string",
+      "enum": ["conformance", "regression", "benchmark", "diagnostic", "soak"]
+    },
+    "resultKind": {
+      "type": "string",
+      "enum": ["conformance", "regression", "benchmark", "diagnostic", "soak"]
+    },
+    "loadProfileId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "protocol": {
+      "type": "string",
+      "minLength": 1
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "durationSeconds": { "type": "integer", "minimum": 1 },
+        "warmupSeconds": { "type": "integer", "minimum": 0 },
+        "repetitions": { "type": "integer", "minimum": 1 },
+        "connections": { "type": "integer", "minimum": 1 },
+        "streamsPerConnection": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "counterCapture": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabledByDefault": { "type": "boolean" },
+        "tool": { "type": "string" }
+      }
+    },
+    "notes": { "type": "string" },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

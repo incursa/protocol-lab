@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://protocol-lab.incursa.com/schemas/scenario.schema.json",
+  "$id": "https://schemas.incursa.com/protocol-lab/scenario.schema.json",
   "title": "ProtocolLab Scenario v1",
   "description": "Schema for ProtocolLab scenario definition files.",
   "type": "object",

@@ -1,6 +1,6 @@
 id: rtt-75ms
 name: RTT 75ms
 description: Reserved profile for 75ms round-trip latency.
-provider: docker-tc
+provider: declarative-network-profile
 rttMilliseconds: 75
-notes: Modeled for Phase 7, but not executable until the docker-tc provider is implemented.
+notes: Declarative network profile only; provider mapping belongs to an implementation.

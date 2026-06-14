@@ -1,0 +1,19 @@
+{
+  "executorIdentity": {
+    "id": "example-test-executor",
+    "name": "Example Test Executor"
+  },
+  "versionCompatibility": {
+    "contractVersion": "test-executor-v1",
+    "compatibleContractVersions": ["test-executor-v1"]
+  },
+  "claimedCapabilities": [],
+  "supportedTestSelectors": [],
+  "supportedScenarioSelectors": [],
+  "supportedExecutionModes": ["conformance"],
+  "requiredTargetEndpointBindings": [],
+  "supportedArtifactTypes": [],
+  "metricsAvailability": {
+    "available": false
+  }
+}

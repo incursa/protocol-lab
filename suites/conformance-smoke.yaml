@@ -17,5 +17,5 @@ defaults:
   streamsPerConnection: 1
 counterCapture:
   enabledByDefault: false
-  tool: dotnet-counters
+  tool: resource-summary
 notes: Package-neutral conformance selector. A slow valid run is still behavior-valid; performance claims belong to benchmark suites.

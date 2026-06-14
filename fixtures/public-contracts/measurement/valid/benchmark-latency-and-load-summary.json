@@ -1,0 +1,142 @@
+{
+  "contract_version": "telemetry-bundle-v1",
+  "bundle_id": "telemetry-benchmark-http1-001",
+  "producer": {
+    "kind": "runner",
+    "id": "public-contract-runner-example",
+    "version": "0.0.0-contract",
+    "description": "Declarative benchmark telemetry example with runner-observed timing.",
+    "telemetry_system": "none"
+  },
+  "run_binding": {
+    "run_id": "run-benchmark-001",
+    "cell_id": "cell-http1-plaintext-benchmark",
+    "repetition": 1,
+    "scenario_id": "http.core.plaintext",
+    "scenario_version": "1.0.0",
+    "suite_id": "benchmark-smoke",
+    "protocol": "http/1.1",
+    "implementation_id": "example-implementation",
+    "test_executor_id": "example-test-executor",
+    "load_profile_id": "benchmark-smoke",
+    "execution_profile": "benchmark",
+    "requested_load_shape": {
+      "duration_seconds": 30,
+      "target_concurrency": 16
+    },
+    "effective_load_shape": {
+      "duration_seconds": 30,
+      "observed_concurrency": 16
+    }
+  },
+  "measurement_profile": {
+    "profile_id": "benchmark",
+    "claim_level": "benchmark",
+    "measurement_expectations": [
+      "low-overhead runner-observed request timing",
+      "explicit requested and effective load shape",
+      "provenance for summary metrics"
+    ],
+    "comparability_floor": "same-environment",
+    "heavy_instrumentation_disclosed": false
+  },
+  "comparability": {
+    "class": "same-environment",
+    "statement": "This fixture supports comparison only with runs that preserve the same profile, environment statement, scenario, and load shape.",
+    "basis": ["same profile", "same protocol", "same requested load shape"]
+  },
+  "created_at_utc": "2026-06-14T12:30:00Z",
+  "samples": [],
+  "summaries": [
+    {
+      "summary_id": "latency-summary",
+      "metric_name": "request.latency",
+      "summary_kind": "latency",
+      "scope": "runner",
+      "source": {
+        "kind": "runner",
+        "id": "public-contract-runner-example",
+        "telemetry_system": "none"
+      },
+      "count": 4800,
+      "min": 2.1,
+      "max": 64.7,
+      "mean": 8.9,
+      "p50": 7.4,
+      "p90": 13.2,
+      "p95": 18.5,
+      "p99": 38.6,
+      "stddev": 5.3,
+      "unit": "ms",
+      "window_start_utc": "2026-06-14T12:30:00Z",
+      "window_end_utc": "2026-06-14T12:30:30Z",
+      "aggregation": "runner-observed request summary",
+      "tags": {
+        "profile": "benchmark"
+      },
+      "provenance": {
+        "observed_by": "runner",
+        "method": "runner-observed request timing",
+        "confidence": "observed"
+      },
+      "warnings": []
+    },
+    {
+      "summary_id": "load-generator-summary",
+      "metric_name": "load-generator.requests",
+      "summary_kind": "throughput",
+      "scope": "load-generator",
+      "source": {
+        "kind": "load-generator",
+        "id": "example-load-generator",
+        "telemetry_system": "custom-json"
+      },
+      "unit": "requests",
+      "requests_total": 4800,
+      "requests_per_second": 160,
+      "errors_total": 0,
+      "timeouts_total": 0,
+      "non_success_status_total": 0,
+      "window_start_utc": "2026-06-14T12:30:00Z",
+      "window_end_utc": "2026-06-14T12:30:30Z",
+      "aggregation": "load-generator summary",
+      "tags": {
+        "profile": "benchmark"
+      },
+      "provenance": {
+        "observed_by": "load-generator",
+        "method": "load-generator reported totals normalized by runner",
+        "confidence": "derived"
+      },
+      "warnings": []
+    }
+  ],
+  "collectors": [
+    {
+      "collector_id": "runner-request-timing",
+      "collector_version": "contract-example",
+      "collector_kind": "runner-observed-request-summary",
+      "source": {
+        "kind": "runner",
+        "id": "public-contract-runner-example",
+        "telemetry_system": "none"
+      },
+      "scope": "runner",
+      "required": true,
+      "availability": "available",
+      "configuration_summary": {
+        "per_request_samples_retained": false
+      },
+      "overhead_risk": "low",
+      "warnings": []
+    }
+  ],
+  "artifacts": [],
+  "warnings": [],
+  "errors": [],
+  "redaction": {
+    "state": "producer-declared-safe",
+    "reviewed_at_utc": "2026-06-14T12:31:00Z",
+    "reviewed_by": "fixture-author"
+  }
+}

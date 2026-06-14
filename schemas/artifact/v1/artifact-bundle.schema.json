@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/artifact/v1/artifact-bundle.schema.json",
+  "title": "ProtocolLab Artifact Bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "bundle_id", "run_binding", "created_at_utc", "artifacts", "warnings", "errors", "redaction"],
+  "properties": {
+    "contract_version": { "type": "string", "const": "artifact-bundle-v1" },
+    "bundle_id": { "type": "string", "minLength": 1 },
+    "run_binding": { "$ref": "#/$defs/run_binding" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "./artifact-reference.schema.json" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "redaction": { "$ref": "#/$defs/redaction_summary" }
+  },
+  "$defs": {
+    "run_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "cell_id", "scenario_id", "protocol"],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "cell_id": { "type": "string", "minLength": 1 },
+        "repetition": { "type": "integer", "minimum": 0 },
+        "scenario_id": { "type": "string", "minLength": 1 },
+        "scenario_version": { "type": "string" },
+        "suite_id": { "type": "string" },
+        "protocol": { "type": "string", "minLength": 1 },
+        "implementation_id": { "type": "string" },
+        "test_executor_id": { "type": "string" },
+        "load_profile_id": { "type": "string" },
+        "execution_profile": { "type": "string" },
+        "requested_load_shape": { "type": "object", "additionalProperties": true },
+        "effective_load_shape": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "redaction_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": { "$ref": "./redaction-state.schema.json" },
+        "reviewed_at_utc": { "type": "string", "format": "date-time" },
+        "reviewed_by": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

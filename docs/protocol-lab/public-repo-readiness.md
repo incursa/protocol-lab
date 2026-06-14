@@ -1,64 +1,37 @@
-# ProtocolLab Public Repository Readiness
+# Public Repository Readiness
 
-Status: Contract-first readiness gate
+**Status:** Repositioned as a public contract repository.
 
-## Summary
+The public repository is ready when it can be understood without any local
+runner, build system, package publisher, or hosted lab implementation.
 
-The public repository is ready when it can be consumed as the canonical
-contract, schema, package-tooling, fixture, and documentation source for
-ProtocolLab. Public readiness no longer depends on repo-owned production
-Kestrel, Incursa, MSQUIC, or quic-go adapter projects.
+## Readiness Criteria
 
-## Required Proof
+- The root README presents ProtocolLab as a language-neutral specification and
+  contract repository.
+- Public contracts are represented by SpecTrace JSON, JSON Schema,
+  OpenAPI/YAML where applicable, fixtures, scenarios, suites, load profiles,
+  and support documentation.
+- Implementation code, scripts, build files, and workflow automation are not
+  present.
+- Public docs do not instruct contributors to execute repository-local runner,
+  benchmark, validation, publication, or upload workflows.
+- The internal/public dependency direction is explicit: implementation
+  repositories may consume public contracts; public contracts do not consume
+  implementation repositories.
 
-- Public/private boundary scan has no private checkout markers, private path
-  markers, secret/token/password patterns, or forbidden file globs.
-- `dotnet restore`, `dotnet build`, and `dotnet test` pass from a clean
-  checkout.
-- `workbench validate --profile core` passes when Workbench is available.
-- Adapter Contract v1 schema and conformance tests pass.
-- Test Executor Contract v1 schema and conformance tests pass.
-- package v2 schema tests pass, including rejection of legacy `load-runner`
-  and `providedLoadTools` semantics.
-- Raw QUIC component package dry run emits explicit `test-executor` and
-  `scenario-pack` packages with package-relative entry manifests.
-- Architecture guardrails pass, including checks that the public runner/CLI
-  do not reference concrete adapter assemblies or concrete protocol
-  implementation libraries.
+## Preserved Contract Assets
 
-## Commands
+- `schemas/`
+- `fixtures/public-contracts/`
+- `scenarios/`
+- `suites/`
+- `load-profiles/`
+- `specs/`
+- root governance files
 
-```powershell
-git status --short --branch
-git remote -v
-# private marker scan
-# forbidden-file scan
-dotnet tool restore
-dotnet restore Incursa.ProtocolLab.sln
-dotnet build Incursa.ProtocolLab.sln -v minimal
-dotnet test Incursa.ProtocolLab.sln --no-build -v minimal
-workbench validate --profile core
-```
+## Known Follow-Up Risk
 
-Focused contract proof:
-
-```powershell
-dotnet test tests\Incursa.ProtocolLab.Tests\Incursa.ProtocolLab.Tests.csproj --filter "FullyQualifiedName~ArchitectureGuardrailTests|FullyQualifiedName~PublicContractSchemaTests|FullyQualifiedName~LabPackageScriptTests|FullyQualifiedName~AdapterConformanceSuiteTests|FullyQualifiedName~AdapterSchemaValidatorTests|FullyQualifiedName~TestExecutorConformanceSuiteTests|FullyQualifiedName~TestExecutorSchemaValidatorTests"
-```
-
-Raw QUIC package dry run:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\lab\New-ProtocolLabRawQuicComponentPackages.ps1 `
-  -PackageVersion public-readiness `
-  -SourceBackedTestExecutor `
-  -OutputRoot .artifacts\lab-packages\raw-quic-components-public-readiness `
-  -Force
-```
-
-## Non-Goals
-
-- Hosted execution proof belongs to `protocol-lab-internal`.
-- Production implementation adapters belong to producer repositories.
-- Production test executors belong to producer repositories.
-- Package registry lookup and automatic dependency fetching are future work.
+Downstream implementation repositories need their own validation and admission
+checks because this public repository no longer carries executable validators.
+Those checks should consume the public schemas and fixtures directly.

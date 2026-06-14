@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "id": "http.core.plaintext",
+  "title": "HTTP plaintext response",
+  "description": "Declarative scenario fixture for a simple request/response exchange.",
+  "status": "stable",
+  "kind": "workload",
+  "layer": "application",
+  "protocol": "h1",
+  "version": "1.0",
+  "roles": ["server"],
+  "requires": {
+    "protocols": ["h1"],
+    "roles": ["server"],
+    "capabilities": ["http.request-response"]
+  },
+  "trafficShape": "requestResponse",
+  "validation": {
+    "required": true,
+    "checks": ["status-code", "body"],
+    "http": {
+      "expectedStatus": 200,
+      "expectedBody": "Hello, World!"
+    }
+  }
+}

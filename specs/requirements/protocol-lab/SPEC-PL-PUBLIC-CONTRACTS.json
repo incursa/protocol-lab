@@ -1,0 +1,183 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-PUBLIC-CONTRACTS",
+  "artifact_type": "specification",
+  "title": "ProtocolLab Public Contract Repository",
+  "domain": "protocol-lab",
+  "capability": "public-contracts",
+  "status": "approved",
+  "owner": "protocol-lab-maintainers",
+  "tags": [
+    "protocol-lab",
+    "public-boundary",
+    "language-neutral",
+    "contracts"
+  ],
+  "related_artifacts": [
+    "ARC-PL-PUBLIC-CONTRACTS",
+    "WI-PL-PUBLIC-REPOSITION-0001",
+    "VER-PL-PUBLIC-REPOSITION-0001"
+  ],
+  "purpose": "Define the public ProtocolLab repository as the language-neutral source of specifications, contracts, schemas, fixtures, scenarios, suites, load profiles, and documentation.",
+  "scope": "This specification covers the public repository boundary, contract source-of-truth rules, implementation participation model, traceability standard, fixture expectations, and public/internal dependency direction. It does not define any concrete runner, command-line tool, hosted lab, package builder, upload workflow, or implementation code.",
+  "context": "ProtocolLab implementations, hosted labs, adapters, test executors, package stores, telemetry bundles, and report consumers need stable public contracts without depending on a public runner implementation.",
+  "requirements": [
+    {
+      "id": "REQ-PL-PUBLIC-0001",
+      "title": "Language-neutral public source of truth",
+      "statement": "The public ProtocolLab repository MUST define language-neutral specifications, schemas, fixtures, scenarios, suites, load profiles, artifact contracts, report contracts, and documentation as the public source of truth.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-PUBLIC-CONTRACTS"
+        ],
+        "implemented_by": [
+          "WI-PL-PUBLIC-REPOSITION-0001"
+        ],
+        "verified_by": [
+          "VER-PL-PUBLIC-REPOSITION-0001"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-PUBLIC-0002",
+      "title": "No public implementation code",
+      "statement": "The public ProtocolLab repository MUST NOT contain executable source code, runnable automation, build files, local runner implementations, hosted lab implementations, package publication automation, or workflow automation.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-PUBLIC-CONTRACTS"
+        ],
+        "implemented_by": [
+          "WI-PL-PUBLIC-REPOSITION-0001"
+        ],
+        "verified_by": [
+          "VER-PL-PUBLIC-REPOSITION-0001"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-PUBLIC-0003",
+      "title": "Implementation dependency direction",
+      "statement": "Internal and external ProtocolLab implementations MAY consume public contracts, but the public repository MUST NOT depend on implementation code, implementation services, private configuration, or private artifacts.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-PUBLIC-CONTRACTS"
+        ],
+        "implemented_by": [
+          "WI-PL-PUBLIC-REPOSITION-0001"
+        ],
+        "verified_by": [
+          "VER-PL-PUBLIC-REPOSITION-0001"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-PUBLIC-0004",
+      "title": "SpecTrace canonical artifacts",
+      "statement": "Canonical ProtocolLab requirements, architecture decisions, work items, and verification records MUST be authored as SpecTrace JSON artifacts.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-PUBLIC-CONTRACTS"
+        ],
+        "implemented_by": [
+          "WI-PL-PUBLIC-REPOSITION-0001"
+        ],
+        "verified_by": [
+          "VER-PL-PUBLIC-REPOSITION-0001"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-PUBLIC-0005",
+      "title": "Declarative fixtures",
+      "statement": "Public fixtures MUST be declarative contract examples and MUST NOT contain scripts, binaries, generated code, or runnable implementation payloads.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-PUBLIC-CONTRACTS"
+        ],
+        "implemented_by": [
+          "WI-PL-PUBLIC-REPOSITION-0001"
+        ],
+        "verified_by": [
+          "VER-PL-PUBLIC-REPOSITION-0001"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-PUBLIC-0006",
+      "title": "Explicit unsupported outcomes",
+      "statement": "ProtocolLab contracts MUST preserve explicit unsupported and unavailable outcomes and MUST NOT authorize fallback to another implementation, executor, package, scenario, suite, load profile, or protocol lane.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-PUBLIC-CONTRACTS"
+        ],
+        "implemented_by": [
+          "WI-PL-PUBLIC-REPOSITION-0001"
+        ],
+        "verified_by": [
+          "VER-PL-PUBLIC-REPOSITION-0001"
+        ],
+        "related": [
+          "REQ-PL-LABPKG2-0010"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-PUBLIC-0007",
+      "title": "Raw QUIC and HTTP/3 separation",
+      "statement": "ProtocolLab contracts MUST keep raw QUIC transport lanes and managed HTTP/3 lanes separate in schemas, fixtures, scenario definitions, run plans, artifacts, and public reports.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-PUBLIC-CONTRACTS"
+        ],
+        "implemented_by": [
+          "WI-PL-PUBLIC-REPOSITION-0001"
+        ],
+        "verified_by": [
+          "VER-PL-PUBLIC-REPOSITION-0001"
+        ]
+      }
+    }
+  ]
+}

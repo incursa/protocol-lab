@@ -174,9 +174,9 @@ guidance.
 - [`docs/architecture/measurement-model.md`](docs/architecture/measurement-model.md)
   summarizes the measurement, telemetry, artifact, redaction, and
   comparability model.
-- [`specs/requirements/protocol-lab/measurement-requirements.md`](specs/requirements/protocol-lab/measurement-requirements.md)
+- [`specs/requirements/measurement-requirements.md`](specs/requirements/measurement-requirements.md)
   and
-  [`specs/requirements/protocol-lab/artifact-requirements.md`](specs/requirements/protocol-lab/artifact-requirements.md)
+  [`specs/requirements/artifact-requirements.md`](specs/requirements/artifact-requirements.md)
   summarize the public measurement and artifact rules.
 - [`specs/traceability/README.md`](specs/traceability/README.md) explains how
   SpecTrace links requirements to schemas and fixtures.

@@ -28,7 +28,7 @@ corresponding SpecTrace trace fields, such as `satisfied_by`,
 
 ## Reading Contract Coverage
 
-Start with [`specs/requirements/protocol-lab/`](../requirements/protocol-lab/), then follow each requirement's
+Start with [`specs/requirements/`](../requirements/), then follow each requirement's
 trace fields to architecture and verification artifacts. Use
 [`trace-links.json`](trace-links.json) as a convenience index from requirements to the schemas and
 fixtures that illustrate the public contract.

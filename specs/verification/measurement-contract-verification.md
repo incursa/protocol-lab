@@ -11,8 +11,8 @@ scripts, generated code, or implementation-specific dependencies.
 
 ## Evidence Checks
 
-- Measurement and artifact JSON Schemas exist under [`schemas/measurement/v1/`](../../../schemas/measurement/v1/)
-  and [`schemas/artifact/v1/`](../../../schemas/artifact/v1/).
+- Measurement and artifact JSON Schemas exist under [`schemas/measurement/v1/`](../../schemas/measurement/v1/)
+  and [`schemas/artifact/v1/`](../../schemas/artifact/v1/).
 - Valid fixtures cover runner-only smoke telemetry, benchmark summaries,
   implementation-provided custom telemetry, optional external telemetry
   correlation, raw artifact references, and sanitized public report artifacts.

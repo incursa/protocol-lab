@@ -50,7 +50,7 @@
   "evidence": [
     "docs/audits/contract-coverage-matrix.md",
     "docs/audits/contract-completeness-validation.md",
-    "specs/requirements/protocol-lab/SPEC-PL-CORE-CONTRACTS.json",
+    "specs/requirements/SPEC-PL-CORE-CONTRACTS.json",
     "specs/traceability/trace-links.json",
     "schemas/",
     "fixtures/public-contracts/"

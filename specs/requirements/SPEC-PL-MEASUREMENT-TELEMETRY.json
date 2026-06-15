@@ -56,7 +56,7 @@
         "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
         "related": [
           "schemas/measurement/v1/measurement-profile.schema.json",
-          "specs/requirements/protocol-lab/measurement-requirements.md"
+          "specs/requirements/measurement-requirements.md"
         ]
       }
     },

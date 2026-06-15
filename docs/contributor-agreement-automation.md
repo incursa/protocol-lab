@@ -24,7 +24,7 @@ definition is
 The signing phrase must remain exactly aligned in
 [`../CONTRIBUTING.md`](../CONTRIBUTING.md),
 [`../CONTRIBUTOR-AGREEMENT.md`](../CONTRIBUTOR-AGREEMENT.md),
-[`../.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLATE.md),
+[`../.github/pull_request_template.md`](../.github/pull_request_template.md),
 and
 [`../.github/workflows/contributor-agreement.yml`](../.github/workflows/contributor-agreement.yml):
 

@@ -175,6 +175,23 @@
       "verification": ["specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json"]
     },
     {
+      "id": "REQ-PL-LABPKG2-0012",
+      "schemas": [
+        "schemas/package/v2/package.schema.json",
+        "schemas/run-plan/v1/run-plan.schema.json"
+      ],
+      "fixtures": ["fixtures/public-contracts/packages/"],
+      "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
+      "verification": ["specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0013",
+      "schemas": [],
+      "fixtures": [],
+      "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
+      "verification": ["specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json"]
+    },
+    {
       "id": "PLAB-MEASURE-001",
       "schemas": ["schemas/measurement/v1/telemetry-bundle.schema.json"],
       "fixtures": ["fixtures/public-contracts/measurement/valid/runner-only-smoke-telemetry-bundle.json"],

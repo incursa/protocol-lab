@@ -8,6 +8,7 @@
   "owner": "protocol-lab-maintainers",
   "related_artifacts": [
     "SPEC-PL-CORE-CONTRACTS",
+    "SPEC-PL-LABPKG2",
     "ARC-PL-CORE-CONTRACTS",
     "SPEC-PL-PUBLIC-CONTRACTS",
     "SPEC-PL-MEASUREMENT-TELEMETRY",
@@ -25,6 +26,8 @@
     "PLAB-SCHEMA-001",
     "PLAB-FIXTURE-001",
     "PLAB-VERSIONING-001",
+    "REQ-PL-LABPKG2-0012",
+    "REQ-PL-LABPKG2-0013",
     "REQ-PL-PUBLIC-0001",
     "REQ-PL-PUBLIC-0004",
     "REQ-PL-PUBLIC-0005",

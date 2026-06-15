@@ -138,7 +138,8 @@
       "required": ["packageId", "packageVersion", "sha256"],
       "properties": {
         "packageId": {
-          "$ref": "#/$defs/token"
+          "$ref": "#/$defs/token",
+          "description": "Stable public package identity pinned by the run plan. This value is not proof of publisher, namespace, trademark, or package-index ownership."
         },
         "packageVersion": {
           "type": "string",

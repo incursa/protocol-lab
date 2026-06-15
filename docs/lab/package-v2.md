@@ -32,6 +32,21 @@ and capability names are stable public contract keys. Entry manifest paths are
 package-relative and must not be absolute, drive-qualified, or path traversal
 paths.
 
+Package IDs are identity keys, not ownership proof. A manifest that uses a
+familiar company, project, lab, product, or package-index prefix does not by
+itself establish authority to publish under that name.
+
+Packages intended for publication outside a single controlled lab should use
+an owner-scoped ID that the publisher can defend, such as a verified DNS name,
+organization account, or lab-reserved prefix. Labs and package indexes that
+admit packages from more than one publisher need their own namespace
+reservation or publisher-verification policy before accepting reserved,
+first-party, organizational, or otherwise confusing prefixes.
+
+The `protocol-lab-` prefix is reserved for ProtocolLab-owned package examples
+and contract fixtures in this repository. Neutral fixture IDs are examples
+only; they are not registered public package names.
+
 Entry manifest layout is part of the contract:
 
 - implementation packages use `implementations/`

@@ -164,6 +164,42 @@
         "edge": "required",
         "fuzz": "not_applicable"
       }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0012",
+      "title": "Package ID ownership claims",
+      "statement": "A packageId value MUST NOT be treated as proof of publisher, namespace, trademark, or package-index ownership.",
+      "rationale": "Package identity is a stable contract key, but consumers need separate admission policy before trusting who controls a namespace.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "optional",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG2-0001",
+          "REQ-PL-LABPKG2-0005"
+        ]
+      }
+    },
+    {
+      "id": "REQ-PL-LABPKG2-0013",
+      "title": "Multi-publisher namespace admission",
+      "statement": "A multi-publisher hosted lab or package index MUST enforce a namespace reservation or publisher-verification policy before admitting packages whose packageId uses a reserved, first-party, organizational, or otherwise confusing namespace.",
+      "rationale": "Labs can stay lightweight while still rejecting package identities that imply an unverified owner or reserved public prefix.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "optional",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "related": [
+          "REQ-PL-LABPKG2-0001",
+          "REQ-PL-LABPKG2-0012"
+        ]
+      }
     }
   ]
 }

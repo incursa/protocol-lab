@@ -42,6 +42,12 @@ identities and SHA-256 values. They must not silently substitute another
 package, implementation, test executor, suite, scenario, protocol, or load
 profile.
 
+`packageId` values identify package bytes selected by the plan, but they do
+not prove who owns a publisher, namespace, trademark, or package-index prefix.
+The lab or package index that admits packages is responsible for namespace
+reservation and publisher verification before run plans can safely select
+multi-publisher packages.
+
 ## Selection Fields
 
 `implementationIds`, `testExecutorIds`, `protocols`, and either `suiteIds` or

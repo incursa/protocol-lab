@@ -16,7 +16,8 @@
       "const": "protocol-lab-package-v2"
     },
     "packageId": {
-      "$ref": "#/$defs/token"
+      "$ref": "#/$defs/token",
+      "description": "Stable public package identity. This value is a contract key and is not proof of publisher, namespace, trademark, or package-index ownership."
     },
     "packageVersion": {
       "type": "string",

@@ -16,6 +16,7 @@ rules for ProtocolLab contract authors.
 | Adapter | An implementation-owned control plane that prepares, starts, observes, and disposes an implementation endpoint through the Adapter Contract. |
 | Test executor | A participant that performs selected checks against prepared endpoints through the Test Executor Contract. |
 | Package | A versioned public manifest that describes implementation, test-executor, scenario-pack, or toolchain metadata and package-relative catalog entries. |
+| Package namespace | The publisher, lab, organization, DNS, account, or reserved prefix context used by a package index or lab to decide whether a package ID is acceptable. |
 | Scenario | A durable protocol test-case definition. It describes behavior and validation expectations without selecting packages or execution mechanics. |
 | Suite | A named selection of scenarios for a purpose such as conformance, regression, benchmark, diagnostic, or soak evidence. |
 | Load profile | A declarative load intent and measurement-shape contract. It does not name a required load generator. |
@@ -53,6 +54,22 @@ version when a breaking shape or meaning change is required.
 Scenario IDs, suite IDs, package IDs, requirement IDs, and schema paths should
 remain stable after publication. Deprecated terms should remain documented
 until consumers have a replacement path.
+
+## Package Namespace Policy
+
+Package IDs are stable public identifiers, but they are not publisher identity
+or namespace ownership proof. A package manifest that claims a familiar
+organization, project, lab, product, or package-index prefix still needs
+admission policy before it is trusted in a multi-publisher lab.
+
+Single-owner labs may use local naming conventions. Multi-publisher labs and
+package indexes should maintain reserved namespaces or verify publisher
+control before admitting packages whose IDs use first-party, organizational,
+trademarked, or otherwise confusing prefixes.
+
+This repository reserves `protocol-lab-` for ProtocolLab-owned package
+examples and contract fixtures. Neutral fixture IDs are examples only and do
+not establish registered public package names.
 
 ## Compatibility Policy
 

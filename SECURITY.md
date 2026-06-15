@@ -6,9 +6,11 @@ repository. Report suspected security issues privately.
 ## Reporting
 
 - Do not open a public issue or PR for a suspected vulnerability.
-- Prefer a private GitHub Security Advisory for this repository.
-- If you cannot use a GitHub advisory, contact the repository maintainers
-  through a private channel before disclosure.
+- Use GitHub private vulnerability reporting if it is enabled for this
+  repository.
+- If GitHub private vulnerability reporting is unavailable, contact
+  `security@incursa.com`.
+- For general open-source or governance questions, contact `oss@incursa.com`.
 
 Please include:
 

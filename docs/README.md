@@ -100,6 +100,8 @@ declarative fixtures under [`fixtures/public-contracts/`](../fixtures/public-con
 
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 - [`../CONTRIBUTOR-AGREEMENT.md`](../CONTRIBUTOR-AGREEMENT.md)
+- [`contributor-agreement-automation.md`](contributor-agreement-automation.md)
+- [`governance-decisions.md`](governance-decisions.md)
 - [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md)
 - [`../SUPPORT.md`](../SUPPORT.md)
 - [`../AGENTS.md`](../AGENTS.md)

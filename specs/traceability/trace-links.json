@@ -93,6 +93,9 @@
       "schemas": ["schemas/scenario.schema.json"],
       "fixtures": [
         "fixtures/public-contracts/scenarios/valid/http1-core-plaintext-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/http2-core-plaintext-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/http3-core-status-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/quic-transport-handshake-scenario.json",
         "fixtures/public-contracts/scenarios/invalid/scenario-missing-id.json"
       ],
       "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
@@ -103,6 +106,9 @@
       "schemas": ["schemas/suite/v1/suite.schema.json"],
       "fixtures": [
         "fixtures/public-contracts/suites/valid/http1-core-smoke-suite.json",
+        "fixtures/public-contracts/suites/valid/http2-core-smoke-suite.json",
+        "fixtures/public-contracts/suites/valid/http3-core-smoke-suite.json",
+        "fixtures/public-contracts/suites/valid/quic-transport-smoke-suite.json",
         "fixtures/public-contracts/suites/invalid/suite-empty-scenarios.json"
       ],
       "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
@@ -113,6 +119,10 @@
       "schemas": ["schemas/load-profile/load-profile.schema.json"],
       "fixtures": [
         "fixtures/public-contracts/load-profiles/valid/smoke-load-profile.json",
+        "fixtures/public-contracts/load-profiles/valid/http1-smoke-load-profile.json",
+        "fixtures/public-contracts/load-profiles/valid/http2-smoke-load-profile.json",
+        "fixtures/public-contracts/load-profiles/valid/http3-smoke-load-profile.json",
+        "fixtures/public-contracts/load-profiles/valid/quic-smoke-load-profile.json",
         "fixtures/public-contracts/load-profiles/invalid/load-profile-missing-purpose.json"
       ],
       "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
@@ -123,6 +133,9 @@
       "schemas": ["schemas/run-plan/v1/run-plan.schema.json"],
       "fixtures": [
         "fixtures/public-contracts/run-plans/valid/http1-core-smoke-reference.json",
+        "fixtures/public-contracts/run-plans/valid/http2-core-smoke-reference.json",
+        "fixtures/public-contracts/run-plans/valid/http3-core-smoke-reference.json",
+        "fixtures/public-contracts/run-plans/valid/quic-transport-smoke-reference.json",
         "fixtures/public-contracts/run-plans/invalid/missing-package-hash.json",
         "fixtures/public-contracts/run-plans/incompatible/unknown-scenario-selection.json"
       ],
@@ -169,7 +182,16 @@
       "fixtures": [
         "fixtures/public-contracts/packages/reference-http1-implementation/protocol-lab-package.json",
         "fixtures/public-contracts/packages/reference-http1-test-executor/protocol-lab-package.json",
-        "fixtures/public-contracts/packages/http1-core-scenario-pack/protocol-lab-package.json"
+        "fixtures/public-contracts/packages/http1-core-scenario-pack/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/reference-http2-implementation/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/reference-http2-test-executor/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/http2-core-scenario-pack/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/reference-http3-implementation/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/reference-http3-test-executor/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/http3-core-scenario-pack/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/reference-quic-transport-implementation/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/reference-quic-test-executor/protocol-lab-package.json",
+        "fixtures/public-contracts/packages/quic-transport-scenario-pack/protocol-lab-package.json"
       ],
       "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
       "verification": ["specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json"]

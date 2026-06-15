@@ -1,0 +1,82 @@
+schemaVersion: "1.0"
+id: http3.payload.bytes.64kb
+title: HTTP/3 Bytes 64KB
+name: HTTP/3 Bytes 64KB
+family: http.application
+description: Validate and benchmark a deterministic 64KB byte payload.
+status: stable
+kind: workload
+layer: application
+protocol: h3
+roles:
+  - server
+requires:
+  capabilities:
+    - http.server
+  protocols:
+    - h3
+  roles:
+    - server
+trafficShape: download
+implementationRole: server
+requiredCapabilities:
+  - httpBytes
+endpoint:
+  method: GET
+  path: /bytes/65536
+  query: {}
+  requestHeaders: {}
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/octet-stream
+  expectedBodyRule: deterministicBytes
+  expectedBodySize: 65536
+validation:
+  required: true
+  checks:
+    - status
+    - content-type
+    - body-size
+    - deterministic-bytes
+    - protocol:h3
+  http:
+    expectedStatus: 200
+    expectedProtocol: h3
+    expectedBody: <deterministicBytes>
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - protocol-diagnostic-artifact
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+  - bytesReceived
+artifactRequirements:
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+tags:
+  - phase2
+  - http
+  - h3
+  - http3
+  - payload

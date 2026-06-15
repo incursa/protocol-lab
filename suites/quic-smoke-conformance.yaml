@@ -1,0 +1,25 @@
+id: quic-smoke-conformance
+name: ProtocolLab QUIC smoke conformance suite
+description: Profile-specific QUIC transport selector for the smoke load profile.
+purpose: conformance
+resultKind: conformance
+loadProfileId: quic-smoke
+scenarios:
+  - quic.transport.handshake-cold
+  - quic.transport.stream-throughput.1mb
+  - quic.transport.duplex-streams
+protocol: quic
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public QUIC scenarios with the protocol-specific quic-smoke load profile; it does not imply a required runner or load generator.
+tags:
+  - quic
+  - smoke
+  - conformance

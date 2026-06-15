@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "protocol-lab-run-plan-v1",
+  "runPlanId": "quic-transport-smoke-reference",
+  "runPlanVersion": "2026.06.15",
+  "displayName": "QUIC transport smoke reference run",
+  "packages": [
+    {
+      "packageId": "protocol-lab-quic-transport-scenarios",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "8888888888888888888888888888888888888888888888888888888888888888"
+    },
+    {
+      "packageId": "protocol-lab-reference-quic-test-executor",
+      "packageVersion": "0.1.1-fixture",
+      "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+    },
+    {
+      "packageId": "protocol-lab-reference-quic-transport",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "suiteIds": [
+    "quic-transport-smoke"
+  ],
+  "scenarioIds": [
+    "quic.transport.handshake-cold",
+    "quic.transport.stream-throughput.1mb",
+    "quic.transport.duplex-streams"
+  ],
+  "implementationIds": [
+    "protocol-lab-reference-quic-transport"
+  ],
+  "testExecutorIds": [
+    "protocol-lab-reference-quic-test-executor"
+  ],
+  "protocols": [
+    "quic"
+  ],
+  "loadProfileId": "smoke",
+  "targetMode": "implementation-resolved",
+  "targetNetworkMode": "published-endpoint",
+  "requiredCapabilities": [
+    {
+      "name": "protocol-lab.public-contracts",
+      "value": "true"
+    }
+  ],
+  "comparisonGroups": [
+    {
+      "groupId": "quic-transport",
+      "scenarioIds": [
+        "quic.transport.handshake-cold",
+        "quic.transport.stream-throughput.1mb",
+        "quic.transport.duplex-streams"
+      ],
+      "sameExecutorRequired": true,
+      "sameLoadProfileRequired": true
+    }
+  ],
+  "publicationIntent": "non-public",
+  "labels": [
+    "result-kind:conformance",
+    "suite-purpose:conformance",
+    "protocol-family:quic"
+  ],
+  "notes": "Spec-first QUIC fixture proving selector compatibility for handshake, stream throughput, and duplex stream transport test cases."
+}

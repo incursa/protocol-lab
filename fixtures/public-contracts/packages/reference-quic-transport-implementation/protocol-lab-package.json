@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "protocol-lab-reference-quic-transport",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "implementation",
+  "displayName": "ProtocolLab Reference QUIC Transport Implementation Fixture",
+  "entryManifests": [
+    "implementations/protocol-lab-reference-quic-transport.yaml"
+  ],
+  "providedImplementations": [
+    {
+      "implementationId": "protocol-lab-reference-quic-transport",
+      "displayName": "ProtocolLab Reference QUIC Transport Implementation Fixture",
+      "protocols": [
+        "quic"
+      ],
+      "scenarios": [
+        "quic.transport.handshake-cold",
+        "quic.transport.stream-throughput.1mb",
+        "quic.transport.duplex-streams"
+      ]
+    }
+  ],
+  "dependencies": {
+    "requiredCapabilities": []
+  }
+}

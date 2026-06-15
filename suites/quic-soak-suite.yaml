@@ -1,0 +1,25 @@
+id: quic-soak-suite
+name: ProtocolLab QUIC soak suite
+description: Profile-specific QUIC transport selector for the soak load profile.
+purpose: soak
+resultKind: soak
+loadProfileId: quic-soak
+scenarios:
+  - quic.transport.handshake-cold
+  - quic.transport.stream-throughput.1mb
+  - quic.transport.duplex-streams
+  - quic.transport.connection-churn
+protocol: quic
+defaults:
+  durationSeconds: 3600
+  warmupSeconds: 60
+  repetitions: 1
+  connections: 8
+  streamsPerConnection: 16
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public QUIC scenarios with the protocol-specific quic-soak load profile; it does not imply a required runner or load generator.
+tags:
+  - quic
+  - soak

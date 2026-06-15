@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "protocol-lab-reference-quic-test-executor",
+  "packageVersion": "0.1.1-fixture",
+  "kind": "test-executor",
+  "displayName": "ProtocolLab Reference QUIC Test Executor",
+  "entryManifests": [
+    "test-executors/protocol-lab-reference-quic-test-executor.yaml"
+  ],
+  "providedTestExecutors": [
+    {
+      "testExecutorId": "protocol-lab-reference-quic-test-executor",
+      "displayName": "ProtocolLab Reference QUIC Test Executor",
+      "protocols": [
+        "quic"
+      ],
+      "scenarios": [
+        "quic.transport.handshake-cold",
+        "quic.transport.stream-throughput.1mb",
+        "quic.transport.duplex-streams"
+      ],
+      "tests": [
+        "quic.transport.handshake-cold",
+        "quic.transport.stream-throughput.1mb",
+        "quic.transport.duplex-streams"
+      ],
+      "requiredCapabilities": []
+    }
+  ],
+  "dependencies": {
+    "requiredCapabilities": []
+  }
+}

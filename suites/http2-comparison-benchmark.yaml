@@ -1,0 +1,25 @@
+id: http2-comparison-benchmark
+name: ProtocolLab HTTP/2 comparison benchmark suite
+description: Profile-specific HTTP/2 application selector for the comparison load profile.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: http2-comparison
+scenarios:
+  - http2.core.plaintext
+  - http2.core.json
+  - http2.streaming.response
+protocol: h2
+defaults:
+  durationSeconds: 30
+  warmupSeconds: 10
+  repetitions: 3
+  connections: 128
+  streamsPerConnection: 100
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public HTTP/2 scenarios with the protocol-specific http2-comparison load profile; it does not imply a required runner or load generator.
+tags:
+  - http2
+  - comparison
+  - benchmark

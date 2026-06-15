@@ -1,0 +1,25 @@
+id: http1-smoke-conformance
+name: ProtocolLab HTTP/1 smoke conformance suite
+description: Profile-specific HTTP/1 application selector for the smoke load profile.
+purpose: conformance
+resultKind: conformance
+loadProfileId: http1-smoke
+scenarios:
+  - http1.core.plaintext
+  - http1.core.json
+  - http1.payload.bytes.1kb
+protocol: h1
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public HTTP/1 scenarios with the protocol-specific http1-smoke load profile; it does not imply a required runner or load generator.
+tags:
+  - http1
+  - smoke
+  - conformance

@@ -1,0 +1,33 @@
+# Load Profile Contract v1
+schemaVersion: protocol-lab.load-profile.v1
+
+id: http2-regression
+title: HTTP/2 Regression
+status: stable
+purpose: regression
+
+description: >
+  Moderate protocol-specific profile for implementation-owned regression evidence. Longer than smoke and not publishable benchmark evidence.
+
+durationSeconds: 15
+warmupSeconds: 5
+repetitions: 2
+
+http2:
+  connections: 16
+  concurrency: 16
+  streamsPerConnection: 10
+  requestTimeoutSeconds: 15
+
+evidence:
+  minimumTier: regression
+  publishable: false
+
+artifacts:
+  required:
+    - load.stdout.log
+    - load.stderr.log
+    - validation.json
+    - result.json
+  optional:
+    - counters

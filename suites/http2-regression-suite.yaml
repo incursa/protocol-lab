@@ -1,0 +1,24 @@
+id: http2-regression-suite
+name: ProtocolLab HTTP/2 regression suite
+description: Profile-specific HTTP/2 application selector for the regression load profile.
+purpose: regression
+resultKind: regression
+loadProfileId: http2-regression
+scenarios:
+  - http2.core.plaintext
+  - http2.core.json
+  - http2.streaming.response
+protocol: h2
+defaults:
+  durationSeconds: 15
+  warmupSeconds: 5
+  repetitions: 2
+  connections: 16
+  streamsPerConnection: 10
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public HTTP/2 scenarios with the protocol-specific http2-regression load profile; it does not imply a required runner or load generator.
+tags:
+  - http2
+  - regression

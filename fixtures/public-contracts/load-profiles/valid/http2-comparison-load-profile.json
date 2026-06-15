@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v1",
+  "id": "http2-comparison",
+  "title": "HTTP/2 Comparison",
+  "status": "stable",
+  "purpose": "comparison",
+  "description": "Repeatable protocol-specific comparison profile for non-publishable performance evidence under a stable selection.\n",
+  "durationSeconds": 30,
+  "warmupSeconds": 10,
+  "cooldownSeconds": 5,
+  "repetitions": 3,
+  "http2": {
+    "connections": 128,
+    "concurrency": 128,
+    "streamsPerConnection": 100,
+    "requestTimeoutSeconds": 10
+  },
+  "evidence": {
+    "minimumTier": "comparison",
+    "publishable": false
+  },
+  "artifacts": {
+    "required": [
+      "load.stdout.log",
+      "load.stderr.log",
+      "result.json"
+    ],
+    "optional": [
+      "counters",
+      "telemetry-bundle.json"
+    ]
+  }
+}

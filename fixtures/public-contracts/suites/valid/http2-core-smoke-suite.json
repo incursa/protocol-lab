@@ -1,0 +1,26 @@
+{
+  "id": "http2-core-smoke",
+  "name": "HTTP/2 Core Smoke",
+  "description": "Fast HTTP/2 behavior validation for plaintext, JSON, and streaming response test cases.",
+  "purpose": "conformance",
+  "resultKind": "conformance",
+  "loadProfileId": "smoke",
+  "scenarios": [
+    "http2.core.plaintext",
+    "http2.core.json",
+    "http2.streaming.response"
+  ],
+  "protocol": "h2",
+  "defaults": {
+    "durationSeconds": 5,
+    "warmupSeconds": 1,
+    "repetitions": 1,
+    "connections": 1,
+    "streamsPerConnection": 8
+  },
+  "counterCapture": {
+    "enabledByDefault": false,
+    "tool": ""
+  },
+  "notes": "This suite proves HTTP/2 behavior validity first; throughput or latency observations are diagnostic unless the run plan explicitly selects a benchmark suite."
+}

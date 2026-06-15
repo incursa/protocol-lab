@@ -4,9 +4,9 @@
   "title": "Smoke",
   "status": "stable",
   "purpose": "smoke",
-  "description": "Minimal load profile for fast functional proof.",
+  "description": "Minimal single-connection smoke test to verify basic protocol and endpoint function. Not intended for any benchmark comparison.\n",
   "durationSeconds": 5,
-  "warmupSeconds": 0,
+  "warmupSeconds": 1,
   "repetitions": 1,
   "http1": {
     "connections": 1,
@@ -29,5 +29,12 @@
   "evidence": {
     "minimumTier": "smoke",
     "publishable": false
+  },
+  "artifacts": {
+    "required": [
+      "load.stdout.log",
+      "load.stderr.log",
+      "validation.json"
+    ]
   }
 }

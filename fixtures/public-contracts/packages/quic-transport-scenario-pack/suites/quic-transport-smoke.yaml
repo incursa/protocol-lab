@@ -1,0 +1,26 @@
+id: quic-transport-smoke
+name: ProtocolLab QUIC transport smoke suite
+description: Fast package-neutral QUIC transport validation for handshake, single-stream throughput, and bidirectional stream behavior.
+purpose: conformance
+resultKind: conformance
+loadProfileId: smoke
+scenarios:
+  - quic.transport.handshake-cold
+  - quic.transport.stream-throughput.1mb
+  - quic.transport.duplex-streams
+protocol: quic
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: QUIC transport scenarios are first-class public protocol contracts and remain separate from HTTP/3 application or protocol scenarios.
+tags:
+  - quic
+  - transport
+  - conformance
+  - smoke

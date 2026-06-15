@@ -80,7 +80,12 @@
         "related": [
           "REQ-PL-LABPKG2-0002",
           "REQ-PL-LABPKG2-0003",
-          "REQ-PL-LABPKG2-0004"
+          "REQ-PL-LABPKG2-0004",
+          "schemas/package/v2/package.schema.json",
+          "fixtures/public-contracts/packages/http1-core-scenario-pack/protocol-lab-package.json",
+          "fixtures/public-contracts/packages/http2-core-scenario-pack/protocol-lab-package.json",
+          "fixtures/public-contracts/packages/http3-core-scenario-pack/protocol-lab-package.json",
+          "fixtures/public-contracts/packages/quic-transport-scenario-pack/protocol-lab-package.json"
         ]
       }
     },

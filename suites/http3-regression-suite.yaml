@@ -1,0 +1,30 @@
+id: http3-regression-suite
+name: ProtocolLab HTTP/3 regression suite
+description: Profile-specific HTTP/3 application and protocol selector for the regression load profile.
+purpose: regression
+resultKind: regression
+loadProfileId: http3-regression
+scenarios:
+  - http3.core.status
+  - http3.headers.inspect-request
+  - http3.headers.response.50x32
+  - http3.payload.bytes.64kb
+  - http3.payload.bytes.1mb
+  - http3.payload.stream.100x16kb
+  - http3.upload.echo.64kb
+  - http3.upload.hash.1mb
+  - http3.upload.sink.1mb
+protocol: h3
+defaults:
+  durationSeconds: 15
+  warmupSeconds: 5
+  repetitions: 2
+  connections: 16
+  streamsPerConnection: 10
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public HTTP/3 scenarios with the protocol-specific http3-regression load profile; it does not imply a required runner or load generator.
+tags:
+  - http3
+  - regression

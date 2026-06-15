@@ -12,6 +12,7 @@ layout:
 - neutral implementation metadata
 - neutral test-executor metadata
 - neutral scenario-pack metadata
+- protocol-specific HTTP/1, HTTP/2, HTTP/3, and QUIC scenario-pack metadata
 - neutral toolchain metadata
 - invalid package metadata that must fail admission
 
@@ -43,9 +44,13 @@ Focused core contract examples live under:
 - [`suites/valid`](suites/valid/) and [`suites/invalid`](suites/invalid/)
 - [`load-profiles/valid`](load-profiles/valid/) and [`load-profiles/invalid`](load-profiles/invalid/)
 
-These fixtures are intentionally small. Each invalid fixture demonstrates one
-clear validation failure such as a missing required identity, selector, purpose,
-or scenario list.
+The scenario and suite valid fixtures include representative HTTP/1, HTTP/2,
+HTTP/3, and QUIC examples. The load-profile valid fixtures include generic
+profiles and protocol-specific profiles for HTTP/1, HTTP/2, HTTP/3, and QUIC.
+
+Invalid fixtures remain intentionally small. Each invalid fixture demonstrates
+one clear validation failure such as a missing required identity, selector,
+purpose, or scenario list.
 
 ## Measurement And Artifact Fixtures
 
@@ -90,6 +95,13 @@ The HTTP/2 fixture set follows the same spec-first shape: scenarios are
 defined before any controller, site, or producer-package behavior can select
 them.
 
-The neutral HTTP/3 fixture package uses package-local scenario and suite IDs.
-Those IDs demonstrate package-relative selection and do not replace the root
-HTTP/3 catalog under [`../../scenarios/http3`](../../scenarios/http3/).
+The root-protocol fixture packages for HTTP/1, HTTP/2, HTTP/3, and QUIC mirror
+selected public catalog IDs so run-plan fixtures can demonstrate package
+selector compatibility. The neutral HTTP/3 fixture package uses package-local
+scenario and suite IDs. Those IDs demonstrate package-relative selection and do
+not replace the root HTTP/3 catalog under
+[`../../scenarios/http3`](../../scenarios/http3/).
+
+QUIC fixture packages use `quic.*` scenario IDs and the `quic` protocol token.
+They are separate from HTTP/3 fixture packages even when the same participant
+could support both protocol families.

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "protocol-lab-http3-core-scenarios",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "scenario-pack",
+  "displayName": "ProtocolLab HTTP/3 Core Scenario Pack",
+  "entryManifests": [
+    "scenarios/http3/core/status.yaml",
+    "scenarios/http3/payload/bytes-64kb.yaml",
+    "scenarios/http3/upload/echo-64kb.yaml",
+    "suites/http3-core-smoke.yaml"
+  ],
+  "providedScenarios": [
+    {
+      "scenarioId": "http3.core.status",
+      "displayName": "HTTP/3 Status",
+      "protocols": [
+        "h3"
+      ]
+    },
+    {
+      "scenarioId": "http3.payload.bytes.64kb",
+      "displayName": "HTTP/3 Bytes 64KB",
+      "protocols": [
+        "h3"
+      ]
+    },
+    {
+      "scenarioId": "http3.upload.echo.64kb",
+      "displayName": "HTTP/3 Upload Echo 64KB",
+      "protocols": [
+        "h3"
+      ]
+    }
+  ],
+  "providedSuites": [
+    {
+      "suiteId": "http3-core-smoke",
+      "displayName": "HTTP/3 Core Smoke",
+      "purpose": "conformance",
+      "resultKind": "conformance",
+      "protocols": [
+        "h3"
+      ]
+    }
+  ]
+}

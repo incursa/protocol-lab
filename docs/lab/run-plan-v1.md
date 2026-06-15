@@ -99,3 +99,4 @@ executor, protocol lane, scenario, package version, or load profile.
 Public examples live under [`fixtures/public-contracts/run-plans/valid`](../../fixtures/public-contracts/run-plans/valid/),
 [`fixtures/public-contracts/run-plans/invalid`](../../fixtures/public-contracts/run-plans/invalid/), and
 [`fixtures/public-contracts/run-plans/incompatible`](../../fixtures/public-contracts/run-plans/incompatible/).
+The valid examples include HTTP/1, HTTP/2, HTTP/3, and QUIC selector plans.

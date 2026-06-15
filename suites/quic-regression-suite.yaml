@@ -1,0 +1,27 @@
+id: quic-regression-suite
+name: ProtocolLab QUIC regression suite
+description: Profile-specific QUIC transport selector for the regression load profile.
+purpose: regression
+resultKind: regression
+loadProfileId: quic-regression
+scenarios:
+  - quic.transport.handshake-cold
+  - quic.transport.stream-throughput.1mb
+  - quic.transport.duplex-streams
+  - quic.transport.multiplex.100x64kb
+  - quic.transport.connection-churn
+  - quic.transport.datagram.1kb
+protocol: quic
+defaults:
+  durationSeconds: 15
+  warmupSeconds: 5
+  repetitions: 2
+  connections: 8
+  streamsPerConnection: 8
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public QUIC scenarios with the protocol-specific quic-regression load profile; it does not imply a required runner or load generator.
+tags:
+  - quic
+  - regression

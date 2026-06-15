@@ -7,24 +7,27 @@ runner behavior.
 
 ## Root Suites
 
-| Suite ID | Protocol | Purpose | Result Kind | Load Profile | Scenario Scope |
-| --- | --- | --- | --- | --- | --- |
-| `http1-core-smoke` | `h1` | conformance | conformance | `smoke` | HTTP/1 core and 1KB payload |
-| `http1-conformance-smoke` | `h1` | conformance | conformance | `smoke` | HTTP/1 conformance selector |
-| `http1-benchmark-smoke` | `h1` | benchmark | benchmark | `smoke` | HTTP/1 benchmark selector |
-| `http2-core-smoke` | `h2` | conformance | conformance | `smoke` | HTTP/2 core and streaming response |
-| `http3-core-smoke` | `h3` | conformance | conformance | `smoke` | HTTP/3 application smoke |
-| `http3-protocol-diagnostic` | `h3` | diagnostic | diagnostic | `diagnostic` | HTTP/3 protocol diagnostics |
-| `quic-transport-smoke` | `quic` | conformance | conformance | `smoke` | QUIC transport smoke |
-| `quic-transport-diagnostic` | `quic` | diagnostic | diagnostic | `diagnostic` | QUIC transport diagnostics |
+The root catalog includes two suite groups:
+
+- compatibility suites that use generic profile IDs such as `smoke` or
+  `diagnostic`
+- protocol-specific profile suites that use IDs such as `http1-smoke`,
+  `http2-regression`, `http3-comparison`, or `quic-soak`
+
+| Protocol | Compatibility Suites | Protocol-Specific Profile Suites |
+| --- | --- | --- |
+| HTTP/1 | `http1-core-smoke`, `http1-conformance-smoke`, `http1-benchmark-smoke` | `http1-smoke-conformance`, `http1-diagnostic-suite`, `http1-regression-suite`, `http1-comparison-benchmark`, `http1-soak-suite` |
+| HTTP/2 | `http2-core-smoke` | `http2-smoke-conformance`, `http2-diagnostic-suite`, `http2-regression-suite`, `http2-comparison-benchmark`, `http2-soak-suite` |
+| HTTP/3 | `http3-core-smoke`, `http3-protocol-diagnostic` | `http3-smoke-conformance`, `http3-diagnostic-suite`, `http3-regression-suite`, `http3-comparison-benchmark`, `http3-soak-suite` |
+| QUIC | `quic-transport-smoke`, `quic-transport-diagnostic` | `quic-smoke-conformance`, `quic-diagnostic-suite`, `quic-regression-suite`, `quic-comparison-benchmark`, `quic-soak-suite` |
 
 ## Intent Rules
 
 Conformance suites select behavior validation. Benchmark suites select
 performance-result intent but do not make a run publishable by themselves.
 Diagnostic suites may require richer protocol evidence and can include
-higher-overhead observations. Regression and soak suites may be added when a
-stable scenario selection needs those result intents.
+higher-overhead observations. Regression and soak suites select the same
+public scenario contracts with different load intent and evidence shape.
 
 Package fixture suites under
 [`fixtures/public-contracts/packages/`](../../fixtures/public-contracts/packages/)

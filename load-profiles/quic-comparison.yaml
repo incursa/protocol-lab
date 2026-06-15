@@ -1,0 +1,35 @@
+# Load Profile Contract v1
+schemaVersion: protocol-lab.load-profile.v1
+
+id: quic-comparison
+title: QUIC Comparison
+status: stable
+purpose: comparison
+
+description: >
+  Repeatable protocol-specific comparison profile for non-publishable performance evidence under a stable selection.
+
+durationSeconds: 30
+warmupSeconds: 10
+cooldownSeconds: 5
+repetitions: 3
+
+quic:
+  connections: 32
+  streamsPerConnection: 16
+  streamBytes: 1024
+  connectionTimeoutSeconds: 10
+  idleTimeoutSeconds: 10
+
+evidence:
+  minimumTier: comparison
+  publishable: false
+
+artifacts:
+  required:
+    - load.stdout.log
+    - load.stderr.log
+    - result.json
+  optional:
+    - counters
+    - telemetry-bundle.json

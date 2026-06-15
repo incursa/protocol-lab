@@ -1,0 +1,78 @@
+schemaVersion: "1.0"
+id: quic.transport.stream-throughput.1mb
+title: QUIC Stream Throughput
+name: QUIC Stream Throughput
+family: quic.transport
+description: Validate single-stream QUIC payload throughput as a transport scenario independent of HTTP/3 application semantics.
+status: stable
+kind: protocolValidation
+layer: transport
+protocol: quic
+roles:
+  - server
+requires:
+  capabilities:
+    - quic.server
+  protocols:
+    - quic
+  roles:
+    - server
+trafficShape: bidirectional-stream
+implementationRole: server
+requiredCapabilities:
+  - quicTransport
+  - quicStreams
+quicTransport:
+  behavior: stream-throughput
+  connectionCount: 1
+  streamType: bidirectional
+  streamCount: 1
+  payloadSizeBytes: 1048576
+  payloadDirection: client-to-server
+  openPattern: sequential
+  expectedBytes: 1048576
+validation:
+  required: true
+  checks:
+    - payload-bytes-delivered
+    - completed-streams-match-expected
+    - zero-timeouts-and-errors
+    - protocol:quic
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
+benchmarkCompat:
+  compatibleLoadShapes:
+    - quic-stream
+    - smoke
+    - regression
+    - comparison
+  primaryMetrics:
+    - bytesPerSecond
+    - streamsPerSecond
+    - streamDurationP95
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - protocol-diagnostic-artifact
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - quic.stream.bytesPerSecond
+  - quic.stream.completedStreams
+artifactRequirements:
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+  - protocol-diagnostic-artifact
+tags:
+  - phase6
+  - quic
+  - throughput

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "protocol-lab-run-plan-v1",
+  "runPlanId": "http3-core-smoke-reference",
+  "runPlanVersion": "2026.06.15",
+  "displayName": "HTTP/3 core smoke reference run",
+  "packages": [
+    {
+      "packageId": "protocol-lab-http3-core-scenarios",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    {
+      "packageId": "protocol-lab-reference-http3-test-executor",
+      "packageVersion": "0.1.1-fixture",
+      "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+    },
+    {
+      "packageId": "kestrel-http3",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+    }
+  ],
+  "suiteIds": [
+    "http3-core-smoke"
+  ],
+  "scenarioIds": [
+    "http3.core.status",
+    "http3.payload.bytes.64kb",
+    "http3.upload.echo.64kb"
+  ],
+  "implementationIds": [
+    "kestrel-http3"
+  ],
+  "testExecutorIds": [
+    "protocol-lab-reference-http3-test-executor"
+  ],
+  "protocols": [
+    "h3"
+  ],
+  "loadProfileId": "smoke",
+  "targetMode": "implementation-resolved",
+  "targetNetworkMode": "published-endpoint",
+  "requiredCapabilities": [
+    {
+      "name": "protocol-lab.public-contracts",
+      "value": "true"
+    }
+  ],
+  "comparisonGroups": [
+    {
+      "groupId": "http3-core",
+      "scenarioIds": [
+        "http3.core.status",
+        "http3.payload.bytes.64kb",
+        "http3.upload.echo.64kb"
+      ],
+      "sameExecutorRequired": true,
+      "sameLoadProfileRequired": true
+    }
+  ],
+  "publicationIntent": "non-public",
+  "labels": [
+    "result-kind:conformance",
+    "suite-purpose:conformance",
+    "protocol-family:h3"
+  ],
+  "notes": "Spec-first HTTP/3 fixture proving selector compatibility for status, payload, and upload echo test cases."
+}

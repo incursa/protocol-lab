@@ -1,0 +1,36 @@
+# Load Profile Contract v1
+schemaVersion: protocol-lab.load-profile.v1
+
+id: http3-soak
+title: HTTP/3 Soak
+status: experimental
+purpose: soak
+
+description: >
+  Long-duration protocol-specific stability profile for participants that explicitly opt into soak evidence.
+
+durationSeconds: 3600
+warmupSeconds: 60
+cooldownSeconds: 30
+repetitions: 1
+
+http3:
+  connections: 16
+  concurrency: 64
+  streamsPerConnection: 16
+  requestTimeoutSeconds: 30
+
+evidence:
+  minimumTier: soak
+  publishable: false
+
+artifacts:
+  required:
+    - load.stdout.log
+    - load.stderr.log
+    - validation.json
+    - result.json
+  optional:
+    - counters
+    - telemetry-bundle.json
+    - soak-health-summary.json

@@ -1,0 +1,26 @@
+id: quic-comparison-benchmark
+name: ProtocolLab QUIC comparison benchmark suite
+description: Profile-specific QUIC transport selector for the comparison load profile.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: quic-comparison
+scenarios:
+  - quic.transport.handshake-cold
+  - quic.transport.stream-throughput.1mb
+  - quic.transport.duplex-streams
+  - quic.transport.multiplex.100x64kb
+protocol: quic
+defaults:
+  durationSeconds: 30
+  warmupSeconds: 10
+  repetitions: 3
+  connections: 32
+  streamsPerConnection: 16
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public QUIC scenarios with the protocol-specific quic-comparison load profile; it does not imply a required runner or load generator.
+tags:
+  - quic
+  - comparison
+  - benchmark

@@ -1,0 +1,29 @@
+id: protocol-lab-reference-http3-implementation
+name: ProtocolLab Reference HTTP/3 Implementation Fixture
+description: Metadata fixture for an HTTP/3 implementation package.
+targetKind: implementation
+targetContract: adapter-v1
+roles:
+  - server
+supportedProtocols:
+  - h3
+supportedWorkloadFamilies:
+  - http3.core
+  - http3.payload
+  - http3.upload
+capabilities:
+  - http3.core.status
+  - http3.payload.bytes.64kb
+  - http3.upload.echo.64kb
+artifactExports:
+  - implementation.log
+telemetry:
+  supported: true
+  supported_contract_versions:
+    - telemetry-bundle-v1
+  supported_scopes:
+    - implementation
+  export_modes:
+    - artifact-bundle
+    - none
+notes: Fixture metadata only; it proves package/run-plan selector compatibility and is not a runnable benchmark target.

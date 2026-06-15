@@ -39,6 +39,13 @@ related at the wire level but are separate public scenario families.
 - `experimental`: contract may change.
 - `placeholder`: future scenario; no implementation support is implied.
 
+## Schema Version
+
+Scenario v1 documents currently use `schemaVersion: "1.0"`. Keep that value
+for v1 compatibility. A future move to a named string such as
+`protocol-lab.scenario.v1` should be treated as an explicit compatibility
+decision, not a mechanical cleanup.
+
 ## Relationship To Other Documents
 
 Suites group scenarios. Load profiles describe intensity. Run plans select

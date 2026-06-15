@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "protocol-lab-quic-transport-scenarios",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "scenario-pack",
+  "displayName": "ProtocolLab QUIC Transport Scenario Pack",
+  "entryManifests": [
+    "scenarios/quic/transport/handshake-cold.yaml",
+    "scenarios/quic/transport/stream-throughput.yaml",
+    "scenarios/quic/transport/duplex-streams.yaml",
+    "suites/quic-transport-smoke.yaml"
+  ],
+  "providedScenarios": [
+    {
+      "scenarioId": "quic.transport.handshake-cold",
+      "displayName": "QUIC Cold Handshake",
+      "protocols": [
+        "quic"
+      ]
+    },
+    {
+      "scenarioId": "quic.transport.stream-throughput.1mb",
+      "displayName": "QUIC Stream Throughput",
+      "protocols": [
+        "quic"
+      ]
+    },
+    {
+      "scenarioId": "quic.transport.duplex-streams",
+      "displayName": "QUIC Duplex Streams",
+      "protocols": [
+        "quic"
+      ]
+    }
+  ],
+  "providedSuites": [
+    {
+      "suiteId": "quic-transport-smoke",
+      "displayName": "QUIC Transport Smoke",
+      "purpose": "conformance",
+      "resultKind": "conformance",
+      "protocols": [
+        "quic"
+      ]
+    }
+  ]
+}

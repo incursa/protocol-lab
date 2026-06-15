@@ -1,0 +1,26 @@
+id: http3-comparison-benchmark
+name: ProtocolLab HTTP/3 comparison benchmark suite
+description: Profile-specific HTTP/3 application and protocol selector for the comparison load profile.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: http3-comparison
+scenarios:
+  - http3.core.status
+  - http3.payload.bytes.64kb
+  - http3.payload.stream.100x16kb
+  - http3.upload.echo.64kb
+protocol: h3
+defaults:
+  durationSeconds: 30
+  warmupSeconds: 10
+  repetitions: 3
+  connections: 128
+  streamsPerConnection: 100
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public HTTP/3 scenarios with the protocol-specific http3-comparison load profile; it does not imply a required runner or load generator.
+tags:
+  - http3
+  - comparison
+  - benchmark

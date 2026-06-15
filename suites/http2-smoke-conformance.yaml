@@ -1,0 +1,25 @@
+id: http2-smoke-conformance
+name: ProtocolLab HTTP/2 smoke conformance suite
+description: Profile-specific HTTP/2 application selector for the smoke load profile.
+purpose: conformance
+resultKind: conformance
+loadProfileId: http2-smoke
+scenarios:
+  - http2.core.plaintext
+  - http2.core.json
+  - http2.streaming.response
+protocol: h2
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public HTTP/2 scenarios with the protocol-specific http2-smoke load profile; it does not imply a required runner or load generator.
+tags:
+  - http2
+  - smoke
+  - conformance

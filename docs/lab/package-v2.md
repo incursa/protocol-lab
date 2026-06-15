@@ -78,6 +78,11 @@ Neutral examples live under [`fixtures/public-contracts/packages/`](../../fixtur
 manifest shape and compatibility metadata. They do not contain source code,
 scripts, binaries, or runnable package payloads.
 
+The fixture set also includes HTTP/1, HTTP/2, HTTP/3, and QUIC package examples
+for scenario packs, implementation metadata, and test-executor metadata. These
+examples prove selector compatibility for public contracts; they are not
+implementation packages.
+
 Invalid package fixtures live under [`fixtures/public-contracts/packages/invalid`](../../fixtures/public-contracts/packages/invalid/).
 They exist to show metadata that must not be admitted by an implementation.
 

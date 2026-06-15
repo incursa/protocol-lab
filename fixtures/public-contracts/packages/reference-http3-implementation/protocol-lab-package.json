@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "protocol-lab-package-v2",
+  "packageId": "kestrel-http3",
+  "packageVersion": "0.0.0-fixture",
+  "kind": "implementation",
+  "displayName": "Kestrel HTTP/3 Reference Implementation Fixture",
+  "entryManifests": [
+    "implementations/kestrel-http3.yaml"
+  ],
+  "providedImplementations": [
+    {
+      "implementationId": "kestrel-http3",
+      "displayName": "Kestrel HTTP/3 Reference Implementation Fixture",
+      "protocols": [
+        "h3"
+      ],
+      "scenarios": [
+        "http3.core.status",
+        "http3.payload.bytes.64kb",
+        "http3.upload.echo.64kb"
+      ]
+    }
+  ],
+  "dependencies": {
+    "requiredCapabilities": []
+  }
+}

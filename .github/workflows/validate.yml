@@ -20,6 +20,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install validation dependencies
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir "PyYAML>=6,<7" "jsonschema>=4,<5"
+
       - name: Validate public repository health
         shell: bash
         run: |
@@ -28,6 +33,8 @@ jobs:
           import pathlib
           import re
           import sys
+          import yaml
+          from jsonschema import Draft202012Validator
 
           root = pathlib.Path(".").resolve()
           errors = []
@@ -39,13 +46,224 @@ jobs:
               path = root / value.rstrip("/")
               return path.exists()
 
+          def load_json(path: pathlib.Path):
+              return json.loads(path.read_text(encoding="utf-8"))
+
+          json_docs = {}
           for path in sorted(root.rglob("*.json")):
               if ".git" in path.parts:
                   continue
               try:
-                  json.loads(path.read_text(encoding="utf-8"))
+                  json_docs[path] = json.loads(path.read_text(encoding="utf-8"))
               except Exception as exc:
                   errors.append(f"{rel(path)}: invalid JSON: {exc}")
+
+          yaml_docs = {}
+          for path in sorted(list(root.rglob("*.yaml")) + list(root.rglob("*.yml"))):
+              if ".git" in path.parts:
+                  continue
+              try:
+                  yaml_docs[path] = yaml.safe_load(path.read_text(encoding="utf-8"))
+              except Exception as exc:
+                  errors.append(f"{rel(path)}: invalid YAML: {exc}")
+
+          scenario_schema = load_json(root / "schemas" / "scenario.schema.json")
+          suite_schema = load_json(root / "schemas" / "suite" / "v1" / "suite.schema.json")
+          load_profile_schema = load_json(root / "schemas" / "load-profile" / "load-profile.schema.json")
+          package_schema = load_json(root / "schemas" / "package" / "v2" / "package.schema.json")
+          run_plan_schema = load_json(root / "schemas" / "run-plan" / "v1" / "run-plan.schema.json")
+          scenario_validator = Draft202012Validator(scenario_schema)
+          suite_validator = Draft202012Validator(suite_schema)
+          load_profile_validator = Draft202012Validator(load_profile_schema)
+          package_validator = Draft202012Validator(package_schema)
+          run_plan_validator = Draft202012Validator(run_plan_schema)
+
+          scenario_ids = {}
+          for path, data in yaml_docs.items():
+              if not isinstance(data, dict):
+                  continue
+              if not path.is_relative_to(root / "scenarios"):
+                  continue
+              if "network" in path.parts and "profiles" in path.parts:
+                  continue
+              if data.get("schemaVersion"):
+                  for error in scenario_validator.iter_errors(data):
+                      errors.append(f"{rel(path)}: scenario schema: {error.message}")
+                  scenario_id = data.get("id")
+                  if scenario_id in scenario_ids:
+                      errors.append(f"{rel(path)}: duplicate scenario id {scenario_id} also in {rel(scenario_ids[scenario_id])}")
+                  scenario_ids[scenario_id] = path
+                  protocol = data.get("protocol")
+                  required_protocols = data.get("requires", {}).get("protocols") or []
+                  if protocol and protocol not in required_protocols:
+                      errors.append(f"{rel(path)}: protocol {protocol} is not in requires.protocols {required_protocols}")
+                  if isinstance(scenario_id, str) and scenario_id.startswith("http."):
+                      errors.append(f"{rel(path)}: stale generic http.* scenario id {scenario_id}")
+
+          load_profile_ids = {}
+          for path, data in yaml_docs.items():
+              if not isinstance(data, dict) or not path.is_relative_to(root / "load-profiles"):
+                  continue
+              for error in load_profile_validator.iter_errors(data):
+                  errors.append(f"{rel(path)}: load-profile schema: {error.message}")
+              load_profile_id = data.get("id")
+              if load_profile_id in load_profile_ids:
+                  errors.append(f"{rel(path)}: duplicate load profile id {load_profile_id} also in {rel(load_profile_ids[load_profile_id])}")
+              load_profile_ids[load_profile_id] = path
+
+          valid_fixture_validators = [
+              (root / "fixtures" / "public-contracts" / "scenarios" / "valid", scenario_validator, "scenario fixture"),
+              (root / "fixtures" / "public-contracts" / "suites" / "valid", suite_validator, "suite fixture"),
+              (root / "fixtures" / "public-contracts" / "load-profiles" / "valid", load_profile_validator, "load-profile fixture"),
+          ]
+          for fixture_root, validator, label in valid_fixture_validators:
+              for path, data in json_docs.items():
+                  if not path.is_relative_to(fixture_root):
+                      continue
+                  for error in validator.iter_errors(data):
+                      errors.append(f"{rel(path)}: {label} schema: {error.message}")
+
+          root_suite_ids = {}
+          for path, data in yaml_docs.items():
+              if not isinstance(data, dict) or not path.is_relative_to(root / "suites"):
+                  continue
+              for error in suite_validator.iter_errors(data):
+                  errors.append(f"{rel(path)}: suite schema: {error.message}")
+              suite_id = data.get("id")
+              root_suite_ids[suite_id] = path
+              if data.get("loadProfileId") not in load_profile_ids:
+                  errors.append(f"{rel(path)}: suite loadProfileId {data.get('loadProfileId')} does not resolve")
+              for scenario_id in data.get("scenarios") or []:
+                  scenario_path = scenario_ids.get(scenario_id)
+                  if not scenario_path:
+                      errors.append(f"{rel(path)}: suite scenario {scenario_id} does not resolve in root scenarios")
+                      continue
+                  scenario_protocol = yaml_docs[scenario_path].get("protocol")
+                  if data.get("protocol") != scenario_protocol:
+                      errors.append(f"{rel(path)}: suite protocol {data.get('protocol')} mismatches {scenario_id} protocol {scenario_protocol}")
+
+          for suite_path, data in yaml_docs.items():
+              if not isinstance(data, dict):
+                  continue
+              if not suite_path.is_relative_to(root / "fixtures" / "public-contracts" / "packages"):
+                  continue
+              if "suites" not in suite_path.parts:
+                  continue
+              for error in suite_validator.iter_errors(data):
+                  errors.append(f"{rel(suite_path)}: package suite schema: {error.message}")
+              if data.get("loadProfileId") and data.get("loadProfileId") not in load_profile_ids:
+                  errors.append(f"{rel(suite_path)}: package suite loadProfileId {data.get('loadProfileId')} does not resolve")
+              package_name = suite_path.relative_to(root / "fixtures" / "public-contracts" / "packages").parts[0]
+              package_root = root / "fixtures" / "public-contracts" / "packages" / package_name
+              local_scenarios = {}
+              for scenario_path in sorted((package_root / "scenarios").rglob("*.yaml")):
+                  scenario_data = yaml_docs.get(scenario_path)
+                  if isinstance(scenario_data, dict) and scenario_data.get("id"):
+                      local_scenarios[scenario_data["id"]] = scenario_path
+                      for error in scenario_validator.iter_errors(scenario_data):
+                          errors.append(f"{rel(scenario_path)}: package scenario schema: {error.message}")
+                      if isinstance(scenario_data.get("id"), str) and scenario_data["id"].startswith("http."):
+                          errors.append(f"{rel(scenario_path)}: stale generic http.* package scenario id {scenario_data['id']}")
+              for scenario_id in data.get("scenarios") or []:
+                  scenario_path = local_scenarios.get(scenario_id)
+                  if not scenario_path:
+                      errors.append(f"{rel(suite_path)}: package suite scenario {scenario_id} does not resolve in package-local scenarios")
+                      continue
+                  scenario_protocol = yaml_docs[scenario_path].get("protocol")
+                  if data.get("protocol") != scenario_protocol:
+                      errors.append(f"{rel(suite_path)}: package suite protocol {data.get('protocol')} mismatches {scenario_id} protocol {scenario_protocol}")
+
+          package_index = {}
+          package_fixture_root = root / "fixtures" / "public-contracts" / "packages"
+          for manifest_path in sorted(package_fixture_root.rglob("protocol-lab-package.json")):
+              manifest = json_docs.get(manifest_path) or load_json(manifest_path)
+              package_key = (manifest.get("packageId"), manifest.get("packageVersion"))
+              package_index[package_key] = manifest_path
+              for entry in manifest.get("entryManifests", []):
+                  if not (manifest_path.parent / entry).exists():
+                      errors.append(f"{rel(manifest_path)}: missing entryManifests path {entry}")
+
+              if manifest_path.is_relative_to(package_fixture_root / "invalid"):
+                  continue
+
+              for error in package_validator.iter_errors(manifest):
+                  errors.append(f"{rel(manifest_path)}: package schema: {error.message}")
+
+              package_root = manifest_path.parent
+              local_scenarios = {}
+              for scenario_path in sorted((package_root / "scenarios").rglob("*.yaml")):
+                  scenario_data = yaml_docs.get(scenario_path)
+                  if isinstance(scenario_data, dict) and scenario_data.get("id"):
+                      local_scenarios[scenario_data["id"]] = scenario_path
+
+              local_suites = {}
+              for suite_path in sorted((package_root / "suites").rglob("*.yaml")):
+                  suite_data = yaml_docs.get(suite_path)
+                  if isinstance(suite_data, dict) and suite_data.get("id"):
+                      local_suites[suite_data["id"]] = suite_path
+
+              provided_scenario_ids = {entry.get("scenarioId") for entry in manifest.get("providedScenarios", [])}
+              if provided_scenario_ids and provided_scenario_ids != set(local_scenarios):
+                  errors.append(f"{rel(manifest_path)}: providedScenarios do not match package-local scenario manifests")
+              for entry in manifest.get("providedScenarios", []):
+                  scenario_id = entry.get("scenarioId")
+                  scenario_path = local_scenarios.get(scenario_id)
+                  if not scenario_path:
+                      errors.append(f"{rel(manifest_path)}: provided scenario {scenario_id} has no package-local scenario manifest")
+                      continue
+                  scenario_protocol = yaml_docs[scenario_path].get("protocol")
+                  if scenario_protocol not in (entry.get("protocols") or []):
+                      errors.append(f"{rel(manifest_path)}: provided scenario {scenario_id} protocols do not include {scenario_protocol}")
+
+              provided_suite_ids = {entry.get("suiteId") for entry in manifest.get("providedSuites", [])}
+              if provided_suite_ids and provided_suite_ids != set(local_suites):
+                  errors.append(f"{rel(manifest_path)}: providedSuites do not match package-local suite manifests")
+              for entry in manifest.get("providedSuites", []):
+                  suite_id = entry.get("suiteId")
+                  suite_path = local_suites.get(suite_id)
+                  if not suite_path:
+                      errors.append(f"{rel(manifest_path)}: provided suite {suite_id} has no package-local suite manifest")
+                      continue
+                  suite_protocol = yaml_docs[suite_path].get("protocol")
+                  if suite_protocol not in (entry.get("protocols") or []):
+                      errors.append(f"{rel(manifest_path)}: provided suite {suite_id} protocols do not include {suite_protocol}")
+
+          for run_plan_path, run_plan in json_docs.items():
+              if not run_plan_path.is_relative_to(root / "fixtures" / "public-contracts" / "run-plans" / "valid"):
+                  continue
+              for error in run_plan_validator.iter_errors(run_plan):
+                  errors.append(f"{rel(run_plan_path)}: run-plan schema: {error.message}")
+              if run_plan.get("loadProfileId") not in load_profile_ids:
+                  errors.append(f"{rel(run_plan_path)}: run-plan loadProfileId {run_plan.get('loadProfileId')} does not resolve")
+
+              provided_scenarios = set()
+              provided_suites = set()
+              provided_implementations = set()
+              provided_test_executors = set()
+              for package_ref in run_plan.get("packages", []):
+                  package_key = (package_ref.get("packageId"), package_ref.get("packageVersion"))
+                  manifest_path = package_index.get(package_key)
+                  if not manifest_path or manifest_path.is_relative_to(package_fixture_root / "invalid"):
+                      errors.append(f"{rel(run_plan_path)}: package reference {package_key[0]} {package_key[1]} does not resolve to a valid package fixture")
+                      continue
+                  manifest = json_docs.get(manifest_path) or load_json(manifest_path)
+                  provided_scenarios.update(entry.get("scenarioId") for entry in manifest.get("providedScenarios", []))
+                  provided_suites.update(entry.get("suiteId") for entry in manifest.get("providedSuites", []))
+                  provided_implementations.update(entry.get("implementationId") for entry in manifest.get("providedImplementations", []))
+                  provided_test_executors.update(entry.get("testExecutorId") for entry in manifest.get("providedTestExecutors", []))
+
+              for scenario_id in run_plan.get("scenarioIds", []):
+                  if scenario_id not in provided_scenarios:
+                      errors.append(f"{rel(run_plan_path)}: scenario {scenario_id} is not provided by the pinned package fixtures")
+              for suite_id in run_plan.get("suiteIds", []):
+                  if suite_id not in provided_suites:
+                      errors.append(f"{rel(run_plan_path)}: suite {suite_id} is not provided by the pinned package fixtures")
+              for implementation_id in run_plan.get("implementationIds", []):
+                  if implementation_id not in provided_implementations:
+                      errors.append(f"{rel(run_plan_path)}: implementation {implementation_id} is not provided by the pinned package fixtures")
+              for test_executor_id in run_plan.get("testExecutorIds", []):
+                  if test_executor_id not in provided_test_executors:
+                      errors.append(f"{rel(run_plan_path)}: test executor {test_executor_id} is not provided by the pinned package fixtures")
 
           forbidden_dirs = {
               "src", "tests", "scripts", "servers", "tools",

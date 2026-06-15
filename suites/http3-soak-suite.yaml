@@ -1,0 +1,25 @@
+id: http3-soak-suite
+name: ProtocolLab HTTP/3 soak suite
+description: Profile-specific HTTP/3 application and protocol selector for the soak load profile.
+purpose: soak
+resultKind: soak
+loadProfileId: http3-soak
+scenarios:
+  - http3.core.status
+  - http3.payload.bytes.64kb
+  - http3.payload.stream.100x16kb
+  - http3.upload.sink.1mb
+protocol: h3
+defaults:
+  durationSeconds: 3600
+  warmupSeconds: 60
+  repetitions: 1
+  connections: 16
+  streamsPerConnection: 16
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: This suite selects existing public HTTP/3 scenarios with the protocol-specific http3-soak load profile; it does not imply a required runner or load generator.
+tags:
+  - http3
+  - soak

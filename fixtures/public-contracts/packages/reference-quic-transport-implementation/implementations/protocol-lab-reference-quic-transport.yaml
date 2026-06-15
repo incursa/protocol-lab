@@ -1,0 +1,27 @@
+id: protocol-lab-reference-quic-transport-implementation
+name: ProtocolLab Reference QUIC Transport Implementation Fixture
+description: Metadata fixture for a QUIC transport implementation package.
+targetKind: implementation
+targetContract: adapter-v1
+roles:
+  - server
+supportedProtocols:
+  - quic
+supportedWorkloadFamilies:
+  - quic.transport
+capabilities:
+  - quic.transport.handshake-cold
+  - quic.transport.stream-throughput.1mb
+  - quic.transport.duplex-streams
+artifactExports:
+  - implementation.log
+telemetry:
+  supported: true
+  supported_contract_versions:
+    - telemetry-bundle-v1
+  supported_scopes:
+    - implementation
+  export_modes:
+    - artifact-bundle
+    - none
+notes: Fixture metadata only; it proves package/run-plan selector compatibility and is not a runnable benchmark target.

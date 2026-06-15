@@ -35,6 +35,7 @@ validation:
   checks:
     - unsupported-until-h3-validator
     - stream-concurrency-observable
+    - protocol:h3
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30

@@ -41,7 +41,9 @@ test-executor IDs, package versions, package hashes, controller policy, or
 fallback policy.
 
 Scenario IDs should be stable and named by behavior, not by product, runtime,
-or environment.
+or environment. When a behavior is protocol-specific, the protocol lane should
+be explicit in the ID and title, such as `http1.core.plaintext` or
+`http2.core.plaintext`.
 
 ## Suite Rules
 

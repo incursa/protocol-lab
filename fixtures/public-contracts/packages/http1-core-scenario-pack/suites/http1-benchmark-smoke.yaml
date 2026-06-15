@@ -1,0 +1,21 @@
+id: http1-benchmark-smoke
+name: HTTP/1 Benchmark Smoke
+description: Short HTTP/1 benchmark smoke suite for inspecting performance under the smoke load profile after behavior validation.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: smoke
+scenarios:
+  - http1.core.plaintext
+  - http1.core.json
+  - http1.payload.bytes.1kb
+protocol: h1
+defaults:
+  durationSeconds: 10
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 4
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: Benchmark answers how performance looks under a load profile. A fast invalid response remains invalid and must not be accepted as benchmark evidence.

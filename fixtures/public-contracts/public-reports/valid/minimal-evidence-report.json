@@ -55,7 +55,7 @@
       "cellKey": "cell-001",
       "implementationId": "example-implementation",
       "implementationName": "Example Implementation",
-      "scenarioId": "http.core.plaintext",
+      "scenarioId": "http1.core.plaintext",
       "scenarioName": "HTTP plaintext response",
       "family": "http",
       "protocol": "h1",

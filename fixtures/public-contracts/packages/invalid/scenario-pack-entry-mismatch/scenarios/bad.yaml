@@ -1,5 +1,5 @@
 schemaVersion: "1.0"
-id: http.core.actual
+id: http1.core.actual
 title: Bad Scenario
 description: Invalid fixture because the scenario id does not match providedScenarios.
 status: draft
@@ -20,3 +20,4 @@ validation:
   required: true
   checks:
     - status
+    - protocol:h1

@@ -21,12 +21,12 @@
     }
   ],
   "suiteIds": [
-    "benchmark-smoke"
+    "http1-benchmark-smoke"
   ],
   "scenarioIds": [
-    "http.core.plaintext",
-    "http.core.json",
-    "http.payload.bytes.1kb"
+    "http1.core.plaintext",
+    "http1.core.json",
+    "http1.payload.bytes.1kb"
   ],
   "implementationIds": [
     "kestrel-http1"
@@ -50,9 +50,9 @@
     {
       "groupId": "http1-benchmark-smoke",
       "scenarioIds": [
-        "http.core.plaintext",
-        "http.core.json",
-        "http.payload.bytes.1kb"
+        "http1.core.plaintext",
+        "http1.core.json",
+        "http1.payload.bytes.1kb"
       ],
       "sameExecutorRequired": true,
       "sameLoadProfileRequired": true

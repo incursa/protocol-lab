@@ -82,8 +82,8 @@ Invalid public report fixtures demonstrate required contract-version failures.
 
 ## Protocol Family Fixtures
 
-The HTTP/1 fixture set has separate run plans for `conformance-smoke` and
-`benchmark-smoke`. Both select public test cases, but they carry different
+The HTTP/1 fixture set has separate run plans for `http1-conformance-smoke` and
+`http1-benchmark-smoke`. Both select public test cases, but they carry different
 suite/result metadata.
 
 The HTTP/2 fixture set follows the same spec-first shape: scenarios are

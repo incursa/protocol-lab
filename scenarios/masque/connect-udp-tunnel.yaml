@@ -33,6 +33,7 @@ validation:
     - unsupported-until-masque-validator
     - tunnel-established
     - datagrams-forwarded
+    - protocol:h3
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30

@@ -9,7 +9,7 @@
     }
   ],
   "scenarioIds": [
-    "http.core.plaintext"
+    "http1.core.plaintext"
   ],
   "implementationIds": [
     "kestrel-http1"

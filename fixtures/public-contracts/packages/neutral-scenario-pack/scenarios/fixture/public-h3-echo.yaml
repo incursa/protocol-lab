@@ -24,6 +24,7 @@ validation:
   required: true
   checks:
     - response-status
+    - protocol:h3
   http:
     expectedStatus: 200
     expectedProtocol: h3

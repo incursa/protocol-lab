@@ -9,7 +9,7 @@
   "run_binding": {
     "run_id": "run-invalid-conformance-claim",
     "cell_id": "cell-invalid-conformance-claim",
-    "scenario_id": "http.core.plaintext",
+    "scenario_id": "http1.core.plaintext",
     "protocol": "http/1.1"
   },
   "measurement_profile": {

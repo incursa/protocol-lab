@@ -8,7 +8,7 @@
   ],
   "providedScenarios": [
     {
-      "scenarioId": "http.core.expected",
+      "scenarioId": "http1.core.expected",
       "protocols": [
         "h1"
       ]

@@ -15,6 +15,11 @@ Scenarios define:
 - validation expectations
 - artifact expectations
 
+Protocol-specific behavior should be visible in the scenario identity. HTTP/1,
+HTTP/2, and HTTP/3 application scenarios use separate namespaces such as
+`http1.*`, `http2.*`, and `http3.*` instead of a generic `http.*` ID that could
+be mistaken for all HTTP versions.
+
 Scenarios do not define:
 
 - implementation IDs

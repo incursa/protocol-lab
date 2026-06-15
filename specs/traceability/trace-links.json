@@ -92,7 +92,7 @@
       "id": "PLAB-SCENARIO-001",
       "schemas": ["schemas/scenario.schema.json"],
       "fixtures": [
-        "fixtures/public-contracts/scenarios/valid/http-core-plaintext-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/http1-core-plaintext-scenario.json",
         "fixtures/public-contracts/scenarios/invalid/scenario-missing-id.json"
       ],
       "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],

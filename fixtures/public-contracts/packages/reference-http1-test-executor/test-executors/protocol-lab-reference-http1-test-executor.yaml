@@ -9,26 +9,26 @@ versionCompatibility:
     - test-executor-v1
   executorVersion: 0.1.0-fixture
 claimedCapabilities:
-  - id: http.core.plaintext
+  - id: http1.core.plaintext
     status: supported
-  - id: http.core.json
+  - id: http1.core.json
     status: supported
-  - id: http.payload.bytes.1kb
+  - id: http1.payload.bytes.1kb
     status: supported
 supportedTestSelectors:
   - selectorType: test-id
-    expression: http.core.plaintext
+    expression: http1.core.plaintext
   - selectorType: test-id
-    expression: http.core.json
+    expression: http1.core.json
   - selectorType: test-id
-    expression: http.payload.bytes.1kb
+    expression: http1.payload.bytes.1kb
 supportedScenarioSelectors:
   - selectorType: scenario-id
-    expression: http.core.plaintext
+    expression: http1.core.plaintext
   - selectorType: scenario-id
-    expression: http.core.json
+    expression: http1.core.json
   - selectorType: scenario-id
-    expression: http.payload.bytes.1kb
+    expression: http1.payload.bytes.1kb
 supportedProtocolFamilies:
   - h1
 supportedExecutionModes:

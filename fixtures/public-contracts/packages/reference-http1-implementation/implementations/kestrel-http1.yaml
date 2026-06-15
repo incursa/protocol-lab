@@ -8,12 +8,12 @@ roles:
 supportedProtocols:
   - h1
 supportedWorkloadFamilies:
-  - http.core
-  - http.payload
+  - http1.core
+  - http1.payload
 capabilities:
-  - http.core.plaintext
-  - http.core.json
-  - http.payload.bytes.1kb
+  - http1.core.plaintext
+  - http1.core.json
+  - http1.payload.bytes.1kb
 artifactExports:
   - implementation.log
 telemetry:

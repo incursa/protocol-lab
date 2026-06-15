@@ -23,6 +23,12 @@ does not select packages, runners, adapters, or test executors.
 - fallback behavior
 - runtime-specific validation logic
 
+When the behavior is tied to a concrete HTTP protocol version, the scenario ID
+and title should include that lane. For example, an HTTP/1-only plaintext
+scenario should use an ID such as `http1.core.plaintext`; an HTTP/2 variant
+should use a separate `http2.*` ID rather than relying on a generic `http.*`
+name.
+
 ## Status
 
 - `stable`: public contract is expected to remain compatible.

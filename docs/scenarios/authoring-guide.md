@@ -18,8 +18,8 @@ environment.
 
 ```yaml
 schemaVersion: protocol-lab.scenario.v1
-id: http.core.plaintext
-title: HTTP Plaintext
+id: http1.core.plaintext
+title: HTTP/1 Plaintext
 status: stable
 category: http
 protocol: h1

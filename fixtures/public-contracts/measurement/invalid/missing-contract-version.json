@@ -8,7 +8,7 @@
   "run_binding": {
     "run_id": "run-invalid-001",
     "cell_id": "cell-invalid-001",
-    "scenario_id": "http.core.plaintext",
+    "scenario_id": "http1.core.plaintext",
     "protocol": "http/1.1"
   },
   "measurement_profile": {

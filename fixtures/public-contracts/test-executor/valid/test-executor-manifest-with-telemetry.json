@@ -17,13 +17,13 @@
   "supportedTestSelectors": [
     {
       "selectorType": "test-id",
-      "expression": "http.core.plaintext"
+      "expression": "http1.core.plaintext"
     }
   ],
   "supportedScenarioSelectors": [
     {
       "selectorType": "scenario-id",
-      "expression": "http.core.plaintext"
+      "expression": "http1.core.plaintext"
     }
   ],
   "supportedProtocolFamilies": ["h1"],

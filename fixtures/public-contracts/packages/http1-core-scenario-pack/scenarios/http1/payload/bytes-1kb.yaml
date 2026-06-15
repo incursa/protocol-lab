@@ -1,0 +1,77 @@
+schemaVersion: "1.0"
+title: HTTP/1 Bytes 1KB
+status: stable
+kind: workload
+layer: application
+roles:
+  - server
+requires:
+  capabilities:
+    - http.server
+  protocols:
+    - h1
+  roles:
+    - server
+trafficShape: download
+id: http1.payload.bytes.1kb
+name: HTTP/1 Bytes 1KB
+family: http.application
+description: Validate a deterministic 1KB byte payload downloaded from an HTTP/1 server endpoint.
+protocol: h1
+implementationRole: server
+requiredCapabilities:
+  - httpBytes
+endpoint:
+  method: GET
+  path: /bytes/1024
+  query: {}
+  requestHeaders: {}
+  requestBodyGeneration: none
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/octet-stream
+  expectedBodyRule: deterministicBytes
+  expectedBodySize: 1024
+validation:
+  required: true
+  checks:
+    - status
+    - content-type
+    - body-size
+    - deterministic-bytes
+    - protocol:h1
+  http:
+    expectedStatus: 200
+    expectedProtocol: h1
+    expectedBody: <deterministicBytes>
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+    - smoke
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+    - bytesReceived
+artifacts:
+  required:
+    - validation.json
+    - result.json
+    - load-generator.stdout.txt
+    - load-generator.stderr.txt
+  optional:
+    - response-sample.bin
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - requestsPerSecond
+  - bytesReceived
+artifactRequirements:
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+tags:
+  - http
+  - h1
+  - payload

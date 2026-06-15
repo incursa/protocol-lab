@@ -6,9 +6,9 @@
   "resultKind": "conformance",
   "loadProfileId": "smoke",
   "scenarios": [
-    "http.core.plaintext",
-    "http.core.json",
-    "http.payload.bytes.1kb"
+    "http1.core.plaintext",
+    "http1.core.json",
+    "http1.payload.bytes.1kb"
   ],
   "protocol": "h1",
   "defaults": {

@@ -23,7 +23,7 @@
   "supportedScenarioSelectors": [
     {
       "selectorType": "scenario-id",
-      "expression": "http.core.plaintext"
+      "expression": "http1.core.plaintext"
     }
   ],
   "supportedEndpointTypes": [

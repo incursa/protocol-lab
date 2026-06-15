@@ -22,6 +22,7 @@ validation:
   required: true
   checks:
     - unsupported-until-masque-validator
+    - protocol:h3
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30

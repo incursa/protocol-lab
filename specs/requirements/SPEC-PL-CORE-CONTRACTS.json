@@ -69,7 +69,7 @@
         "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
         "related": [
           "schemas/scenario.schema.json",
-          "fixtures/public-contracts/scenarios/valid/http-core-plaintext-scenario.json",
+          "fixtures/public-contracts/scenarios/valid/http1-core-plaintext-scenario.json",
           "fixtures/public-contracts/scenarios/invalid/scenario-missing-id.json",
           "docs/architecture/scenario-model.md"
         ]

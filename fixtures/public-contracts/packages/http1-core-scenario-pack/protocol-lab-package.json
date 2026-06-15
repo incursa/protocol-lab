@@ -5,31 +5,31 @@
   "kind": "scenario-pack",
   "displayName": "ProtocolLab HTTP/1 Core Scenario Pack",
   "entryManifests": [
-    "scenarios/http/core/plaintext.yaml",
-    "scenarios/http/core/json.yaml",
-    "scenarios/http/payload/bytes-1kb.yaml",
+    "scenarios/http1/core/plaintext.yaml",
+    "scenarios/http1/core/json.yaml",
+    "scenarios/http1/payload/bytes-1kb.yaml",
     "suites/http1-core-smoke.yaml",
-    "suites/conformance-smoke.yaml",
-    "suites/benchmark-smoke.yaml"
+    "suites/http1-conformance-smoke.yaml",
+    "suites/http1-benchmark-smoke.yaml"
   ],
   "providedScenarios": [
     {
-      "scenarioId": "http.core.plaintext",
-      "displayName": "HTTP Plaintext",
+      "scenarioId": "http1.core.plaintext",
+      "displayName": "HTTP/1 Plaintext",
       "protocols": [
         "h1"
       ]
     },
     {
-      "scenarioId": "http.core.json",
-      "displayName": "HTTP JSON",
+      "scenarioId": "http1.core.json",
+      "displayName": "HTTP/1 JSON",
       "protocols": [
         "h1"
       ]
     },
     {
-      "scenarioId": "http.payload.bytes.1kb",
-      "displayName": "HTTP Bytes 1KB",
+      "scenarioId": "http1.payload.bytes.1kb",
+      "displayName": "HTTP/1 Bytes 1KB",
       "protocols": [
         "h1"
       ]
@@ -46,7 +46,7 @@
       ]
     },
     {
-      "suiteId": "conformance-smoke",
+      "suiteId": "http1-conformance-smoke",
       "displayName": "HTTP/1 Conformance Smoke",
       "purpose": "conformance",
       "resultKind": "conformance",
@@ -55,7 +55,7 @@
       ]
     },
     {
-      "suiteId": "benchmark-smoke",
+      "suiteId": "http1-benchmark-smoke",
       "displayName": "HTTP/1 Benchmark Smoke",
       "purpose": "benchmark",
       "resultKind": "benchmark",

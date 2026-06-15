@@ -20,7 +20,7 @@
     }
   ],
   "scenarioIds": [
-    "http.core.not-real"
+    "http1.core.not-real"
   ],
   "implementationIds": [
     "kestrel-http1"

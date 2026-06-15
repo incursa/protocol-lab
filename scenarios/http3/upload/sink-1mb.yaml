@@ -1,0 +1,66 @@
+schemaVersion: "1.0"
+title: HTTP/3 Upload Sink 1MB
+status: stable
+kind: workload
+layer: application
+roles:
+  - server
+requires:
+  capabilities:
+    - http.server
+  protocols:
+    - h3
+  roles:
+    - server
+trafficShape: upload
+id: http3.upload.sink.1mb
+name: HTTP/3 Upload Sink 1MB
+family: http.application
+description: Validate and benchmark reading a 1MB request body and returning bytesRead.
+protocol: h3
+implementationRole: server
+requiredCapabilities:
+  - httpUpload
+endpoint:
+  method: POST
+  path: /sink
+  query: {}
+  requestHeaders: {}
+  requestBodyGeneration: deterministic-bytes:1048576
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/json
+  expectedBodyRule: jsonBytesRead
+validation:
+  required: true
+  checks: [status, bytes-read, protocol:h3]
+http:
+  expectedStatus: 200
+  expectedProtocol: h3
+  expectedBody: <jsonBytesRead>
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 30
+  repetitions: 1
+  connections: [1]
+  streamsPerConnection: [1]
+benchmarkCompat:
+  compatibleLoadShapes:
+    - fixed-path-request-response
+  primaryMetrics:
+    - requestsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - protocol-diagnostic-artifact
+    - counters
+networkProfile: clean
+requiredMetrics: [requestsPerSecond, bytesSent]
+artifactRequirements: [load-generator.stdout.txt, load-generator.stderr.txt]
+tags: [phase2, http, upload]

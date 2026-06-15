@@ -14,7 +14,7 @@
     "repetition": 0,
     "scenario_id": "http2.core.plaintext",
     "scenario_version": "1.0.0",
-    "suite_id": "conformance-smoke",
+    "suite_id": "http2-core-smoke",
     "protocol": "h2",
     "implementation_id": "example-implementation",
     "test_executor_id": "example-test-executor",

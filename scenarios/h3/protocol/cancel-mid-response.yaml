@@ -37,6 +37,7 @@ validation:
   checks:
     - unsupported-until-h3-validator
     - reset-stream-observable
+    - protocol:h3
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30

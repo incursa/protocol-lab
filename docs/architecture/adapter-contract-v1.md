@@ -538,7 +538,7 @@ routes, the request bodies, or the response schema.
 
 ## Schema Files
 
-The primary schema files live under `schemas/adapter/v1/` and describe the
+The primary schema files live under [`schemas/adapter/v1/`](../../schemas/adapter/v1/) and describe the
 request and response shapes for the routes above.
 
 The schema set is intentionally small and should stay focused on the primary

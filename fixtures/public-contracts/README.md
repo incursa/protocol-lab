@@ -6,7 +6,7 @@ scripts, binaries, or runnable packages.
 
 ## Package Fixtures
 
-Package fixtures under `packages/` show the expected Package v2 manifest
+Package fixtures under [`packages/`](packages/) show the expected Package v2 manifest
 layout:
 
 - neutral implementation metadata
@@ -24,9 +24,9 @@ collection mechanics.
 
 Run plan examples live under:
 
-- `run-plans/valid`
-- `run-plans/invalid`
-- `run-plans/incompatible`
+- [`run-plans/valid`](run-plans/valid/)
+- [`run-plans/invalid`](run-plans/invalid/)
+- [`run-plans/incompatible`](run-plans/incompatible/)
 
 Valid plans pin package bytes and select package-provided IDs. Schema-invalid
 plans omit required work selection, omit package hashes, or inline scenario
@@ -37,11 +37,11 @@ the referenced package set cannot satisfy.
 
 Focused core contract examples live under:
 
-- `adapter/valid` and `adapter/invalid`
-- `test-executor/valid` and `test-executor/invalid`
-- `scenarios/valid` and `scenarios/invalid`
-- `suites/valid` and `suites/invalid`
-- `load-profiles/valid` and `load-profiles/invalid`
+- [`adapter/valid`](adapter/valid/) and [`adapter/invalid`](adapter/invalid/)
+- [`test-executor/valid`](test-executor/valid/) and [`test-executor/invalid`](test-executor/invalid/)
+- [`scenarios/valid`](scenarios/valid/) and [`scenarios/invalid`](scenarios/invalid/)
+- [`suites/valid`](suites/valid/) and [`suites/invalid`](suites/invalid/)
+- [`load-profiles/valid`](load-profiles/valid/) and [`load-profiles/invalid`](load-profiles/invalid/)
 
 These fixtures are intentionally small. Each invalid fixture demonstrates one
 clear validation failure such as a missing required identity, selector, purpose,
@@ -51,13 +51,13 @@ or scenario list.
 
 Measurement examples live under:
 
-- `measurement/valid`
-- `measurement/invalid`
+- [`measurement/valid`](measurement/valid/)
+- [`measurement/invalid`](measurement/invalid/)
 
 Artifact examples live under:
 
-- `artifacts/valid`
-- `artifacts/invalid`
+- [`artifacts/valid`](artifacts/valid/)
+- [`artifacts/invalid`](artifacts/invalid/)
 
 Valid measurement fixtures show runner-only smoke evidence, benchmark latency
 and load-generator summaries, implementation-provided custom telemetry, and an
@@ -74,8 +74,8 @@ hashes and contradictory redaction/sensitivity declarations.
 
 Public report examples live under:
 
-- `public-reports/valid`
-- `public-reports/invalid`
+- [`public-reports/valid`](public-reports/valid/)
+- [`public-reports/invalid`](public-reports/invalid/)
 
 Valid public report fixtures show the minimal shareable evidence-report shape.
 Invalid public report fixtures demonstrate required contract-version failures.

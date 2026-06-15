@@ -5,10 +5,10 @@ keep ProtocolLab language-neutral.
 
 ## Before You Open A Pull Request
 
-- Read `CONTRIBUTOR-AGREEMENT.md`.
-- Follow `CODE_OF_CONDUCT.md`.
-- Read `README.md`, `docs/README.md`, and
-  `docs/protocol-lab/product-boundaries.md`.
+- Read [`CONTRIBUTOR-AGREEMENT.md`](CONTRIBUTOR-AGREEMENT.md).
+- Follow [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+- Read [`README.md`](README.md), [`docs/README.md`](docs/README.md), and
+  [`docs/protocol-lab/product-boundaries.md`](docs/protocol-lab/product-boundaries.md).
 - Keep changes focused on contracts, schemas, fixtures, scenarios, suites,
   load profiles, documentation, or governance files.
 - Check that new normative requirements are authored in SpecTrace JSON and use
@@ -23,7 +23,7 @@ keep ProtocolLab language-neutral.
 - Fixture changes should include valid and invalid examples where the contract
   surface benefits from both.
 - Boundary changes should update the public/internal boundary document and the
-  migration notes when implementation-owned material moves out.
+  affected public contract indexes.
 
 ## What Not To Do
 
@@ -41,15 +41,15 @@ keep ProtocolLab language-neutral.
 ## Contributor Agreement
 
 Pull requests are checked by the `Contributor Agreement` workflow. If the
-workflow asks you to sign, read `CONTRIBUTOR-AGREEMENT.md` and comment exactly:
+workflow asks you to sign, read [`CONTRIBUTOR-AGREEMENT.md`](CONTRIBUTOR-AGREEMENT.md) and comment exactly:
 
 ```text
 I have read the Incursa Contributor Agreement and I hereby assign my contribution rights as described.
 ```
 
-The workflow records signatures outside this repository. Maintainers should
-follow `docs/contributor-agreement-automation.md` when configuring the required
-secret or branch status check.
+The workflow records signatures outside this repository. Maintainers configure
+the required secret and branch status check through GitHub repository or
+organization settings.
 
 ## Repository Health
 

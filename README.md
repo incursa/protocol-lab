@@ -10,19 +10,22 @@ This repository is not a runner, command-line tool, SDK, build system, hosted
 lab, package publisher, or implementation repository. Concrete runners and
 hosted labs are implementations of these public contracts.
 
+The Incursa-hosted lab tester is available at
+[lab.incursa.com](https://lab.incursa.com/). That hosted lab is an
+implementation of these contracts; this repository remains the public source
+of truth for the contracts.
+
 ## Start Here
 
 1. Read this README for the repository boundary and public contract map.
-2. Read [Repository Layout](docs/repository-layout.md) and
-   [Terminology And Policies](docs/terminology-and-policies.md) for the
+2. Read [Terminology And Policies](docs/terminology-and-policies.md) for the
    shared vocabulary and contract policies.
 3. Read [Product Boundaries](docs/protocol-lab/product-boundaries.md) to
    understand the public repository versus implementation-owned systems.
 4. Use [Schemas](schemas/README.md), [Fixtures](fixtures/public-contracts/README.md),
    and [Specs](specs/README.md) as the canonical contract indexes.
-5. Use the [Contract Coverage Matrix](docs/audits/contract-coverage-matrix.md)
-   and [Public Consumption Readiness Review](docs/audits/public-consumption-readiness-review.md)
-   to see what is stable today and what remains open.
+5. Use the [Contract Coverage Matrix](docs/contracts/coverage-matrix.md) to
+   see the current public contract surface coverage.
 
 ## Repository Scope
 
@@ -51,15 +54,19 @@ unavailable states.
 
 Primary contract surfaces include:
 
-- Adapter Contract v1 under `schemas/adapter/v1/`
-- Test Executor Contract v1 under `schemas/test-executor/v1/`
-- Package v2 schemas under `schemas/package/v2/`
-- Run Plan v1 under `schemas/run-plan/v1/`
-- Measurement and telemetry contracts under `schemas/measurement/v1/`
-- Artifact and redaction contracts under `schemas/artifact/v1/`
+- Adapter Contract v1 under [`schemas/adapter/v1/`](schemas/adapter/v1/)
+- Test Executor Contract v1 under
+  [`schemas/test-executor/v1/`](schemas/test-executor/v1/)
+- Package v2 schemas under [`schemas/package/v2/`](schemas/package/v2/)
+- Run Plan v1 under [`schemas/run-plan/v1/`](schemas/run-plan/v1/)
+- Measurement and telemetry contracts under
+  [`schemas/measurement/v1/`](schemas/measurement/v1/)
+- Artifact and redaction contracts under
+  [`schemas/artifact/v1/`](schemas/artifact/v1/)
 - Scenario, suite, load-profile, and public report schemas
-- Repository terminology and policy notes under `docs/terminology-and-policies.md`
-- SpecTrace artifacts under `specs/`
+- Repository terminology and policy notes under
+  [`docs/terminology-and-policies.md`](docs/terminology-and-policies.md)
+- SpecTrace artifacts under [`specs/`](specs/)
 
 No generated code, SDK package, local executable, or hosted service is the
 source of truth for these contracts.
@@ -74,8 +81,9 @@ package validators.
 
 ## Fixtures
 
-Fixtures under `fixtures/public-contracts/` provide declarative examples for
-contract readers and validators:
+Fixtures under
+[`fixtures/public-contracts/`](fixtures/public-contracts/) provide declarative
+examples for contract readers and validators:
 
 - valid examples show accepted public shapes
 - invalid examples show schema failures
@@ -134,12 +142,13 @@ The dependency direction is one-way:
 - the public repository must not depend on implementation code, hosted lab
   services, private configuration, or private artifacts
 
-See `docs/protocol-lab/product-boundaries.md` for the detailed boundary model.
+See [`docs/protocol-lab/product-boundaries.md`](docs/protocol-lab/product-boundaries.md) for the detailed boundary model.
 
 ## Stability And Open Work
 
 The public contract surfaces indexed by
-`docs/audits/contract-coverage-matrix.md` are stable enough for
+[`docs/contracts/coverage-matrix.md`](docs/contracts/coverage-matrix.md)
+are stable enough for
 implementation repositories, hosted labs, validators, report consumers, and
 package producers to consume as the current public source of truth.
 
@@ -152,32 +161,35 @@ guidance.
 
 ## Documentation
 
-- `docs/README.md` indexes supporting documentation.
-- `docs/repository-layout.md` summarizes the top-level folder purposes.
-- `docs/terminology-and-policies.md` defines shared terminology, versioning,
-  compatibility, fixture, schema, and SpecTrace usage policies.
-- `docs/lab/package-v2.md` describes the package contract.
-- `docs/lab/run-plan-v1.md` describes immutable run-plan documents.
-- `docs/protocol-lab/product-boundaries.md` defines the public/internal split.
-- `docs/architecture/measurement-model.md` summarizes the measurement,
-  telemetry, artifact, redaction, and comparability model.
-- `specs/requirements/protocol-lab/measurement-requirements.md` and
-  `specs/requirements/protocol-lab/artifact-requirements.md` summarize the
-  public measurement and artifact rules.
-- `specs/traceability/README.md` explains how SpecTrace links requirements to
-  schemas and fixtures.
-- `schemas/README.md` and `specs/README.md` index the public schema and
-  SpecTrace surfaces.
-- `docs/audits/contract-coverage-matrix.md` and
-  `docs/audits/contract-completeness-validation.md` summarize current
-  contract coverage and remaining questions.
-- `docs/audits/public-consumption-readiness-review.md` records the final
-  public reader and contract-readiness recommendation.
-- `AGENTS.md` gives Codex and other agent contributors safe operating
-  instructions for this spec-only repository.
-- `CODE_OF_CONDUCT.md`, `SUPPORT.md`,
-  `docs/contributor-agreement-automation.md`, and `.github/` describe public
-  governance and repository-health automation.
+- [`docs/README.md`](docs/README.md) indexes supporting documentation.
+- [`docs/terminology-and-policies.md`](docs/terminology-and-policies.md)
+  defines shared terminology, versioning, compatibility, fixture, schema, and
+  SpecTrace usage policies.
+- [`docs/lab/package-v2.md`](docs/lab/package-v2.md) describes the package
+  contract.
+- [`docs/lab/run-plan-v1.md`](docs/lab/run-plan-v1.md) describes immutable
+  run-plan documents.
+- [`docs/protocol-lab/product-boundaries.md`](docs/protocol-lab/product-boundaries.md)
+  defines the public/internal split.
+- [`docs/architecture/measurement-model.md`](docs/architecture/measurement-model.md)
+  summarizes the measurement, telemetry, artifact, redaction, and
+  comparability model.
+- [`specs/requirements/protocol-lab/measurement-requirements.md`](specs/requirements/protocol-lab/measurement-requirements.md)
+  and
+  [`specs/requirements/protocol-lab/artifact-requirements.md`](specs/requirements/protocol-lab/artifact-requirements.md)
+  summarize the public measurement and artifact rules.
+- [`specs/traceability/README.md`](specs/traceability/README.md) explains how
+  SpecTrace links requirements to schemas and fixtures.
+- [`schemas/README.md`](schemas/README.md) and
+  [`specs/README.md`](specs/README.md) index the public schema and SpecTrace
+  surfaces.
+- [`docs/contracts/coverage-matrix.md`](docs/contracts/coverage-matrix.md)
+  summarizes current contract coverage and remaining questions.
+- [`AGENTS.md`](AGENTS.md) gives Codex and other agent contributors safe
+  operating instructions for this spec-only repository.
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SUPPORT.md`](SUPPORT.md),
+  and [`.github/`](.github/) describe public governance and repository-health
+  automation.
 
 ## Contributing
 
@@ -185,10 +197,11 @@ Contributions should change contracts, schemas, fixtures, scenarios, suites,
 documentation, or governance files. Implementation code and runnable
 automation belong in implementation repositories.
 
-Read `CONTRIBUTING.md`, `CONTRIBUTOR-AGREEMENT.md`,
-`CODE_OF_CONDUCT.md`, `SUPPORT.md`, and `SECURITY.md` before opening a pull
-request.
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md),
+[`CONTRIBUTOR-AGREEMENT.md`](CONTRIBUTOR-AGREEMENT.md),
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SUPPORT.md`](SUPPORT.md), and
+[`SECURITY.md`](SECURITY.md) before opening a pull request.
 
 ## License
 
-Apache-2.0. See `LICENSE`.
+Apache-2.0. See [`LICENSE`](LICENSE).

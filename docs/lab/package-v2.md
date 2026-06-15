@@ -6,7 +6,7 @@ toolchain packages. The contract identifies package bytes and the public
 catalog entries they provide. It does not make this repository a package
 producer or package runner.
 
-The canonical JSON Schema is `schemas/package/v2/package.schema.json`.
+The canonical JSON Schema is [`schemas/package/v2/package.schema.json`](../../schemas/package/v2/package.schema.json).
 
 ## Component Kinds
 
@@ -36,7 +36,7 @@ Entry manifest layout is part of the contract:
 
 - implementation packages use `implementations/`
 - test-executor packages use `test-executors/`
-- scenario-pack packages use `scenarios/` and/or `suites/`
+- scenario-pack packages use [`scenarios/`](../../scenarios/) and/or [`suites/`](../../suites/)
 
 The package manifest declares what a package provides. A run plan declares
 which package-provided components should be used for a repeatable run.
@@ -59,11 +59,11 @@ lane, suite, scenario, package version, or load profile.
 
 ## Declarative Fixtures
 
-Neutral examples live under `fixtures/public-contracts/packages/`. They show
+Neutral examples live under [`fixtures/public-contracts/packages/`](../../fixtures/public-contracts/packages/). They show
 manifest shape and compatibility metadata. They do not contain source code,
 scripts, binaries, or runnable package payloads.
 
-Invalid package fixtures live under `fixtures/public-contracts/packages/invalid`.
+Invalid package fixtures live under [`fixtures/public-contracts/packages/invalid`](../../fixtures/public-contracts/packages/invalid/).
 They exist to show metadata that must not be admitted by an implementation.
 
 ## Relationship To Run Plans

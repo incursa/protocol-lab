@@ -9,7 +9,7 @@ consumer; it is not a separate schema family.
 
 A report handoff should include:
 
-- a public report bundle that conforms to `schemas/public-report/v1/`
+- a public report bundle that conforms to [`schemas/public-report/v1/`](../../schemas/public-report/v1/)
 - an artifact index that names public-safe artifacts
 - an evidence report that preserves claim level and provenance
 - a stable run identifier

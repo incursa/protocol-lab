@@ -5,7 +5,7 @@ live in `specification` JSON artifacts. Architecture, work-item, and
 verification artifacts link back to those requirement IDs through SpecTrace
 fields.
 
-This directory does not define a separate trace model. `trace-links.json` is a
+This directory does not define a separate trace model. [`trace-links.json`](trace-links.json) is a
 repository index that points readers to the canonical SpecTrace artifacts and
 to the schemas and fixtures that support selected requirements.
 
@@ -28,7 +28,7 @@ corresponding SpecTrace trace fields, such as `satisfied_by`,
 
 ## Reading Contract Coverage
 
-Start with `specs/requirements/protocol-lab/`, then follow each requirement's
+Start with [`specs/requirements/protocol-lab/`](../requirements/protocol-lab/), then follow each requirement's
 trace fields to architecture and verification artifacts. Use
-`trace-links.json` as a convenience index from requirements to the schemas and
+[`trace-links.json`](trace-links.json) as a convenience index from requirements to the schemas and
 fixtures that illustrate the public contract.

@@ -6,7 +6,7 @@ rules; implementations decide how bundles are produced and where they are
 stored.
 
 The bundle contract is anchored by the schemas under
-`schemas/public-report/v1/`.
+[`schemas/public-report/v1/`](../../schemas/public-report/v1/).
 
 ## Report Vocabulary
 

@@ -9,8 +9,8 @@
   SpecTrace traceability.
 - Removed public implementation, runner, script, workflow, package publication,
   and local execution surfaces from the repository boundary.
-- Added repository structure, contract coverage, contract completeness, and
-  release-readiness audits.
+- Added public contract coverage, schema, fixture, SpecTrace, and governance
+  documentation.
 
 ## historical-local-operational-state - 2026-05-27
 

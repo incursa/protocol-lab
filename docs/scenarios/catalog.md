@@ -1,6 +1,6 @@
 # Scenario Catalog
 
-The public scenario catalog is the set of YAML files under `scenarios/`.
+The public scenario catalog is the set of YAML files under [`scenarios/`](../../scenarios/).
 
 ## Current Families
 

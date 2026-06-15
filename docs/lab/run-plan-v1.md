@@ -5,7 +5,7 @@ It pins exact package identities and selects existing package-provided
 components. It is not a scenario language, test definition format, executor
 extension point, launch format, or hosted controller implementation.
 
-The canonical JSON Schema is `schemas/run-plan/v1/run-plan.schema.json`.
+The canonical JSON Schema is [`schemas/run-plan/v1/run-plan.schema.json`](../../schemas/run-plan/v1/run-plan.schema.json).
 
 ## Contract Version
 
@@ -90,6 +90,6 @@ capability, dependency, collector, endpoint, or worker resource is missing at
 execution time. Neither outcome authorizes fallback to another implementation,
 executor, protocol lane, scenario, package version, or load profile.
 
-Public examples live under `fixtures/public-contracts/run-plans/valid`,
-`fixtures/public-contracts/run-plans/invalid`, and
-`fixtures/public-contracts/run-plans/incompatible`.
+Public examples live under [`fixtures/public-contracts/run-plans/valid`](../../fixtures/public-contracts/run-plans/valid/),
+[`fixtures/public-contracts/run-plans/invalid`](../../fixtures/public-contracts/run-plans/invalid/), and
+[`fixtures/public-contracts/run-plans/incompatible`](../../fixtures/public-contracts/run-plans/incompatible/).

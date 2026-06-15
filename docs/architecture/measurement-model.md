@@ -2,7 +2,7 @@
 
 This page is a spec-level architecture note for the public measurement,
 telemetry, artifact, redaction, and comparability contracts. Canonical
-requirements are authored as SpecTrace JSON under `specs/requirements/`.
+requirements are authored as SpecTrace JSON under [`specs/requirements/`](../../specs/requirements/).
 
 ## Evidence Layers
 

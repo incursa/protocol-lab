@@ -19,5 +19,5 @@
 
 ## Contributor Agreement
 
-- [ ] I have read `CONTRIBUTOR-AGREEMENT.md`.
-- [ ] I will follow `CODE_OF_CONDUCT.md`.
+- [ ] I have read [`CONTRIBUTOR-AGREEMENT.md`](../CONTRIBUTOR-AGREEMENT.md).
+- [ ] I will follow [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md).

@@ -31,7 +31,7 @@ The executor control plane is HTTP/1.1 JSON and is rooted at:
 | `POST` | `/sessions/{sessionId}/stop` | Stop an active session. |
 | `DELETE` | `/sessions/{sessionId}` | Dispose session state. |
 
-Schemas live under `schemas/test-executor/v1`.
+Schemas live under [`schemas/test-executor/v1`](../../schemas/test-executor/v1/).
 
 The canonical contract-version string in health and manifest
 `versionCompatibility` payloads is `test-executor-v1`. The route segment is
@@ -119,4 +119,4 @@ plan or test-executor contract assigns it a stronger role.
 
 The public repository defines the schema and behavior contract. Executable
 conformance suites belong in implementation repositories and should consume
-the schemas under `schemas/test-executor/v1/`.
+the schemas under [`schemas/test-executor/v1/`](../../schemas/test-executor/v1/).

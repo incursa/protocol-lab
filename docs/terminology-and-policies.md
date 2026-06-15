@@ -80,7 +80,7 @@ generated code, SDKs, or hosted services.
 
 ## Fixture Policy
 
-Fixtures under `fixtures/public-contracts/` are declarative contract examples.
+Fixtures under [`fixtures/public-contracts/`](../fixtures/public-contracts/) are declarative contract examples.
 They may be valid, invalid, or incompatible. They must not contain source code,
 scripts, binaries, generated code, or runnable implementation payloads.
 
@@ -92,7 +92,7 @@ not satisfy the requested work.
 ## SpecTrace Usage Policy
 
 Canonical requirements, architecture, work items, and verification records are
-SpecTrace JSON artifacts under `specs/`.
+SpecTrace JSON artifacts under [`specs/`](../specs/).
 
 Requirements are the smallest normative unit. Requirement statements should
 use stable IDs and approved normative keywords: `MUST`, `MUST NOT`, `SHALL`,

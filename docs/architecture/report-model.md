@@ -23,8 +23,8 @@ outcomes, diagnostic labels, and non-publishable claim status. They must not
 include private paths, credentials, internal hostnames, or private operational
 state.
 
-Report schemas live under `schemas/public-report/v1/`.
+Report schemas live under [`schemas/public-report/v1/`](../../schemas/public-report/v1/).
 
 Measurement profiles and comparability statements come from the measurement
-contract layer under `schemas/measurement/v1/`. Raw or derived evidence is
-referenced through artifact manifests under `schemas/artifact/v1/`.
+contract layer under [`schemas/measurement/v1/`](../../schemas/measurement/v1/). Raw or derived evidence is
+referenced through artifact manifests under [`schemas/artifact/v1/`](../../schemas/artifact/v1/).

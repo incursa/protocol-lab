@@ -1,7 +1,7 @@
 # Architecture
 
 This summary describes the public contract architecture. Detailed supporting
-pages live under `docs/architecture/`.
+pages live under [`docs/architecture/`](architecture/).
 
 ## Contract Ownership
 

@@ -8,9 +8,23 @@
   "durationSeconds": 5,
   "warmupSeconds": 0,
   "repetitions": 1,
-  "http": {
+  "http1": {
     "connections": 1,
     "concurrency": 1
+  },
+  "http2": {
+    "connections": 1,
+    "concurrency": 1,
+    "streamsPerConnection": 1
+  },
+  "http3": {
+    "connections": 1,
+    "concurrency": 1,
+    "streamsPerConnection": 1
+  },
+  "quic": {
+    "connections": 1,
+    "streamsPerConnection": 1
   },
   "evidence": {
     "minimumTier": "smoke",

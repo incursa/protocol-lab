@@ -33,7 +33,10 @@ declarative fixtures under [`fixtures/public-contracts/`](../fixtures/public-con
 - Scenarios, suites, and load profiles:
   [`architecture/scenario-model.md`](architecture/scenario-model.md),
   [`architecture/test-case-run-plan-model.md`](architecture/test-case-run-plan-model.md),
-  and [`architecture/load-model.md`](architecture/load-model.md)
+  [`architecture/load-model.md`](architecture/load-model.md),
+  [`scenarios/catalog.md`](scenarios/catalog.md),
+  [`scenarios/suite-catalog.md`](scenarios/suite-catalog.md), and
+  [`scenarios/load-profile-catalog.md`](scenarios/load-profile-catalog.md)
 - Measurement profiles, telemetry bundles, artifact bundles, and redaction:
   [`architecture/measurement-model.md`](architecture/measurement-model.md) and
   [`architecture/artifact-model.md`](architecture/artifact-model.md)
@@ -72,6 +75,8 @@ declarative fixtures under [`fixtures/public-contracts/`](../fixtures/public-con
 
 - [`scenarios/authoring-guide.md`](scenarios/authoring-guide.md)
 - [`scenarios/catalog.md`](scenarios/catalog.md)
+- [`scenarios/suite-catalog.md`](scenarios/suite-catalog.md)
+- [`scenarios/load-profile-catalog.md`](scenarios/load-profile-catalog.md)
 - [`scenarios/scenario-model.md`](scenarios/scenario-model.md)
 - [`../fixtures/public-contracts/README.md`](../fixtures/public-contracts/README.md)
 - [`../fixtures/public-contracts/measurement/valid/`](../fixtures/public-contracts/measurement/valid/)

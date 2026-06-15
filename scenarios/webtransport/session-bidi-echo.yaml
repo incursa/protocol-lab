@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: webtransport.session-bidi-echo
 title: WebTransport Session Bidi Echo
+name: WebTransport Session Bidi Echo
+family: webtransport
+description: Placeholder for a future WebTransport bidirectional stream echo contract family. Support is not implied by this public catalog entry.
 status: placeholder
 kind: protocolValidation
 layer: application
+protocol: h3
 roles:
   - server
 requires:
@@ -13,11 +18,6 @@ requires:
   roles:
     - server
 trafficShape: bidirectional-stream
-id: webtransport.session-bidi-echo
-name: WebTransport Session Bidi Echo
-family: webtransport
-description: Future WebTransport session and bidirectional stream echo scenario.
-protocol: h3
 implementationRole: server
 requiredCapabilities:
   - webtransport
@@ -30,9 +30,8 @@ webTransport:
   payloadSizeBytes: 65536
   payloadDirection: bidirectional
 validation:
-  required: true
+  required: false
   checks:
-    - unsupported-until-webtransport-validator
     - session-established
     - bidirectional-stream-echoes-payload
     - protocol:h3
@@ -72,3 +71,4 @@ tags:
   - phase8
   - webtransport
   - future-family
+  - placeholder

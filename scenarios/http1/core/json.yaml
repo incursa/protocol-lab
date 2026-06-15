@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: http1.core.json
 title: HTTP/1 JSON
+name: HTTP/1 JSON
+family: http.application
+description: Validate and benchmark a fixed small JSON HTTP response over an HTTP/1 server endpoint.
 status: stable
 kind: workload
 layer: application
+protocol: h1
 roles:
   - server
 requires:
@@ -13,11 +18,6 @@ requires:
   roles:
     - server
 trafficShape: request-response
-id: http1.core.json
-name: HTTP/1 JSON
-family: http.application
-description: Validate and benchmark a fixed small JSON HTTP response over an HTTP/1 server endpoint.
-protocol: h1
 implementationRole: server
 requiredCapabilities:
   - httpJson
@@ -49,9 +49,6 @@ validation:
     expectedStatus: 200
     expectedProtocol: h1
     expectedBody: '{"message":"Hello, World!"}'
-http:
-  expectedStatus: 200
-  expectedBody: '{"message":"Hello, World!"}'
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30

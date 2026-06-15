@@ -8,7 +8,9 @@ control-plane surfaces when needed.
 
 - [`adapter/v1/`](adapter/v1/) - Adapter Contract v1 control-plane payloads.
 - [`artifact/v1/`](artifact/v1/) - artifact references, artifact bundles, and redaction state.
-- [`load-profile/`](load-profile/) - declarative load profile documents.
+- [`load-profile/`](load-profile/) - declarative load profile documents, with
+  protocol-specific intensity settings such as `http1`, `http2`, `http3`, and
+  `quic`.
 - [`measurement/v1/`](measurement/v1/) - measurement profiles, telemetry bundles, samples,
   summaries, collector descriptors, and comparability classes.
 - [`package/v2/`](package/v2/) - component package manifests.
@@ -17,7 +19,9 @@ control-plane surfaces when needed.
 - [`run-plan/v1/`](run-plan/v1/) - immutable run-plan selection documents.
 - [`suite/v1/`](suite/v1/) - declarative suite selection documents.
 - [`test-executor/v1/`](test-executor/v1/) - Test Executor Contract v1 control-plane payloads.
-- [`scenario.schema.json`](scenario.schema.json) - scenario definition documents.
+- [`scenario.schema.json`](scenario.schema.json) - scenario definition
+  documents for public families such as `http1.*`, `http2.*`, `http3.*`, and
+  `quic.*`.
 
 ## Schema Policy
 

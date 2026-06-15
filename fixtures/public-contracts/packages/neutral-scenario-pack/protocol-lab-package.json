@@ -5,13 +5,13 @@
   "kind": "scenario-pack",
   "displayName": "Neutral Scenario Pack Fixture",
   "entryManifests": [
-    "scenarios/fixture/public-h3-echo.yaml",
-    "suites/fixture-public-h3.yaml"
+    "scenarios/fixture/public-http3-echo.yaml",
+    "suites/fixture-public-http3.yaml"
   ],
   "providedScenarios": [
     {
-      "scenarioId": "fixture.public.h3-echo",
-      "displayName": "Neutral Public H3 Echo",
+      "scenarioId": "fixture.public.http3-echo",
+      "displayName": "Neutral Public HTTP/3 Echo",
       "protocols": [
         "h3"
       ]
@@ -19,8 +19,10 @@
   ],
   "providedSuites": [
     {
-      "suiteId": "fixture-public-h3",
-      "displayName": "Neutral Public H3 Suite",
+      "suiteId": "fixture-public-http3",
+      "displayName": "Neutral Public HTTP/3 Suite",
+      "purpose": "conformance",
+      "resultKind": "conformance",
       "protocols": [
         "h3"
       ],

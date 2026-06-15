@@ -16,7 +16,7 @@ warmupSeconds: 10
 cooldownSeconds: 5
 repetitions: 3
 
-http:
+http1:
   connections: 128
   concurrency: 128
   requestTimeoutSeconds: 10

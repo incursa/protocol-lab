@@ -3,7 +3,7 @@ id: webtransport.session-open
 title: WebTransport Session Open
 name: WebTransport Session Open
 family: webtransport
-description: Placeholder for WebTransport session-open scenario. Not yet implemented.
+description: Placeholder for a future WebTransport session-open contract family. Support is not implied by this public catalog entry.
 status: placeholder
 kind: protocolValidation
 layer: application
@@ -19,9 +19,9 @@ requires:
     - server
 trafficShape: bidirectional-stream
 validation:
-  required: true
+  required: false
   checks:
-    - unsupported-until-webtransport-validator
+    - session-established
     - protocol:h3
 benchmark:
   warmupSeconds: 5

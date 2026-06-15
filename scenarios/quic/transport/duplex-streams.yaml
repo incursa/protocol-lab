@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: quic.transport.duplex-streams
 title: QUIC Duplex Streams
+name: QUIC Duplex Streams
+family: quic.transport
+description: Validate simultaneous bidirectional QUIC stream payload transfer as a transport scenario independent of HTTP/3 application semantics.
 status: stable
 kind: protocolValidation
 layer: transport
+protocol: quic
 roles:
   - server
 requires:
@@ -13,11 +18,6 @@ requires:
   roles:
     - server
 trafficShape: bidirectional-stream
-id: quic.transport.duplex-streams
-name: QUIC Duplex Streams
-family: quic.transport
-description: Validate and benchmark simultaneous bidirectional QUIC stream payload transfer through the raw QUIC load-generator contract.
-protocol: quic
 implementationRole: server
 requiredCapabilities:
   - quicTransport
@@ -35,11 +35,12 @@ quicTransport:
 validation:
   required: true
   checks:
-    - raw-quic-load-generator-metrics
+    - quic-transport-metrics
     - bytes-sent-received-match-expected
     - completed-streams-match-expected
     - zero-timeouts-and-errors
     - bidirectional-payloads-complete
+    - protocol:quic
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30
@@ -50,12 +51,14 @@ benchmark:
     - 16
 benchmarkCompat:
   compatibleLoadShapes:
-    - fixed-path-request-response
+    - quic-stream
+    - smoke
+    - regression
+    - comparison
   primaryMetrics:
-    - requestsPerSecond
-    - latencyP50
-    - latencyP95
-    - latencyP99
+    - bytesPerSecond
+    - streamsPerSecond
+    - streamDurationP95
     - errorRate
 artifacts:
   required:

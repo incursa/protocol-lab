@@ -45,17 +45,30 @@ or environment. When a behavior is protocol-specific, the protocol lane should
 be explicit in the ID and title, such as `http1.core.plaintext` or
 `http2.core.plaintext`.
 
+HTTP/3 scenarios use `http3.*` IDs with the `h3` protocol token. QUIC transport
+scenarios use `quic.*` IDs with the `quic` protocol token. A suite or run plan
+must not substitute one lane for the other.
+
 ## Suite Rules
 
 Suites group scenarios. A suite may declare protocol lane, result intent,
 compatible test-executor IDs, and labels. It must not pin package hashes or
 imply a specific runner implementation.
 
+Suite `purpose` and `resultKind` distinguish conformance, regression,
+benchmark, diagnostic, and soak intent. A benchmark suite selects benchmark
+intent, but evidence is publishable only when the selected profile, report
+contract, provenance, and artifact requirements support that claim.
+
 ## Load Profile Rules
 
 Load profiles describe intensity and repetition shape. They do not change the
 behavior being tested. A smoke profile and a regression profile can exercise
 the same scenario; only the intensity changes.
+
+Load profiles may include protocol-specific intensity keys such as `http1`,
+`http2`, `http3`, and `quic`. Those keys describe load shape only; they do not
+name a load generator or runner.
 
 ## Package Rules
 

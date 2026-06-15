@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: quic.transport.connection-churn
 title: QUIC Connection Churn
+name: QUIC Connection Churn
+family: quic.transport
+description: Validate repeated QUIC connection and stream churn as a transport scenario independent of HTTP/3 application semantics.
 status: stable
 kind: protocolValidation
 layer: transport
+protocol: quic
 roles:
   - server
 requires:
@@ -12,12 +17,7 @@ requires:
     - quic
   roles:
     - server
-trafficShape: bidirectional-stream
-id: quic.transport.connection-churn
-name: QUIC Connection Churn
-family: quic.transport
-description: Validate and benchmark repeated QUIC connection and stream churn behavior once a raw QUIC validator and load generator exist.
-protocol: quic
+trafficShape: connection-lifecycle
 implementationRole: server
 requiredCapabilities:
   - quicTransport
@@ -34,8 +34,10 @@ quicTransport:
 validation:
   required: true
   checks:
-    - unsupported-until-quic-validator
     - connection-and-stream-churn-completes
+    - opened-and-closed-streams-match-expected
+    - zero-timeouts-and-errors
+    - protocol:quic
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30
@@ -46,12 +48,14 @@ benchmark:
     - 1000
 benchmarkCompat:
   compatibleLoadShapes:
-    - fixed-path-request-response
+    - quic-connection-lifecycle
+    - smoke
+    - regression
+    - comparison
   primaryMetrics:
-    - requestsPerSecond
-    - latencyP50
-    - latencyP95
-    - latencyP99
+    - connectionsPerSecond
+    - streamsPerSecond
+    - resetCount
     - errorRate
 artifacts:
   required:

@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: http3.headers.inspect-request
 title: HTTP/3 Inspect Request Headers
+name: HTTP/3 Inspect Request Headers
+family: http.application
+description: Validate and benchmark echoing selected request headers as JSON.
 status: stable
 kind: workload
 layer: application
+protocol: h3
 roles:
   - server
 requires:
@@ -13,11 +18,6 @@ requires:
   roles:
     - server
 trafficShape: request-response
-id: http3.headers.inspect-request
-name: HTTP/3 Inspect Request Headers
-family: http.application
-description: Validate and benchmark echoing selected request headers as JSON.
-protocol: h3
 implementationRole: server
 requiredCapabilities:
   - httpHeaders
@@ -35,17 +35,23 @@ endpoint:
     X-Protocol-Bench-Test: phase2
 validation:
   required: true
-  checks: [status, content-type, request-header-echo, protocol:h3]
-http:
-  expectedStatus: 200
-  expectedProtocol: h3
-  expectedBody: <jsonProperties>
+  checks:
+    - status
+    - content-type
+    - request-header-echo
+    - protocol:h3
+  http:
+    expectedStatus: 200
+    expectedProtocol: h3
+    expectedBody: <jsonProperties>
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30
   repetitions: 1
-  connections: [1]
-  streamsPerConnection: [1]
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
 benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
@@ -63,6 +69,14 @@ artifacts:
     - protocol-diagnostic-artifact
     - counters
 networkProfile: clean
-requiredMetrics: [requestsPerSecond]
-artifactRequirements: [load-generator.stdout.txt, load-generator.stderr.txt]
-tags: [phase2, http, headers]
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+tags:
+  - phase2
+  - http
+  - h3
+  - http3
+  - headers

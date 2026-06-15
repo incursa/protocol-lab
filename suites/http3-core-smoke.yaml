@@ -1,0 +1,26 @@
+id: http3-core-smoke
+name: ProtocolLab HTTP/3 core smoke suite
+description: Fast package-neutral HTTP/3 behavior validation for status, payload, and upload echo scenarios.
+purpose: conformance
+resultKind: conformance
+loadProfileId: smoke
+scenarios:
+  - http3.core.status
+  - http3.payload.bytes.64kb
+  - http3.upload.echo.64kb
+protocol: h3
+defaults:
+  durationSeconds: 5
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 1
+counterCapture:
+  enabledByDefault: false
+  tool: ""
+notes: Package-neutral suite selector for the HTTP/3 application lane. Protocol-level HTTP/3 diagnostics use a separate diagnostic suite.
+tags:
+  - http3
+  - h3
+  - conformance
+  - smoke

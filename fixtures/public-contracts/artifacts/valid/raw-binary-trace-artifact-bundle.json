@@ -5,9 +5,9 @@
     "run_id": "run-diagnostic-trace-001",
     "cell_id": "cell-http3-trace-001",
     "repetition": 0,
-    "scenario_id": "h3.protocol.multiplex-100-streams",
+    "scenario_id": "http3.protocol.multiplex-100-streams",
     "scenario_version": "1.0.0",
-    "suite_id": "diagnostic-h3",
+    "suite_id": "http3-protocol-diagnostic",
     "protocol": "h3",
     "implementation_id": "example-implementation",
     "test_executor_id": "example-test-executor",
@@ -40,7 +40,9 @@
       }
     }
   ],
-  "warnings": ["Raw diagnostic artifacts may require implementation-specific review before publication."],
+  "warnings": [
+    "Raw diagnostic artifacts may require implementation-specific review before publication."
+  ],
   "errors": [],
   "redaction": {
     "state": "internal-only",

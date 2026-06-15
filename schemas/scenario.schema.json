@@ -24,7 +24,7 @@
     },
     "id": {
       "type": "string",
-      "description": "Stable dotted scenario ID (e.g., http.plaintext)",
+      "description": "Stable dotted scenario ID (e.g., http1.core.plaintext)",
       "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
     },
     "title": {
@@ -52,7 +52,7 @@
     },
     "protocol": {
       "type": "string",
-      "description": "Primary protocol (e.g., h1, h2, h3, quic)"
+      "description": "Primary protocol token (e.g., h1, h2, h3, quic)"
     },
     "family": {
       "type": "string",
@@ -111,11 +111,11 @@
     },
     "h3Protocol": {
       "type": "object",
-      "description": "HTTP/3 protocol-level specification"
+      "description": "HTTP/3 protocol-level specification for http3.* protocol scenarios"
     },
     "quicTransport": {
       "type": "object",
-      "description": "QUIC transport-level specification"
+      "description": "QUIC transport-level specification for quic.* scenarios"
     },
     "webTransport": {
       "type": "object",

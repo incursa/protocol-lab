@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: http3.upload.sink.1mb
 title: HTTP/3 Upload Sink 1MB
+name: HTTP/3 Upload Sink 1MB
+family: http.application
+description: Validate and benchmark reading a 1MB request body and returning bytesRead.
 status: stable
 kind: workload
 layer: application
+protocol: h3
 roles:
   - server
 requires:
@@ -13,11 +18,6 @@ requires:
   roles:
     - server
 trafficShape: upload
-id: http3.upload.sink.1mb
-name: HTTP/3 Upload Sink 1MB
-family: http.application
-description: Validate and benchmark reading a 1MB request body and returning bytesRead.
-protocol: h3
 implementationRole: server
 requiredCapabilities:
   - httpUpload
@@ -33,17 +33,22 @@ endpoint:
   expectedBodyRule: jsonBytesRead
 validation:
   required: true
-  checks: [status, bytes-read, protocol:h3]
-http:
-  expectedStatus: 200
-  expectedProtocol: h3
-  expectedBody: <jsonBytesRead>
+  checks:
+    - status
+    - bytes-read
+    - protocol:h3
+  http:
+    expectedStatus: 200
+    expectedProtocol: h3
+    expectedBody: <jsonBytesRead>
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30
   repetitions: 1
-  connections: [1]
-  streamsPerConnection: [1]
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
 benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
@@ -61,6 +66,15 @@ artifacts:
     - protocol-diagnostic-artifact
     - counters
 networkProfile: clean
-requiredMetrics: [requestsPerSecond, bytesSent]
-artifactRequirements: [load-generator.stdout.txt, load-generator.stderr.txt]
-tags: [phase2, http, upload]
+requiredMetrics:
+  - requestsPerSecond
+  - bytesSent
+artifactRequirements:
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+tags:
+  - phase2
+  - http
+  - h3
+  - http3
+  - upload

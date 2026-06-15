@@ -38,7 +38,7 @@
     "purpose": {
       "type": "string",
       "description": "Intended use of this profile",
-      "enum": ["smoke", "regression", "comparison", "stress", "soak", "publishable-benchmark"]
+      "enum": ["smoke", "diagnostic", "regression", "comparison", "stress", "soak", "publishable-benchmark"]
     },
     "durationSeconds": {
       "type": "integer",
@@ -74,9 +74,18 @@
         }
       }
     },
+    "http1": {
+      "type": "object",
+      "description": "HTTP/1 profile settings",
+      "properties": {
+        "connections": { "type": "integer" },
+        "concurrency": { "type": "integer" },
+        "requestTimeoutSeconds": { "type": "integer" }
+      }
+    },
     "http": {
       "type": "object",
-      "description": "HTTP/1.1 profile settings",
+      "description": "Legacy HTTP/1 profile settings key retained for load-profile v1 compatibility",
       "properties": {
         "connections": { "type": "integer" },
         "concurrency": { "type": "integer" },
@@ -120,7 +129,7 @@
       "properties": {
         "minimumTier": {
           "type": "string",
-          "enum": ["smoke", "regression", "comparison", "publishable"]
+          "enum": ["smoke", "diagnostic", "regression", "comparison", "soak", "publishable"]
         },
         "publishable": {
           "type": "boolean"

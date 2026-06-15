@@ -21,7 +21,7 @@ consume it.
 
 - Contracts before implementations.
 - Explicit unsupported and unavailable outcomes.
-- Raw QUIC and managed HTTP/3 remain separate lanes.
+- QUIC transport and HTTP/3 remain separate lanes.
 - Public reports do not claim stronger evidence than their provenance permits.
 - Internal and third-party runners are implementations, not the public source
   of truth.

@@ -16,9 +16,14 @@ Scenarios define:
 - artifact expectations
 
 Protocol-specific behavior should be visible in the scenario identity. HTTP/1,
-HTTP/2, and HTTP/3 application scenarios use separate namespaces such as
-`http1.*`, `http2.*`, and `http3.*` instead of a generic `http.*` ID that could
+HTTP/2, HTTP/3, and QUIC scenarios use separate namespaces such as `http1.*`,
+`http2.*`, `http3.*`, and `quic.*` instead of a generic `http.*` ID that could
 be mistaken for all HTTP versions.
+
+HTTP/3 protocol scenarios use `http3.protocol.*` IDs with the `h3` protocol
+token. QUIC transport scenarios use `quic.transport.*` IDs with the `quic`
+protocol token. Public contracts must keep these lanes distinct even when an
+implementation supports both.
 
 Scenarios do not define:
 

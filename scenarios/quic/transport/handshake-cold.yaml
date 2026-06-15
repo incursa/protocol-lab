@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: quic.transport.handshake-cold
 title: QUIC Cold Handshake
+name: QUIC Cold Handshake
+family: quic.transport
+description: Validate cold QUIC connection setup as a transport scenario independent of HTTP/3 application semantics.
 status: stable
 kind: protocolValidation
 layer: transport
+protocol: quic
 roles:
   - server
 requires:
@@ -12,12 +17,7 @@ requires:
     - quic
   roles:
     - server
-trafficShape: bidirectional-stream
-id: quic.transport.handshake-cold
-name: QUIC Cold Handshake
-family: quic.transport
-description: Validate and benchmark cold QUIC connection setup once a raw QUIC validator and load generator exist.
-protocol: quic
+trafficShape: handshake-only
 implementationRole: server
 requiredCapabilities:
   - quicTransport
@@ -33,8 +33,9 @@ quicTransport:
 validation:
   required: true
   checks:
-    - unsupported-until-quic-validator
     - handshake-completes
+    - connection-success-count-matches-expected
+    - protocol:quic
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30
@@ -45,12 +46,14 @@ benchmark:
     - 0
 benchmarkCompat:
   compatibleLoadShapes:
-    - fixed-path-request-response
+    - quic-handshake
+    - smoke
+    - regression
+    - comparison
   primaryMetrics:
-    - requestsPerSecond
-    - latencyP50
-    - latencyP95
-    - latencyP99
+    - handshakeDurationP50
+    - handshakeDurationP95
+    - connectionSuccessRate
     - errorRate
 artifacts:
   required:

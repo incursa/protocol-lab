@@ -103,7 +103,7 @@
     {
       "id": "REQ-PL-REPORT-0005",
       "title": "Protocol lane separation",
-      "statement": "A public ProtocolLab report MUST keep raw QUIC transport results separate from managed HTTP/3 results.",
+      "statement": "A public ProtocolLab report MUST keep QUIC transport results separate from HTTP/3 results.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",

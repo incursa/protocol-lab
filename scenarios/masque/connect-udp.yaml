@@ -3,7 +3,7 @@ id: masque.connect-udp
 title: MASQUE CONNECT-UDP
 name: MASQUE CONNECT-UDP
 family: masque
-description: Placeholder for MASQUE CONNECT-UDP tunnel scenario. Not yet implemented.
+description: Placeholder for a future MASQUE CONNECT-UDP contract family. Support is not implied by this public catalog entry.
 status: placeholder
 kind: protocolValidation
 layer: transport
@@ -19,9 +19,10 @@ requires:
     - server
 trafficShape: datagram
 validation:
-  required: true
+  required: false
   checks:
-    - unsupported-until-masque-validator
+    - connect-udp-established
+    - datagram-forwarding-observable
     - protocol:h3
 benchmark:
   warmupSeconds: 5

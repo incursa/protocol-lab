@@ -14,7 +14,7 @@ supportedTestSelectors:
     expression: fixture.public.echo
 supportedScenarioSelectors:
   - selectorType: scenario-id
-    expression: fixture.public.h3-echo
+    expression: fixture.public.http3-echo
 supportedProtocolFamilies:
   - h3
 supportedExecutionModes:

@@ -14,7 +14,7 @@ durationSeconds: 5
 warmupSeconds: 1
 repetitions: 1
 
-http:
+http1:
   connections: 1
   concurrency: 1
 

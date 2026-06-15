@@ -1,10 +1,10 @@
 schemaVersion: "1.0"
-id: quic.transport.multiplex.100x64kb
-title: QUIC Multiplex 100x64KB
-name: QUIC Multiplex 100x64KB
+id: quic.transport.datagram.1kb
+title: QUIC Datagram 1KB
+name: QUIC Datagram 1KB
 family: quic.transport
-description: Validate 100 concurrent 64KB QUIC streams as a transport scenario independent of HTTP/3 application semantics.
-status: stable
+description: Validate 1KB QUIC datagram payload delivery for implementations that explicitly advertise QUIC datagram support.
+status: experimental
 kind: protocolValidation
 layer: transport
 protocol: quic
@@ -13,33 +13,29 @@ roles:
 requires:
   capabilities:
     - quic.server
+    - quic.datagram
   protocols:
     - quic
   roles:
     - server
-trafficShape: bidirectional-stream
+trafficShape: datagram
 implementationRole: server
 requiredCapabilities:
   - quicTransport
-  - quicStreams
-  - quicMultiplexing
+  - quicDatagram
 quicTransport:
-  behavior: multiplex-streams
+  behavior: datagram-echo
   connectionCount: 1
-  streamType: bidirectional
-  streamCount: 100
-  payloadSizeBytes: 65536
+  datagramCount: 16
+  datagramBytes: 1024
   payloadDirection: bidirectional
-  openPattern: concurrent
-  expectedBytes: 13107200
+  expectedBytes: 32768
 validation:
   required: true
   checks:
-    - quic-transport-metrics
-    - bytes-sent-received-match-expected
-    - completed-streams-match-expected
+    - datagram-payloads-delivered
+    - datagram-bytes-match-expected
     - zero-timeouts-and-errors
-    - concurrent-streams-complete
     - protocol:quic
 benchmark:
   warmupSeconds: 5
@@ -48,17 +44,16 @@ benchmark:
   connections:
     - 1
   streamsPerConnection:
-    - 100
+    - 0
 benchmarkCompat:
   compatibleLoadShapes:
-    - quic-stream
+    - quic-datagram
     - smoke
     - regression
-    - comparison
   primaryMetrics:
+    - datagramsPerSecond
     - bytesPerSecond
-    - streamsPerSecond
-    - maxActiveStreams
+    - datagramLossRate
     - errorRate
 artifacts:
   required:
@@ -69,13 +64,15 @@ artifacts:
     - counters
 networkProfile: clean
 requiredMetrics:
-  - quic.stream.maxActiveStreams
-  - quic.stream.completedStreams
+  - quic.datagram.sentCount
+  - quic.datagram.receivedCount
+  - quic.datagram.bytesReceived
 artifactRequirements:
   - load-generator.stdout.txt
   - load-generator.stderr.txt
-  - protocol-diagnostic-unavailable-note
+  - protocol-diagnostic-artifact
 tags:
   - phase6
   - quic
-  - multiplexing
+  - datagram
+  - experimental

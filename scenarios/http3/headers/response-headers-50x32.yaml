@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: http3.headers.response.50x32
 title: HTTP/3 Response Headers 50x32
+name: HTTP/3 Response Headers 50x32
+family: http.application
+description: Validate and benchmark returning 50 synthetic response headers with 32-byte values.
 status: stable
 kind: workload
 layer: application
+protocol: h3
 roles:
   - server
 requires:
@@ -13,11 +18,6 @@ requires:
   roles:
     - server
 trafficShape: request-response
-id: http3.headers.response.50x32
-name: HTTP/3 Response Headers 50x32
-family: http.application
-description: Validate and benchmark returning 50 synthetic response headers with 32-byte values.
-protocol: h3
 implementationRole: server
 requiredCapabilities:
   - httpHeaders
@@ -25,8 +25,8 @@ endpoint:
   method: GET
   path: /headers/response
   query:
-    count: "50"
-    size: "32"
+    count: '50'
+    size: '32'
   requestHeaders: {}
   expectedStatus: 200
   expectedHeaders:
@@ -39,17 +39,23 @@ endpoint:
   expectedBodySize: 7
 validation:
   required: true
-  checks: [status, response-headers, body, protocol:h3]
-http:
-  expectedStatus: 200
-  expectedProtocol: h3
-  expectedBody: headers
+  checks:
+    - status
+    - response-headers
+    - body
+    - protocol:h3
+  http:
+    expectedStatus: 200
+    expectedProtocol: h3
+    expectedBody: headers
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30
   repetitions: 1
-  connections: [1]
-  streamsPerConnection: [1]
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
 benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
@@ -67,6 +73,14 @@ artifacts:
     - protocol-diagnostic-artifact
     - counters
 networkProfile: clean
-requiredMetrics: [requestsPerSecond]
-artifactRequirements: [load-generator.stdout.txt, load-generator.stderr.txt]
-tags: [phase2, http, headers]
+requiredMetrics:
+  - requestsPerSecond
+artifactRequirements:
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+tags:
+  - phase2
+  - http
+  - h3
+  - http3
+  - headers

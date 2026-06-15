@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
-title: H3 Multiplex 100 Streams
+id: http3.protocol.multiplex-100-streams
+title: HTTP/3 Multiplex 100 Streams
+name: HTTP/3 Multiplex 100 Streams
+family: http3.protocol
+description: Validate HTTP/3 multiplexing across 100 concurrent request streams over one QUIC connection.
 status: stable
 kind: protocolValidation
 layer: protocol
+protocol: h3
 roles:
   - server
 requires:
@@ -14,11 +19,6 @@ requires:
   roles:
     - server
 trafficShape: bidirectional-stream
-id: h3.protocol.multiplex-100-streams
-name: H3 Multiplex 100 Streams
-family: h3.protocol
-description: Validate and benchmark HTTP/3 multiplexing across 100 concurrent request streams once an H3 protocol validator and load generator exist.
-protocol: h3
 implementationRole: server
 requiredCapabilities:
   - h3Protocol
@@ -33,8 +33,8 @@ h3Protocol:
 validation:
   required: true
   checks:
-    - unsupported-until-h3-validator
     - stream-concurrency-observable
+    - completed-responses-match-expected
     - protocol:h3
 benchmark:
   warmupSeconds: 5
@@ -71,5 +71,8 @@ artifactRequirements:
   - protocol-diagnostic-artifact
 tags:
   - phase5
+  - http
   - h3
+  - http3
+  - protocol
   - multiplexing

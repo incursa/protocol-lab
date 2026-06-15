@@ -15,7 +15,7 @@
         "h3"
       ],
       "scenarios": [
-        "fixture.public.h3-echo"
+        "fixture.public.http3-echo"
       ]
     }
   ],

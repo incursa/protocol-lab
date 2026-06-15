@@ -1,14 +1,17 @@
-id: fixture-public-h3
-name: Neutral Public H3 Suite
-description: Neutral suite fixture for package v2 validation.
+id: fixture-public-http3
+name: Neutral Public HTTP/3 Suite
+description: Neutral HTTP/3 suite fixture for package v2 validation.
+purpose: conformance
+resultKind: conformance
+loadProfileId: smoke
+scenarios:
+  - fixture.public.http3-echo
+protocol: h3
 targetMode: external
 targetNetworkMode: published-endpoint
 implementations:
   - neutral-adapter-implementation
 unsupportedImplementations: []
-scenarios:
-  - fixture.public.h3-echo
-protocol: h3
 testExecutors:
   - id: neutral-test-executor
     mode: contract-declared

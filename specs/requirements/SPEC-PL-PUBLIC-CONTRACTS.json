@@ -159,8 +159,8 @@
     },
     {
       "id": "REQ-PL-PUBLIC-0007",
-      "title": "Raw QUIC and HTTP/3 separation",
-      "statement": "ProtocolLab contracts MUST keep raw QUIC transport lanes and managed HTTP/3 lanes separate in schemas, fixtures, scenario definitions, run plans, artifacts, and public reports.",
+      "title": "QUIC transport and HTTP/3 separation",
+      "statement": "ProtocolLab contracts MUST keep QUIC transport lanes and HTTP/3 lanes separate in schemas, fixtures, scenario definitions, run plans, artifacts, and public reports.",
       "x_coverage_expectations": {
         "positive": "required",
         "negative": "required",

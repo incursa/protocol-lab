@@ -89,3 +89,7 @@ suite/result metadata.
 The HTTP/2 fixture set follows the same spec-first shape: scenarios are
 defined before any controller, site, or producer-package behavior can select
 them.
+
+The neutral HTTP/3 fixture package uses package-local scenario and suite IDs.
+Those IDs demonstrate package-relative selection and do not replace the root
+HTTP/3 catalog under [`../../scenarios/http3`](../../scenarios/http3/).

@@ -96,10 +96,16 @@ binaries, generated code, or executable source.
 ## Scenario And Suite Definitions
 
 Scenarios describe durable protocol test cases. Suites group scenarios for a
-specific intent such as conformance or benchmark measurement. Load profiles
-describe intensity and measurement shape. These documents are declarative
-inputs, not instructions to start a local process, build a container, invoke a
-tool, or publish a result.
+specific intent such as conformance, benchmark, diagnostic, regression, or
+soak evidence. Load profiles describe intensity and measurement shape. These
+documents are declarative inputs, not instructions to start a local process,
+build a container, invoke a tool, or publish a result.
+
+The public protocol families are indexed in the
+[Scenario Catalog](docs/scenarios/catalog.md). Suite selectors are indexed in
+the [Suite Catalog](docs/scenarios/suite-catalog.md), and load-profile
+definitions are indexed in the
+[Load Profile Catalog](docs/scenarios/load-profile-catalog.md).
 
 ## Measurement And Artifact Contracts
 

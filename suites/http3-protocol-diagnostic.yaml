@@ -1,0 +1,26 @@
+id: http3-protocol-diagnostic
+name: ProtocolLab HTTP/3 protocol diagnostic suite
+description: Diagnostic HTTP/3 protocol selection for QPACK, multiplexing, and stream cancellation evidence.
+purpose: diagnostic
+resultKind: diagnostic
+loadProfileId: diagnostic
+scenarios:
+  - http3.protocol.qpack-repeated-headers
+  - http3.protocol.multiplex-100-streams
+  - http3.protocol.cancel-mid-response
+protocol: h3
+defaults:
+  durationSeconds: 10
+  warmupSeconds: 1
+  repetitions: 1
+  connections: 1
+  streamsPerConnection: 16
+counterCapture:
+  enabledByDefault: true
+  tool: ""
+notes: Diagnostic evidence can explain protocol behavior but does not upgrade a result to publishable benchmark evidence.
+tags:
+  - http3
+  - h3
+  - diagnostic
+  - protocol

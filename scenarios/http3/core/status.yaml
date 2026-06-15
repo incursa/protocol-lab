@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: http3.core.status
 title: HTTP/3 Status
+name: HTTP/3 Status
+family: http.application
+description: Validate and benchmark the status endpoint used to confirm target identity and protocol visibility.
 status: stable
 kind: workload
 layer: application
+protocol: h3
 roles:
   - server
 requires:
@@ -13,11 +18,6 @@ requires:
   roles:
     - server
 trafficShape: request-response
-id: http3.core.status
-name: HTTP/3 Status
-family: http.application
-description: Validate and benchmark the status endpoint used to confirm target identity and protocol visibility.
-protocol: h3
 implementationRole: server
 requiredCapabilities:
   - httpStatus
@@ -43,16 +43,18 @@ validation:
     - status
     - json-properties
     - protocol:h3
-http:
-  expectedStatus: 200
-  expectedProtocol: h3
-  expectedBody: <jsonProperties>
+  http:
+    expectedStatus: 200
+    expectedProtocol: h3
+    expectedBody: <jsonProperties>
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30
   repetitions: 1
-  connections: [1]
-  streamsPerConnection: [1]
+  connections:
+    - 1
+  streamsPerConnection:
+    - 1
 benchmarkCompat:
   compatibleLoadShapes:
     - fixed-path-request-response
@@ -78,4 +80,6 @@ artifactRequirements:
 tags:
   - phase2
   - http
+  - h3
+  - http3
   - status

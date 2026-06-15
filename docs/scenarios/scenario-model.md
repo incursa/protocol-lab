@@ -29,6 +29,10 @@ scenario should use an ID such as `http1.core.plaintext`; an HTTP/2 variant
 should use a separate `http2.*` ID rather than relying on a generic `http.*`
 name.
 
+HTTP/3 uses `http3.*` scenario IDs and the `h3` protocol token. QUIC transport
+uses `quic.*` scenario IDs and the `quic` protocol token. These families are
+related at the wire level but are separate public scenario families.
+
 ## Status
 
 - `stable`: public contract is expected to remain compatible.

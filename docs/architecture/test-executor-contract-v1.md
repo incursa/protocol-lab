@@ -44,7 +44,8 @@ The manifest identifies the executor and declares:
 
 - `supportedTestSelectors`: tests the executor can run.
 - `supportedScenarioSelectors`: scenarios the executor can exercise.
-- `supportedProtocolFamilies`: protocol families such as `http`, `h2`, `h3`, `quic`, `webtransport`, or `masque`.
+- `supportedProtocolFamilies`: protocol families such as `h1`, `h2`, `h3`,
+  `quic`, `websocket`, `webtransport`, or `masque`.
 - `requiredTargetEndpointBindings`: target endpoints that must be supplied during prepare.
 - `claimedCapabilities`: executor capabilities and limitations.
 - `metricsAvailability` and `supportedArtifactTypes`.
@@ -89,7 +90,8 @@ Executors must return `unsupported` when they understand the request but cannot 
 - Test executors must not start implementation targets directly unless the package also provides a separate adapter and the lab explicitly selects it.
 - Contract consumers must not substitute a different executor or protocol lane
   when a selected executor is unavailable or incompatible.
-- Raw QUIC remains limited to the currently validated scenario cells until additional executor validation gates are added.
+- QUIC transport support remains limited to the scenario cells an executor
+  explicitly advertises.
 - Executor metrics and artifacts are evidence inputs. They do not make a result publishable unless ProtocolLab validation and classification accept the cell.
 
 ## Optional Telemetry Export

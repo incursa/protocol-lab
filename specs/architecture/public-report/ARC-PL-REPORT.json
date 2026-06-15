@@ -31,7 +31,7 @@
   "edge_cases_and_constraints": [
     "Diagnostic reports remain diagnostic even when they are publicly visible.",
     "Unsupported and unavailable outcomes remain visible to readers.",
-    "Raw QUIC and managed HTTP/3 result lanes remain distinct."
+    "QUIC transport and HTTP/3 result lanes remain distinct."
   ],
   "alternatives_considered": [
     "Defining a storage-specific upload path in the public contract was rejected because storage is an implementation concern.",

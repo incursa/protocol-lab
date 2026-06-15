@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
-title: H3 QPACK Repeated Headers
+id: http3.protocol.cancel-mid-response
+title: HTTP/3 Cancel Mid Response
+name: HTTP/3 Cancel Mid Response
+family: http3.protocol
+description: Validate HTTP/3 request-stream cancellation behavior with an observable reset after a partial response.
 status: stable
 kind: protocolValidation
 layer: protocol
+protocol: h3
 roles:
   - server
 requires:
@@ -14,28 +19,24 @@ requires:
   roles:
     - server
 trafficShape: bidirectional-stream
-id: h3.protocol.qpack-repeated-headers
-name: H3 QPACK Repeated Headers
-family: h3.protocol
-description: Validate and benchmark HTTP/3 header compression behavior for repeated response headers once an H3 protocol validator and load generator exist.
-protocol: h3
 implementationRole: server
 requiredCapabilities:
   - h3Protocol
-  - h3Qpack
+  - h3StreamCancellation
 h3Protocol:
-  behavior: qpack-repeated-headers
-  requestPath: /headers/response
-  repeatedHeaderCount: 50
-  headerValueSize: 32
+  behavior: cancel-mid-response
+  requestPath: /stream/bytes
+  cancellationPoint: after-response-bytes
+  responseBytesBeforeCancel: 65536
   expectedFrameTypes:
     - headers
     - data
+    - reset-stream
 validation:
   required: true
   checks:
-    - unsupported-until-h3-validator
-    - qpack-header-block-observable
+    - reset-stream-observable
+    - response-bytes-before-cancel-observed
     - protocol:h3
 benchmark:
   warmupSeconds: 5
@@ -63,13 +64,16 @@ artifacts:
     - counters
 networkProfile: clean
 requiredMetrics:
-  - h3.qpack.encodedHeaderBytes
-  - h3.qpack.dynamicTableInsertions
+  - h3.stream.resetCount
+  - h3.stream.bytesBeforeCancel
 artifactRequirements:
   - load-generator.stdout.txt
   - load-generator.stderr.txt
   - protocol-diagnostic-artifact
 tags:
   - phase5
+  - http
   - h3
-  - qpack
+  - http3
+  - protocol
+  - cancellation

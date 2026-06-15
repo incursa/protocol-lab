@@ -1,8 +1,13 @@
 schemaVersion: "1.0"
+id: masque.connect-udp-tunnel
 title: MASQUE CONNECT-UDP Tunnel
+name: MASQUE CONNECT-UDP Tunnel
+family: masque
+description: Placeholder for a future MASQUE CONNECT-UDP tunnel contract family. Support is not implied by this public catalog entry.
 status: placeholder
 kind: protocolValidation
 layer: application
+protocol: h3
 roles:
   - server
 requires:
@@ -13,11 +18,6 @@ requires:
   roles:
     - server
 trafficShape: bidirectional-stream
-id: masque.connect-udp-tunnel
-name: MASQUE CONNECT-UDP Tunnel
-family: masque
-description: Future MASQUE CONNECT-UDP tunnel setup scenario.
-protocol: h3
 implementationRole: server
 requiredCapabilities:
   - masque
@@ -28,9 +28,8 @@ masque:
   targetAuthority: example.invalid:443
   datagramPolicy: required
 validation:
-  required: true
+  required: false
   checks:
-    - unsupported-until-masque-validator
     - tunnel-established
     - datagrams-forwarded
     - protocol:h3
@@ -70,3 +69,4 @@ tags:
   - phase8
   - masque
   - future-family
+  - placeholder

@@ -1,7 +1,7 @@
 schemaVersion: "1.0"
-id: fixture.public.h3-echo
-title: Neutral Public H3 Echo
-description: Neutral scenario fixture for public package and conformance documentation.
+id: fixture.public.http3-echo
+title: Neutral Public HTTP/3 Echo
+description: Neutral HTTP/3 scenario fixture for public package and conformance documentation.
 status: draft
 kind: workload
 layer: application
@@ -35,3 +35,5 @@ artifacts:
 tags:
   - fixture
   - public-contract
+  - http3
+  - h3

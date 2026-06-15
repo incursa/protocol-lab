@@ -60,6 +60,7 @@ Implementation repositories may provide:
 - adapters and implementation packages
 - test executors
 - package materialization and worker orchestration
+- package index admission, namespace reservation, and publisher verification
 - hosted controller APIs and operational dashboards
 - retained artifacts and attested provenance
 - private diagnostics and release automation
@@ -74,10 +75,12 @@ them privately.
    outputs.
 3. Public contracts must remain language-neutral.
 4. Unsupported and unavailable states must remain explicit.
-5. Raw QUIC and HTTP/3 lanes must not be collapsed into each other.
+5. QUIC transport and HTTP/3 lanes must not be collapsed into each other.
 6. Public report contracts must not imply controlled, hosted, or publishable
    evidence unless the required provenance is present.
 7. Concrete runner behavior belongs outside this public repository.
+8. Multi-publisher package namespace admission belongs to the lab or package
+   index that admits package manifests.
 
 ## Participation Model
 

@@ -1,9 +1,27 @@
 # ProtocolLab Documentation
 
-This documentation supports the public ProtocolLab contract repository. The
-canonical normative artifacts are SpecTrace JSON under [`specs/`](../specs/), JSON Schemas
-under [`schemas/`](../schemas/), OpenAPI/YAML control-plane contracts where present, and
-declarative fixtures under [`fixtures/public-contracts/`](../fixtures/public-contracts/).
+This documentation supports the public ProtocolLab contract repository and is
+the source content mirrored into the central Incursa documentation repository.
+The canonical normative artifacts remain in the ProtocolLab source repository:
+SpecTrace JSON under [`specs/`](../specs/), JSON Schemas under
+[`schemas/`](../schemas/), OpenAPI/YAML control-plane contracts where present,
+and declarative fixtures under
+[`fixtures/public-contracts/`](../fixtures/public-contracts/).
+
+## Start Here
+
+- [`overview.md`](overview.md) - what ProtocolLab is, what problem it solves,
+  and what work it supports
+- [`getting-started.md`](getting-started.md) - reading path, repository layout,
+  validation expectations, and documentation mirroring
+- [`terminology-and-policies.md`](terminology-and-policies.md) - shared
+  vocabulary and public contract policies
+- [`architecture/overview.md`](architecture/overview.md) - major components and
+  public/implementation data flow
+- [`benchmark-workflow.md`](benchmark-workflow.md) - configuring, executing,
+  collecting, interpreting, and publishing experiment evidence
+- [`contributing.md`](contributing.md) - practical contributor path for docs,
+  specifications, validation, and contract changes
 
 ## Project Direction
 
@@ -19,7 +37,7 @@ declarative fixtures under [`fixtures/public-contracts/`](../fixtures/public-con
 
 ## New Reader Map
 
-- What ProtocolLab is: [`../README.md`](../README.md) and
+- What ProtocolLab is: [`overview.md`](overview.md) and
   [`protocol-lab/vision.md`](protocol-lab/vision.md)
 - What this public repository contains: [`../README.md`](../README.md)
 - What this public repository intentionally excludes:
@@ -49,6 +67,10 @@ declarative fixtures under [`fixtures/public-contracts/`](../fixtures/public-con
   [`../specs/README.md`](../specs/README.md)
 - Current stable surfaces and open questions:
   [`contracts/coverage-matrix.md`](contracts/coverage-matrix.md)
+- How benchmark and experiment evidence flows:
+  [`benchmark-workflow.md`](benchmark-workflow.md)
+- How to contribute documentation, specifications, tests, and contract
+  changes: [`contributing.md`](contributing.md)
 
 ## Architecture And Contracts
 
@@ -89,6 +111,12 @@ declarative fixtures under [`fixtures/public-contracts/`](../fixtures/public-con
 - [`reports/publication-bundle.md`](reports/publication-bundle.md)
 - [`reports/publication-handoff.md`](reports/publication-handoff.md)
 - [`reports/public-report-safety.md`](reports/public-report-safety.md)
+
+## Stability And Open Work
+
+- [`contracts/coverage-matrix.md`](contracts/coverage-matrix.md)
+- [`protocol-lab/roadmap.md`](protocol-lab/roadmap.md)
+- [`overview.md`](overview.md)
 
 ## Traceability
 

@@ -1,0 +1,8 @@
+{
+  "slug": "protocol-lab",
+  "title": "Protocol Lab",
+  "section": "open-source",
+  "sourcePath": "docs",
+  "targetPath": "src/content/docs/open-source/protocol-lab",
+  "publish": true
+}

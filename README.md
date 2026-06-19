@@ -167,6 +167,14 @@ guidance.
 
 ## Documentation
 
+- [`docs/overview.md`](docs/overview.md) explains ProtocolLab's purpose,
+  supported work, stable areas, and current open work.
+- [`docs/getting-started.md`](docs/getting-started.md) gives a practical
+  reader path, repository layout, validation expectations, and docs mirroring
+  notes.
+- [`docs/benchmark-workflow.md`](docs/benchmark-workflow.md) explains the
+  public configure, execute, collect, interpret, and publish workflow for
+  benchmark and experiment evidence.
 - [`docs/README.md`](docs/README.md) indexes supporting documentation.
 - [`docs/terminology-and-policies.md`](docs/terminology-and-policies.md)
   defines shared terminology, versioning, compatibility, fixture, schema, and

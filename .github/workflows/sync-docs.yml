@@ -37,7 +37,7 @@ jobs:
           manifest_path = pathlib.Path("docs.site.json")
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-          required = ["slug", "sourcePath", "targetPath", "publish"]
+          required = ["slug", "title", "section", "sourcePath", "targetPath", "publish"]
           missing = [key for key in required if key not in manifest]
           if missing:
               raise SystemExit(f"docs.site.json is missing required keys: {', '.join(missing)}")
@@ -54,6 +54,8 @@ jobs:
 
           print(f"publish={publish}")
           print(f"slug={manifest['slug']}")
+          print(f"title={manifest['title']}")
+          print(f"section={manifest['section']}")
           print(f"source_path={source_path}")
           print(f"target_path={target_path}")
           PY

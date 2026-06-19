@@ -12,6 +12,10 @@ SpecTrace JSON under [`specs/`](../specs/), JSON Schemas under
 and declarative fixtures under
 [`fixtures/public-contracts/`](../fixtures/public-contracts/).
 
+`docs.site.json` and `.github/workflows/sync-docs.yml` define the mirror
+target and pull-request flow. Do not edit the generated `incursa-docs` copy
+directly.
+
 ## Start Here
 
 - [`overview.md`](overview.md) - what ProtocolLab is, what problem it solves,
@@ -26,6 +30,13 @@ and declarative fixtures under
   collecting, interpreting, and publishing experiment evidence
 - [`contributing.md`](contributing.md) - practical contributor path for docs,
   specifications, validation, and contract changes
+
+## Source And Validation
+
+- [`../README.md`](../README.md) - repository boundary, contract surfaces, and release expectations
+- [`../specs/traceability/README.md`](../specs/traceability/README.md) - traceability model and trace links index
+- [`../docs/getting-started.md`](../docs/getting-started.md) - reader path, validation expectations, and docs mirroring notes
+- [`../.github/workflows/validate.yml`](../.github/workflows/validate.yml) - repository-health definition
 
 ## Project Direction
 

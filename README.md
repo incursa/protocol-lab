@@ -15,6 +15,17 @@ The Incursa-hosted lab tester is available at
 implementation of these contracts; this repository remains the public source
 of truth for the contracts.
 
+## Documentation And Mirroring
+
+The source documentation for this repository lives under [`docs/`](docs/).
+The docs site manifest in [`docs.site.json`](docs.site.json) and the mirror
+workflow in [`.github/workflows/sync-docs.yml`](.github/workflows/sync-docs.yml)
+copy that tree into the central `incursa-docs` repository and open a pull
+request there.
+
+Do not edit the mirrored `incursa-docs` copy directly. Make source changes in
+this repository and let the sync workflow publish the mirror update.
+
 ## Start Here
 
 1. Read this README for the repository boundary and public contract map.
@@ -70,6 +81,19 @@ Primary contract surfaces include:
 
 No generated code, SDK package, local executable, or hosted service is the
 source of truth for these contracts.
+
+## Release And Versioning
+
+ProtocolLab versioning is surface-specific:
+
+- schema directories encode contract versions such as Adapter Contract v1,
+  Test Executor Contract v1, Package v2, Run Plan v1, and Public Report v1
+- compatibility changes must update the matching SpecTrace artifacts,
+  schemas, fixtures, and coverage matrix together
+- this repository does not publish binaries, SDKs, or hosted services
+
+If a change affects contract compatibility, update the relevant public docs
+and traceability surfaces in the same change set.
 
 ## Schemas
 
@@ -150,13 +174,29 @@ The dependency direction is one-way:
 
 See [`docs/protocol-lab/product-boundaries.md`](docs/protocol-lab/product-boundaries.md) for the detailed boundary model.
 
-## Stability And Open Work
+## Validation
+
+The committed repository-health workflow in
+[`.github/workflows/validate.yml`](.github/workflows/validate.yml) is the
+authoritative validation definition for this repository.
+
+For local review, keep at least the same checks green:
+
+```powershell
+git diff --check
+```
+
+The workflow also parses JSON and YAML, checks repository-local Markdown
+links, validates schema IDs, resolves traceability paths, and rejects
+implementation files and folders.
+
+## Readiness And Gaps
 
 The public contract surfaces indexed by
 [`docs/contracts/coverage-matrix.md`](docs/contracts/coverage-matrix.md)
-are stable enough for
-implementation repositories, hosted labs, validators, report consumers, and
-package producers to consume as the current public source of truth.
+are stable enough for implementation repositories, hosted labs, validators,
+report consumers, and package producers to consume as the current public
+source of truth.
 
 Current open questions are contract refinement choices, not permission to
 replace public contracts with implementation behavior. They include whether to

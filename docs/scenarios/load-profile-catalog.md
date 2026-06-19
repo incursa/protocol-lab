@@ -1,3 +1,7 @@
+---
+title: "Load Profile Catalog"
+---
+
 # Load Profile Catalog
 
 The public load-profile catalog is the set of YAML files under

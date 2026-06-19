@@ -1,3 +1,7 @@
+---
+title: "Public Report Safety"
+---
+
 # Public Report Safety
 
 Public report safety is a contract requirement. It is not tied to any specific

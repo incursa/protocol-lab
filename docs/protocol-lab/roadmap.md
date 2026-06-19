@@ -1,3 +1,7 @@
+---
+title: "ProtocolLab Roadmap"
+---
+
 # ProtocolLab Roadmap
 
 This roadmap tracks public contract work only. Implementation roadmaps belong

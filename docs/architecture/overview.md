@@ -1,3 +1,7 @@
+---
+title: "Architecture Overview"
+---
+
 # Architecture Overview
 
 ProtocolLab separates public contracts from implementations.

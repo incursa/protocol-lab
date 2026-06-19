@@ -1,3 +1,7 @@
+---
+title: "ProtocolLab Component Package v2"
+---
+
 # ProtocolLab Component Package v2
 
 Component Package v2 is the public manifest contract for separately versioned

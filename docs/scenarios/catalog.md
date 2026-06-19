@@ -1,3 +1,7 @@
+---
+title: "Scenario Catalog"
+---
+
 # Scenario Catalog
 
 The public scenario catalog is the set of YAML files under

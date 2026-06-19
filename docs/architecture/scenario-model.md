@@ -1,3 +1,7 @@
+---
+title: "Scenario Model"
+---
+
 # Scenario Model
 
 A scenario is the public catalog artifact for one durable protocol test case.

@@ -1,3 +1,7 @@
+---
+title: "Measurement Model"
+---
+
 # Measurement Model
 
 This page is a spec-level architecture note for the public measurement,

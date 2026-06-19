@@ -1,3 +1,7 @@
+---
+title: "ProtocolLab Product Boundaries"
+---
+
 # ProtocolLab Product Boundaries
 
 **Status:** Current. The public repository is a language-neutral contract

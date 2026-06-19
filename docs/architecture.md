@@ -1,3 +1,7 @@
+---
+title: "Architecture"
+---
+
 # Architecture
 
 This summary describes the public contract architecture. Detailed supporting

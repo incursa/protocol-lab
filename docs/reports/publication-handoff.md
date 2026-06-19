@@ -1,3 +1,7 @@
+---
+title: "Public Report Handoff Contract"
+---
+
 # Public Report Handoff Contract
 
 This document describes the public handoff semantics for report consumers. It

@@ -1,3 +1,7 @@
+---
+title: "Suite Catalog"
+---
+
 # Suite Catalog
 
 The public suite catalog is the set of YAML files under

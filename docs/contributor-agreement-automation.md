@@ -1,3 +1,7 @@
+---
+title: "Contributor Agreement Automation"
+---
+
 # Contributor Agreement Automation
 
 ProtocolLab uses the Incursa contributor agreement workflow to gate pull

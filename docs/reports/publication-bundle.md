@@ -1,3 +1,7 @@
+---
+title: "Public Report Bundle Contract"
+---
+
 # Public Report Bundle Contract
 
 Public report bundles are contract-defined derivatives of completed

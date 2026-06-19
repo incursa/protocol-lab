@@ -1,3 +1,7 @@
+---
+title: "Report Model"
+---
+
 # Report Model
 
 Public reports are contract-governed summaries of implementation-produced

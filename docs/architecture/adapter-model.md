@@ -1,3 +1,7 @@
+---
+title: "Adapter Model"
+---
+
 # Adapter Model
 
 An adapter is an implementation-owned control plane that lets a runner or

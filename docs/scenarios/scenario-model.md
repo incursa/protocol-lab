@@ -1,3 +1,7 @@
+---
+title: "Scenario Model"
+---
+
 # Scenario Model
 
 A scenario serializes one public test case. It is implementation-neutral and

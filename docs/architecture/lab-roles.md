@@ -1,3 +1,7 @@
+---
+title: "Lab Roles"
+---
+
 # Lab Roles
 
 ProtocolLab roles describe contract participants. They do not require a

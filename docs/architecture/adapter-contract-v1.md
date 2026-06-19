@@ -1,3 +1,7 @@
+---
+title: "ProtocolLab Adapter Contract v1"
+---
+
 # ProtocolLab Adapter Contract v1
 
 ## Scope

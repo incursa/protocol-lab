@@ -1,3 +1,7 @@
+---
+title: "ProtocolLab Vision"
+---
+
 # ProtocolLab Vision
 
 ProtocolLab defines public contracts for protocol measurement without tying

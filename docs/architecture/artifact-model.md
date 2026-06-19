@@ -1,3 +1,7 @@
+---
+title: "Artifact Model"
+---
+
 # Artifact Model
 
 ProtocolLab artifacts are durable evidence references produced by a runner,

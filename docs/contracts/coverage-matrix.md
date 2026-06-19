@@ -1,3 +1,7 @@
+---
+title: "ProtocolLab Contract Coverage Matrix"
+---
+
 # ProtocolLab Contract Coverage Matrix
 
 Date: 2026-06-14

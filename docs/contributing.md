@@ -1,3 +1,7 @@
+---
+title: "Contributing To ProtocolLab Docs And Contracts"
+---
+
 # Contributing To ProtocolLab Docs And Contracts
 
 ProtocolLab contributions should preserve the public contract boundary:

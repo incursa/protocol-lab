@@ -1,3 +1,7 @@
+---
+title: "ProtocolLab Documentation"
+---
+
 # ProtocolLab Documentation
 
 This documentation supports the public ProtocolLab contract repository and is

@@ -1,3 +1,7 @@
+---
+title: "Scenario Authoring Guide"
+---
+
 # Scenario Authoring Guide
 
 Scenarios are declarative public test-case documents. They define behavior and

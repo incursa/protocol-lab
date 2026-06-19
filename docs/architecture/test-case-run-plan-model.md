@@ -1,3 +1,7 @@
+---
+title: "Test Case And Run Plan Model"
+---
+
 # Test Case And Run Plan Model
 
 This document defines the public vocabulary for test cases, scenarios, suites,

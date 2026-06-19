@@ -1,3 +1,7 @@
+---
+title: "Getting Started"
+---
+
 # Getting Started
 
 This guide is for developers, evaluators, and documentation readers who need

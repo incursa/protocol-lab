@@ -1,0 +1,36 @@
+# Load Profile Contract v1
+schemaVersion: protocol-lab.load-profile.v1
+
+id: h3-small-payload-c32
+title: H3 Small Payload c32
+status: stable
+purpose: regression
+
+description: >
+  Repeated local HTTP/3 small-payload profile with moderate managed-client
+  concurrency. Intended for 1 KiB payload regression and variance checks on
+  shared lab hardware. Not publishable.
+
+durationSeconds: 15
+warmupSeconds: 5
+cooldownSeconds: 2
+repetitions: 3
+
+http3:
+  connections: 32
+  concurrency: 32
+  streamsPerConnection: 1
+  requestTimeoutSeconds: 10
+
+evidence:
+  minimumTier: regression
+  publishable: false
+
+artifacts:
+  required:
+    - load.stdout.log
+    - load.stderr.log
+    - result.json
+  optional:
+    - counters
+    - load.metrics.json

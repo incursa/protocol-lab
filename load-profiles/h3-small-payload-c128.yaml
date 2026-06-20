@@ -1,0 +1,37 @@
+# Load Profile Contract v1
+schemaVersion: protocol-lab.load-profile.v1
+
+id: h3-small-payload-c128
+title: H3 Small Payload c128
+status: stable
+purpose: stress
+
+description: >
+  Repeated local HTTP/3 small-payload profile with high managed-client
+  concurrency. Intended to expose request scheduling, stream allocation,
+  header/QPACK, response write, HttpClient generation, and packet batching
+  bottlenecks for 1 KiB payloads. Not publishable.
+
+durationSeconds: 30
+warmupSeconds: 10
+cooldownSeconds: 5
+repetitions: 3
+
+http3:
+  connections: 128
+  concurrency: 128
+  streamsPerConnection: 1
+  requestTimeoutSeconds: 10
+
+evidence:
+  minimumTier: comparison
+  publishable: false
+
+artifacts:
+  required:
+    - load.stdout.log
+    - load.stderr.log
+    - result.json
+  optional:
+    - counters
+    - load.metrics.json

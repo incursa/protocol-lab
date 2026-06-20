@@ -55,8 +55,24 @@
       "cellKey": "cell-001",
       "implementationId": "example-implementation",
       "implementationName": "Example Implementation",
+      "implementationPackage": {
+        "packageId": "org.protocol-lab.example.implementation",
+        "packageVersion": "1.0.0",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
       "scenarioId": "http1.core.plaintext",
       "scenarioName": "HTTP plaintext response",
+      "scenarioPackage": {
+        "packageId": "org.protocol-lab.example.scenarios",
+        "packageVersion": "1.0.0",
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "testExecutorId": "example-executor",
+      "testExecutorPackage": {
+        "packageId": "org.protocol-lab.example.executor",
+        "packageVersion": "1.0.0",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
       "family": "http",
       "protocol": "h1",
       "role": "server",

@@ -382,11 +382,23 @@
         "implementationName": {
           "type": "string"
         },
+        "implementationPackage": {
+          "$ref": "#/definitions/packageReference"
+        },
         "scenarioId": {
           "$ref": "#/definitions/nonEmptyString"
         },
         "scenarioName": {
           "type": "string"
+        },
+        "scenarioPackage": {
+          "$ref": "#/definitions/packageReference"
+        },
+        "testExecutorId": {
+          "type": "string"
+        },
+        "testExecutorPackage": {
+          "$ref": "#/definitions/packageReference"
         },
         "family": {
           "$ref": "#/definitions/nonEmptyString"
@@ -471,6 +483,26 @@
         },
         "errors": {
           "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "packageReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "packageId",
+        "packageVersion",
+        "sha256"
+      ],
+      "properties": {
+        "packageId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "packageVersion": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "sha256": {
+          "$ref": "#/definitions/nonEmptyString"
         }
       }
     },

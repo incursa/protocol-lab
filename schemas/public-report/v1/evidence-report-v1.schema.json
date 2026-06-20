@@ -460,6 +460,9 @@
         "networkProfile": {
           "type": "string"
         },
+        "topologyProvenance": {
+          "$ref": "#/definitions/topologyProvenance"
+        },
         "validation": {
           "$ref": "#/definitions/cellValidation"
         },
@@ -483,6 +486,159 @@
         },
         "errors": {
           "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "topologyProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "targetLoadSplit",
+        "physicalHostLabel",
+        "networkPath",
+        "networkProfile",
+        "targetWorker",
+        "loadWorker",
+        "machine",
+        "runtime",
+        "warnings"
+      ],
+      "properties": {
+        "source": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "targetLoadSplit": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "physicalHostLabel": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "networkPath": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "networkProfile": {
+          "type": "string"
+        },
+        "targetWorker": {
+          "$ref": "#/definitions/workerReference"
+        },
+        "loadWorker": {
+          "$ref": "#/definitions/workerReference"
+        },
+        "machine": {
+          "$ref": "#/definitions/machineProvenance"
+        },
+        "runtime": {
+          "$ref": "#/definitions/runtimeProvenance"
+        },
+        "docker": {
+          "$ref": "#/definitions/dockerProvenance"
+        },
+        "evidenceClass": {
+          "type": "string"
+        },
+        "warnings": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "workerReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "source"
+      ],
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "nodeId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "physicalHostLabel": {
+          "type": "string"
+        },
+        "ipAddress": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/definitions/nonEmptyString"
+        }
+      }
+    },
+    "machineProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostName",
+        "physicalHostLabel",
+        "operatingSystem",
+        "processorCount",
+        "totalAvailableMemoryBytes"
+      ],
+      "properties": {
+        "hostName": {
+          "type": "string"
+        },
+        "physicalHostLabel": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "operatingSystem": {
+          "type": "string"
+        },
+        "processorCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalAvailableMemoryBytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "runtimeProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frameworkDescription",
+        "processArchitecture",
+        "operatingSystemArchitecture"
+      ],
+      "properties": {
+        "frameworkDescription": {
+          "type": "string"
+        },
+        "processArchitecture": {
+          "type": "string"
+        },
+        "operatingSystemArchitecture": {
+          "type": "string"
+        },
+        "dotNetSdkVersion": {
+          "type": "string"
+        },
+        "dotNetRuntimeVersion": {
+          "type": "string"
+        }
+      }
+    },
+    "dockerProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": "string"
+        },
+        "backend": {
+          "type": "string"
         }
       }
     },

@@ -6,6 +6,7 @@
   "displayName": "ProtocolLab HTTP/3 Core Scenario Pack",
   "entryManifests": [
     "scenarios/http3/core/status.yaml",
+    "scenarios/http3/payload/bytes-1kb.yaml",
     "scenarios/http3/payload/bytes-64kb.yaml",
     "scenarios/http3/upload/echo-64kb.yaml",
     "suites/http3-core-smoke.yaml"
@@ -14,6 +15,13 @@
     {
       "scenarioId": "http3.core.status",
       "displayName": "HTTP/3 Status",
+      "protocols": [
+        "h3"
+      ]
+    },
+    {
+      "scenarioId": "http3.payload.bytes.1kb",
+      "displayName": "HTTP/3 Bytes 1KB",
       "protocols": [
         "h3"
       ]

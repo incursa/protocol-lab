@@ -11,6 +11,8 @@ versionCompatibility:
 claimedCapabilities:
   - id: http3.core.status
     status: supported
+  - id: http3.payload.bytes.1kb
+    status: supported
   - id: http3.payload.bytes.64kb
     status: supported
   - id: http3.upload.echo.64kb
@@ -19,12 +21,16 @@ supportedTestSelectors:
   - selectorType: test-id
     expression: http3.core.status
   - selectorType: test-id
+    expression: http3.payload.bytes.1kb
+  - selectorType: test-id
     expression: http3.payload.bytes.64kb
   - selectorType: test-id
     expression: http3.upload.echo.64kb
 supportedScenarioSelectors:
   - selectorType: scenario-id
     expression: http3.core.status
+  - selectorType: scenario-id
+    expression: http3.payload.bytes.1kb
   - selectorType: scenario-id
     expression: http3.payload.bytes.64kb
   - selectorType: scenario-id

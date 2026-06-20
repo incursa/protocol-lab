@@ -16,11 +16,13 @@
       ],
       "scenarios": [
         "http3.core.status",
+        "http3.payload.bytes.1kb",
         "http3.payload.bytes.64kb",
         "http3.upload.echo.64kb"
       ],
       "tests": [
         "http3.core.status",
+        "http3.payload.bytes.1kb",
         "http3.payload.bytes.64kb",
         "http3.upload.echo.64kb"
       ],

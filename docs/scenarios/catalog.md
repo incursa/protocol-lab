@@ -25,8 +25,11 @@ or executable validation logic.
 | gRPC over HTTP/2 or HTTP/3 | none yet | `h2` or `h3` when defined | none yet | Planned/open |
 
 HTTP/3 protocol scenarios use `http3.protocol.*` IDs even though their wire
-protocol token is `h3`. QUIC transport scenarios use `quic.*` IDs and remain
-separate from HTTP/3 application and protocol scenarios.
+protocol token is `h3`. HTTP/3 external peer characterization uses
+`http3.external.*` IDs for diagnostic interoperability evidence that remains
+separate from official HTTP/3 payload benchmarks. QUIC transport scenarios use
+`quic.*` IDs and remain separate from HTTP/3 application and protocol
+scenarios.
 
 Placeholder scenarios document future contract intent. They do not imply that
 any conforming runner, adapter, test executor, package, or hosted lab can
@@ -41,6 +44,7 @@ implementation-neutral scenario shape is ready.
 - HTTP/3 application scenarios: `http3.core.*`, `http3.headers.*`,
   `http3.payload.*`, `http3.upload.*`
 - HTTP/3 protocol scenarios: `http3.protocol.*`
+- HTTP/3 external peer characterization: `http3.external.*`
 - QUIC transport scenarios: `quic.transport.*`
 - Future placeholders: `websocket.*`, `webtransport.*`, `masque.*`
 - Network profile documents under

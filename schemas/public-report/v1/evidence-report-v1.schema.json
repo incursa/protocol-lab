@@ -475,6 +475,9 @@
             "$ref": "#/definitions/measurement"
           }
         },
+        "telemetry": {
+          "$ref": "#/definitions/cellTelemetry"
+        },
         "artifacts": {
           "type": "array",
           "items": {
@@ -486,6 +489,212 @@
         },
         "errors": {
           "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "cellTelemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "loadGenerator",
+        "requestOutcome"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/targetTelemetry"
+        },
+        "loadGenerator": {
+          "$ref": "#/definitions/loadGeneratorTelemetry"
+        },
+        "requestOutcome": {
+          "$ref": "#/definitions/requestOutcomeTelemetry"
+        }
+      }
+    },
+    "targetTelemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "present",
+        "process",
+        "docker"
+      ],
+      "properties": {
+        "present": {
+          "type": "boolean"
+        },
+        "process": {
+          "$ref": "#/definitions/processTelemetry"
+        },
+        "docker": {
+          "$ref": "#/definitions/dockerTelemetry"
+        }
+      }
+    },
+    "loadGeneratorTelemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "present",
+        "process",
+        "docker",
+        "saturation",
+        "requestOutcome"
+      ],
+      "properties": {
+        "present": {
+          "type": "boolean"
+        },
+        "process": {
+          "$ref": "#/definitions/processTelemetry"
+        },
+        "docker": {
+          "$ref": "#/definitions/dockerTelemetry"
+        },
+        "saturation": {
+          "$ref": "#/definitions/loadGeneratorSaturationTelemetry"
+        },
+        "requestOutcome": {
+          "$ref": "#/definitions/loadGeneratorRequestOutcomeTelemetry"
+        }
+      }
+    },
+    "processTelemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "source",
+        "sampleCount",
+        "warnings"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "string"
+        },
+        "sampleCount": {
+          "$ref": "#/definitions/count"
+        },
+        "processId": {
+          "$ref": "#/definitions/count"
+        },
+        "cpuTimeDeltaSeconds": {
+          "type": "number"
+        },
+        "memoryMaxBytes": {
+          "$ref": "#/definitions/count"
+        },
+        "summaryArtifact": {
+          "type": "string"
+        },
+        "warnings": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "dockerTelemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "sampleCount",
+        "warnings"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "sampleCount": {
+          "$ref": "#/definitions/count"
+        },
+        "saturationStatus": {
+          "type": "string"
+        },
+        "cpuMaxPercent": {
+          "type": "number"
+        },
+        "memoryMaxBytes": {
+          "$ref": "#/definitions/count"
+        },
+        "networkRxBytesDelta": {
+          "$ref": "#/definitions/count"
+        },
+        "networkTxBytesDelta": {
+          "$ref": "#/definitions/count"
+        },
+        "summaryArtifact": {
+          "type": "string"
+        },
+        "warnings": {
+          "$ref": "#/definitions/stringArray"
+        }
+      }
+    },
+    "loadGeneratorSaturationTelemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "warnings",
+        "boundedCheck",
+        "proven"
+      ],
+      "properties": {
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warnings": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "boundedCheck": {
+          "type": "boolean"
+        },
+        "proven": {
+          "type": "boolean"
+        }
+      }
+    },
+    "loadGeneratorRequestOutcomeTelemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "boundedCheck"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "boundedCheck": {
+          "type": "boolean"
+        }
+      }
+    },
+    "requestOutcomeTelemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "totalRequests": {
+          "$ref": "#/definitions/count"
+        },
+        "failedRequests": {
+          "$ref": "#/definitions/count"
+        },
+        "timeoutRequests": {
+          "$ref": "#/definitions/count"
+        },
+        "failureRate": {
+          "type": "number"
+        },
+        "timeoutRate": {
+          "type": "number"
         }
       }
     },

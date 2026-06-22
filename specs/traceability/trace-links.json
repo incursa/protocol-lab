@@ -96,6 +96,7 @@
         "fixtures/public-contracts/scenarios/valid/http2-core-plaintext-scenario.json",
         "fixtures/public-contracts/scenarios/valid/http3-core-status-scenario.json",
         "fixtures/public-contracts/scenarios/valid/quic-transport-handshake-scenario.json",
+        "scenarios/http3/external/peer-characterization.yaml",
         "fixtures/public-contracts/scenarios/invalid/scenario-missing-id.json"
       ],
       "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
@@ -109,6 +110,7 @@
         "fixtures/public-contracts/suites/valid/http2-core-smoke-suite.json",
         "fixtures/public-contracts/suites/valid/http3-core-smoke-suite.json",
         "fixtures/public-contracts/suites/valid/quic-transport-smoke-suite.json",
+        "suites/http3-peer-characterization.yaml",
         "fixtures/public-contracts/suites/invalid/suite-empty-scenarios.json"
       ],
       "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],

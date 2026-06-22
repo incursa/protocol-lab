@@ -294,11 +294,11 @@
         "displayName": { "type": "string" },
         "purpose": {
           "type": "string",
-          "enum": ["conformance", "benchmark"]
+          "enum": ["conformance", "conformance-triage", "regression", "benchmark", "diagnostic", "soak", "smoke"]
         },
         "resultKind": {
           "type": "string",
-          "enum": ["conformance", "benchmark"]
+          "enum": ["conformance", "regression", "benchmark", "diagnostic", "soak", "validation"]
         },
         "protocols": { "$ref": "#/$defs/stringArray" },
         "testExecutors": { "$ref": "#/$defs/stringArray" }

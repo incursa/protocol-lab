@@ -30,6 +30,25 @@
       "type": "array",
       "items": { "$ref": "./common.schema.json#/$defs/selector" }
     },
+    "scenarioCoverage": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["supported", "conditional", "partial", "experimental", "unsupported", "compatible-target-unproven"]
+          },
+          "scenarioId": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string" },
+          "tests": { "$ref": "./common.schema.json#/$defs/stringArray" },
+          "metadata": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "description": "Optional per-scenario coverage summary for executor package discovery."
+    },
     "supportedProtocolFamilies": { "$ref": "./common.schema.json#/$defs/stringArray" },
     "supportedExecutionModes": { "$ref": "./common.schema.json#/$defs/stringArray" },
     "requiredTargetEndpointBindings": {
@@ -41,9 +60,46 @@
       "items": { "$ref": "./common.schema.json#/$defs/artifactType" }
     },
     "metricsAvailability": { "$ref": "./common.schema.json#/$defs/metricsAvailability" },
+    "defaultArguments": {
+      "$ref": "./common.schema.json#/$defs/stringArray",
+      "description": "Default command arguments used by implementation-owned executor launchers."
+    },
+    "parser": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "preservesRawOutput": { "type": "boolean" },
+        "metadata": { "type": "object", "additionalProperties": true }
+      }
+    },
     "telemetry": {
       "$ref": "./common.schema.json#/$defs/telemetryCapability",
       "description": "Optional telemetry bundle and artifact export capability discovery. Absence means no telemetry export is advertised."
+    },
+    "externalPeerScenarios": {
+      "$ref": "./common.schema.json#/$defs/stringArray",
+      "description": "Named external-peer scenarios the executor can drive when interoperating with an implementation endpoint."
+    },
+    "executionMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Declarative package execution metadata needed to locate implementation-owned runtime assets.",
+      "properties": {
+        "manifest": {
+          "type": "string",
+          "minLength": 1,
+          "not": {
+            "anyOf": [
+              { "pattern": "^[A-Za-z]:" },
+              { "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:" },
+              { "pattern": "^/" },
+              { "pattern": "(^|[\\\\/])\\.\\.($|[\\\\/])" }
+            ]
+          }
+        }
+      }
     },
     "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
   }

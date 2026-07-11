@@ -1,0 +1,15 @@
+:root {
+  --protocol-lab-protocol-teal: #0F766E;
+  --protocol-lab-deep-teal: #115E59;
+  --protocol-lab-signal-cyan: #0F8BA0;
+  --protocol-lab-lab-ink: #0F172A;
+  --protocol-lab-measurement-mist: #E0F4F1;
+  --protocol-lab-parent-indigo: #2B2E69;
+  --protocol-lab-white: #FFFFFF;
+  --protocol-lab-black: #000000;
+  --protocol-lab-slate: #52606D;
+  --protocol-lab-canvas: #F7FAF9;
+  --protocol-lab-font-sans: "IBM Plex Sans", sans-serif;
+
+  --protocol-lab-font-mono: "IBM Plex Mono", monospace;
+}

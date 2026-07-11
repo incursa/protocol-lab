@@ -40,6 +40,8 @@ directly.
 
 ## Project Direction
 
+- [`branding/README.md`](branding/README.md) - approved identity, production
+  assets, usage guidance, source brief, and acceptance record
 - [`protocol-lab/product-boundaries.md`](protocol-lab/product-boundaries.md) -
   public contract layer versus implementation layer
 - [`protocol-lab/vision.md`](protocol-lab/vision.md) - project purpose and
@@ -141,6 +143,8 @@ directly.
 
 ## Governance
 
+- [`../BRAND-ASSET-LICENSE.md`](../BRAND-ASSET-LICENSE.md)
+- [`../TRADEMARKS.md`](../TRADEMARKS.md)
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
 - [`../CONTRIBUTOR-AGREEMENT.md`](../CONTRIBUTOR-AGREEMENT.md)
 - [`contributor-agreement-automation.md`](contributor-agreement-automation.md)

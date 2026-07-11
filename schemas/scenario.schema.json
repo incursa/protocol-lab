@@ -160,7 +160,30 @@
           "type": "object",
           "description": "QUIC-specific validation",
           "properties": {
-            "handshakeMustComplete": { "type": "boolean" }
+            "handshakeMustComplete": { "type": "boolean" },
+            "session": {
+              "type": "object",
+              "description": "Session resumption and early-data expectations for QUIC transport scenarios.",
+              "properties": {
+                "resumptionState": {
+                  "type": "string",
+                  "enum": ["fresh", "resumed", "rejected"]
+                },
+                "earlyData": {
+                  "type": "string",
+                  "enum": ["not-attempted", "accepted", "rejected"]
+                },
+                "replaySafety": {
+                  "type": "string",
+                  "enum": ["not-applicable", "replay-safe", "replay-sensitive"]
+                }
+              },
+              "required": [
+                "resumptionState",
+                "earlyData",
+                "replaySafety"
+              ]
+            }
           }
         }
       }

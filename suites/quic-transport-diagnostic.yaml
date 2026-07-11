@@ -1,12 +1,12 @@
 id: quic-transport-diagnostic
 name: ProtocolLab QUIC transport diagnostic suite
-description: Diagnostic QUIC transport selection for multiplexing, connection churn, and experimental datagram evidence.
+description: Diagnostic QUIC transport selection for multiplexing, stream churn, and experimental datagram evidence.
 purpose: diagnostic
 resultKind: diagnostic
 loadProfileId: diagnostic
 scenarios:
   - quic.transport.multiplex.100x64kb
-  - quic.transport.connection-churn
+  - quic.transport.stream-churn
   - quic.transport.datagram.1kb
 protocol: quic
 defaults:

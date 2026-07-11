@@ -96,8 +96,14 @@
         "fixtures/public-contracts/scenarios/valid/http2-core-plaintext-scenario.json",
         "fixtures/public-contracts/scenarios/valid/http3-core-status-scenario.json",
         "fixtures/public-contracts/scenarios/valid/quic-transport-handshake-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/quic-transport-stream-churn-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/quic-transport-resumed-handshake-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/quic-transport-resumption-rejected-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/quic-transport-zero-rtt-accepted-scenario.json",
+        "fixtures/public-contracts/scenarios/valid/quic-transport-zero-rtt-rejected-scenario.json",
         "scenarios/http3/external/peer-characterization.yaml",
-        "fixtures/public-contracts/scenarios/invalid/scenario-missing-id.json"
+        "fixtures/public-contracts/scenarios/invalid/scenario-missing-id.json",
+        "fixtures/public-contracts/scenarios/invalid/quic-transport-zero-rtt-invalid-replay-safety.json"
       ],
       "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
       "verification": ["specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json"]

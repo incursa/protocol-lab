@@ -1,9 +1,9 @@
 schemaVersion: "1.0"
-id: quic.transport.stream-churn
-title: QUIC Stream Churn
-name: QUIC Stream Churn
+id: quic.transport.zero-rtt-accepted
+title: QUIC 0-RTT Accepted
+name: QUIC 0-RTT Accepted
 family: quic.transport
-description: Validate repeated QUIC stream open-close churn on a stable connection as a transport scenario independent of HTTP/3 application semantics.
+description: Validate accepted QUIC 0-RTT early data on a resumed session using replay-safe application traffic.
 status: stable
 kind: protocolValidation
 layer: transport
@@ -13,37 +13,42 @@ roles:
 requires:
   capabilities:
     - quic.server
+    - quic.resumption
+    - quic.zero-rtt
   protocols:
     - quic
   roles:
     - server
-trafficShape: connection-lifecycle
+trafficShape: bidirectional-stream
 implementationRole: server
 requiredCapabilities:
   - quicTransport
-  - quicStreams
+  - quicHandshake
+  - quicResumption
+  - quicZeroRtt
 quicTransport:
-  behavior: stream-churn
+  behavior: zero-rtt-accepted
   connectionCount: 1
   streamType: bidirectional
-  streamCount: 1000
-  payloadSizeBytes: 128
-  payloadDirection: bidirectional
-  openPattern: churn
-  expectedBytes: 128000
+  streamCount: 1
+  payloadSizeBytes: 1024
+  payloadDirection: client-to-server
+  openPattern: sequential
+  expectedBytes: 1024
 validation:
   required: true
   checks:
-    - stream-churn-completes
-    - opened-and-closed-streams-match-expected
-    - zero-timeouts-and-errors
+    - zero-rtt-accepted
+    - early-data-bytes-delivered
+    - resumed-session-completes
+    - replay-safe-traffic
     - protocol:quic
   quic:
     handshakeMustComplete: true
     session:
-      resumptionState: fresh
-      earlyData: not-attempted
-      replaySafety: not-applicable
+      resumptionState: resumed
+      earlyData: accepted
+      replaySafety: replay-safe
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30
@@ -51,17 +56,17 @@ benchmark:
   connections:
     - 1
   streamsPerConnection:
-    - 1000
+    - 1
 benchmarkCompat:
   compatibleLoadShapes:
-    - quic-stream-churn
+    - quic-zero-rtt
     - smoke
     - regression
     - comparison
   primaryMetrics:
-    - connectionsPerSecond
-    - streamsPerSecond
-    - resetCount
+    - handshakeDurationP50
+    - handshakeDurationP95
+    - connectionSuccessRate
     - errorRate
 artifacts:
   required:
@@ -70,11 +75,11 @@ artifacts:
   optional:
     - protocol-diagnostic-artifact
     - counters
-networkProfile: clean
+networkProfile: bandwidth-10mbps
 requiredMetrics:
-  - quic.stream.openedStreams
-  - quic.stream.closedStreams
-  - quic.stream.resetCount
+  - quic.handshake.durationMs
+  - quic.connection.successCount
+  - quic.stream.bytesSent
 artifactRequirements:
   - load-generator.stdout.txt
   - load-generator.stderr.txt
@@ -82,4 +87,7 @@ artifactRequirements:
 tags:
   - phase6
   - quic
-  - churn
+  - handshake
+  - resumption
+  - zero-rtt
+  - replay-safe

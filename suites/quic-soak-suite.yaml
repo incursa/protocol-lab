@@ -8,7 +8,7 @@ scenarios:
   - quic.transport.handshake-cold
   - quic.transport.stream-throughput.1mb
   - quic.transport.duplex-streams
-  - quic.transport.connection-churn
+  - quic.transport.stream-churn
 protocol: quic
 defaults:
   durationSeconds: 3600

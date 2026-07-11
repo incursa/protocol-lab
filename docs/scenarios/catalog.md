@@ -49,7 +49,9 @@ implementation-neutral scenario shape is ready.
 - Future placeholders: `websocket.*`, `webtransport.*`, `masque.*`
 - Network profile documents under
   [`scenarios/network/profiles/`](../../scenarios/network/profiles/) are
-  supporting declarative profiles, not executable protocol scenarios.
+  supporting declarative profiles, not executable protocol scenarios. The
+  representative profile set covers clean, RTT, bandwidth, loss, reordering,
+  ECN, and MTU shapes without implying any required execution support.
 
 Suites must reference scenario IDs that exist in this catalog. Package-local
 suites must reference package-local scenario IDs supplied by the same scenario

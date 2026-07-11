@@ -45,8 +45,12 @@ Focused core contract examples live under:
 - [`load-profiles/valid`](load-profiles/valid/) and [`load-profiles/invalid`](load-profiles/invalid/)
 
 The scenario and suite valid fixtures include representative HTTP/1, HTTP/2,
-HTTP/3, and QUIC examples. The load-profile valid fixtures include generic
+HTTP/3, and QUIC examples, including QUIC transport handshake, stream churn,
+resumption, and 0-RTT cases. The load-profile valid fixtures include generic
 profiles and protocol-specific profiles for HTTP/1, HTTP/2, HTTP/3, and QUIC.
+Supporting network-profile documents under `scenarios/network/profiles/` cover
+clean, RTT, bandwidth, loss, reordering, ECN, and MTU cases as declarative
+profile inputs.
 
 Invalid fixtures remain intentionally small. Each invalid fixture demonstrates
 one clear validation failure such as a missing required identity, selector,

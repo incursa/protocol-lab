@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0",
-  "id": "quic.transport.handshake-cold",
-  "title": "QUIC Cold Handshake",
-  "name": "QUIC Cold Handshake",
+  "id": "quic.transport.zero-rtt-rejected",
+  "title": "QUIC 0-RTT Rejected",
+  "name": "QUIC 0-RTT Rejected",
   "family": "quic.transport",
-  "description": "Validate cold QUIC connection setup as a transport scenario independent of HTTP/3 application semantics.",
+  "description": "Validate that replay-sensitive QUIC 0-RTT early data is rejected on a resumed session and the connection continues without early-data acceptance.",
   "status": "stable",
   "kind": "protocolValidation",
   "layer": "transport",
@@ -14,7 +14,9 @@
   ],
   "requires": {
     "capabilities": [
-      "quic.server"
+      "quic.server",
+      "quic.resumption",
+      "quic.zero-rtt"
     ],
     "protocols": [
       "quic"
@@ -23,35 +25,39 @@
       "server"
     ]
   },
-  "trafficShape": "handshake-only",
+  "trafficShape": "bidirectional-stream",
   "implementationRole": "server",
   "requiredCapabilities": [
     "quicTransport",
-    "quicHandshake"
+    "quicHandshake",
+    "quicResumption",
+    "quicZeroRtt"
   ],
   "quicTransport": {
-    "behavior": "handshake-cold",
+    "behavior": "zero-rtt-rejected",
     "connectionCount": 1,
-    "streamType": "none",
-    "streamCount": 0,
-    "payloadDirection": "none",
+    "streamType": "bidirectional",
+    "streamCount": 1,
+    "payloadSizeBytes": 1024,
+    "payloadDirection": "client-to-server",
     "openPattern": "sequential",
     "expectedBytes": 0
   },
   "validation": {
     "required": true,
     "checks": [
-      "handshake-completes",
-      "fresh-session-handshake",
-      "connection-success-count-matches-expected",
+      "zero-rtt-rejected",
+      "early-data-not-committed",
+      "resumed-session-completes",
+      "replay-sensitive-traffic-rejected",
       "protocol:quic"
     ],
     "quic": {
       "handshakeMustComplete": true,
       "session": {
-        "resumptionState": "fresh",
-        "earlyData": "not-attempted",
-        "replaySafety": "not-applicable"
+        "resumptionState": "resumed",
+        "earlyData": "rejected",
+        "replaySafety": "replay-sensitive"
       }
     }
   },
@@ -63,12 +69,12 @@
       1
     ],
     "streamsPerConnection": [
-      0
+      1
     ]
   },
   "benchmarkCompat": {
     "compatibleLoadShapes": [
-      "quic-handshake",
+      "quic-zero-rtt",
       "smoke",
       "regression",
       "comparison"
@@ -90,10 +96,11 @@
       "counters"
     ]
   },
-  "networkProfile": "clean",
+  "networkProfile": "reordering-1pct",
   "requiredMetrics": [
     "quic.handshake.durationMs",
-    "quic.connection.successCount"
+    "quic.connection.successCount",
+    "quic.stream.bytesSent"
   ],
   "artifactRequirements": [
     "load-generator.stdout.txt",
@@ -103,6 +110,9 @@
   "tags": [
     "phase6",
     "quic",
-    "handshake"
+    "handshake",
+    "resumption",
+    "zero-rtt",
+    "replay-sensitive"
   ]
 }

@@ -37,6 +37,10 @@ HTTP/3 uses `http3.*` scenario IDs and the `h3` protocol token. QUIC transport
 uses `quic.*` scenario IDs and the `quic` protocol token. These families are
 related at the wire level but are separate public scenario families.
 
+QUIC transport scenarios that exercise resumption or 0-RTT should state the
+session outcome and replay-safety expectation in validation metadata instead of
+relying on runner-local assumptions.
+
 ## Status
 
 - `stable`: public contract is expected to remain compatible.

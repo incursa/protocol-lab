@@ -1,0 +1,6 @@
+id: reordering-1pct
+name: Reordering 1 Percent
+description: Reserved profile for 1 percent packet reordering.
+provider: declarative-network-profile
+reorderingPercent: 1
+notes: Declarative network profile only; provider mapping belongs to an implementation.

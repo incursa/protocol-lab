@@ -51,3 +51,7 @@ validation:
 
 Add protocol-specific request, response, validation, and artifact expectations
 when the scenario requires them.
+
+QUIC transport scenarios that cover session resumption or 0-RTT should use
+`validation.quic.session` to record the resumption state, early-data outcome,
+and replay-safety expectation explicitly.

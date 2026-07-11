@@ -1,0 +1,6 @@
+id: ecn-enabled
+name: ECN Enabled
+description: Reserved profile for ECN-capable transport handling.
+provider: declarative-network-profile
+ecnEnabled: true
+notes: Declarative network profile only; provider mapping belongs to an implementation.

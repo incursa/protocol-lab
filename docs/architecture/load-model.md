@@ -21,6 +21,11 @@ HTTP/1, HTTP/2, HTTP/3, and QUIC where useful. The `http1`, `http2`, `http3`,
 and `quic` settings do not create separate behavior semantics; scenarios own
 behavior.
 
+Supporting declarative network-profile documents live under
+[`../../scenarios/network/profiles/`](../../scenarios/network/profiles/). They
+describe clean, RTT, bandwidth, loss, reordering, ECN, and MTU shapes as
+public contract data without claiming a required impairment engine or runner.
+
 ## Implementation Responsibilities
 
 An implementation chooses how to translate public load intent into traffic and

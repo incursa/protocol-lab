@@ -1,0 +1,6 @@
+id: bandwidth-10mbps
+name: Bandwidth 10 Mbps
+description: Reserved profile for a 10 Mbps throughput cap.
+provider: declarative-network-profile
+bandwidthMegabitsPerSecond: 10
+notes: Declarative network profile only; provider mapping belongs to an implementation.

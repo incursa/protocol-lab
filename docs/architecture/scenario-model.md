@@ -29,6 +29,10 @@ token. QUIC transport scenarios use `quic.transport.*` IDs with the `quic`
 protocol token. Public contracts must keep these lanes distinct even when an
 implementation supports both.
 
+QUIC transport scenarios that exercise resumption or 0-RTT should state the
+session outcome and replay-safety expectation in validation metadata instead of
+relying on runner-local assumptions.
+
 Scenarios do not define:
 
 - implementation IDs

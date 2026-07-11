@@ -62,7 +62,7 @@
     {
       "id": "PLAB-SCENARIO-001",
       "title": "Scenario definitions",
-      "statement": "ProtocolLab scenario definitions MUST use stable scenario identifiers, declare protocol and role requirements, describe traffic shape, and define validation expectations as declarative contract data.",
+      "statement": "ProtocolLab scenario definitions MUST use stable scenario identifiers, declare protocol and role requirements, describe traffic shape, and define validation and replay-safety expectations as declarative contract data.",
       "rationale": "Scenarios are durable public test cases and must not depend on runner-local implementation code.",
       "trace": {
         "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
@@ -73,8 +73,14 @@
           "fixtures/public-contracts/scenarios/valid/http2-core-plaintext-scenario.json",
           "fixtures/public-contracts/scenarios/valid/http3-core-status-scenario.json",
           "fixtures/public-contracts/scenarios/valid/quic-transport-handshake-scenario.json",
+          "fixtures/public-contracts/scenarios/valid/quic-transport-stream-churn-scenario.json",
+          "fixtures/public-contracts/scenarios/valid/quic-transport-resumed-handshake-scenario.json",
+          "fixtures/public-contracts/scenarios/valid/quic-transport-resumption-rejected-scenario.json",
+          "fixtures/public-contracts/scenarios/valid/quic-transport-zero-rtt-accepted-scenario.json",
+          "fixtures/public-contracts/scenarios/valid/quic-transport-zero-rtt-rejected-scenario.json",
           "scenarios/http3/external/peer-characterization.yaml",
           "fixtures/public-contracts/scenarios/invalid/scenario-missing-id.json",
+          "fixtures/public-contracts/scenarios/invalid/quic-transport-zero-rtt-invalid-replay-safety.json",
           "docs/architecture/scenario-model.md"
         ]
       }

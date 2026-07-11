@@ -1,0 +1,6 @@
+id: mtu-1200
+name: MTU 1200
+description: Reserved profile for a 1200-byte path MTU.
+provider: declarative-network-profile
+mtuBytes: 1200
+notes: Declarative network profile only; provider mapping belongs to an implementation.

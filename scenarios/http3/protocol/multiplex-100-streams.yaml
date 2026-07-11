@@ -23,6 +23,17 @@ implementationRole: server
 requiredCapabilities:
   - h3Protocol
   - h3Multiplexing
+endpoint:
+  method: GET
+  path: /bytes/1024
+  query: {}
+  requestHeaders: {}
+  requestBodyGeneration: none
+  expectedStatus: 200
+  expectedHeaders:
+    content-type: application/octet-stream
+  expectedBodyRule: deterministicBytes
+  expectedBodySize: 1024
 h3Protocol:
   behavior: multiplex-request-streams
   requestPath: /bytes/1024
@@ -36,6 +47,10 @@ validation:
     - stream-concurrency-observable
     - completed-responses-match-expected
     - protocol:h3
+  http:
+    expectedStatus: 200
+    expectedProtocol: h3
+    expectedBody: <deterministicBytes>
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30

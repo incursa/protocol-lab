@@ -1,4 +1,11 @@
-# Incursa ProtocolLab
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/brand/protocol-lab-readme-header-white.svg">
+    <img src="./assets/brand/protocol-lab-readme-header.svg" width="430" alt="ProtocolLab">
+  </picture>
+</p>
+
+# ProtocolLab
 
 ProtocolLab is the public, language-neutral specification and contract
 repository for protocol measurement work. It defines the schemas, fixtures,
@@ -256,6 +263,22 @@ Read [`CONTRIBUTING.md`](CONTRIBUTING.md),
 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SUPPORT.md`](SUPPORT.md), and
 [`SECURITY.md`](SECURITY.md) before opening a pull request.
 
+## Brand Assets
+
+Finished ProtocolLab marks, lockups, repository artwork, favicons, and design
+tokens are under [`assets/brand/`](assets/brand/). Use the standard mark at
+64 px and above and the simplified `mark-small` variant at 48 px and below.
+The [branding package](docs/branding/README.md) records the approved identity,
+asset choices, and usage guidance.
+
+These official name and logo assets are governed separately from the
+open-source repository content. See
+[`BRAND-ASSET-LICENSE.md`](BRAND-ASSET-LICENSE.md) and
+[`TRADEMARKS.md`](TRADEMARKS.md).
+
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+The repository's code and documentation are licensed under Apache-2.0. See
+[`LICENSE`](LICENSE). The ProtocolLab name, Measurement Gate logo and symbol,
+and files under [`assets/brand/`](assets/brand/) are separate proprietary
+brand assets and are not licensed under Apache-2.0.

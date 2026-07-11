@@ -1,0 +1,27 @@
+{
+  "name": "ProtocolLab",
+  "symbol": "Measurement Gate",
+  "colors": {
+    "protocol_teal": "#0F766E",
+    "deep_teal": "#115E59",
+    "signal_cyan": "#0F8BA0",
+    "lab_ink": "#0F172A",
+    "measurement_mist": "#E0F4F1",
+    "parent_indigo": "#2B2E69",
+    "white": "#FFFFFF",
+    "black": "#000000",
+    "slate": "#52606D",
+    "canvas": "#F7FAF9"
+  },
+  "typography": {
+    "sans": "IBM Plex Sans",
+    "mono": "IBM Plex Mono",
+    "wordmarkWeight": 600
+  },
+  "clearSpace": "0.25H",
+  "standardMarkMinimumPx": 64,
+  "microMarkMaximumPx": 48,
+  "microRule": "Remove the thin inner calibration line and reinforce outer, lane, and datum geometry.",
+  "valueLine": "Shared contracts. Inspectable evidence.",
+  "socialLine": "Protocol measurement with claims tied to evidence."
+}

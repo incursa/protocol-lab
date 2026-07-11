@@ -19,6 +19,7 @@
     "PLAB-SUITE-001",
     "PLAB-LOADPROFILE-001",
     "PLAB-RUNPLAN-001",
+    "PLAB-RUNPLAN-002",
     "PLAB-SCHEMA-001",
     "PLAB-FIXTURE-001",
     "PLAB-VERSIONING-001"
@@ -40,6 +41,7 @@
     "A structurally valid run plan can still be incompatible when selected packages cannot satisfy requested scenarios or capabilities.",
     "A valid suite selects scenarios but does not make performance claims by itself.",
     "A valid load profile constrains load intent and evidence tier, but it does not define how traffic is generated.",
+    "A declared run-plan cell ordering policy controls deterministic scheduling order without changing scenario semantics or load shape.",
     "Adapter and test-executor telemetry discovery is optional and cannot change conformance pass/fail status by itself.",
     "Invalid fixtures should each demonstrate one clear contract failure."
   ],

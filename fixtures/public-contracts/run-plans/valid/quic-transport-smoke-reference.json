@@ -46,6 +46,7 @@
       "value": "true"
     }
   ],
+  "cellOrder": "round-robin",
   "comparisonGroups": [
     {
       "groupId": "quic-transport",

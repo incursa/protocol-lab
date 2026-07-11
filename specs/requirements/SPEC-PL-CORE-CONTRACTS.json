@@ -146,6 +146,21 @@
       }
     },
     {
+      "id": "PLAB-RUNPLAN-002",
+      "title": "Deterministic run-plan cell ordering",
+      "statement": "When a Run Plan v1 document declares cellOrder, a runner MUST execute the plan using that deterministic cell ordering policy and retain the declared policy in run-plan and per-cell evidence.",
+      "rationale": "Repeated comparison campaigns need reviewable execution order so temporal drift cannot be hidden by implementation-grouped scheduling.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "related": [
+          "schemas/run-plan/v1/run-plan.schema.json",
+          "fixtures/public-contracts/run-plans/valid/quic-transport-smoke-reference.json",
+          "docs/lab/run-plan-v1.md"
+        ]
+      }
+    },
+    {
       "id": "PLAB-SCHEMA-001",
       "title": "Public JSON schema source of truth",
       "statement": "Every major public JSON contract document SHOULD have a JSON Schema under schemas/ unless the contract is explicitly documented as prose-only or YAML/OpenAPI-only.",

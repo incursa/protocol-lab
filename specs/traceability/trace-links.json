@@ -151,6 +151,15 @@
       "verification": ["specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json"]
     },
     {
+      "id": "PLAB-RUNPLAN-002",
+      "schemas": ["schemas/run-plan/v1/run-plan.schema.json"],
+      "fixtures": [
+        "fixtures/public-contracts/run-plans/valid/quic-transport-smoke-reference.json"
+      ],
+      "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
+      "verification": ["specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json"]
+    },
+    {
       "id": "PLAB-SCHEMA-001",
       "schemas": ["schemas/README.md"],
       "fixtures": [],

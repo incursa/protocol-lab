@@ -77,6 +77,11 @@
       "type": "integer",
       "minimum": 1
     },
+    "cellOrder": {
+      "type": "string",
+      "enum": ["legacy", "round-robin"],
+      "description": "Deterministic scheduling policy for the selected cells. Round-robin interleaves implementations by repetition within stable comparison groups."
+    },
     "comparisonGroups": {
       "type": "array",
       "items": {

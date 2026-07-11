@@ -71,10 +71,23 @@ hosted, isolated, or connected internally.
 
 ## Optional Metadata
 
-Run plans may include `displayName`, `repetitions`, `comparisonGroups`,
+Run plans may include `displayName`, `repetitions`, `cellOrder`, `comparisonGroups`,
 `publicationIntent`, `labels`, `traceReferences`, and `notes`. These fields
 describe execution policy or provenance. They do not create new scenario or
 test behavior.
+
+## Deterministic Cell Ordering
+
+`cellOrder` selects a deterministic scheduling policy without changing any
+scenario, load profile, or comparison-group semantics. `legacy` preserves the
+runner's stable implementation-grouped order. `round-robin` interleaves
+implementations by repetition within stable comparison groups so temporal drift
+is visible instead of being confounded with implementation order.
+
+When `cellOrder` is present, runners must use the declared policy and retain it
+in run-plan and per-cell evidence. A runner that does not support the declared
+policy must reject the plan explicitly rather than silently substitute another
+order.
 
 ## Optional Telemetry Requirements
 

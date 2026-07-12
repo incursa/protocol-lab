@@ -582,6 +582,9 @@
         "processId": {
           "$ref": "#/definitions/count"
         },
+        "logicalProcessorCount": {
+          "$ref": "#/definitions/count"
+        },
         "cpuTimeDeltaSeconds": {
           "type": "number"
         },

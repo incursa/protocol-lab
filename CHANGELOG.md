@@ -1,5 +1,10 @@
 # Changelog
 
+## public-report-process-capacity - 2026-07-12
+
+- Added optional `logicalProcessorCount` process telemetry so public evidence
+  can disclose the processor capacity used by bounded saturation analysis.
+
 ## public-spec-repository - 2026-06-14
 
 - Repositioned ProtocolLab as a public, language-neutral specification and

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "protocol-lab.specification-coverage-index.v1",
+  "runId": "sample-quic-handshake-run",
+  "generatedAt": "2026-07-12T00:00:00Z",
+  "sidecars": [
+    {
+      "catalogSnapshot": {
+        "id": "quic-rfc9000-handshake-pilot",
+        "version": "0.1.0",
+        "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "path": "specification-coverage/quic-rfc9000-handshake-pilot-0.1.0.json",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "profileSnapshots": [
+        {
+          "id": "quic-handshake-bootstrap-pilot",
+          "version": "0.1.0",
+          "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+        }
+      ],
+      "mappingSnapshots": [
+        {
+          "id": "mapping.quic.transport.handshake-cold",
+          "version": "0.1.0",
+          "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+        }
+      ],
+      "records": [
+        {
+          "kind": "catalog",
+          "id": "quic-rfc9000-handshake-pilot",
+          "version": "0.1.0",
+          "path": "specification-coverage/snapshots/1111111111111111111111111111111111111111111111111111111111111111.json",
+          "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-QUIC-RFC9000-0271",
+          "path": "specification-coverage/snapshots/5555555555555555555555555555555555555555555555555555555555555555.json",
+          "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+        }
+      ],
+      "cellOutcomeCount": 1,
+      "diagnosticOnly": true
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "WI-PL-SPECIFICATION-COVERAGE-0001",
+  "artifact_type": "work_item",
+  "title": "Introduce specification coverage public contracts",
+  "domain": "protocol-lab",
+  "status": "complete",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-SPECIFICATION-COVERAGE",
+    "ARC-PL-SPECIFICATION-COVERAGE-0001",
+    "VER-PL-SPECIFICATION-COVERAGE-0001"
+  ],
+  "addresses": [
+    "REQ-PL-SPECCOV-0001",
+    "REQ-PL-SPECCOV-0002",
+    "REQ-PL-SPECCOV-0003",
+    "REQ-PL-SPECCOV-0004",
+    "REQ-PL-SPECCOV-0005",
+    "REQ-PL-SPECCOV-0006",
+    "REQ-PL-SPECCOV-0007",
+    "REQ-PL-SPECCOV-0008",
+    "REQ-PL-SPECCOV-0009",
+    "REQ-PL-SPECCOV-0010",
+    "REQ-PL-SPECCOV-0011"
+  ],
+  "design_links": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+  "summary": "Add language-neutral source, requirement, catalog, mapping, profile, and coverage-evidence contracts plus an honestly scoped RFC 9000 handshake pilot.",
+  "verification_links": ["VER-PL-SPECIFICATION-COVERAGE-0001"],
+  "planned_changes": "Add dedicated specification coverage JSON Schemas; declarative document, requirement, catalog, mapping, and profile records; package-relative scenario-pack metadata; structured per-check validation outcomes; valid and invalid fixtures; contract documentation; traceability links; and repository-health validation for referential integrity and check-level mapping rules.",
+  "out_of_scope": [
+    "modifying quic-dotnet or declaring implementation conformance",
+    "changing Scenario v1, Run Plan v1, or Evidence Report v1 inline shapes",
+    "changing internal runner, controller, package, publication, or site behavior in the canonical contract slice",
+    "creating a universal specification score or certification claim",
+    "backfilling historical requirement passes from coarse validation status"
+  ],
+  "verification_plan": "Parse all JSON, validate valid and invalid fixtures, resolve document/requirement/catalog/mapping/profile references, confirm mapping check IDs exist in exact scenario definitions, require check IDs and evidence for validating relationships, confirm historical evidence snapshots require digests, scan for prohibited authority and universal-score language, and run existing repository-health checks.",
+  "completion_notes": "Completed on 2026-07-12. The canonical contract slice includes six versioned JSON Schemas, exact RFC 9000 pilot identities and locators, a deliberately non-validating scenario mapping, a bounded named profile, package-relative scenario-pack metadata and snapshots, valid and invalid fixtures, documentation, traceability, and repository-health validation. Producer, controller, importer, and public-site work remains in downstream coordinated slices."
+}

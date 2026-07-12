@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/specification/v1/coverage-index.schema.json",
+  "title": "ProtocolLab Specification Coverage Index v1",
+  "description": "Hash-addressed index of independently versioned specification coverage evidence sidecars for one run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "generatedAt", "sidecars"],
+  "properties": {
+    "schemaVersion": { "const": "protocol-lab.specification-coverage-index.v1" },
+    "runId": { "$ref": "#/$defs/token" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "sidecars": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/sidecar" }
+    }
+  },
+  "$defs": {
+    "token": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/token" },
+        "version": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "sidecar": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogSnapshot",
+        "path",
+        "sha256",
+        "profileSnapshots",
+        "mappingSnapshots",
+        "records",
+        "cellOutcomeCount",
+        "diagnosticOnly"
+      ],
+      "properties": {
+        "catalogSnapshot": { "$ref": "#/$defs/snapshot" },
+        "path": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "profileSnapshots": { "type": "array", "items": { "$ref": "#/$defs/snapshot" } },
+        "mappingSnapshots": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/snapshot" } },
+        "records": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/record" } },
+        "cellOutcomeCount": { "type": "integer", "minimum": 1 },
+        "diagnosticOnly": { "type": "boolean" }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "path", "sha256"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["catalog", "document", "requirement", "mapping", "profile"] },
+        "id": { "$ref": "#/$defs/token" },
+        "version": { "$ref": "#/$defs/nonEmptyString" },
+        "path": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

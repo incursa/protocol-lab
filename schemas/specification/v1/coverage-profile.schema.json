@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/specification/v1/coverage-profile.schema.json",
+  "title": "ProtocolLab Specification Coverage Profile v1",
+  "description": "Named, versioned and reviewable specification coverage denominator with explicit scope and applicability.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "profileVersion",
+    "title",
+    "protocol",
+    "scope",
+    "catalogId",
+    "catalogVersion",
+    "requirementIds",
+    "requiredRelationships",
+    "roles",
+    "reviewState"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "protocol-lab.specification-coverage-profile.v1" },
+    "profileId": { "$ref": "#/$defs/token" },
+    "profileVersion": { "$ref": "#/$defs/nonEmptyString" },
+    "title": { "$ref": "#/$defs/nonEmptyString" },
+    "protocol": { "$ref": "#/$defs/token" },
+    "scope": { "$ref": "#/$defs/nonEmptyString" },
+    "nonGoals": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyString" } },
+    "catalogId": { "$ref": "#/$defs/token" },
+    "catalogVersion": { "$ref": "#/$defs/nonEmptyString" },
+    "requirementIds": { "$ref": "#/$defs/nonEmptyTokenArray" },
+    "requiredRelationships": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["validates", "negative-validates", "exercises", "observes", "prerequisite"] }
+    },
+    "scenarioIds": { "$ref": "#/$defs/tokenArray" },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["client", "server", "endpoint", "intermediary", "sender", "receiver", "both"] }
+    },
+    "applicabilityAssumptions": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyString" } },
+    "reviewState": { "$ref": "#/$defs/reviewState" },
+    "reviewedAt": { "type": "string", "format": "date-time" },
+    "reviewedBy": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "token": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "reviewState": { "type": "string", "enum": ["proposed", "reviewed", "approved", "deprecated"] },
+    "tokenArray": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/token" } },
+    "nonEmptyTokenArray": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/token" } }
+  }
+}

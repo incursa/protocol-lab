@@ -8,7 +8,13 @@
     "scenarios/quic/transport/handshake-cold.yaml",
     "scenarios/quic/transport/stream-throughput.yaml",
     "scenarios/quic/transport/duplex-streams.yaml",
-    "suites/quic-transport-smoke.yaml"
+    "suites/quic-transport-smoke.yaml",
+    "specifications/documents/rfc9000.json",
+    "specifications/requirements/rfc9000/REQ-QUIC-RFC9000-0271.json",
+    "specifications/requirements/rfc9000/REQ-QUIC-RFC9000-0897.json",
+    "specifications/catalogs/quic-rfc9000-handshake-pilot.json",
+    "specifications/scenario-mappings/quic.transport.handshake-cold.json",
+    "specifications/coverage-profiles/quic-handshake-bootstrap-pilot.json"
   ],
   "providedScenarios": [
     {
@@ -41,6 +47,19 @@
       "resultKind": "conformance",
       "protocols": [
         "quic"
+      ]
+    }
+  ],
+  "providedSpecificationCoverage": [
+    {
+      "catalogId": "quic-rfc9000-handshake-pilot",
+      "catalogVersion": "0.1.0",
+      "catalogPath": "specifications/catalogs/quic-rfc9000-handshake-pilot.json",
+      "mappingPaths": [
+        "specifications/scenario-mappings/quic.transport.handshake-cold.json"
+      ],
+      "profilePaths": [
+        "specifications/coverage-profiles/quic-handshake-bootstrap-pilot.json"
       ]
     }
   ]

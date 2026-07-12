@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/specification/v1/catalog.schema.json",
+  "title": "ProtocolLab Specification Catalog v1",
+  "description": "Versioned manifest of reviewed specification documents and requirement records with explicit completeness scope.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "catalogId",
+    "catalogVersion",
+    "protocols",
+    "completeness",
+    "scope",
+    "documentIds",
+    "requirementIds",
+    "reviewState"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "protocol-lab.specification-catalog.v1" },
+    "catalogId": { "$ref": "#/$defs/token" },
+    "catalogVersion": { "$ref": "#/$defs/nonEmptyString" },
+    "protocols": { "$ref": "#/$defs/nonEmptyTokenArray" },
+    "completeness": { "type": "string", "enum": ["partial", "reviewed-scope", "complete"] },
+    "scope": { "$ref": "#/$defs/nonEmptyString" },
+    "excludedScope": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyString" } },
+    "documentIds": { "$ref": "#/$defs/nonEmptyTokenArray" },
+    "requirementIds": { "$ref": "#/$defs/nonEmptyTokenArray" },
+    "documentPaths": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "requirementPaths": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "catalogSha256": { "$ref": "#/$defs/sha256" },
+    "reviewState": { "$ref": "#/$defs/reviewState" },
+    "reviewedAt": { "type": "string", "format": "date-time" },
+    "reviewedBy": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "token": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+    "reviewState": { "type": "string", "enum": ["proposed", "reviewed", "approved", "deprecated"] },
+    "nonEmptyTokenArray": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/token" } },
+    "nonEmptyStringArray": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyString" } }
+  }
+}

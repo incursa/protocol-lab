@@ -19,9 +19,14 @@ control-plane surfaces when needed.
 - [`run-plan/v1/`](run-plan/v1/) - immutable run-plan selection documents.
 - [`suite/v1/`](suite/v1/) - declarative suite selection documents.
 - [`test-executor/v1/`](test-executor/v1/) - Test Executor Contract v1 control-plane payloads.
+- [`validation/v1/`](validation/v1/) - optional per-cell structured validation
+  check outcomes used as inputs to specification coverage evidence.
 - [`scenario.schema.json`](scenario.schema.json) - scenario definition
   documents for public families such as `http1.*`, `http2.*`, `http3.*`, and
   `quic.*`.
+- [`specification/v1/`](specification/v1/) - specification document and
+  requirement identity, reviewed catalogs, check-level scenario mappings,
+  named coverage profiles, and hash-pinned run evidence sidecars.
 
 ## Schema Policy
 

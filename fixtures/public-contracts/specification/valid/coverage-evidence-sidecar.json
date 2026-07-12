@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "protocol-lab.specification-coverage-evidence.v1",
+  "runId": "sample-quic-handshake-run",
+  "generatedAt": "2026-07-12T00:00:00Z",
+  "catalogSnapshot": {
+    "id": "quic-rfc9000-handshake-pilot",
+    "version": "0.1.0",
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "profileSnapshots": [
+    {
+      "id": "quic-handshake-bootstrap-pilot",
+      "version": "0.1.0",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  ],
+  "mappingSnapshots": [
+    {
+      "id": "mapping.quic.transport.handshake-cold",
+      "version": "0.1.0",
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+    }
+  ],
+  "cellOutcomes": [
+    {
+      "cellKey": "implementation-a/quic.transport.handshake-cold/quic/c1-s0-r1",
+      "implementationId": "implementation-a",
+      "scenarioId": "quic.transport.handshake-cold",
+      "scenarioVersion": "1.0",
+      "scenarioPackageSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "protocol": "quic",
+      "negotiatedProtocolVersion": "quic-v1",
+      "role": "server",
+      "mappingSnapshot": {
+        "id": "mapping.quic.transport.handshake-cold",
+        "version": "0.1.0",
+        "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "checkOutcomes": [
+        {
+          "checkId": "handshake-completes",
+          "checkVersion": "1.0",
+          "requirementId": "REQ-QUIC-RFC9000-0271",
+          "relationship": "exercises",
+          "outcome": "passed",
+          "reasonCode": "check-observed",
+          "message": "The workload observed a completed handshake; the mapping does not claim direct requirement validation.",
+          "diagnosticOnly": true,
+          "artifacts": [
+            {
+              "label": "validation.json",
+              "href": "artifacts/validation.json",
+              "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+              "mediaType": "application/json"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "This diagnostic sidecar records an exercised requirement relationship and is not a conformance certificate."
+  ]
+}

@@ -34,8 +34,15 @@ validation:
   required: true
   checks:
     - handshake-completes
+    - fresh-session-handshake
     - connection-success-count-matches-expected
     - protocol:quic
+  quic:
+    handshakeMustComplete: true
+    session:
+      resumptionState: fresh
+      earlyData: not-attempted
+      replaySafety: not-applicable
 benchmark:
   warmupSeconds: 5
   durationSeconds: 30

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "protocol-lab.specification-coverage-evidence.v1",
+  "runId": "invalid-run",
+  "generatedAt": "2026-07-12T00:00:00Z",
+  "catalogSnapshot": {
+    "id": "quic-rfc9000-handshake-pilot",
+    "version": "0.1.0",
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "mappingSnapshots": [
+    {
+      "id": "mapping.quic.transport.handshake-cold",
+      "version": "0.1.0"
+    }
+  ],
+  "cellOutcomes": [],
+  "warnings": []
+}

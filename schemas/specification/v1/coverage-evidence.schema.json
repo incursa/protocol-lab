@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/specification/v1/coverage-evidence.schema.json",
+  "title": "ProtocolLab Specification Coverage Evidence v1",
+  "description": "Optional hash-addressed evidence sidecar carrying exact mapping snapshots and per-check outcomes without changing Evidence Report v1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generatedAt",
+    "catalogSnapshot",
+    "cellOutcomes",
+    "warnings"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "protocol-lab.specification-coverage-evidence.v1" },
+    "runId": { "$ref": "#/$defs/token" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "catalogSnapshot": { "$ref": "#/$defs/versionedSnapshot" },
+    "profileSnapshots": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/versionedSnapshot" } },
+    "mappingSnapshots": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/versionedSnapshot" } },
+    "cellOutcomes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/cellOutcome" }
+    },
+    "warnings": { "type": "array", "items": { "$ref": "#/$defs/nonEmptyString" } }
+  },
+  "$defs": {
+    "token": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+    "versionedSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/token" },
+        "version": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "artifactReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "sha256"],
+      "properties": {
+        "label": { "$ref": "#/$defs/nonEmptyString" },
+        "href": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "mediaType": { "type": "string", "minLength": 1 }
+      }
+    },
+    "checkOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "outcome", "reasonCode", "diagnosticOnly", "artifacts"],
+      "properties": {
+        "checkId": { "$ref": "#/$defs/token" },
+        "checkVersion": { "$ref": "#/$defs/nonEmptyString" },
+        "requirementId": { "$ref": "#/$defs/token" },
+        "relationship": { "type": "string", "enum": ["validates", "negative-validates", "exercises", "observes", "prerequisite"] },
+        "outcome": { "type": "string", "enum": ["passed", "failed", "unsupported", "unavailable", "not-applicable", "not-run", "inconclusive", "infrastructure-failed"] },
+        "reasonCode": { "$ref": "#/$defs/token" },
+        "message": { "type": "string" },
+        "expected": {},
+        "observed": {},
+        "diagnosticOnly": { "type": "boolean" },
+        "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifactReference" } }
+      }
+    },
+    "cellOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cellKey",
+        "implementationId",
+        "scenarioId",
+        "scenarioVersion",
+        "scenarioPackageSha256",
+        "protocol",
+        "role",
+        "mappingSnapshot",
+        "checkOutcomes"
+      ],
+      "properties": {
+        "cellKey": { "$ref": "#/$defs/nonEmptyString" },
+        "implementationId": { "$ref": "#/$defs/token" },
+        "implementationPackageId": { "$ref": "#/$defs/token" },
+        "implementationPackageVersion": { "$ref": "#/$defs/nonEmptyString" },
+        "implementationPackageSha256": { "$ref": "#/$defs/sha256" },
+        "sourceCommit": { "type": "string", "minLength": 1 },
+        "configurationFingerprint": { "type": "string", "minLength": 1 },
+        "scenarioId": { "$ref": "#/$defs/token" },
+        "scenarioVersion": { "$ref": "#/$defs/nonEmptyString" },
+        "scenarioPackageSha256": { "$ref": "#/$defs/sha256" },
+        "protocol": { "$ref": "#/$defs/token" },
+        "negotiatedProtocolVersion": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "enum": ["client", "server", "endpoint", "intermediary", "sender", "receiver", "both"] },
+        "mappingSnapshot": { "$ref": "#/$defs/versionedSnapshot" },
+        "checkOutcomes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/checkOutcome" } }
+      }
+    }
+  }
+}

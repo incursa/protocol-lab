@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "protocol-lab.validation-check-outcomes.v1",
+  "runId": "sample-quic-handshake-run",
+  "cellKey": "implementation-a/quic.transport.handshake-cold/quic/c1-s0-r1",
+  "implementationId": "implementation-a",
+  "scenarioId": "quic.transport.handshake-cold",
+  "scenarioVersion": "1.0",
+  "protocol": "quic",
+  "negotiatedProtocolVersion": "quic-v1",
+  "role": "server",
+  "generatedAt": "2026-07-12T00:00:00Z",
+  "producer": {
+    "id": "protocol-lab-runner",
+    "version": "1.0.0"
+  },
+  "overallStatus": "passed",
+  "sourceValidation": {
+    "label": "validation.json",
+    "href": "validation.json",
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "mediaType": "application/json"
+  },
+  "checkOutcomes": [
+    {
+      "checkId": "handshake-completes",
+      "checkVersion": "1.0",
+      "outcome": "passed",
+      "reasonCode": "handshake-observed",
+      "message": "The validator observed a completed QUIC handshake.",
+      "diagnosticOnly": true,
+      "artifacts": [
+        {
+          "label": "protocol-diagnostic-artifact",
+          "href": "protocol-proof.json",
+          "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "mediaType": "application/json"
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "A passed check can only support the relationship declared by the pinned mapping."
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-SPECIFICATION-COVERAGE",
+  "artifact_type": "specification",
+  "title": "ProtocolLab Specification Coverage Contracts",
+  "domain": "protocol-lab",
+  "capability": "specification-coverage",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "tags": [
+    "protocol-lab",
+    "specifications",
+    "requirements",
+    "scenario-mappings",
+    "coverage-evidence"
+  ],
+  "related_artifacts": [
+    "ARC-PL-SPECIFICATION-COVERAGE-0001",
+    "WI-PL-SPECIFICATION-COVERAGE-0001",
+    "VER-PL-SPECIFICATION-COVERAGE-0001",
+    "SPEC-PL-CORE-CONTRACTS",
+    "SPEC-PL-REPORT",
+    "SPEC-PL-ARTIFACTS"
+  ],
+  "purpose": "Define language-neutral public contracts that connect immutable specification requirements to exact ProtocolLab scenario checks and optional hash-addressed evidence without creating certification or universal scoring semantics.",
+  "scope": "This specification covers external specification document identity, requirement catalogs, scenario/check mappings, named coverage profiles, mapping provenance, check-level outcomes, and coverage-evidence sidecars. It does not define runner implementations, implementation conformance, benchmark ranking, or publication eligibility.",
+  "context": "ProtocolLab can currently identify scenarios, validation status, packages, reports, cells, and artifacts, but it cannot state which exact normative requirements a check targets or distinguish mapping intent from observed requirement-level evidence.",
+  "requirements": [
+    {
+      "id": "REQ-PL-SPECCOV-0001",
+      "title": "Immutable specification document identity",
+      "statement": "ProtocolLab specification document records MUST identify a stable document ID, canonical source URL, protocol scope, publication state, exact revision for mutable drafts, review state, and source provenance without copying an external specification into the public contract.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0002",
+      "title": "Stable requirement identity and exact source location",
+      "statement": "Each ProtocolLab specification requirement record MUST use a stable requirement ID while retaining the source document ID, exact section and source-unit locator, normative level, roles, applicability, testability, and review state.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0003",
+      "title": "Explicit mapping relationship semantics",
+      "statement": "Scenario-to-requirement mappings MUST classify each relationship as validates, negative-validates, exercises, observes, or prerequisite while retaining exact scenario, scenario version, protocol, role, applicability, catalog version, and review state.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0004",
+      "title": "Check-level proof for validating mappings",
+      "statement": "A validates or negative-validates mapping MUST identify one or more exact scenario validation check IDs and required evidence types while preventing an overall scenario or cell pass from expanding into requirement passes when mapped check outcomes are absent.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0005",
+      "title": "Mapping intent and observed outcome separation",
+      "statement": "ProtocolLab MUST keep mapping intent separate from observed outcomes while preserving passed, failed, unsupported, unavailable, not-applicable, not-run, inconclusive, and infrastructure-failed outcomes without inferring support or success from catalog presence.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0006",
+      "title": "Bounded profiles and no universal conformance score",
+      "statement": "Specification coverage summaries MUST use a named, versioned profile with explicit catalog scope, requirement IDs, relationships, roles, applicability assumptions, and review state without presenting a universal conformance score, certification, or whole-protocol percentage from a partial or inapplicable denominator.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0007",
+      "title": "Historical mapping and evidence provenance",
+      "statement": "Requirement-level evidence MUST preserve the catalog, mapping, profile, scenario package, implementation package where available, and artifact identities and digests used by the source run without reinterpreting a historical run through a newer mapping snapshot.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0008",
+      "title": "Backward-compatible coverage evidence sidecar",
+      "statement": "Specification coverage evidence MUST be optional, hash-addressable, and independently versioned so existing Scenario v1, Run Plan v1, Evidence Report v1, package, report, cell, and artifact consumers remain compatible when requirement-level evidence is unavailable.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0009",
+      "title": "Evidence qualification remains independent",
+      "statement": "Every public requirement outcome MUST retain diagnostic status, evidence class, confidence, comparability, publication eligibility, source/package parity, and benchmark ranking qualifiers from its source evidence without allowing a mapping or passing check to change them.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0010",
+      "title": "Package-pinned specification coverage inputs",
+      "statement": "Scenario-pack packages MAY carry package-relative specification documents, requirements, catalogs, scenario mappings, and named profiles so run evidence can pin the exact mapping inputs without treating package presence as an observed outcome.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0011",
+      "title": "Structured validation check outcomes",
+      "statement": "A producer that reports requirement-level evidence MUST emit exact check IDs and independent outcomes with reasons, diagnostic state, and hash-addressed proof references instead of deriving check success from an overall scenario status.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    }
+  ]
+}

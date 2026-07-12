@@ -1,0 +1,63 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-SPECIFICATION-COVERAGE-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab Specification Coverage Contract Verification",
+  "domain": "protocol-lab",
+  "status": "passed",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-SPECIFICATION-COVERAGE",
+    "ARC-PL-SPECIFICATION-COVERAGE-0001",
+    "WI-PL-SPECIFICATION-COVERAGE-0001"
+  ],
+  "scope": "Verify the specification document, requirement, catalog, scenario mapping, named profile, and optional coverage-evidence sidecar contracts and their compatibility with existing public ProtocolLab contracts.",
+  "verifies": [
+    "REQ-PL-SPECCOV-0001",
+    "REQ-PL-SPECCOV-0002",
+    "REQ-PL-SPECCOV-0003",
+    "REQ-PL-SPECCOV-0004",
+    "REQ-PL-SPECCOV-0005",
+    "REQ-PL-SPECCOV-0006",
+    "REQ-PL-SPECCOV-0007",
+    "REQ-PL-SPECCOV-0008",
+    "REQ-PL-SPECCOV-0009",
+    "REQ-PL-SPECCOV-0010",
+    "REQ-PL-SPECCOV-0011"
+  ],
+  "verification_method": "Repository inspection, JSON Schema validation, positive and negative fixture validation, referential integrity checks, exact scenario-check resolution, digest requirements, compatibility review, traceability review, and claim-language scanning.",
+  "preconditions": [
+    "The public repository remains contract-only and language-neutral.",
+    "Scenario v1 and Evidence Report v1 remain unchanged in the first contract slice.",
+    "The RFC 9000 pilot catalog and mappings remain proposed rather than approved implementation claims."
+  ],
+  "procedure": [
+    "Parse every JSON contract, fixture, specification record, and SpecTrace artifact.",
+    "Validate all valid specification fixtures and confirm every invalid fixture fails for its intended reason.",
+    "Confirm each requirement references a known document and exact source locator.",
+    "Confirm each catalog path and ID resolves and declares explicit completeness scope.",
+    "Confirm each mapping references an exact root scenario and known validation check IDs.",
+    "Confirm validates and negative-validates relationships require check IDs and evidence types.",
+    "Confirm coverage profiles reference known catalog requirements, scenarios, roles, and relationships.",
+    "Confirm coverage evidence requires catalog, mapping, profile where used, scenario-package, cell, and artifact digests.",
+    "Confirm a run-level index supports multiple catalog-specific sidecars while pinning every sidecar digest.",
+    "Confirm scenario-pack coverage metadata resolves package-relative catalog, requirement, mapping, profile, scenario, and check records.",
+    "Confirm structured validation artifacts require explicit nonempty check outcomes and never infer them from overall status.",
+    "Confirm legacy scenario, run-plan, evidence-report, package, and artifact fixtures remain valid.",
+    "Confirm no public artifact claims universal compliance, certification, or whole-RFC coverage from the pilot catalog.",
+    "Confirm traceability links resolve reciprocally across SPEC, ARC, WI, VER, schemas, and fixtures."
+  ],
+  "expected_result": "The public repository exposes coherent, backward-compatible specification coverage contracts with exact source and mapping provenance, honest relationship semantics, check-level proof requirements, and no implementation conformance or universal-score inference.",
+  "evidence": [
+    "schemas/specification/v1/",
+    "specifications/",
+    "fixtures/public-contracts/specification/valid/coverage-evidence-sidecar.json",
+    "fixtures/public-contracts/specification/invalid/",
+    "fixtures/public-contracts/packages/quic-transport-scenario-pack/protocol-lab-package.json",
+    "fixtures/public-contracts/validation/",
+    "docs/specifications/",
+    ".github/workflows/validate.yml",
+    "specs/traceability/trace-links.json"
+  ],
+  "status_summary": "Passed on 2026-07-12. JSON Schema, positive and negative fixtures, document and requirement identity, catalog paths, exact scenario and check references, named-profile references, package-relative mapping snapshots, digest requirements, compatibility boundaries, documentation links, and repository traceability all passed the repository-health validation."
+}

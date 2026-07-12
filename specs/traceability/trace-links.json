@@ -8,15 +8,19 @@
     "specs/requirements/SPEC-PL-MEASUREMENT-TELEMETRY.json",
     "specs/requirements/SPEC-PL-ARTIFACTS.json",
     "specs/requirements/SPEC-PL-REPORT.json",
+    "specs/requirements/SPEC-PL-SPECIFICATION-COVERAGE.json",
     "specs/architecture/ARC-PL-PUBLIC-CONTRACTS.json",
     "specs/architecture/ARC-PL-CORE-CONTRACTS.json",
     "specs/architecture/ARC-PL-MEASUREMENT-TELEMETRY.json",
     "specs/architecture/public-report/ARC-PL-REPORT.json",
+    "specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json",
     "specs/work-items/WI-PL-PUBLIC-REPOSITION-0001.json",
+    "specs/work-items/WI-PL-SPECIFICATION-COVERAGE-0001.json",
     "specs/verification/VER-PL-PUBLIC-REPOSITION-0001.json",
     "specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json",
     "specs/verification/VER-PL-MEASUREMENT-CONTRACT-0001.json",
-    "specs/verification/public-report/VER-PL-REPORT-0001.json"
+    "specs/verification/public-report/VER-PL-REPORT-0001.json",
+    "specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"
   ],
   "requirements": [
     {
@@ -343,6 +347,129 @@
         "specs/verification/VER-PL-MEASUREMENT-CONTRACT-0001.json",
         "specs/verification/public-report/VER-PL-REPORT-0001.json"
       ]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0001",
+      "schemas": ["schemas/specification/v1/document.schema.json"],
+      "fixtures": [
+        "specifications/documents/rfc9000.json",
+        "fixtures/public-contracts/specification/invalid/draft-document-missing-revision.json"
+      ],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0002",
+      "schemas": [
+        "schemas/specification/v1/requirement.schema.json",
+        "schemas/specification/v1/catalog.schema.json"
+      ],
+      "fixtures": [
+        "specifications/requirements/rfc9000/",
+        "specifications/catalogs/quic-rfc9000-handshake-pilot.json",
+        "fixtures/public-contracts/specification/invalid/requirement-missing-source-locator.json"
+      ],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0003",
+      "schemas": ["schemas/specification/v1/scenario-mapping.schema.json"],
+      "fixtures": ["specifications/scenario-mappings/quic.transport.handshake-cold.json"],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0004",
+      "schemas": [
+        "schemas/specification/v1/scenario-mapping.schema.json",
+        "schemas/specification/v1/coverage-evidence.schema.json"
+      ],
+      "fixtures": ["fixtures/public-contracts/specification/invalid/mapping-validates-without-checks.json"],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0005",
+      "schemas": ["schemas/specification/v1/coverage-evidence.schema.json"],
+      "fixtures": ["fixtures/public-contracts/specification/valid/coverage-evidence-sidecar.json"],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0006",
+      "schemas": [
+        "schemas/specification/v1/catalog.schema.json",
+        "schemas/specification/v1/coverage-profile.schema.json"
+      ],
+      "fixtures": [
+        "specifications/catalogs/quic-rfc9000-handshake-pilot.json",
+        "specifications/coverage-profiles/quic-handshake-bootstrap-pilot.json"
+      ],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0007",
+      "schemas": [
+        "schemas/specification/v1/coverage-evidence.schema.json",
+        "schemas/specification/v1/coverage-index.schema.json"
+      ],
+      "fixtures": [
+        "fixtures/public-contracts/specification/invalid/coverage-evidence-missing-mapping-digest.json",
+        "fixtures/public-contracts/specification/invalid/coverage-index-missing-sidecar-digest.json"
+      ],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0008",
+      "schemas": [
+        "schemas/specification/v1/coverage-evidence.schema.json",
+        "schemas/specification/v1/coverage-index.schema.json",
+        "schemas/public-report/v1/evidence-report-v1.schema.json"
+      ],
+      "fixtures": [
+        "fixtures/public-contracts/specification/valid/coverage-evidence-sidecar.json",
+        "fixtures/public-contracts/public-reports/valid/minimal-evidence-report.json"
+      ],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0009",
+      "schemas": [
+        "schemas/specification/v1/coverage-evidence.schema.json",
+        "schemas/public-report/v1/evidence-report-v1.schema.json"
+      ],
+      "fixtures": ["fixtures/public-contracts/specification/valid/coverage-evidence-sidecar.json"],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0010",
+      "schemas": [
+        "schemas/package/v2/package.schema.json",
+        "schemas/specification/v1/catalog.schema.json",
+        "schemas/specification/v1/scenario-mapping.schema.json",
+        "schemas/specification/v1/coverage-profile.schema.json"
+      ],
+      "fixtures": ["fixtures/public-contracts/packages/quic-transport-scenario-pack/"],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0011",
+      "schemas": [
+        "schemas/validation/v1/check-outcomes.schema.json",
+        "schemas/specification/v1/coverage-evidence.schema.json"
+      ],
+      "fixtures": [
+        "fixtures/public-contracts/validation/valid/check-outcomes.json",
+        "fixtures/public-contracts/validation/invalid/overall-pass-without-check-outcomes.json"
+      ],
+      "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
+      "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
     }
   ]
 }

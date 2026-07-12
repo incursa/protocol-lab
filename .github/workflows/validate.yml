@@ -72,11 +72,80 @@ jobs:
           load_profile_schema = load_json(root / "schemas" / "load-profile" / "load-profile.schema.json")
           package_schema = load_json(root / "schemas" / "package" / "v2" / "package.schema.json")
           run_plan_schema = load_json(root / "schemas" / "run-plan" / "v1" / "run-plan.schema.json")
+          validation_check_outcomes_schema = load_json(root / "schemas" / "validation" / "v1" / "check-outcomes.schema.json")
           scenario_validator = Draft202012Validator(scenario_schema)
           suite_validator = Draft202012Validator(suite_schema)
           load_profile_validator = Draft202012Validator(load_profile_schema)
           package_validator = Draft202012Validator(package_schema)
           run_plan_validator = Draft202012Validator(run_plan_schema)
+          validation_check_outcomes_validator = Draft202012Validator(validation_check_outcomes_schema)
+
+          specification_schema_root = root / "schemas" / "specification" / "v1"
+          specification_schema_files = {
+              "protocol-lab.specification-document.v1": "document.schema.json",
+              "protocol-lab.specification-requirement.v1": "requirement.schema.json",
+              "protocol-lab.specification-catalog.v1": "catalog.schema.json",
+              "protocol-lab.scenario-requirement-mapping.v1": "scenario-mapping.schema.json",
+              "protocol-lab.specification-coverage-profile.v1": "coverage-profile.schema.json",
+              "protocol-lab.specification-coverage-evidence.v1": "coverage-evidence.schema.json",
+              "protocol-lab.specification-coverage-index.v1": "coverage-index.schema.json",
+          }
+          specification_validators = {
+              version: Draft202012Validator(load_json(specification_schema_root / filename))
+              for version, filename in specification_schema_files.items()
+          }
+
+          specification_records = {}
+          specification_root = root / "specifications"
+          for path, data in json_docs.items():
+              if not path.is_relative_to(specification_root):
+                  continue
+              version = data.get("schemaVersion") if isinstance(data, dict) else None
+              validator = specification_validators.get(version)
+              if not validator:
+                  errors.append(f"{rel(path)}: unknown specification schemaVersion {version}")
+                  continue
+              for error in validator.iter_errors(data):
+                  errors.append(f"{rel(path)}: specification schema: {error.message}")
+              specification_records[path] = data
+
+          valid_specification_fixtures = root / "fixtures" / "public-contracts" / "specification" / "valid"
+          for path, data in json_docs.items():
+              if not path.is_relative_to(valid_specification_fixtures):
+                  continue
+              version = data.get("schemaVersion") if isinstance(data, dict) else None
+              validator = specification_validators.get(version)
+              if not validator:
+                  errors.append(f"{rel(path)}: unknown specification fixture schemaVersion {version}")
+                  continue
+              for error in validator.iter_errors(data):
+                  errors.append(f"{rel(path)}: specification fixture schema: {error.message}")
+
+          invalid_specification_fixtures = root / "fixtures" / "public-contracts" / "specification" / "invalid"
+          for path, data in json_docs.items():
+              if not path.is_relative_to(invalid_specification_fixtures):
+                  continue
+              version = data.get("schemaVersion") if isinstance(data, dict) else None
+              validator = specification_validators.get(version)
+              if not validator:
+                  errors.append(f"{rel(path)}: unknown invalid specification fixture schemaVersion {version}")
+                  continue
+              if validator.is_valid(data):
+                  errors.append(f"{rel(path)}: invalid specification fixture unexpectedly passes schema validation")
+
+          valid_validation_fixtures = root / "fixtures" / "public-contracts" / "validation" / "valid"
+          for path, data in json_docs.items():
+              if not path.is_relative_to(valid_validation_fixtures):
+                  continue
+              for error in validation_check_outcomes_validator.iter_errors(data):
+                  errors.append(f"{rel(path)}: validation check outcomes schema: {error.message}")
+
+          invalid_validation_fixtures = root / "fixtures" / "public-contracts" / "validation" / "invalid"
+          for path, data in json_docs.items():
+              if not path.is_relative_to(invalid_validation_fixtures):
+                  continue
+              if validation_check_outcomes_validator.is_valid(data):
+                  errors.append(f"{rel(path)}: invalid validation check outcomes fixture unexpectedly passes schema validation")
 
           scenario_ids = {}
           for path, data in yaml_docs.items():
@@ -99,6 +168,101 @@ jobs:
                       errors.append(f"{rel(path)}: protocol {protocol} is not in requires.protocols {required_protocols}")
                   if isinstance(scenario_id, str) and scenario_id.startswith("http."):
                       errors.append(f"{rel(path)}: stale generic http.* scenario id {scenario_id}")
+
+          specification_documents = {
+              data.get("documentId"): (path, data)
+              for path, data in specification_records.items()
+              if data.get("schemaVersion") == "protocol-lab.specification-document.v1"
+          }
+          specification_requirements = {
+              data.get("requirementId"): (path, data)
+              for path, data in specification_records.items()
+              if data.get("schemaVersion") == "protocol-lab.specification-requirement.v1"
+          }
+          specification_catalogs = {
+              (data.get("catalogId"), data.get("catalogVersion")): (path, data)
+              for path, data in specification_records.items()
+              if data.get("schemaVersion") == "protocol-lab.specification-catalog.v1"
+          }
+          specification_mappings = {
+              (data.get("mappingId"), data.get("mappingVersion")): (path, data)
+              for path, data in specification_records.items()
+              if data.get("schemaVersion") == "protocol-lab.scenario-requirement-mapping.v1"
+          }
+
+          for label, index in [
+              ("document", specification_documents),
+              ("requirement", specification_requirements),
+              ("catalog", specification_catalogs),
+              ("mapping", specification_mappings),
+          ]:
+              expected_count = sum(
+                  1 for data in specification_records.values()
+                  if data.get("schemaVersion") == {
+                      "document": "protocol-lab.specification-document.v1",
+                      "requirement": "protocol-lab.specification-requirement.v1",
+                      "catalog": "protocol-lab.specification-catalog.v1",
+                      "mapping": "protocol-lab.scenario-requirement-mapping.v1",
+                  }[label]
+              )
+              if len(index) != expected_count:
+                  errors.append(f"specifications: duplicate {label} identity detected")
+
+          for requirement_id, (path, data) in specification_requirements.items():
+              if data.get("documentId") not in specification_documents:
+                  errors.append(f"{rel(path)}: requirement documentId {data.get('documentId')} does not resolve")
+
+          for catalog_key, (path, data) in specification_catalogs.items():
+              if len(data.get("documentIds", [])) != len(data.get("documentPaths", [])):
+                  errors.append(f"{rel(path)}: catalog document IDs and paths must have equal length")
+              if len(data.get("requirementIds", [])) != len(data.get("requirementPaths", [])):
+                  errors.append(f"{rel(path)}: catalog requirement IDs and paths must have equal length")
+              for document_id, document_path in zip(data.get("documentIds", []), data.get("documentPaths", [])):
+                  resolved = root / document_path
+                  if not resolved.exists():
+                      errors.append(f"{rel(path)}: catalog document path {document_path} does not exist")
+                  elif json_docs.get(resolved, {}).get("documentId") != document_id:
+                      errors.append(f"{rel(path)}: catalog document path {document_path} does not contain {document_id}")
+              for requirement_id, requirement_path in zip(data.get("requirementIds", []), data.get("requirementPaths", [])):
+                  resolved = root / requirement_path
+                  if not resolved.exists():
+                      errors.append(f"{rel(path)}: catalog requirement path {requirement_path} does not exist")
+                  elif json_docs.get(resolved, {}).get("requirementId") != requirement_id:
+                      errors.append(f"{rel(path)}: catalog requirement path {requirement_path} does not contain {requirement_id}")
+
+          for mapping_key, (path, data) in specification_mappings.items():
+              catalog_key = (data.get("catalogId"), data.get("catalogVersion"))
+              if catalog_key not in specification_catalogs:
+                  errors.append(f"{rel(path)}: mapping catalog {catalog_key} does not resolve")
+              scenario_id = data.get("scenarioId")
+              scenario_path = scenario_ids.get(scenario_id)
+              if not scenario_path:
+                  errors.append(f"{rel(path)}: mapping scenarioId {scenario_id} does not resolve")
+                  continue
+              scenario = yaml_docs[scenario_path]
+              if data.get("protocol") != scenario.get("protocol"):
+                  errors.append(f"{rel(path)}: mapping protocol does not match scenario {scenario_id}")
+              available_checks = set(scenario.get("validation", {}).get("checks") or [])
+              for relationship in data.get("relationships", []):
+                  requirement_id = relationship.get("requirementId")
+                  if requirement_id not in specification_requirements:
+                      errors.append(f"{rel(path)}: mapping requirement {requirement_id} does not resolve")
+                  for check_id in relationship.get("checkIds", []):
+                      if check_id not in available_checks:
+                          errors.append(f"{rel(path)}: mapping check {check_id} does not resolve in scenario {scenario_id}")
+
+          for path, data in specification_records.items():
+              version = data.get("schemaVersion")
+              if version == "protocol-lab.specification-coverage-profile.v1":
+                  catalog_key = (data.get("catalogId"), data.get("catalogVersion"))
+                  if catalog_key not in specification_catalogs:
+                      errors.append(f"{rel(path)}: coverage profile catalog {catalog_key} does not resolve")
+                  for requirement_id in data.get("requirementIds", []):
+                      if requirement_id not in specification_requirements:
+                          errors.append(f"{rel(path)}: coverage profile requirement {requirement_id} does not resolve")
+                  for scenario_id in data.get("scenarioIds", []):
+                      if scenario_id not in scenario_ids:
+                          errors.append(f"{rel(path)}: coverage profile scenario {scenario_id} does not resolve")
 
           load_profile_ids = {}
           for path, data in yaml_docs.items():
@@ -201,6 +365,68 @@ jobs:
                   suite_data = yaml_docs.get(suite_path)
                   if isinstance(suite_data, dict) and suite_data.get("id"):
                       local_suites[suite_data["id"]] = suite_path
+
+              package_specification_records = {}
+              for specification_path in sorted((package_root / "specifications").rglob("*.json")):
+                  specification_data = json_docs.get(specification_path) or load_json(specification_path)
+                  version = specification_data.get("schemaVersion") if isinstance(specification_data, dict) else None
+                  validator = specification_validators.get(version)
+                  if not validator:
+                      errors.append(f"{rel(specification_path)}: unknown package specification schemaVersion {version}")
+                      continue
+                  for error in validator.iter_errors(specification_data):
+                      errors.append(f"{rel(specification_path)}: package specification schema: {error.message}")
+                  package_specification_records[specification_path] = specification_data
+
+              for coverage in manifest.get("providedSpecificationCoverage", []):
+                  catalog_path = package_root / coverage.get("catalogPath", "")
+                  catalog = package_specification_records.get(catalog_path)
+                  if not catalog:
+                      errors.append(f"{rel(manifest_path)}: specification catalog path {coverage.get('catalogPath')} does not resolve")
+                      continue
+                  if (catalog.get("catalogId"), catalog.get("catalogVersion")) != (coverage.get("catalogId"), coverage.get("catalogVersion")):
+                      errors.append(f"{rel(manifest_path)}: provided specification catalog identity does not match {coverage.get('catalogPath')}")
+                  if len(catalog.get("documentIds", [])) != len(catalog.get("documentPaths", [])):
+                      errors.append(f"{rel(catalog_path)}: package catalog document IDs and paths must have equal length")
+                  if len(catalog.get("requirementIds", [])) != len(catalog.get("requirementPaths", [])):
+                      errors.append(f"{rel(catalog_path)}: package catalog requirement IDs and paths must have equal length")
+                  for document_id, document_relative_path in zip(catalog.get("documentIds", []), catalog.get("documentPaths", [])):
+                      document = package_specification_records.get(package_root / document_relative_path)
+                      if not document or document.get("documentId") != document_id:
+                          errors.append(f"{rel(catalog_path)}: package document {document_id} does not resolve through {document_relative_path}")
+                  for requirement_id, requirement_relative_path in zip(catalog.get("requirementIds", []), catalog.get("requirementPaths", [])):
+                      requirement = package_specification_records.get(package_root / requirement_relative_path)
+                      if not requirement or requirement.get("requirementId") != requirement_id:
+                          errors.append(f"{rel(catalog_path)}: package requirement {requirement_id} does not resolve through {requirement_relative_path}")
+                  for mapping_relative_path in coverage.get("mappingPaths", []):
+                      mapping_path = package_root / mapping_relative_path
+                      mapping = package_specification_records.get(mapping_path)
+                      if not mapping:
+                          errors.append(f"{rel(manifest_path)}: specification mapping path {mapping_relative_path} does not resolve")
+                          continue
+                      if (mapping.get("catalogId"), mapping.get("catalogVersion")) != (coverage.get("catalogId"), coverage.get("catalogVersion")):
+                          errors.append(f"{rel(mapping_path)}: mapping catalog identity does not match package declaration")
+                      scenario_id = mapping.get("scenarioId")
+                      scenario_path = local_scenarios.get(scenario_id)
+                      if not scenario_path:
+                          errors.append(f"{rel(mapping_path)}: mapping scenario {scenario_id} is not package-local")
+                          continue
+                      available_checks = set(yaml_docs[scenario_path].get("validation", {}).get("checks") or [])
+                      for relationship in mapping.get("relationships", []):
+                          for check_id in relationship.get("checkIds", []):
+                              if check_id not in available_checks:
+                                  errors.append(f"{rel(mapping_path)}: mapping check {check_id} does not resolve in package scenario {scenario_id}")
+                  for profile_relative_path in coverage.get("profilePaths", []):
+                      profile_path = package_root / profile_relative_path
+                      profile = package_specification_records.get(profile_path)
+                      if not profile:
+                          errors.append(f"{rel(manifest_path)}: specification profile path {profile_relative_path} does not resolve")
+                          continue
+                      if (profile.get("catalogId"), profile.get("catalogVersion")) != (coverage.get("catalogId"), coverage.get("catalogVersion")):
+                          errors.append(f"{rel(profile_path)}: profile catalog identity does not match package declaration")
+                      for scenario_id in profile.get("scenarioIds", []):
+                          if scenario_id not in local_scenarios:
+                              errors.append(f"{rel(profile_path)}: profile scenario {scenario_id} is not package-local")
 
               provided_scenario_ids = {entry.get("scenarioId") for entry in manifest.get("providedScenarios", [])}
               if provided_scenario_ids and provided_scenario_ids != set(local_scenarios):

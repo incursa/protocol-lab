@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "protocol-lab.scenario-requirement-mapping.v1",
+  "mappingId": "mapping.invalid.missing-checks",
+  "mappingVersion": "1.0.0",
+  "scenarioId": "quic.transport.handshake-cold",
+  "scenarioVersion": "1.0",
+  "protocol": "quic",
+  "catalogId": "quic-rfc9000-handshake-pilot",
+  "catalogVersion": "0.1.0",
+  "relationships": [
+    {
+      "requirementId": "REQ-QUIC-RFC9000-0271",
+      "relationship": "validates",
+      "roles": ["server"]
+    }
+  ],
+  "reviewState": "proposed"
+}

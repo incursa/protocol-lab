@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "protocol-lab.specification-document.v1",
+  "documentId": "rfc9000",
+  "title": "QUIC: A UDP-Based Multiplexed and Secure Transport",
+  "publisher": "IETF",
+  "canonicalUrl": "https://www.rfc-editor.org/rfc/rfc9000.html",
+  "protocols": ["quic"],
+  "documentKind": "rfc",
+  "publicationStatus": "published",
+  "sourceFormat": "rfcxml",
+  "reviewState": "proposed",
+  "notes": "Initial source identity for specification-coverage contract validation. Requirement mappings remain proposed until protocol review is complete."
+}

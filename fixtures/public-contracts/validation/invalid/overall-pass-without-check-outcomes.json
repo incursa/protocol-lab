@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "protocol-lab.validation-check-outcomes.v1",
+  "runId": "sample-run",
+  "cellKey": "implementation-a/scenario-a/quic/c1-s0-r1",
+  "implementationId": "implementation-a",
+  "scenarioId": "scenario-a",
+  "scenarioVersion": "1.0",
+  "protocol": "quic",
+  "generatedAt": "2026-07-12T00:00:00Z",
+  "producer": {
+    "id": "protocol-lab-runner",
+    "version": "1.0.0"
+  },
+  "overallStatus": "passed",
+  "checkOutcomes": []
+}

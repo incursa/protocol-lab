@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/specification/v1/scenario-mapping.schema.json",
+  "title": "ProtocolLab Scenario Requirement Mapping v1",
+  "description": "Reviewed mapping intent between exact scenario validation checks and stable specification requirements.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "mappingId",
+    "mappingVersion",
+    "scenarioId",
+    "scenarioVersion",
+    "protocol",
+    "catalogId",
+    "catalogVersion",
+    "relationships",
+    "reviewState"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "protocol-lab.scenario-requirement-mapping.v1" },
+    "mappingId": { "$ref": "#/$defs/token" },
+    "mappingVersion": { "$ref": "#/$defs/nonEmptyString" },
+    "scenarioId": { "$ref": "#/$defs/token" },
+    "scenarioVersion": { "$ref": "#/$defs/nonEmptyString" },
+    "protocol": { "$ref": "#/$defs/token" },
+    "catalogId": { "$ref": "#/$defs/token" },
+    "catalogVersion": { "$ref": "#/$defs/nonEmptyString" },
+    "relationships": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/relationship" }
+    },
+    "reviewState": { "$ref": "#/$defs/reviewState" },
+    "reviewedAt": { "type": "string", "format": "date-time" },
+    "reviewedBy": { "type": "string", "minLength": 1 },
+    "supersedes": { "$ref": "#/$defs/token" },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "token": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "reviewState": { "type": "string", "enum": ["proposed", "reviewed", "approved", "deprecated"] },
+    "roleArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["client", "server", "endpoint", "intermediary", "sender", "receiver", "both"] }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirementId", "relationship", "roles"],
+      "properties": {
+        "requirementId": { "$ref": "#/$defs/token" },
+        "relationship": { "type": "string", "enum": ["validates", "negative-validates", "exercises", "observes", "prerequisite"] },
+        "checkIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/token" } },
+        "roles": { "$ref": "#/$defs/roleArray" },
+        "applicabilityConditions": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyString" } },
+        "requiredEvidence": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/token" } },
+        "limitations": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyString" } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "relationship": { "enum": ["validates", "negative-validates"] } }, "required": ["relationship"] },
+          "then": { "required": ["checkIds", "requiredEvidence"] }
+        }
+      ]
+    }
+  }
+}

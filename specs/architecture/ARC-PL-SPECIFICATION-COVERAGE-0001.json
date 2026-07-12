@@ -1,0 +1,66 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-SPECIFICATION-COVERAGE-0001",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab Specification Coverage Model",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-SPECIFICATION-COVERAGE",
+    "WI-PL-SPECIFICATION-COVERAGE-0001",
+    "VER-PL-SPECIFICATION-COVERAGE-0001"
+  ],
+  "purpose": "Describe how versioned source documents, requirement records, scenario/check mappings, named profiles, and optional evidence sidecars satisfy the specification-coverage requirements without changing existing scenario or evidence-report contracts.",
+  "satisfies": [
+    "REQ-PL-SPECCOV-0001",
+    "REQ-PL-SPECCOV-0002",
+    "REQ-PL-SPECCOV-0003",
+    "REQ-PL-SPECCOV-0004",
+    "REQ-PL-SPECCOV-0005",
+    "REQ-PL-SPECCOV-0006",
+    "REQ-PL-SPECCOV-0007",
+    "REQ-PL-SPECCOV-0008",
+    "REQ-PL-SPECCOV-0009",
+    "REQ-PL-SPECCOV-0010",
+    "REQ-PL-SPECCOV-0011"
+  ],
+  "design_summary": "The public contract adds standalone specification document and requirement records, catalog manifests, scenario-to-requirement mapping documents, and named coverage profiles. Mapping documents reference existing exact scenario and validation check IDs but do not modify Scenario v1. Runtime producers may emit a separately versioned coverage-evidence sidecar through the existing artifact path. The sidecar pins catalog, mapping, profile, and scenario-package digests and records per-check outcomes. Existing reports remain valid when no sidecar exists.",
+  "key_components": [
+    "specification document records",
+    "stable requirement records with RFCXML-derived source-unit addresses",
+    "partial or reviewed-scope catalog manifests",
+    "standalone scenario/check mapping documents",
+    "named coverage profiles with explicit denominators",
+    "scenario-pack metadata and package-relative mapping snapshots",
+    "optional per-cell structured validation check outcome artifacts",
+    "hash-addressed specification coverage evidence sidecars",
+    "valid and invalid compatibility fixtures",
+    "SpecTrace requirements and traceability links"
+  ],
+  "data_and_state_considerations": "Catalog and mapping documents are immutable by version. Review state is explicit. Historical evidence stores IDs, versions, and SHA-256 digests rather than joining to the current catalog. Mapping relationships describe design intent; check outcomes describe execution. Diagnostic and publication qualifiers remain owned by the source report and are never upgraded by the mapping model.",
+  "edge_cases_and_constraints": [
+    "Internet-Drafts are mutable and therefore require an exact revision.",
+    "Conditional requirements can be not-applicable without being unsupported.",
+    "A negative-validates check can pass by observing required rejection or prevention rather than successful traffic.",
+    "An exercises or observes relationship cannot produce a conformance pass.",
+    "A scenario can map to multiple requirements and a requirement can map to multiple scenarios without hidden aggregation.",
+    "Conflicting outcomes remain separate by implementation package, applicability, mapping version, run, cell, and evidence state.",
+    "A missing sidecar means requirement-level evidence is unavailable, not failed or unsupported.",
+    "A partial catalog cannot define a whole-RFC or whole-protocol denominator."
+  ],
+  "alternatives_considered": [
+    "Embedding mappings directly in Scenario v1 was rejected for the first version because existing strict models and normalization paths could drop uncoordinated fields.",
+    "Adding requirement outcomes directly to Evidence Report v1 was rejected because the strict v1 schema rejects unknown fields and historical consumers need compatibility.",
+    "Mapping scenarios only to RFC sections was rejected because section-level success would overstate coverage of individual normative requirements.",
+    "Treating overall scenario validation as every mapped requirement passing was rejected because it lacks check-level proof.",
+    "A universal specification score was rejected because scope, roles, conditional applicability, evidence authority, and testability differ."
+  ],
+  "risks": [
+    "Source locators can drift if RFC ingestion loses source-unit provenance.",
+    "Package metadata can be mistaken for observed success unless the site keeps declarations and outcomes separate.",
+    "Coverage profiles can imply certification unless scope and non-goals remain visible.",
+    "Sidecars can be misjoined to newer mappings unless digests are required and verified.",
+    "Coarse executor validation artifacts may delay directly validated mappings even when broad scenarios already pass."
+  ]
+}

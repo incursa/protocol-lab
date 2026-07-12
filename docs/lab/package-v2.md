@@ -55,7 +55,20 @@ Entry manifest layout is part of the contract:
 
 - implementation packages use `implementations/`
 - test-executor packages use `test-executors/`
-- scenario-pack packages use [`scenarios/`](../../scenarios/) and/or [`suites/`](../../suites/)
+- scenario-pack packages use [`scenarios/`](../../scenarios/) and/or
+  [`suites/`](../../suites/), and may carry versioned specification catalogs,
+  scenario mappings, and named profiles under `specifications/`
+
+When a scenario pack declares `providedSpecificationCoverage`, its catalog,
+mapping, and profile paths are package-relative entry manifests. Their bytes
+are covered by the package digest and can therefore be pinned by run evidence.
+This metadata declares available mapping snapshots; it does not claim that an
+implementation passed a check or requirement.
+
+Test-executor metadata may declare `checkIds` that the packaged executor can
+emit as structured validation outcomes. This is capability metadata only. A
+check outcome exists only when the run produces the corresponding validated
+artifact.
 
 The package manifest declares what a package provides. A run plan declares
 which package-provided components should be used for a repeatable run.

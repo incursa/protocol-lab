@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "protocol-lab.specification-requirement.v1",
+  "requirementId": "REQ-INVALID-0001",
+  "documentId": "rfc9000",
+  "title": "Invalid requirement without source locator",
+  "summary": "This fixture intentionally omits exact source provenance.",
+  "normativeLevel": "MUST",
+  "roles": ["endpoint"],
+  "testability": "directly-testable",
+  "reviewState": "proposed"
+}

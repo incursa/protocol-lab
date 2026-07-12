@@ -72,6 +72,11 @@ directly.
   [`scenarios/catalog.md`](scenarios/catalog.md),
   [`scenarios/suite-catalog.md`](scenarios/suite-catalog.md), and
   [`scenarios/load-profile-catalog.md`](scenarios/load-profile-catalog.md)
+- Specification requirements, workload mappings, and named coverage profiles:
+  [`specifications/model.md`](specifications/model.md),
+  [`specifications/mapping-methodology.md`](specifications/mapping-methodology.md),
+  [`specifications/claim-language.md`](specifications/claim-language.md), and
+  [`specifications/catalog.md`](specifications/catalog.md)
 - Measurement profiles, telemetry bundles, artifact bundles, and redaction:
   [`architecture/measurement-model.md`](architecture/measurement-model.md) and
   [`architecture/artifact-model.md`](architecture/artifact-model.md)
@@ -97,6 +102,7 @@ directly.
 - [`architecture/scenario-model.md`](architecture/scenario-model.md)
 - [`architecture/adapter-contract-v1.md`](architecture/adapter-contract-v1.md)
 - [`architecture/test-executor-contract-v1.md`](architecture/test-executor-contract-v1.md)
+- [`architecture/validation-check-outcomes.md`](architecture/validation-check-outcomes.md)
 - [`architecture/load-model.md`](architecture/load-model.md)
 - [`architecture/artifact-model.md`](architecture/artifact-model.md)
 - [`architecture/measurement-model.md`](architecture/measurement-model.md)
@@ -122,6 +128,16 @@ directly.
 - [`../fixtures/public-contracts/measurement/invalid/`](../fixtures/public-contracts/measurement/invalid/)
 - [`../fixtures/public-contracts/artifacts/valid/`](../fixtures/public-contracts/artifacts/valid/)
 - [`../fixtures/public-contracts/artifacts/invalid/`](../fixtures/public-contracts/artifacts/invalid/)
+
+## Specification Coverage
+
+- [`specifications/model.md`](specifications/model.md)
+- [`specifications/mapping-methodology.md`](specifications/mapping-methodology.md)
+- [`specifications/claim-language.md`](specifications/claim-language.md)
+- [`specifications/catalog.md`](specifications/catalog.md)
+- [`../schemas/specification/v1/`](../schemas/specification/v1/)
+- [`../specifications/`](../specifications/)
+- [`../fixtures/public-contracts/specification/`](../fixtures/public-contracts/specification/)
 
 ## Reports
 

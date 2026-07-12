@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "protocol-lab.specification-document.v1",
+  "documentId": "draft-example",
+  "title": "Example Internet-Draft",
+  "publisher": "IETF",
+  "canonicalUrl": "https://datatracker.ietf.org/doc/draft-example/",
+  "protocols": ["quic"],
+  "documentKind": "internet-draft",
+  "publicationStatus": "draft",
+  "reviewState": "proposed"
+}

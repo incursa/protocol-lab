@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/specification/v1/requirement.schema.json",
+  "title": "ProtocolLab Specification Requirement v1",
+  "description": "Stable requirement identity, exact source locator, applicability, and testability metadata for specification coverage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "requirementId",
+    "documentId",
+    "title",
+    "summary",
+    "sourceLocator",
+    "normativeLevel",
+    "roles",
+    "testability",
+    "reviewState"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "protocol-lab.specification-requirement.v1" },
+    "requirementId": { "$ref": "#/$defs/token" },
+    "documentId": { "$ref": "#/$defs/token" },
+    "title": { "$ref": "#/$defs/nonEmptyString" },
+    "summary": { "$ref": "#/$defs/nonEmptyString" },
+    "sourceLocator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section", "sourceUnit", "url"],
+      "properties": {
+        "section": { "$ref": "#/$defs/nonEmptyString" },
+        "sourceUnit": { "$ref": "#/$defs/nonEmptyString" },
+        "url": { "type": "string", "format": "uri" },
+        "statementSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "normativeLevel": { "type": "string", "enum": ["MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "MAY", "informational", "unknown"] },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["client", "server", "endpoint", "intermediary", "sender", "receiver", "both"] }
+    },
+    "applicabilityConditions": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyString" } },
+    "protocolVersions": { "$ref": "#/$defs/tokenArray" },
+    "featureIds": { "$ref": "#/$defs/tokenArray" },
+    "testability": { "type": "string", "enum": ["directly-testable", "conditionally-testable", "indirectly-observable", "not-currently-testable"] },
+    "dependsOn": { "$ref": "#/$defs/tokenArray" },
+    "refines": { "$ref": "#/$defs/tokenArray" },
+    "replaces": { "$ref": "#/$defs/tokenArray" },
+    "conflictsWith": { "$ref": "#/$defs/tokenArray" },
+    "tags": { "$ref": "#/$defs/tokenArray" },
+    "reviewState": { "$ref": "#/$defs/reviewState" },
+    "reviewedAt": { "type": "string", "format": "date-time" },
+    "reviewedBy": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "token": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+    "reviewState": { "type": "string", "enum": ["proposed", "reviewed", "approved", "deprecated"] },
+    "tokenArray": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/token" } }
+  }
+}

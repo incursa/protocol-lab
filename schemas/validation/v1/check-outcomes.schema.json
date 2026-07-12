@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/validation/v1/check-outcomes.schema.json",
+  "title": "ProtocolLab Validation Check Outcomes v1",
+  "description": "Optional check-level validation evidence for one run cell. Overall scenario status is retained but never expanded into omitted check outcomes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "cellKey",
+    "implementationId",
+    "scenarioId",
+    "scenarioVersion",
+    "protocol",
+    "generatedAt",
+    "producer",
+    "overallStatus",
+    "checkOutcomes"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "protocol-lab.validation-check-outcomes.v1" },
+    "runId": { "$ref": "#/$defs/nonEmptyString" },
+    "cellKey": { "$ref": "#/$defs/nonEmptyString" },
+    "implementationId": { "$ref": "#/$defs/token" },
+    "implementationPackage": { "$ref": "#/$defs/packageSnapshot" },
+    "testExecutorId": { "$ref": "#/$defs/token" },
+    "testExecutorPackage": { "$ref": "#/$defs/packageSnapshot" },
+    "scenarioId": { "$ref": "#/$defs/token" },
+    "scenarioVersion": { "$ref": "#/$defs/nonEmptyString" },
+    "scenarioPackage": { "$ref": "#/$defs/packageSnapshot" },
+    "protocol": { "$ref": "#/$defs/token" },
+    "negotiatedProtocolVersion": { "$ref": "#/$defs/token" },
+    "role": { "$ref": "#/$defs/token" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/token" },
+        "version": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "overallStatus": { "$ref": "#/$defs/outcome" },
+    "sourceValidation": { "$ref": "#/$defs/artifact" },
+    "checkOutcomes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/checkOutcome" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    }
+  },
+  "$defs": {
+    "token": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+    "outcome": {
+      "type": "string",
+      "enum": ["passed", "failed", "unsupported", "unavailable", "not-applicable", "not-run", "inconclusive", "infrastructure-failed"]
+    },
+    "packageSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/token" },
+        "version": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "href", "sha256"],
+      "properties": {
+        "label": { "$ref": "#/$defs/nonEmptyString" },
+        "href": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "mediaType": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "checkOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "outcome", "reasonCode", "message", "diagnosticOnly"],
+      "properties": {
+        "checkId": { "$ref": "#/$defs/token" },
+        "checkVersion": { "$ref": "#/$defs/nonEmptyString" },
+        "outcome": { "$ref": "#/$defs/outcome" },
+        "reasonCode": { "$ref": "#/$defs/token" },
+        "message": { "$ref": "#/$defs/nonEmptyString" },
+        "diagnosticOnly": { "type": "boolean" },
+        "artifacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/artifact" }
+        }
+      }
+    }
+  }
+}

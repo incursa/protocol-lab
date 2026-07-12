@@ -89,6 +89,30 @@ Public report examples live under:
 Valid public report fixtures show the minimal shareable evidence-report shape.
 Invalid public report fixtures demonstrate required contract-version failures.
 
+## Specification Coverage Fixtures
+
+Specification-coverage examples live under:
+
+- [`specification/valid`](specification/valid/)
+- [`specification/invalid`](specification/invalid/)
+
+The valid fixture shows an additive, diagnostic coverage-evidence sidecar with
+catalog, profile, mapping, scenario-package, and artifact digests. Invalid
+fixtures cover missing source locators, draft documents without exact revision
+identity, direct-validation mappings without check-level proof, and evidence
+that does not pin its mapping bytes.
+
+## Structured Validation Fixtures
+
+Per-check validation examples live under:
+
+- [`validation/valid`](validation/valid/)
+- [`validation/invalid`](validation/invalid/)
+
+The valid fixture records one explicit diagnostic check outcome. The invalid
+fixture proves that an overall scenario pass cannot stand in for omitted check
+outcomes.
+
 ## Protocol Family Fixtures
 
 The HTTP/1 fixture set has separate run plans for `http1-conformance-smoke` and

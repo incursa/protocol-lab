@@ -11,7 +11,7 @@
     "ARC-PL-SPECIFICATION-COVERAGE-0001",
     "WI-PL-SPECIFICATION-COVERAGE-0001"
   ],
-  "scope": "Verify the specification document, requirement, catalog, scenario mapping, named profile, and optional coverage-evidence sidecar contracts and their compatibility with existing public ProtocolLab contracts.",
+  "scope": "Verify the specification document, requirement, catalog, scenario mapping, named profile, optional run-plan selection, executor capability discovery, and optional coverage-evidence sidecar contracts and their compatibility with existing public ProtocolLab contracts.",
   "verifies": [
     "REQ-PL-SPECCOV-0001",
     "REQ-PL-SPECCOV-0002",
@@ -23,7 +23,9 @@
     "REQ-PL-SPECCOV-0008",
     "REQ-PL-SPECCOV-0009",
     "REQ-PL-SPECCOV-0010",
-    "REQ-PL-SPECCOV-0011"
+    "REQ-PL-SPECCOV-0011",
+    "REQ-PL-SPECCOV-0012",
+    "REQ-PL-SPECCOV-0013"
   ],
   "verification_method": "Repository inspection, JSON Schema validation, positive and negative fixture validation, referential integrity checks, exact scenario-check resolution, digest requirements, compatibility review, traceability review, and claim-language scanning.",
   "preconditions": [
@@ -43,6 +45,8 @@
     "Confirm a run-level index supports multiple catalog-specific sidecars while pinning every sidecar digest.",
     "Confirm scenario-pack coverage metadata resolves package-relative catalog, requirement, mapping, profile, scenario, and check records.",
     "Confirm structured validation artifacts require explicit nonempty check outcomes and never infer them from overall status.",
+    "Confirm run-plan coverage selections pin catalog and mapping snapshots and identify at least one profile, requirement, or check target.",
+    "Confirm executor structured-outcome declarations retain exact schema, check, authority, compatibility, artifact, and unsupported-reason metadata without becoming evidence.",
     "Confirm legacy scenario, run-plan, evidence-report, package, and artifact fixtures remain valid.",
     "Confirm no public artifact claims universal compliance, certification, or whole-RFC coverage from the pilot catalog.",
     "Confirm traceability links resolve reciprocally across SPEC, ARC, WI, VER, schemas, and fixtures."
@@ -55,9 +59,11 @@
     "fixtures/public-contracts/specification/invalid/",
     "fixtures/public-contracts/packages/quic-transport-scenario-pack/protocol-lab-package.json",
     "fixtures/public-contracts/validation/",
+    "fixtures/public-contracts/run-plans/",
+    "fixtures/public-contracts/packages/reference-quic-test-executor/test-executors/protocol-lab-reference-quic-test-executor.yaml",
     "docs/specifications/",
     ".github/workflows/validate.yml",
     "specs/traceability/trace-links.json"
   ],
-  "status_summary": "Passed on 2026-07-12. JSON Schema, positive and negative fixtures, document and requirement identity, catalog paths, exact scenario and check references, named-profile references, package-relative mapping snapshots, digest requirements, compatibility boundaries, documentation links, and repository traceability all passed the repository-health validation."
+  "status_summary": "Passed on 2026-07-12. JSON Schema, positive and negative fixtures, document and requirement identity, catalog paths, exact scenario and check references, named-profile references, package-relative mapping snapshots, optional run-plan selection, executor capability discovery, digest requirements, compatibility boundaries, documentation links, and repository traceability all passed the repository-health validation."
 }

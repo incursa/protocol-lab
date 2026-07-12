@@ -78,6 +78,10 @@
       "$ref": "./common.schema.json#/$defs/telemetryCapability",
       "description": "Optional telemetry bundle and artifact export capability discovery. Absence means no telemetry export is advertised."
     },
+    "structuredValidationOutcomes": {
+      "$ref": "#/$defs/structuredValidationOutcomes",
+      "description": "Optional discovery metadata for exact check-level outcomes. Declaration is capability metadata only and is never evidence that a check passed."
+    },
     "externalPeerScenarios": {
       "$ref": "./common.schema.json#/$defs/stringArray",
       "description": "Named external-peer scenarios the executor can drive when interoperating with an implementation endpoint."
@@ -102,5 +106,50 @@
       }
     },
     "extensions": { "$ref": "./common.schema.json#/$defs/extensions" }
+  },
+  "$defs": {
+    "token": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "nonEmptyTokenArray": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/token" } },
+    "structuredValidationOutcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersions", "checks"],
+      "properties": {
+        "schemaVersions": { "$ref": "#/$defs/nonEmptyTokenArray" },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/checkCapability" }
+        },
+        "compatibleCatalogIds": { "$ref": "#/$defs/nonEmptyTokenArray" },
+        "compatibleMappingIds": { "$ref": "#/$defs/nonEmptyTokenArray" },
+        "compatibleProfileIds": { "$ref": "#/$defs/nonEmptyTokenArray" },
+        "unsupportedChecks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/unsupportedCheck" }
+        }
+      }
+    },
+    "checkCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "checkVersion", "authority"],
+      "properties": {
+        "checkId": { "$ref": "#/$defs/token" },
+        "checkVersion": { "type": "string", "minLength": 1 },
+        "authority": { "type": "string", "enum": ["direct", "inferred", "diagnostic"] },
+        "requiredArtifactTypes": { "$ref": "#/$defs/nonEmptyTokenArray" }
+      }
+    },
+    "unsupportedCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "reasonCode", "reason"],
+      "properties": {
+        "checkId": { "$ref": "#/$defs/token" },
+        "reasonCode": { "$ref": "#/$defs/token" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    }
   }
 }

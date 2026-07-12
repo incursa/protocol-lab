@@ -59,5 +59,17 @@ but they do not support reviewed public findings. Evidence qualification,
 comparability, publishability, freshness, and confidence remain independent of
 specification coverage.
 
+Run plans may optionally select existing package-provided coverage inputs with
+`specificationCoverage`. The selection pins the exact catalog, mapping, and
+named-profile snapshots by SHA-256 and declares whether structured outcomes
+are required, diagnostic outcomes are acceptable, or mapping metadata alone is
+being requested. It does not author mappings or alter evidence eligibility.
+
+Test executors may optionally advertise `structuredValidationOutcomes` with
+the exact contract versions and check identities they can emit. The declared
+authority (`direct`, `inferred`, or `diagnostic`) and exact unsupported reasons
+are discovery metadata only; a run still needs an observed check outcome before
+the site can display requirement-level evidence.
+
 See [mapping methodology](mapping-methodology.md) for review rules and
 [claim language](claim-language.md) for public wording.

@@ -23,9 +23,11 @@
     "REQ-PL-SPECCOV-0008",
     "REQ-PL-SPECCOV-0009",
     "REQ-PL-SPECCOV-0010",
-    "REQ-PL-SPECCOV-0011"
+    "REQ-PL-SPECCOV-0011",
+    "REQ-PL-SPECCOV-0012",
+    "REQ-PL-SPECCOV-0013"
   ],
-  "design_summary": "The public contract adds standalone specification document and requirement records, catalog manifests, scenario-to-requirement mapping documents, and named coverage profiles. Mapping documents reference existing exact scenario and validation check IDs but do not modify Scenario v1. Runtime producers may emit a separately versioned coverage-evidence sidecar through the existing artifact path. The sidecar pins catalog, mapping, profile, and scenario-package digests and records per-check outcomes. Existing reports remain valid when no sidecar exists.",
+  "design_summary": "The public contract adds standalone specification document and requirement records, catalog manifests, scenario-to-requirement mapping documents, and named coverage profiles. Mapping documents reference existing exact scenario and validation check IDs but do not modify Scenario v1. Run Plan v1 may optionally select and hash-pin package-provided coverage inputs, and Test Executor v1 may optionally advertise exact structured-outcome capabilities. Runtime producers may emit a separately versioned coverage-evidence sidecar through the existing artifact path. The sidecar pins catalog, mapping, profile, and scenario-package digests and records per-check outcomes. Existing plans, executors, and reports remain valid when the optional fields or sidecar are absent.",
   "key_components": [
     "specification document records",
     "stable requirement records with RFCXML-derived source-unit addresses",
@@ -33,6 +35,8 @@
     "standalone scenario/check mapping documents",
     "named coverage profiles with explicit denominators",
     "scenario-pack metadata and package-relative mapping snapshots",
+    "optional run-plan catalog, mapping, profile, requirement, and check selection",
+    "optional executor structured-outcome authority and compatibility discovery",
     "optional per-cell structured validation check outcome artifacts",
     "hash-addressed specification coverage evidence sidecars",
     "valid and invalid compatibility fixtures",

@@ -74,3 +74,22 @@ telemetry:
   export_modes:
     - artifact-bundle
     - none
+structuredValidationOutcomes:
+  schemaVersions:
+    - protocol-lab.validation-check-outcomes.v1
+  checks:
+    - checkId: handshake-completes
+      checkVersion: "1.0"
+      authority: diagnostic
+      requiredArtifactTypes:
+        - validation.json
+  compatibleCatalogIds:
+    - quic-rfc9000-handshake-pilot
+  compatibleMappingIds:
+    - quic.transport.handshake-cold.rfc9000
+  compatibleProfileIds:
+    - quic-handshake-bootstrap-pilot
+  unsupportedChecks:
+    - checkId: fresh-session-handshake
+      reasonCode: fixture-not-implemented
+      reason: The reference fixture does not emit an independent outcome for this supporting check.

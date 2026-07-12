@@ -59,6 +59,35 @@
       "sameLoadProfileRequired": true
     }
   ],
+  "specificationCoverage": {
+    "catalogSnapshot": {
+      "id": "quic-rfc9000-handshake-pilot",
+      "version": "0.1.0",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "mappingSnapshots": [
+      {
+        "id": "quic.transport.handshake-cold.rfc9000",
+        "version": "0.1.0",
+        "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      }
+    ],
+    "profileSnapshots": [
+      {
+        "id": "quic-handshake-bootstrap-pilot",
+        "version": "0.1.0",
+        "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+      }
+    ],
+    "requirementIds": [
+      "REQ-QUIC-RFC9000-0271",
+      "REQ-QUIC-RFC9000-0897"
+    ],
+    "checkIds": [
+      "handshake-completes"
+    ],
+    "compatibilityPolicy": "allow-diagnostic-outcomes"
+  },
   "publicationIntent": "non-public",
   "labels": [
     "result-kind:conformance",

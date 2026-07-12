@@ -135,6 +135,26 @@
         "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
         "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
       }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0012",
+      "title": "Run-plan coverage selection and pinning",
+      "statement": "A run plan that selects specification coverage MUST pin the exact catalog, mapping, and selected profile snapshots by identity, version, and SHA-256; identify any selected requirements or checks; declare a compatibility policy; and MUST NOT author mappings or change publication, comparability, or ranking semantics.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-SPECCOV-0013",
+      "title": "Executor structured-outcome capability discovery",
+      "statement": "A test executor MAY advertise supported structured check-outcome schema versions, exact check identities and versions, direct, inferred, or diagnostic authority, required artifact types, compatible catalog, mapping, and profile identities, and exact unsupported-check reasons; such declarations MUST remain capability metadata rather than observed evidence.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-SPECIFICATION-COVERAGE-0001"],
+        "implemented_by": ["WI-PL-SPECIFICATION-COVERAGE-0001"],
+        "verified_by": ["VER-PL-SPECIFICATION-COVERAGE-0001"]
+      }
     }
   ]
 }

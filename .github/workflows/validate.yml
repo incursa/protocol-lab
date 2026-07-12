@@ -454,6 +454,13 @@ jobs:
                   if suite_protocol not in (entry.get("protocols") or []):
                       errors.append(f"{rel(manifest_path)}: provided suite {suite_id} protocols do not include {suite_protocol}")
 
+          invalid_run_plan_root = root / "fixtures" / "public-contracts" / "run-plans" / "invalid"
+          for run_plan_path, run_plan in json_docs.items():
+              if not run_plan_path.is_relative_to(invalid_run_plan_root):
+                  continue
+              if not list(run_plan_validator.iter_errors(run_plan)):
+                  errors.append(f"{rel(run_plan_path)}: invalid run-plan fixture unexpectedly passes schema validation")
+
           for run_plan_path, run_plan in json_docs.items():
               if not run_plan_path.is_relative_to(root / "fixtures" / "public-contracts" / "run-plans" / "valid"):
                   continue

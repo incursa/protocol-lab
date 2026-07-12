@@ -88,6 +88,10 @@
         "$ref": "#/$defs/comparisonGroup"
       }
     },
+    "specificationCoverage": {
+      "$ref": "#/$defs/specificationCoverageSelection",
+      "description": "Optional selection of package-provided, hash-pinned specification coverage inputs. This selects existing reviewed mappings and never authors mappings or changes publication, comparability, or ranking semantics."
+    },
     "publicationIntent": {
       "type": "string",
       "enum": ["non-public", "publishable-report"]
@@ -196,6 +200,45 @@
         {
           "required": ["scenarioIds"]
         }
+      ]
+    },
+    "versionedSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/token" },
+        "version": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "specificationCoverageSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["catalogSnapshot", "mappingSnapshots", "compatibilityPolicy"],
+      "properties": {
+        "catalogSnapshot": { "$ref": "#/$defs/versionedSnapshot" },
+        "mappingSnapshots": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/versionedSnapshot" }
+        },
+        "profileSnapshots": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/versionedSnapshot" }
+        },
+        "requirementIds": { "$ref": "#/$defs/nonEmptyTokenArray" },
+        "checkIds": { "$ref": "#/$defs/nonEmptyTokenArray" },
+        "compatibilityPolicy": {
+          "type": "string",
+          "enum": ["require-structured-outcomes", "allow-diagnostic-outcomes", "mapping-metadata-only"]
+        }
+      },
+      "anyOf": [
+        { "required": ["profileSnapshots"] },
+        { "required": ["requirementIds"] },
+        { "required": ["checkIds"] }
       ]
     }
   }

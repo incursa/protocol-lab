@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "protocol-lab-run-plan-v1",
+  "runPlanId": "invalid-coverage-selection-without-target",
+  "runPlanVersion": "1.0",
+  "packages": [
+    {
+      "packageId": "fixture-package",
+      "packageVersion": "1.0",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  ],
+  "implementationIds": ["fixture-implementation"],
+  "testExecutorIds": ["fixture-executor"],
+  "scenarioIds": ["quic.transport.handshake-cold"],
+  "protocols": ["quic"],
+  "loadProfileId": "smoke",
+  "targetMode": "implementation-resolved",
+  "targetNetworkMode": "published-endpoint",
+  "requiredCapabilities": [],
+  "specificationCoverage": {
+    "catalogSnapshot": {
+      "id": "quic-rfc9000-handshake-pilot",
+      "version": "0.1.0",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "mappingSnapshots": [
+      {
+        "id": "quic.transport.handshake-cold.rfc9000",
+        "version": "0.1.0",
+        "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      }
+    ],
+    "compatibilityPolicy": "require-structured-outcomes"
+  }
+}

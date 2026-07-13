@@ -24,6 +24,9 @@
     "PLAB-MEASURE-009",
     "PLAB-MEASURE-010",
     "PLAB-MEASURE-011",
+    "PLAB-MEASURE-012",
+    "PLAB-MEASURE-013",
+    "PLAB-MEASURE-014",
     "PLAB-ADAPTER-TELEMETRY-001",
     "PLAB-EXECUTOR-TELEMETRY-001",
     "PLAB-REPORT-MEASURE-001",
@@ -33,9 +36,11 @@
     "PLAB-ARTIFACT-004",
     "PLAB-ARTIFACT-005",
     "PLAB-ARTIFACT-006",
-    "PLAB-ARTIFACT-007"
+    "PLAB-ARTIFACT-007",
+    "PLAB-MEASURE-015",
+    "PLAB-MEASURE-016"
   ],
-  "design_summary": "ProtocolLab separates behavior validation from measurement evidence, raw artifacts, redaction safety, and public report claims. Normalized telemetry bundles carry samples, summaries, collector descriptors, producer metadata, source/scope separation, warnings, errors, and optional artifact references. Artifact bundles carry hash-addressable references to raw or derived evidence. Adapter and test-executor contracts may advertise optional telemetry export, but export absence is a valid state unless a run plan requires it.",
+  "design_summary": "ProtocolLab separates behavior validation from measurement evidence, raw artifacts, redaction safety, and public report claims. Normalized telemetry bundles carry samples, summaries, collector descriptors, producer metadata, source/scope separation, warnings, errors, and optional artifact references. Artifact bundles carry hash-addressable references to raw or derived evidence. Adapter and test-executor contracts may advertise optional telemetry export, but export absence is a valid state unless a run plan requires it. Protocol Metric Catalog v2 fixes units, aggregations, windows, and timing authority for typed scenario metrics. Protocol Execution Result v2 binds those measurements to validation, protocol proof, family evidence, artifacts, and immutable run inputs.",
   "key_components": [
     "measurement profiles",
     "telemetry bundles",
@@ -47,7 +52,9 @@
     "artifact bundles",
     "redaction states",
     "optional adapter telemetry capability discovery",
-    "optional test-executor telemetry capability discovery"
+    "optional test-executor telemetry capability discovery",
+    "protocol metric catalog v2",
+    "protocol execution result v2"
   ],
   "data_and_state_considerations": "The public repository defines static contract shapes only. Runtime collection, retention, storage, uploads, raw trace parsing, and private diagnostic workflows belong to runners, hosted labs, implementations, adapters, test executors, or other implementation repositories.",
   "edge_cases_and_constraints": [

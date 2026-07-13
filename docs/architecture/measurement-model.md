@@ -54,6 +54,38 @@ Runner-observed request results are the canonical evidence for benchmark
 timing unless a specific test-executor contract explicitly defines another
 timing authority.
 
+## Typed Protocol Results
+
+The Protocol Metric Catalog v2 gives every metric required by a typed TLS,
+gRPC, secure-DNS, or WebSocket scenario one canonical identity, unit,
+aggregation, measured window, and timing authority. An executor must not emit
+the right-looking metric name with a different byte scope or percentile rule.
+
+Protocol Execution Result v2 is the normalized per-cell evidence envelope. It
+binds run, repetition, scenario, load profile, packages, selected component,
+endpoint, requested and observed protocol, no-fallback proof, required check
+outcomes, canonical metrics, artifact hashes, and family-specific protocol
+facts. An overall pass is valid only when every required check passes exactly
+once.
+
+TLS evidence distinguishes TLS 1.2 from TLS 1.3, full and resumed handshakes,
+mutual authentication, accepted or rejected early data, KeyUpdate, and the
+six-case record-coverage profile. DNS evidence distinguishes secure bindings
+from classic UDP/TCP diagnostics and records response counts, truncation, and
+whether the one permitted UDP-to-TCP fallback occurred. gRPC evidence binds
+the v2 service digest, RPC shape, metadata and compression policies, expected
+terminal initiator, message counts, and reused-channel versus fresh-channel
+measurement windows; expected nonzero diagnostic statuses remain successful
+contract outcomes when their required checks pass.
+
+WebSocket family evidence is binding-specific. HTTP/1 Upgrade results record
+the opening-handshake count, zero key reuse, valid 16-byte nonce decoding, zero
+`Sec-WebSocket-Accept` computation mismatches, and a sample key/accept pair.
+HTTP/2 and HTTP/3 Extended CONNECT results instead prove
+`SETTINGS_ENABLE_CONNECT_PROTOCOL = 1`, the required CONNECT pseudo-header
+semantics, and zero occurrences of prohibited Upgrade, Connection,
+`Sec-WebSocket-Key`, or `Sec-WebSocket-Accept` fields.
+
 ## Artifact Semantics
 
 Raw artifacts are preserved by reference and content hash. Artifact manifests

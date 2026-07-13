@@ -1,0 +1,10 @@
+id: grpc-h2-performance-comparison
+name: gRPC over HTTP/2 performance comparison candidate suite
+description: Non-publishable matched-profile selection for controlled comparisons across all four gRPC/H2 RPC cardinalities.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: grpc-h2-comparison
+scenarios: [grpc.h2.unary.echo, grpc.h2.server-streaming.echo, grpc.h2.client-streaming.echo, grpc.h2.bidi-streaming.echo]
+protocol: h2
+notes: Unary and streaming scenarios remain separate comparison groups.
+tags: [grpc, h2, comparison, non-publishable]

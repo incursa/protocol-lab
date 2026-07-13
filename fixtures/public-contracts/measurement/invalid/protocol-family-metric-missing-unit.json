@@ -1,0 +1,555 @@
+{
+  "schemaVersion": "protocol-lab.protocol-metric-catalog.v2",
+  "catalogId": "protocol-lab.protocol-family-metrics",
+  "version": "2.0.0",
+  "metrics": [
+    {
+      "metricId": "bytesPerSecond",
+      "kind": "rate",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical bytesPerSecond measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "cancelledOperations",
+      "kind": "count",
+      "unit": "operations",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical cancelledOperations measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "closeLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical closeLatencyP50 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "closeLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical closeLatencyP95 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "closeLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical closeLatencyP99 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "completedOperations",
+      "kind": "count",
+      "unit": "operations",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical completedOperations measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "connectionLatency",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "connection-establishment",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical connectionLatency measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "connectionLatencyMean",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "connection-establishment",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical connectionLatencyMean measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "connectionLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "connection-establishment",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical connectionLatencyP50 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "connectionLatencyP75",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "window": "connection-establishment",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical connectionLatencyP75 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "connectionLatencyP90",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "window": "connection-establishment",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical connectionLatencyP90 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "connectionLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "connection-establishment",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical connectionLatencyP95 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "connectionLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "connection-establishment",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical connectionLatencyP99 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "connectionsPerSecond",
+      "kind": "rate",
+      "unit": "operations-per-second",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical connectionsPerSecond measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "controlFrameLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical controlFrameLatencyP50 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "controlFrameLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical controlFrameLatencyP95 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "controlFrameLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical controlFrameLatencyP99 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "deadlineExceededOperations",
+      "kind": "count",
+      "unit": "operations",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical deadlineExceededOperations measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "effectiveConcurrency",
+      "kind": "gauge",
+      "unit": "count",
+      "aggregation": "time-weighted-mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical effectiveConcurrency measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "effectiveStreams",
+      "kind": "gauge",
+      "unit": "count",
+      "aggregation": "time-weighted-mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical effectiveStreams measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "failedOperations",
+      "kind": "count",
+      "unit": "operations",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical failedOperations measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "handshakeLatencyMean",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical handshakeLatencyMean measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "handshakeLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical handshakeLatencyP50 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "handshakeLatencyP75",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical handshakeLatencyP75 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "handshakeLatencyP90",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical handshakeLatencyP90 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "handshakeLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical handshakeLatencyP95 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "handshakeLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical handshakeLatencyP99 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "handshakesPerSecond",
+      "kind": "rate",
+      "unit": "operations-per-second",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical handshakesPerSecond measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "malformedOperations",
+      "kind": "count",
+      "unit": "operations",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical malformedOperations measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "messageLatencyMean",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical messageLatencyMean measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "messageLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical messageLatencyP50 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "messageLatencyP75",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical messageLatencyP75 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "messageLatencyP90",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical messageLatencyP90 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "messageLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical messageLatencyP95 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "messageLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical messageLatencyP99 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "messagesPerSecond",
+      "kind": "rate",
+      "unit": "messages-per-second",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical messagesPerSecond measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "queriesPerSecond",
+      "kind": "rate",
+      "unit": "operations-per-second",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical queriesPerSecond measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "queryLatencyMean",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical queryLatencyMean measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "queryLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical queryLatencyP50 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "queryLatencyP75",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical queryLatencyP75 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "queryLatencyP90",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical queryLatencyP90 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "queryLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical queryLatencyP95 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "queryLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical queryLatencyP99 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "retryCount",
+      "kind": "count",
+      "unit": "count",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical retryCount measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "rpcLatencyMean",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "rpc-operation",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical rpcLatencyMean measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "rpcLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "rpc-operation",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical rpcLatencyP50 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "rpcLatencyP75",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "window": "rpc-operation",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical rpcLatencyP75 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "rpcLatencyP90",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "window": "rpc-operation",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical rpcLatencyP90 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "rpcLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "rpc-operation",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical rpcLatencyP95 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "rpcLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "rpc-operation",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical rpcLatencyP99 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "rpcsPerSecond",
+      "kind": "rate",
+      "unit": "operations-per-second",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical rpcsPerSecond measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "timeToFirstByte",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical timeToFirstByte measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "timeToFirstMessage",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "rpc-operation",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical timeToFirstMessage measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "timedOutOperations",
+      "kind": "count",
+      "unit": "operations",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical timedOutOperations measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "totalTransferredBytes",
+      "kind": "bytes",
+      "unit": "bytes",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical totalTransferredBytes measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "transferLatencyMean",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical transferLatencyMean measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "transferLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical transferLatencyP50 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "transferLatencyP75",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical transferLatencyP75 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "transferLatencyP90",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical transferLatencyP90 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "transferLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical transferLatencyP95 measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "transferLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Canonical transferLatencyP99 measurement for the declared scenario measured window."
+    }
+  ]
+}

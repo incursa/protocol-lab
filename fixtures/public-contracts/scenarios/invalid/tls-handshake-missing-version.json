@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "2.0",
+  "id": "tls.handshake.invalid",
+  "title": "Invalid TLS Handshake",
+  "status": "draft",
+  "kind": "workload",
+  "layer": "transport",
+  "protocol": "tls",
+  "roles": ["client", "server"],
+  "requires": {"protocols": ["tls"]},
+  "trafficShape": "handshake-only",
+  "tls": {"mode": "full-handshake", "sessionReuse": "none", "earlyData": "not-attempted"},
+  "validation": {"required": true}
+}

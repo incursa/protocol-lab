@@ -1,0 +1,44 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab Protocol Lane Normalization Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-CORE-CONTRACTS",
+    "ARC-PL-CORE-CONTRACTS",
+    "SPEC-PL-TLS-PERFORMANCE",
+    "SPEC-PL-GRPC-H2-PERFORMANCE",
+    "SPEC-PL-SECURE-DNS-PERFORMANCE",
+    "SPEC-PL-WEBSOCKET-PERFORMANCE"
+  ],
+  "verifies": [
+    "PLAB-PROTOCOL-001",
+    "PLAB-PROTOCOL-002",
+    "PLAB-SCENARIO-002",
+    "PLAB-SCENARIO-003",
+    "PLAB-EXECUTIONPROFILE-001",
+    "PLAB-NETWORKPROFILE-001",
+    "PLAB-MEASURE-012",
+    "PLAB-MEASURE-013",
+    "PLAB-MEASURE-014",
+    "REQ-PL-REPORT-0006",
+    "REQ-PL-REPORT-0007",
+    "PLAB-RUNPLAN-002",
+    "PLAB-EXECUTOR-PREPARE-002"
+  ],
+  "scope": "Verify public lane, ordered-stack, shared-semantic, execution-profile, network-profile, validity, and availability declarations without verifying executable support.",
+  "verification_method": "SpecTrace review, schema and fixture validation, catalog uniqueness checks, scenario and suite reference resolution, and repository-boundary inspection.",
+  "procedure": [
+    "Confirm every activated scenario has one stable ID, one family, one primary protocol token, and an ordered protocol stack.",
+    "Confirm binding-specific scenarios declare requested and expected observed protocol identity and fallback rejection.",
+    "Confirm shared semanticTemplateId values do not erase lane-specific scenario identity.",
+    "Confirm execution and network profiles contain metadata only and name no required implementation or tool.",
+    "Confirm unsupported and unavailable behavior is explicit and catalog presence is not described as support evidence.",
+    "Validate Run Plan v2 snapshot identity, canonicalization, digest, and exact selection coverage.",
+    "Validate Test Executor Prepare v2 scenario and load-profile documents against their v2 schemas and canonical snapshot digests."
+  ],
+  "expected_result": "All activated protocol-family contracts are uniquely identified, implementation-neutral, fail closed on binding mismatch, and explicit about unsupported or unavailable execution."
+}

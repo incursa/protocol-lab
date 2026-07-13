@@ -1,0 +1,18 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-TLS-PERFORMANCE",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab TLS Performance Contract Architecture",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-TLS-PERFORMANCE", "VER-PL-TLS-PERFORMANCE-0001", "ARC-PL-CORE-CONTRACTS"],
+  "purpose": "Describe the separation of TLS handshake lifecycle, resumed-session provenance, record workload, execution metadata, and performance evidence.",
+  "satisfies": ["REQ-PL-TLSPERF-0001", "REQ-PL-TLSPERF-0002", "REQ-PL-TLSPERF-0003", "REQ-PL-TLSPERF-0004", "REQ-PL-TLSPERF-0005", "REQ-PL-TLSPERF-0006", "REQ-PL-TLSPERF-0007", "REQ-PL-TLSPERF-0008", "REQ-PL-TLSPERF-0009", "REQ-PL-TLSPERF-0010", "REQ-PL-TLSPERF-0011", "REQ-PL-TLSPERF-0012", "REQ-PL-TLSPERF-0013"],
+  "design_summary": "Reusable closed TLS profile identities isolate protocol version, cipher, and peer-authentication differences. Separate lifecycle scenarios cover fresh and resumed handshakes, accepted and rejected 0-RTT, KeyUpdate, and a profile-driven record direction/size matrix. Load profiles remain scenario-neutral.",
+  "key_components": ["TLS profile v1 compatibility contract", "TLS profile v2 closed identities", "TLS record coverage profile", "TLS scenario bindings", "TLS smoke and diagnostic suites", "TLS load profiles", "TLS valid and invalid fixtures"],
+  "data_and_state_considerations": "Resumption evidence must bind each resumed connection to a successfully established source session. Certificate material and session secrets are never public artifacts. Record payloads use deterministic generator and SHA-256 metadata.",
+  "edge_cases_and_constraints": ["TLS 1.2 is compatibility-only and cannot be aggregated with TLS 1.3.", "Accepted and rejected 0-RTT are distinct outcomes and use replay-safe fixtures only.", "KeyUpdate remains diagnostic-only.", "Record coverage specifies plaintext sizes, not TLS record segmentation.", "Hardware acceleration differences make otherwise valid results non-comparable."],
+  "alternatives_considered": ["Treating TLS as only an HTTP execution flag was rejected because handshake and record performance are independently valuable.", "Combining full, resumed, and 0-RTT handshakes was rejected because their security and lifecycle semantics differ."],
+  "risks": ["Certificate-chain generation can dominate setup unless it is outside the measured window.", "Session caches can produce false resumed-handshake claims unless acceptance is proven."]
+}

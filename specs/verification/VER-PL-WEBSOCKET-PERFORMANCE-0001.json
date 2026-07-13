@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-WEBSOCKET-PERFORMANCE-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab WebSocket Contract Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-WEBSOCKET-PERFORMANCE", "ARC-PL-WEBSOCKET-PERFORMANCE"],
+  "verifies": ["REQ-PL-WSPERF-0001", "REQ-PL-WSPERF-0002", "REQ-PL-WSPERF-0003", "REQ-PL-WSPERF-0004", "REQ-PL-WSPERF-0005", "REQ-PL-WSPERF-0006", "REQ-PL-WSPERF-0007", "REQ-PL-WSPERF-0008", "REQ-PL-WSPERF-0009"],
+  "scope": "Verify WebSocket public contract structure only; do not verify a WebSocket implementation, executor, package, or benchmark.",
+  "verification_method": "Schema validation, scenario and suite reference resolution, deterministic payload inspection, fixture checks, and standards-link inspection.",
+  "procedure": ["Validate binding-specific establishment, echo, control-frame, and close scenarios.", "Confirm HTTP/1.1 cleartext ws and TLS-protected wss use separate IDs and suites.", "Confirm exact HTTP binding, security variant, and no-fallback checks.", "Confirm the five RFC 9220 package-aligned IDs are preserved exactly without importing package support claims.", "Validate ordered multi-message, exact fragment-plan, subprotocol, and permessage-deflate diagnostics and their capability-gated unsupported outcomes.", "Confirm permessage-deflate disables both context-takeover directions and validates decompressed payload identity without requiring identical compressed bytes.", "Confirm WebSocket profiles and breadth diagnostics are non-publishable."],
+  "expected_result": "The WebSocket family has coherent shared semantics and exact binding identity without implying executable support."
+}

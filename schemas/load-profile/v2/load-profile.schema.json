@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/load-profile/v2/load-profile.schema.json",
+  "title": "ProtocolLab Load Profile v2",
+  "description": "Schema for ProtocolLab v2 load profiles with typed TLS, gRPC, secure DNS, and WebSocket intensity settings.",
+  "unevaluatedProperties": false,
+  "allOf": [
+    {
+      "$ref": "https://schemas.incursa.com/protocol-lab/load-profile/load-profile.schema.json"
+    },
+    {
+      "type": "object",
+      "required": ["version", "durationSeconds", "warmupSeconds", "repetitions", "evidence", "artifacts"],
+      "properties": {
+        "schemaVersion": {
+          "const": "protocol-lab.load-profile.v2"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version of the resolved load-profile behavior"
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Scenario-neutral TLS operation pressure; the scenario owns handshake, resumption, payload, lifecycle, and measured-window semantics",
+          "required": [
+            "connections", "concurrency", "totalOperations",
+            "operationRateLimitPerSecond", "operationTimeoutMilliseconds"
+          ],
+          "properties": {
+            "connections": { "type": "integer", "minimum": 1, "description": "Maximum concurrently allocated transport connections" },
+            "concurrency": { "type": "integer", "minimum": 1, "description": "Maximum simultaneously in-flight scenario operations" },
+            "totalOperations": { "type": ["integer", "null"], "minimum": 1, "description": "Total operation budget; null means duration-driven" },
+            "operationRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum operation starts per second; null means unlimited closed-loop starts" },
+            "operationTimeoutMilliseconds": { "type": "integer", "minimum": 1, "description": "Outer executor timeout for one complete scenario operation in milliseconds" }
+          }
+        },
+        "grpc": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "gRPC over HTTP/2 load settings; operation timeout is distinct from the scenario's protocol deadline",
+          "required": [
+            "channels", "connectionsPerChannel", "concurrency", "streamsPerConnection",
+            "channelReuse", "operationTimeoutMilliseconds", "totalRpcs", "rpcRateLimitPerSecond"
+          ],
+          "properties": {
+            "channels": { "type": "integer", "minimum": 1 },
+            "connectionsPerChannel": { "type": "integer", "minimum": 1 },
+            "concurrency": { "type": "integer", "minimum": 1, "description": "Maximum simultaneously in-flight RPCs across all channels" },
+            "streamsPerConnection": { "type": "integer", "minimum": 1, "description": "Maximum concurrently active HTTP/2 RPC streams per connection" },
+            "channelReuse": { "type": "string", "enum": ["reuse", "churn"] },
+            "operationTimeoutMilliseconds": { "type": "integer", "minimum": 1, "description": "Outer executor operation timeout; must exceed or equal the scenario gRPC deadline" },
+            "totalRpcs": { "type": ["integer", "null"], "minimum": 1, "description": "Total RPC budget; null means duration-driven" },
+            "rpcRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum RPC starts per second; null means unlimited closed-loop starts" }
+          }
+        },
+        "dns": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Secure DNS transport-independent load settings",
+          "required": [
+            "connections", "concurrency", "outstandingQueries", "connectionReuse",
+            "queryTimeoutMilliseconds", "connectionTimeoutMilliseconds",
+            "handshakeTimeoutMilliseconds", "drainTimeoutMilliseconds", "maxRetries",
+            "totalQueries", "queryRateLimitPerSecond"
+          ],
+          "properties": {
+            "connections": { "type": "integer", "minimum": 1 },
+            "concurrency": { "type": "integer", "minimum": 1 },
+            "outstandingQueries": { "type": "integer", "minimum": 1 },
+            "connectionReuse": { "type": "string", "enum": ["reuse", "churn"] },
+            "queryTimeoutMilliseconds": { "type": "integer", "minimum": 1 },
+            "connectionTimeoutMilliseconds": { "type": "integer", "minimum": 1 },
+            "handshakeTimeoutMilliseconds": { "type": "integer", "minimum": 1 },
+            "drainTimeoutMilliseconds": { "type": "integer", "minimum": 0 },
+            "maxRetries": { "const": 0 },
+            "totalQueries": { "type": ["integer", "null"], "minimum": 1, "description": "Total query budget; null means duration-driven" },
+            "queryRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum query starts per second; null means unlimited closed-loop starts" }
+          }
+        },
+        "websocket": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Scenario-neutral WebSocket operation pressure; scenario lifecycle controls connection establishment, reuse, and measured window",
+          "required": [
+            "connections", "concurrency", "totalOperations",
+            "operationRateLimitPerSecond", "operationTimeoutMilliseconds"
+          ],
+          "properties": {
+            "connections": { "type": "integer", "minimum": 1 },
+            "concurrency": { "type": "integer", "minimum": 1 },
+            "totalOperations": { "type": ["integer", "null"], "minimum": 1, "description": "Total operation budget; null means duration-driven" },
+            "operationRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum operation starts per second; null means unlimited closed-loop starts" },
+            "operationTimeoutMilliseconds": { "type": "integer", "minimum": 1 }
+          }
+        }
+      },
+      "oneOf": [
+        { "required": ["tls"] },
+        { "required": ["grpc"] },
+        { "required": ["dns"] },
+        { "required": ["websocket"] }
+      ]
+    }
+  ]
+}

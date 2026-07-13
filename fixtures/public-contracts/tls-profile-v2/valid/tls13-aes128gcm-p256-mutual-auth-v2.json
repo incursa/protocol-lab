@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "protocol-lab.tls-profile.v2",
+  "profileId": "plab-tls13-aes128gcm-p256-mutual-auth-v2",
+  "tlsVersion": "tls1.3",
+  "serverName": "tls.plab.test",
+  "alpn": "protocol-lab-tls",
+  "cipherSuite": "TLS_AES_128_GCM_SHA256",
+  "keyExchangeGroup": "x25519",
+  "signatureScheme": "ecdsa_secp256r1_sha256",
+  "peerAuthentication": "mutual-certificate-required",
+  "certificate": {
+    "profileId": "plab-single-leaf-p256-server-v2", "leafKeyAlgorithm": "ecdsa", "leafNamedCurve": "secp256r1",
+    "dnsSubjectAlternativeName": "tls.plab.test", "sentCertificateCount": 1, "trustAnchorSent": false,
+    "trustModel": "configured-test-trust-anchor", "mustBeValidAtExecution": true, "provisioningMeasured": false,
+    "exactDerHashRequiredForComparison": true, "privateKeyPublication": "forbidden"
+  },
+  "clientCertificate": {
+    "profileId": "plab-single-leaf-p256-client-v2", "leafKeyAlgorithm": "ecdsa", "leafNamedCurve": "secp256r1",
+    "dnsSubjectAlternativeName": "client.plab.test", "sentCertificateCount": 1, "trustAnchorSent": false,
+    "trustModel": "configured-test-trust-anchor", "mustBeValidAtExecution": true, "provisioningMeasured": false,
+    "exactDerHashRequiredForComparison": true, "privateKeyPublication": "forbidden"
+  },
+  "evidence": {
+    "negotiatedParametersRequired": true, "leafCertificateDerSha256Required": true,
+    "clientCertificateDerSha256Required": true, "platformProvenanceRequired": true,
+    "accelerationProvenanceRequired": true
+  }
+}

@@ -9,7 +9,8 @@
   "related_artifacts": [
     "SPEC-PL-CORE-CONTRACTS",
     "SPEC-PL-PUBLIC-CONTRACTS",
-    "VER-PL-CONTRACT-COVERAGE-0001"
+    "VER-PL-CONTRACT-COVERAGE-0001",
+    "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
   ],
   "purpose": "Describe how the public repository organizes core contract surfaces across SpecTrace requirements, schemas, fixtures, documentation, and traceability links.",
   "satisfies": [
@@ -22,9 +23,16 @@
     "PLAB-RUNPLAN-002",
     "PLAB-SCHEMA-001",
     "PLAB-FIXTURE-001",
-    "PLAB-VERSIONING-001"
+    "PLAB-VERSIONING-001",
+    "PLAB-PROTOCOL-001",
+    "PLAB-PROTOCOL-002",
+    "PLAB-SCENARIO-002",
+    "PLAB-SCENARIO-003",
+    "PLAB-EXECUTIONPROFILE-001",
+    "PLAB-NETWORKPROFILE-001",
+    "PLAB-EXECUTOR-PREPARE-002"
   ],
-  "design_summary": "The public repository separates contract selection, capability discovery, declarative scenario and suite data, load intent, run-plan binding, evidence contracts, and fixture examples. JSON Schemas define machine-readable shapes. SpecTrace JSON artifacts define normative requirements and verification. Markdown supports discovery and explanation only.",
+  "design_summary": "The public repository separates contract selection, capability discovery, declarative scenario and suite data, load intent, run-plan binding, evidence contracts, and fixture examples. JSON Schemas define machine-readable shapes. SpecTrace JSON artifacts define normative requirements and verification. Markdown supports discovery and explanation only. Run Plan v2 and Test Executor Prepare v2 close the ID-only execution gap by carrying canonical, hash-bound scenario, suite, test, and resolved load-profile snapshots and by delivering exact scenario and load-profile documents to the executor.",
   "key_components": [
     "adapter contract schemas and fixtures",
     "test-executor contract schemas and fixtures",
@@ -34,7 +42,11 @@
     "run-plan schema and fixtures",
     "schema and fixture policy documentation",
     "contract coverage matrix",
-    "traceability index"
+    "traceability index",
+    "ordered protocol-stack and execution-profile metadata",
+    "stable requested and effective network-profile identity",
+    "Run Plan v2 pinned contract snapshots",
+    "Test Executor Prepare v2 resolved contract delivery"
   ],
   "data_and_state_considerations": "All core contract artifacts are static repository documents. Runtime state, worker placement, package materialization, launch mechanics, telemetry collection, and hosted lab behavior remain implementation-owned.",
   "edge_cases_and_constraints": [

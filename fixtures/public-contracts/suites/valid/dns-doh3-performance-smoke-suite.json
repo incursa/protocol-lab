@@ -1,0 +1,1 @@
+{"id":"dns-doh3-performance-smoke","name":"DoH3 smoke","purpose":"diagnostic","resultKind":"diagnostic","loadProfileId":"secure-dns-smoke","scenarios":["dns.doh3.query.a"],"protocol":"doh3"}

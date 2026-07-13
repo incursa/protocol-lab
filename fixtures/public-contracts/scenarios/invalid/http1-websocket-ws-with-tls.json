@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "2.0",
+  "id": "http1.websocket.rfc6455.invalid.ws-with-tls",
+  "title": "Invalid HTTP/1 WebSocket Security Variant",
+  "status": "draft",
+  "kind": "protocolValidation",
+  "layer": "application",
+  "protocol": "h1",
+  "roles": ["client", "server"],
+  "requires": {"protocols": ["h1"]},
+  "trafficShape": "connection-lifecycle",
+  "websocket": {
+    "binding": "http1-upgrade",
+    "standard": "rfc6455",
+    "scheme": "ws",
+    "path": "/websocket",
+    "operation": "establish"
+  },
+  "executionProfile": {
+    "transportSecurity": "tls"
+  },
+  "validation": {"required": true}
+}

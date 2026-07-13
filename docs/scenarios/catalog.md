@@ -17,12 +17,19 @@ or executable validation logic.
 | HTTP/2 | `http2.*` | `h2` | [`scenarios/http2/`](../../scenarios/http2/) | Stable application scenarios |
 | HTTP/3 | `http3.*` | `h3` | [`scenarios/http3/`](../../scenarios/http3/) | Stable application and protocol scenarios |
 | QUIC | `quic.*` | `quic` | [`scenarios/quic/`](../../scenarios/quic/) | Stable transport scenarios plus experimental datagram coverage |
-| WebSocket | `websocket.*` | `ws` | [`scenarios/websocket/`](../../scenarios/websocket/) | Placeholder only |
+| WebSocket placeholder | `websocket.*` | `ws` | [`scenarios/websocket/`](../../scenarios/websocket/) | Generic placeholder only |
+| WebSocket over HTTP/1.1 | `http1.websocket.rfc6455.cleartext.*`, `http1.websocket.rfc6455.tls.*` | `h1` | [`scenarios/http1/websocket/`](../../scenarios/http1/websocket/) | Separate draft cleartext ws and TLS-protected wss contracts |
+| WebSocket over HTTP/2 | `http2.websocket.rfc8441.*` | `h2` | [`scenarios/http2/websocket/`](../../scenarios/http2/websocket/) | Draft public contracts |
+| WebSocket over HTTP/3 | `http3.websocket.rfc9220.*` | `h3` | [`scenarios/http3/websocket/`](../../scenarios/http3/websocket/) | Draft public contracts; package-aligned IDs retained |
 | WebTransport | `webtransport.*` | `h3` | [`scenarios/webtransport/`](../../scenarios/webtransport/) | Placeholder only |
-| MASQUE | `masque.*` | `h3` | [`scenarios/masque/`](../../scenarios/masque/) | Placeholder only |
-| TLS | none yet | none yet | none yet | Planned/open |
-| DNS | none yet | none yet | none yet | Planned/open |
-| gRPC over HTTP/2 or HTTP/3 | none yet | `h2` or `h3` when defined | none yet | Planned/open |
+| MASQUE | `masque.*` | `h3` | [`scenarios/masque/`](../../scenarios/masque/) | CONNECT-UDP placeholders plus draft CONNECT-IP contract |
+| TLS | `tls.*` | `tls` | [`scenarios/tls/`](../../scenarios/tls/) | TLS 1.2/1.3 lifecycle, authentication, early-data, KeyUpdate, and record contracts |
+| gRPC over HTTP/2 | `grpc.h2.*` | `h2` | [`scenarios/grpc/h2/`](../../scenarios/grpc/h2/) | Unary, all streaming shapes, terminal outcomes, gzip, metadata, size boundaries, and channel lifecycle |
+| Classic DNS diagnostics | `dns.classic.*` | `dns` | [`scenarios/dns/classic/`](../../scenarios/dns/classic/) | UDP, TCP, and truncated-UDP-to-TCP calibration contracts |
+| DNS over TLS | `dns.dot.*` | `dot` | [`scenarios/dns/dot/`](../../scenarios/dns/dot/) | Draft public contracts |
+| DNS over HTTPS/2 | `dns.doh2.*` | `doh2` | [`scenarios/dns/doh2/`](../../scenarios/dns/doh2/) | Draft public contracts |
+| DNS over HTTPS/3 | `dns.doh3.*` | `doh3` | [`scenarios/dns/doh3/`](../../scenarios/dns/doh3/) | Draft public contracts |
+| DNS over QUIC | `dns.doq.*` | `doq` | [`scenarios/dns/doq/`](../../scenarios/dns/doq/) | Draft public contracts |
 
 HTTP/3 protocol scenarios use `http3.protocol.*` IDs even though their wire
 protocol token is `h3`. HTTP/3 external peer characterization uses
@@ -46,7 +53,14 @@ implementation-neutral scenario shape is ready.
 - HTTP/3 protocol scenarios: `http3.protocol.*`
 - HTTP/3 external peer characterization: `http3.external.*`
 - QUIC transport scenarios: `quic.transport.*`
-- Future placeholders: `websocket.*`, `webtransport.*`, `masque.*`
+- TLS lifecycle, early-data, KeyUpdate, and record scenarios:
+  `tls.handshake.*`, `tls.early-data.*`, `tls.key-update.*`, `tls.record.*`
+- gRPC/H2 unary, streaming, terminal-outcome, compression, metadata, message
+  boundary, and channel-lifecycle scenarios: `grpc.h2.*`
+- secure and classic diagnostic DNS scenarios: `dns.dot.*`, `dns.doh2.*`,
+  `dns.doh3.*`, `dns.doq.*`, `dns.classic.*`
+- binding-specific WebSocket scenarios: `http1.websocket.*`, `http2.websocket.*`, `http3.websocket.*`
+- Future placeholders: `websocket.*`, `webtransport.*`, and the retained MASQUE CONNECT-UDP IDs
 - Network profile documents under
   [`scenarios/network/profiles/`](../../scenarios/network/profiles/) are
   supporting declarative profiles, not executable protocol scenarios. The
@@ -56,3 +70,8 @@ implementation-neutral scenario shape is ready.
 Suites must reference scenario IDs that exist in this catalog. Package-local
 suites must reference package-local scenario IDs supplied by the same scenario
 pack fixture.
+
+Draft contract presence does not imply a compatible executor, implementation,
+package, runner, benchmark, or publishable result. The five RFC 9220 IDs match
+downstream package vocabulary, but public support remains unproven until a
+separately authorized package-backed vertical smoke passes.

@@ -1,0 +1,14 @@
+schemaVersion: protocol-lab.load-profile.v2
+version: 2.0.0
+id: grpc-h2-comparison
+title: gRPC over HTTP/2 Comparison Candidate
+status: experimental
+purpose: comparison
+description: Non-publishable reused-channel comparison candidate for controlled gRPC/H2 runs.
+durationSeconds: 30
+warmupSeconds: 10
+cooldownSeconds: 10
+repetitions: 5
+grpc: {channels: 4, connectionsPerChannel: 1, concurrency: 32, streamsPerConnection: 8, channelReuse: reuse, operationTimeoutMilliseconds: 20000, totalRpcs: null, rpcRateLimitPerSecond: null}
+evidence: {minimumTier: comparison, publishable: false}
+artifacts: {required: [load.stdout.log, load.stderr.log, validation.json, protocol-proof.json, result.json, target-telemetry.json, load-generator-telemetry.json], optional: [http2-frame-summary.json, network-summary.json]}

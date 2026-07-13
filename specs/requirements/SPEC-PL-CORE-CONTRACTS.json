@@ -33,8 +33,12 @@
       "statement": "Adapter Contract v1 manifests MUST describe adapter identity, implementation identity, contract compatibility, supported roles, claimed capabilities, scenario selectors, endpoint types, artifact types, and metrics availability without requiring a shared SDK or implementation language.",
       "rationale": "Runners and hosted labs need a language-neutral way to determine whether an adapter can participate in a planned cell.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "schemas/adapter/v1/manifest.schema.json",
           "fixtures/public-contracts/adapter/valid/adapter-manifest-with-telemetry.json",
@@ -49,8 +53,12 @@
       "statement": "Test Executor Contract v1 manifests MUST describe executor identity, contract compatibility, claimed capabilities, test selectors, scenario selectors, protocol families, execution modes, required endpoint bindings, artifact types, and metrics availability without requiring a shared SDK or implementation language.",
       "rationale": "Test executors must be selected by declared contract metadata rather than inferred names, packages, or runtime conventions.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "schemas/test-executor/v1/manifest.schema.json",
           "fixtures/public-contracts/test-executor/valid/test-executor-manifest-with-telemetry.json",
@@ -65,8 +73,12 @@
       "statement": "ProtocolLab scenario definitions MUST use stable scenario identifiers, declare protocol and role requirements, describe traffic shape, and define validation and replay-safety expectations as declarative contract data.",
       "rationale": "Scenarios are durable public test cases and must not depend on runner-local implementation code.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "schemas/scenario.schema.json",
           "fixtures/public-contracts/scenarios/valid/http1-core-plaintext-scenario.json",
@@ -91,8 +103,12 @@
       "statement": "ProtocolLab suite definitions MUST group existing scenario identifiers for a stated purpose and result kind, and MUST reference a load profile rather than embedding implementation-specific execution behavior.",
       "rationale": "Suites provide repeatable public selections while preserving separation between contract selection and runner execution.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "schemas/suite/v1/suite.schema.json",
           "fixtures/public-contracts/suites/valid/http1-core-smoke-suite.json",
@@ -111,8 +127,12 @@
       "statement": "ProtocolLab load profiles MUST define declarative load intent, duration, repetition, protocol load-shape hints, evidence tier expectations, and artifact expectations without naming a required load generator implementation.",
       "rationale": "Load profiles constrain evidence shape and comparability without prescribing how a runner generates traffic.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "schemas/load-profile/load-profile.schema.json",
           "fixtures/public-contracts/load-profiles/valid/smoke-load-profile.json",
@@ -131,8 +151,12 @@
       "statement": "Run Plan v1 documents MUST pin package identities and hashes, select implementations, test executors, suites or scenarios, protocols, load profile, target mode, target network mode, and required capabilities as immutable declarative work-selection metadata.",
       "rationale": "Run plans need repeatable provenance and selector binding without embedding scenario behavior or launch mechanics.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "schemas/run-plan/v1/run-plan.schema.json",
           "fixtures/public-contracts/run-plans/valid/http1-core-smoke-reference.json",
@@ -151,8 +175,12 @@
       "statement": "When a Run Plan v1 document declares cellOrder, a runner MUST execute the plan using that deterministic cell ordering policy and retain the declared policy in run-plan and per-cell evidence.",
       "rationale": "Repeated comparison campaigns need reviewable execution order so temporal drift cannot be hidden by implementation-grouped scheduling.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "schemas/run-plan/v1/run-plan.schema.json",
           "fixtures/public-contracts/run-plans/valid/quic-transport-smoke-reference.json",
@@ -166,8 +194,12 @@
       "statement": "Every major public JSON contract document SHOULD have a JSON Schema under schemas/ unless the contract is explicitly documented as prose-only or YAML/OpenAPI-only.",
       "rationale": "Schemas provide language-neutral validation targets for implementations without shipping executable validators.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "schemas/README.md",
           "docs/terminology-and-policies.md"
@@ -180,11 +212,123 @@
       "statement": "Public contract fixtures SHOULD include valid examples and intentionally invalid examples for important required-field, enum, provenance, hash, and compatibility rules.",
       "rationale": "Fixtures make contract intent reviewable without requiring scripts or validators in the public repository.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "fixtures/public-contracts/README.md",
           "fixtures/public-contracts/"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-PROTOCOL-001",
+      "title": "Canonical protocol stack identity",
+      "statement": "Scenario contracts MUST distinguish the workload family, exact protocol lane, ordered protocol stack, and execution variant without treating execution metadata as workload semantics.",
+      "rationale": "A stable lane and stack identity prevents HTTP, QUIC, TLS, and application bindings from being compared as if they were interchangeable.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/scenario/v2/scenario.schema.json",
+          "docs/architecture/scenario-model.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-PROTOCOL-002",
+      "title": "Exact protocol observation and fallback rejection",
+      "statement": "Performance validity MUST record requested and observed protocol versions and standardized bindings and reject an unrequested downgrade or fallback.",
+      "rationale": "Successful completion on another protocol is not evidence for the requested lane.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/scenario/v2/scenario.schema.json",
+          "schemas/validation/v1/check-outcomes.schema.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-SCENARIO-002",
+      "title": "Shared semantics with lane-specific identities",
+      "statement": "Protocol-specific scenarios SHOULD retain lane-specific stable identifiers while using a shared semanticTemplateId when multiple lanes intentionally implement the same workload semantics.",
+      "rationale": "Shared templates reduce duplication while protocol-specific IDs retain provenance and comparison safety.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/scenario/v2/scenario.schema.json",
+          "docs/scenarios/catalog.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-SCENARIO-003",
+      "title": "Scenario standards, validity, and availability declarations",
+      "statement": "An activated protocol scenario MUST declare upstream standards, exact validity checks, supported load shapes, required metrics and artifacts, and explicit unsupported or unavailable behavior without treating catalog presence as support evidence.",
+      "rationale": "Contract activation must remain separate from implementation and executor availability.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/scenario/v2/scenario.schema.json",
+          "fixtures/public-contracts/scenarios/"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-EXECUTIONPROFILE-001",
+      "title": "Implementation-neutral execution profiles",
+      "statement": "Execution profiles MUST record cleartext or TLS mode, ALPN, certificate profile, process or container mode, implementation role, and other execution facts without requiring a language, operating system, server, library, or load generator.",
+      "rationale": "Execution facts affect comparability but are not public protocol requirements.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/scenario/v2/scenario.schema.json",
+          "docs/architecture/scenario-model.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-NETWORKPROFILE-001",
+      "title": "Stable requested and effective network profiles",
+      "statement": "Network profiles MUST use stable identifiers for requested conditions and preserve evidence of effective path conditions without embedding implementation-specific impairment commands.",
+      "rationale": "Requested path settings alone do not prove that compared runs experienced compatible conditions.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "scenarios/network/profiles/",
+          "docs/architecture/load-model.md"
         ]
       }
     },
@@ -194,12 +338,34 @@
       "statement": "ProtocolLab public contracts MUST use stable contract-version identifiers and MUST preserve explicit unsupported, unavailable, and incompatible outcomes instead of allowing implicit fallback.",
       "rationale": "Stable identifiers and explicit outcomes allow independent implementations to evolve without silently changing evidence semantics.",
       "trace": {
-        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
-        "verified_by": ["VER-PL-CONTRACT-COVERAGE-0001"],
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-CONTRACT-COVERAGE-0001"
+        ],
         "related": [
           "docs/terminology-and-policies.md",
           "schemas/run-plan/v1/run-plan.schema.json",
           "fixtures/public-contracts/run-plans/incompatible/unknown-scenario-selection.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-EXECUTOR-PREPARE-002",
+      "title": "Self-contained executor preparation",
+      "statement": "Test Executor Prepare v2 requests MUST carry hash-bound run-plan, test, scenario, and resolved load-profile snapshots plus the exact scenario and load-profile documents, and MUST be rejected when a document digest does not match its snapshot.",
+      "rationale": "The executor needs the complete resolved workload and load model without undocumented repository lookup or precedence rules.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-CORE-CONTRACTS"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/test-executor/v2/prepare-request.schema.json",
+          "fixtures/public-contracts/test-executor/valid/prepare-v2-with-resolved-load-profile.json"
         ]
       }
     }

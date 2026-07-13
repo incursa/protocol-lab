@@ -62,7 +62,9 @@ directly.
 - Implementation and test-executor participation:
   [`architecture/adapter-contract-v1.md`](architecture/adapter-contract-v1.md)
   and
-  [`architecture/test-executor-contract-v1.md`](architecture/test-executor-contract-v1.md)
+  [`architecture/test-executor-contract-v1.md`](architecture/test-executor-contract-v1.md),
+  with the snapshot-bound preparation handoff in
+  [`architecture/test-executor-contract-v2.md`](architecture/test-executor-contract-v2.md)
 - Packages and run plans: [`lab/package-v2.md`](lab/package-v2.md) and
   [`lab/run-plan-v1.md`](lab/run-plan-v1.md)
 - Scenarios, suites, and load profiles:
@@ -102,6 +104,7 @@ directly.
 - [`architecture/scenario-model.md`](architecture/scenario-model.md)
 - [`architecture/adapter-contract-v1.md`](architecture/adapter-contract-v1.md)
 - [`architecture/test-executor-contract-v1.md`](architecture/test-executor-contract-v1.md)
+- [`architecture/test-executor-contract-v2.md`](architecture/test-executor-contract-v2.md)
 - [`architecture/validation-check-outcomes.md`](architecture/validation-check-outcomes.md)
 - [`architecture/load-model.md`](architecture/load-model.md)
 - [`architecture/artifact-model.md`](architecture/artifact-model.md)

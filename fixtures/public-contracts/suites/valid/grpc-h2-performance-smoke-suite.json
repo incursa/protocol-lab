@@ -1,0 +1,1 @@
+{"id":"grpc-h2-performance-smoke","name":"gRPC/H2 smoke","purpose":"diagnostic","resultKind":"diagnostic","loadProfileId":"grpc-h2-smoke","scenarios":["grpc.h2.unary.echo"],"protocol":"h2"}

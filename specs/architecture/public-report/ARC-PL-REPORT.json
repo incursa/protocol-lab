@@ -17,7 +17,9 @@
     "REQ-PL-REPORT-0002",
     "REQ-PL-REPORT-0003",
     "REQ-PL-REPORT-0004",
-    "REQ-PL-REPORT-0005"
+    "REQ-PL-REPORT-0005",
+    "REQ-PL-REPORT-0006",
+    "REQ-PL-REPORT-0007"
   ],
   "design_summary": "Public report schemas define the semantic payload. Implementations produce and store report bundles outside this public repository while preserving public claim and provenance rules.",
   "key_components": [

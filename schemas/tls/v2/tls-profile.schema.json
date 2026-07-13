@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/tls/v2/tls-profile.schema.json",
+  "title": "ProtocolLab TLS Profile v2",
+  "description": "Closed reusable TLS identity, cryptographic, authentication, certificate-shape, and evidence profiles.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "profileId", "tlsVersion", "serverName", "alpn", "cipherSuite",
+    "keyExchangeGroup", "signatureScheme", "peerAuthentication", "certificate", "evidence"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "protocol-lab.tls-profile.v2"},
+    "profileId": {
+      "enum": [
+        "plab-tls13-aes128gcm-p256-server-auth-v2",
+        "plab-tls12-aes128gcm-p256-server-auth-v2",
+        "plab-tls13-chacha20-p256-server-auth-v2",
+        "plab-tls13-aes128gcm-p256-mutual-auth-v2"
+      ]
+    },
+    "tlsVersion": {"enum": ["tls1.2", "tls1.3"]},
+    "serverName": {"const": "tls.plab.test"},
+    "alpn": {"const": "protocol-lab-tls"},
+    "cipherSuite": {
+      "enum": [
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+      ]
+    },
+    "keyExchangeGroup": {"const": "x25519"},
+    "signatureScheme": {"const": "ecdsa_secp256r1_sha256"},
+    "peerAuthentication": {"enum": ["server-certificate-required", "mutual-certificate-required"]},
+    "certificate": {"$ref": "#/$defs/serverCertificate"},
+    "clientCertificate": {"$ref": "#/$defs/clientCertificate"},
+    "evidence": {"$ref": "#/$defs/evidence"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"profileId": {"const": "plab-tls13-aes128gcm-p256-server-auth-v2"}}},
+      "then": {
+        "properties": {
+          "tlsVersion": {"const": "tls1.3"},
+          "cipherSuite": {"const": "TLS_AES_128_GCM_SHA256"},
+          "peerAuthentication": {"const": "server-certificate-required"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"profileId": {"const": "plab-tls12-aes128gcm-p256-server-auth-v2"}}},
+      "then": {
+        "properties": {
+          "tlsVersion": {"const": "tls1.2"},
+          "cipherSuite": {"const": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"},
+          "peerAuthentication": {"const": "server-certificate-required"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"profileId": {"const": "plab-tls13-chacha20-p256-server-auth-v2"}}},
+      "then": {
+        "properties": {
+          "tlsVersion": {"const": "tls1.3"},
+          "cipherSuite": {"const": "TLS_CHACHA20_POLY1305_SHA256"},
+          "peerAuthentication": {"const": "server-certificate-required"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"profileId": {"const": "plab-tls13-aes128gcm-p256-mutual-auth-v2"}}},
+      "then": {
+        "required": ["clientCertificate"],
+        "properties": {
+          "tlsVersion": {"const": "tls1.3"},
+          "cipherSuite": {"const": "TLS_AES_128_GCM_SHA256"},
+          "peerAuthentication": {"const": "mutual-certificate-required"},
+          "evidence": {"properties": {"clientCertificateDerSha256Required": {"const": true}}}
+        }
+      },
+      "else": {"not": {"required": ["clientCertificate"]}}
+    }
+  ],
+  "$defs": {
+    "serverCertificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId", "leafKeyAlgorithm", "leafNamedCurve", "dnsSubjectAlternativeName",
+        "sentCertificateCount", "trustAnchorSent", "trustModel", "mustBeValidAtExecution",
+        "provisioningMeasured", "exactDerHashRequiredForComparison", "privateKeyPublication"
+      ],
+      "properties": {
+        "profileId": {"const": "plab-single-leaf-p256-server-v2"},
+        "leafKeyAlgorithm": {"const": "ecdsa"},
+        "leafNamedCurve": {"const": "secp256r1"},
+        "dnsSubjectAlternativeName": {"const": "tls.plab.test"},
+        "sentCertificateCount": {"const": 1},
+        "trustAnchorSent": {"const": false},
+        "trustModel": {"const": "configured-test-trust-anchor"},
+        "mustBeValidAtExecution": {"const": true},
+        "provisioningMeasured": {"const": false},
+        "exactDerHashRequiredForComparison": {"const": true},
+        "privateKeyPublication": {"const": "forbidden"}
+      }
+    },
+    "clientCertificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId", "leafKeyAlgorithm", "leafNamedCurve", "dnsSubjectAlternativeName",
+        "sentCertificateCount", "trustAnchorSent", "trustModel", "mustBeValidAtExecution",
+        "provisioningMeasured", "exactDerHashRequiredForComparison", "privateKeyPublication"
+      ],
+      "properties": {
+        "profileId": {"const": "plab-single-leaf-p256-client-v2"},
+        "leafKeyAlgorithm": {"const": "ecdsa"},
+        "leafNamedCurve": {"const": "secp256r1"},
+        "dnsSubjectAlternativeName": {"const": "client.plab.test"},
+        "sentCertificateCount": {"const": 1},
+        "trustAnchorSent": {"const": false},
+        "trustModel": {"const": "configured-test-trust-anchor"},
+        "mustBeValidAtExecution": {"const": true},
+        "provisioningMeasured": {"const": false},
+        "exactDerHashRequiredForComparison": {"const": true},
+        "privateKeyPublication": {"const": "forbidden"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "negotiatedParametersRequired", "leafCertificateDerSha256Required",
+        "clientCertificateDerSha256Required", "platformProvenanceRequired",
+        "accelerationProvenanceRequired"
+      ],
+      "properties": {
+        "negotiatedParametersRequired": {"const": true},
+        "leafCertificateDerSha256Required": {"const": true},
+        "clientCertificateDerSha256Required": {"type": "boolean"},
+        "platformProvenanceRequired": {"const": true},
+        "accelerationProvenanceRequired": {"const": true}
+      }
+    }
+  }
+}

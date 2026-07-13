@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v2",
+  "id": "secure-dns-smoke-fixture",
+  "title": "Secure DNS smoke fixture",
+  "status": "experimental",
+  "purpose": "smoke",
+  "durationSeconds": 5,
+  "warmupSeconds": 1,
+  "repetitions": 1,
+  "dns": {
+    "connections": 1,
+    "concurrency": 1,
+    "outstandingQueries": 1,
+    "connectionReuse": "reuse",
+    "queryTimeoutMilliseconds": 5000,
+    "connectionTimeoutMilliseconds": 5000,
+    "handshakeTimeoutMilliseconds": 5000,
+    "drainTimeoutMilliseconds": 5000,
+    "maxRetries": 0,
+    "totalQueries": null,
+    "queryRateLimitPerSecond": null
+  },
+  "evidence": {
+    "minimumTier": "smoke",
+    "publishable": false
+  },
+  "artifacts": {
+    "required": [
+      "validation.json",
+      "protocol-proof.json",
+      "dns-wire-summary.json",
+      "result.json"
+    ],
+    "optional": []
+  },
+  "version": "2.0.0"
+}

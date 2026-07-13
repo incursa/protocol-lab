@@ -34,6 +34,12 @@ plans omit required work selection, omit package hashes, or inline scenario
 behavior. Incompatible plans are structurally valid but select components that
 the referenced package set cannot satisfy.
 
+The Run Plan v2 fixture additionally pins canonical scenario, suite, and
+resolved load-profile snapshots. The Test Executor Prepare v2 fixture delivers
+the exact scenario and load-profile documents and binds each document to its
+snapshot digest; the matching invalid fixtures omit the required load-profile
+snapshot.
+
 ## Core Contract Fixtures
 
 Focused core contract examples live under:
@@ -45,16 +51,41 @@ Focused core contract examples live under:
 - [`load-profiles/valid`](load-profiles/valid/) and [`load-profiles/invalid`](load-profiles/invalid/)
 
 The scenario and suite valid fixtures include representative HTTP/1, HTTP/2,
-HTTP/3, and QUIC examples, including QUIC transport handshake, stream churn,
-resumption, and 0-RTT cases. The load-profile valid fixtures include generic
-profiles and protocol-specific profiles for HTTP/1, HTTP/2, HTTP/3, and QUIC.
+HTTP/3, QUIC, TLS, gRPC/H2, secure DNS, and WebSocket examples, including QUIC
+transport handshake, stream churn, resumption, and 0-RTT cases. The
+load-profile valid fixtures include generic profiles and protocol-specific
+profiles for HTTP/1, HTTP/2, HTTP/3, QUIC, TLS, gRPC/H2, secure DNS, and
+WebSocket.
 Supporting network-profile documents under `scenarios/network/profiles/` cover
 clean, RTT, bandwidth, loss, reordering, ECN, and MTU cases as declarative
 profile inputs.
 
 Invalid fixtures remain intentionally small. Each invalid fixture demonstrates
 one clear validation failure such as a missing required identity, selector,
-purpose, or scenario list.
+purpose, scenario list, TLS version, DoH media type, or mismatched WebSocket
+scheme and transport security. Repository health
+requires these fixtures to fail the intended public schema.
+
+## DNS Wire Fixtures
+
+DNS v1 and v2 message fixtures live under [`dns/valid`](dns/valid/). The frozen
+v1 fixture records the exact ID-zero `plab.test. A IN`
+query and authoritative response as lowercase hexadecimal with byte lengths and
+SHA-256 digests. It also distinguishes DoT/DoQ two-octet length framing from
+DoH2/DoH3 bare message bodies and defines transport-specific message-ID policy.
+Responses are parsed and canonical-reserialized before hash comparison, so
+alternate valid DNS name compression is accepted. [`dns/invalid`](dns/invalid/)
+contains version-routed negative fixtures. DNS v2 adds A, AAAA, CNAME-chain,
+NXDOMAIN, NODATA, and large EDNS/DNSSEC-shaped cases plus DoH GET and classic
+UDP/TCP/truncation framing.
+
+## gRPC Service Fixtures
+
+The frozen gRPC v1 descriptor lives under [`grpc/valid`](grpc/valid/), and the
+broader v2 descriptor and negative fixture live under [`grpc/v2`](grpc/v2/).
+Together they fix the package, service, message fields, all four RPC shapes,
+expected terminal outcomes, gzip semantics, and fixed metadata without
+selecting a programming language or generated source.
 
 ## Measurement And Artifact Fixtures
 
@@ -74,6 +105,12 @@ optional external telemetry producer example. Invalid measurement fixtures show
 missing contract versions, missing metric names, missing source/scope/provenance,
 undisclosed high-overhead benchmark telemetry, and telemetry bundles that try
 to claim conformance status.
+
+The v2 protocol-family metric catalog fixes the unit, aggregation, measured
+window, and timing authority for every metric required by typed TLS, gRPC,
+secure-DNS, and WebSocket scenarios. The Protocol Execution Result v2 fixture
+shows normalized snapshot, endpoint, protocol, validation, metric, artifact,
+and family-proof evidence from an executing test.
 
 Valid artifact fixtures show hash-addressable raw artifact references and
 sanitized public report artifacts. Invalid artifact fixtures show missing

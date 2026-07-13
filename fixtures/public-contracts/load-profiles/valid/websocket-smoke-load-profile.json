@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v2",
+  "id": "websocket-smoke-fixture",
+  "title": "WebSocket smoke fixture",
+  "status": "experimental",
+  "purpose": "smoke",
+  "durationSeconds": 5,
+  "warmupSeconds": 1,
+  "repetitions": 1,
+  "websocket": {
+    "connections": 1,
+    "concurrency": 1,
+    "totalOperations": null,
+    "operationRateLimitPerSecond": null,
+    "operationTimeoutMilliseconds": 5000
+  },
+  "evidence": {
+    "minimumTier": "smoke",
+    "publishable": false
+  },
+  "artifacts": {
+    "required": [
+      "validation.json",
+      "protocol-proof.json",
+      "websocket-summary.json",
+      "result.json"
+    ],
+    "optional": []
+  },
+  "version": "2.0.0"
+}

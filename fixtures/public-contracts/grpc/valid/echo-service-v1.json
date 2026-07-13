@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "protocol-lab.grpc-service.v1",
+  "protoSyntax": "proto3",
+  "package": "protocollab.performance.v1",
+  "service": "EchoService",
+  "fullyQualifiedService": "protocollab.performance.v1.EchoService",
+  "messages": [
+    {"name": "EchoRequest", "fields": [{"number": 1, "name": "payload", "type": "bytes", "cardinality": "singular"}]},
+    {"name": "EchoResponse", "fields": [{"number": 1, "name": "payload", "type": "bytes", "cardinality": "singular"}]}
+  ],
+  "methods": [
+    {"name": "UnaryEcho", "path": "/protocollab.performance.v1.EchoService/UnaryEcho", "input": "EchoRequest", "output": "EchoResponse", "clientStreaming": false, "serverStreaming": false, "responseBehavior": "echo-request-once", "responsesPerRequest": 1},
+    {"name": "ServerStreamingEcho", "path": "/protocollab.performance.v1.EchoService/ServerStreamingEcho", "input": "EchoRequest", "output": "EchoResponse", "clientStreaming": false, "serverStreaming": true, "responseBehavior": "repeat-request-100", "responsesPerRequest": 100},
+    {"name": "BidirectionalStreamingEcho", "path": "/protocollab.performance.v1.EchoService/BidirectionalStreamingEcho", "input": "EchoRequest", "output": "EchoResponse", "clientStreaming": true, "serverStreaming": true, "responseBehavior": "echo-each-request-in-order", "responsesPerRequest": 1}
+  ]
+}

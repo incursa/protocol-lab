@@ -1,0 +1,10 @@
+id: tls-performance-comparison
+name: TLS performance comparison candidate suite
+description: Non-publishable matched-profile selection for TLS 1.3 performance comparisons.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: tls-comparison
+scenarios: [tls.handshake.full, tls.handshake.resumed, tls.record.throughput]
+protocol: tls
+notes: Each scenario is a separate comparison group with exact cryptographic and execution metadata.
+tags: [tls, comparison, non-publishable]

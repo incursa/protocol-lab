@@ -1,0 +1,10 @@
+id: dns-dot-performance-comparison
+name: DNS over TLS performance comparison candidate suite
+description: Non-publishable DoT comparison selection.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: secure-dns-comparison
+scenarios: [dns.dot.query.a]
+protocol: dot
+notes: DoT results compare only with matched DoT results. The profile's 32 outstanding queries are distributed as eight pipelined queries on each of four reused TLS connections.
+tags: [dns, dot, comparison, non-publishable]

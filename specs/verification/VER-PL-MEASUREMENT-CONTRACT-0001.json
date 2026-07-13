@@ -33,7 +33,9 @@
     "PLAB-ARTIFACT-004",
     "PLAB-ARTIFACT-005",
     "PLAB-ARTIFACT-006",
-    "PLAB-ARTIFACT-007"
+    "PLAB-ARTIFACT-007",
+    "PLAB-MEASURE-015",
+    "PLAB-MEASURE-016"
   ],
   "verification_method": "Repository inspection, JSON parse checks, forbidden file scan, and contract fixture inspection.",
   "preconditions": [
@@ -48,7 +50,9 @@
     "Confirm documentation states that implementation telemetry is auxiliary unless explicitly required by a run plan.",
     "Confirm documentation does not require any specific telemetry backend or raw artifact format.",
     "Parse all JSON contract, fixture, and SpecTrace files.",
-    "Scan for forbidden source code and executable automation extensions."
+    "Scan for forbidden source code and executable automation extensions.",
+    "Validate that every typed protocol-family required metric resolves uniquely to the v2 catalog and uses the catalog unit and aggregation.",
+    "Validate normalized protocol execution result fixtures, snapshot bindings, unique check and metric identities, and the rule that an overall pass requires every required check to pass."
   ],
   "expected_result": "The repository defines language-neutral telemetry and artifact contracts, examples, and traceability without adding runtime collectors, SDKs, scripts, workflows, source code, or implementation-specific packages.",
   "evidence": [

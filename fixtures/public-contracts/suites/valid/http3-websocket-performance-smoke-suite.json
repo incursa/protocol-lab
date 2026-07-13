@@ -1,0 +1,1 @@
+{"id":"http3-websocket-performance-smoke","name":"WebSocket H3 smoke","purpose":"diagnostic","resultKind":"diagnostic","loadProfileId":"websocket-smoke","scenarios":["http3.websocket.rfc9220.binary-echo"],"protocol":"h3"}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-TLS-PERFORMANCE-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab TLS Contract Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-TLS-PERFORMANCE", "ARC-PL-TLS-PERFORMANCE"],
+  "verifies": ["REQ-PL-TLSPERF-0001", "REQ-PL-TLSPERF-0002", "REQ-PL-TLSPERF-0003", "REQ-PL-TLSPERF-0004", "REQ-PL-TLSPERF-0005", "REQ-PL-TLSPERF-0006", "REQ-PL-TLSPERF-0007", "REQ-PL-TLSPERF-0008", "REQ-PL-TLSPERF-0009", "REQ-PL-TLSPERF-0010", "REQ-PL-TLSPERF-0011", "REQ-PL-TLSPERF-0012", "REQ-PL-TLSPERF-0013"],
+  "scope": "Verify TLS public contract structure and traceability only; do not verify an executor, TLS library, certificate system, or benchmark.",
+  "verification_method": "Schema validation, fixture checks, scenario and suite reference resolution, standards-reference inspection, and repository-boundary inspection.",
+  "procedure": ["Validate legacy TLS profile v1 and every closed TLS profile v2 fixture.", "Confirm TLS 1.2, AES-GCM, ChaCha20, and mutual-auth profile identities cannot contradict their negotiated parameters.", "Confirm accepted and rejected 0-RTT use identical replay-safe input and distinct recovery checks.", "Confirm KeyUpdate requires post-update proof without traffic-secret publication.", "Validate all six canonical record direction/size cases and payload hashes.", "Confirm diagnostic and compatibility cells are excluded from comparison aggregation."],
+  "expected_result": "The bounded TLS compatibility, profile, security-diagnostic, and record-coverage contracts are internally consistent and make no executable support claim."
+}

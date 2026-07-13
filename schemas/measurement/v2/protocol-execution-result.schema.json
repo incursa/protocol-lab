@@ -1,0 +1,1201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/measurement/v2/protocol-execution-result.schema.json",
+  "title": "ProtocolLab Protocol Execution Result v2",
+  "description": "Normalized, hash-bound execution result for typed protocol-family scenarios.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "resultId",
+    "runBinding",
+    "selectedComponent",
+    "endpointProof",
+    "protocolProof",
+    "validation",
+    "metrics",
+    "artifacts",
+    "familyEvidence",
+    "outcome"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "protocol-lab.protocol-execution-result.v2"
+    },
+    "resultId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runId",
+        "cellId",
+        "repetition",
+        "runPlanSnapshot",
+        "scenarioSnapshot",
+        "loadProfileSnapshot",
+        "packageSnapshots"
+      ],
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cellId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repetition": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "runPlanSnapshot": {
+          "$ref": "#/$defs/snapshot"
+        },
+        "scenarioSnapshot": {
+          "$ref": "#/$defs/snapshot"
+        },
+        "loadProfileSnapshot": {
+          "$ref": "#/$defs/snapshot"
+        },
+        "packageSnapshots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/snapshot"
+          }
+        }
+      }
+    },
+    "selectedComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "implementationId",
+        "testExecutorId",
+          "role",
+          "executionMode",
+          "selectionProof"
+      ],
+      "properties": {
+        "implementationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "testExecutorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "executionMode": {
+          "type": "string",
+          "enum": ["process", "container", "library", "external-endpoint"]
+        },
+        "selectionProof": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "endpointProof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bindingId",
+        "scheme",
+        "authority",
+        "host",
+        "port"
+      ],
+      "properties": {
+        "bindingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scheme": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1
+        },
+        "host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "protocolProof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested",
+        "observed",
+        "binding",
+        "protocolStack",
+        "fallbackAllowed",
+        "fallbackOccurred"
+      ],
+      "properties": {
+        "requested": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed": {
+          "type": "string",
+          "minLength": 1
+        },
+        "binding": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protocolStack": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "fallbackAllowed": {
+          "const": false
+        },
+        "fallbackOccurred": {
+          "const": false
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overallOutcome",
+        "allRequiredChecksPassed",
+        "checks"
+      ],
+      "properties": {
+        "overallOutcome": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "unsupported",
+            "unavailable"
+          ]
+        },
+        "allRequiredChecksPassed": {
+          "type": "boolean"
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "checkId",
+              "required",
+              "outcome"
+            ],
+            "properties": {
+              "checkId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "not-run"
+                ]
+              },
+              "detail": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "overallOutcome": {
+                "const": "pass"
+              }
+            },
+            "required": [
+              "overallOutcome"
+            ]
+          },
+          "then": {
+            "properties": {
+              "allRequiredChecksPassed": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "metricId",
+          "value",
+          "unit",
+          "aggregation",
+          "windowStartUtc",
+          "windowEndUtc",
+          "source"
+        ],
+        "properties": {
+          "metricId": {
+            "type": "string",
+            "pattern": "^[a-z][A-Za-z0-9]*$"
+          },
+          "value": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "windowStartUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "windowEndUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "runner",
+              "test-executor"
+            ]
+          },
+          "sampleCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "mediaType",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mediaType": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "familyEvidence": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/tlsEvidence"
+        },
+        {
+          "$ref": "#/$defs/grpcEvidence"
+        },
+        {
+          "$ref": "#/$defs/dnsEvidence"
+        },
+        {
+          "$ref": "#/$defs/websocketEvidence"
+        }
+      ]
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "failed",
+        "timed-out",
+        "cancelled",
+        "unsupported",
+        "unavailable"
+      ]
+    }
+  },
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "sha256",
+        "canonicalization"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "canonicalization": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "tlsEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "mode",
+        "version",
+        "serverName",
+        "alpn",
+        "cipherSuite",
+        "keyExchangeGroup",
+        "signatureScheme",
+        "certificateDerSha256",
+        "peerAuthentication",
+        "clientCertificateDerSha256",
+        "resumption",
+        "earlyData",
+        "earlyDataRetryCount",
+        "keyUpdateCount",
+        "recordCoverageCases",
+        "payloadSha256",
+        "measuredWindow",
+        "platformProvenance",
+        "accelerationProvenance"
+      ],
+      "properties": {
+        "family": {
+          "const": "tls"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["full-handshake", "resumed-handshake", "record-throughput", "early-data", "key-update-diagnostic", "record-coverage"]
+        },
+        "version": {
+          "type": "string",
+          "enum": ["tls1.2", "tls1.3"]
+        },
+        "serverName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "alpn": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cipherSuite": {
+          "type": "string",
+          "minLength": 1
+        },
+        "keyExchangeGroup": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signatureScheme": {
+          "type": "string",
+          "minLength": 1
+        },
+        "certificateDerSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "peerAuthentication": {
+          "type": "string",
+          "enum": ["server-certificate-required", "mutual-certificate-required"]
+        },
+        "clientCertificateDerSha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "resumption": {
+          "type": "string",
+          "enum": [
+            "not-offered",
+            "accepted-psk-single-use-ticket"
+          ]
+        },
+        "earlyData": {
+          "type": "string",
+          "enum": ["not-applicable", "not-attempted", "accepted", "rejected"]
+        },
+        "earlyDataRetryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "keyUpdateCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recordCoverageCases": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "payloadSha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "measuredWindow": {
+          "type": "string",
+          "minLength": 1
+        },
+        "platformProvenance": {
+          "type": "object"
+        },
+        "accelerationProvenance": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "version": { "const": "tls1.2" } }, "required": ["version"] },
+          "then": { "properties": { "earlyData": { "const": "not-applicable" } } }
+        },
+        {
+          "if": { "properties": { "peerAuthentication": { "const": "mutual-certificate-required" } }, "required": ["peerAuthentication"] },
+          "then": { "properties": { "clientCertificateDerSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } } },
+          "else": { "properties": { "clientCertificateDerSha256": { "const": null } } }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "early-data" } }, "required": ["mode"] },
+          "then": {
+            "properties": {
+              "version": { "const": "tls1.3" },
+              "earlyData": { "enum": ["accepted", "rejected"] },
+              "payloadSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            }
+          },
+          "else": { "properties": { "earlyDataRetryCount": { "const": 0 } } }
+        },
+        {
+          "if": { "properties": { "earlyData": { "const": "rejected" } }, "required": ["earlyData"] },
+          "then": { "properties": { "earlyDataRetryCount": { "const": 1 } } }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "key-update-diagnostic" } }, "required": ["mode"] },
+          "then": { "properties": { "keyUpdateCount": { "const": 1 }, "payloadSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } } },
+          "else": { "properties": { "keyUpdateCount": { "const": 0 } } }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "record-coverage" } }, "required": ["mode"] },
+          "then": { "properties": { "recordCoverageCases": { "const": 6 } } },
+          "else": { "properties": { "recordCoverageCases": { "const": 0 } } }
+        }
+      ]
+    },
+    "grpcEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "serviceContractId",
+        "serviceContractSha256",
+        "httpVersion",
+        "alpn",
+        "method",
+        "path",
+        "rpcType",
+        "requestContentType",
+        "responseContentType",
+        "metadataPolicy",
+        "responsePolicy",
+        "connectionLifecycle",
+        "measuredWindow",
+        "grpcEncoding",
+        "grpcStatus",
+        "trailersObserved",
+        "requestMessages",
+        "responseMessages",
+        "payloadSha256",
+        "protobufSha256",
+        "grpcFrameSha256",
+        "terminalInitiator",
+        "encoderProvenance",
+        "compressedWireBytes",
+        "completedOperations",
+        "failedOperations",
+        "deadlineExceededOperations",
+        "cancelledOperations",
+        "timedOutOperations"
+      ],
+      "properties": {
+        "family": {
+          "const": "grpc"
+        },
+        "serviceContractId": {
+          "const": "protocollab.performance.v1.EchoService"
+        },
+        "serviceContractSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "httpVersion": {
+          "const": "h2"
+        },
+        "alpn": {
+          "const": "h2"
+        },
+        "method": {
+          "const": "POST"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rpcType": {
+          "type": "string",
+          "enum": ["unary", "server-streaming", "client-streaming", "bidirectional-streaming"]
+        },
+        "requestContentType": {
+          "const": "application/grpc+proto"
+        },
+        "responseContentType": {
+          "const": "application/grpc+proto"
+        },
+        "metadataPolicy": {
+          "type": "string",
+          "enum": ["fixed-empty-user-metadata", "fixed-ascii-and-binary-metadata-v1"]
+        },
+        "responsePolicy": {
+          "type": "string",
+          "enum": ["messages-and-trailers", "trailers-only", "client-observed-terminal-status"]
+        },
+        "connectionLifecycle": {
+          "type": "string",
+          "enum": ["pre-established-channel", "new-channel-per-operation"]
+        },
+        "measuredWindow": {
+          "type": "string",
+          "enum": ["rpc-operation", "channel-establishment-and-rpc"]
+        },
+        "grpcEncoding": {
+          "type": "string",
+          "enum": ["identity", "gzip"]
+        },
+        "grpcStatus": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16
+        },
+        "trailersObserved": {
+          "type": "boolean"
+        },
+        "requestMessages": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "responseMessages": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "payloadSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "protobufSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "grpcFrameSha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "terminalInitiator": {
+          "type": "string",
+          "enum": ["server", "client-deadline", "client-cancellation"]
+        },
+        "encoderProvenance": {
+          "type": ["object", "null"]
+        },
+        "compressedWireBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completedOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failedOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deadlineExceededOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cancelledOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timedOutOperations": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "connectionLifecycle": { "const": "new-channel-per-operation" } }, "required": ["connectionLifecycle"] },
+          "then": { "properties": { "measuredWindow": { "const": "channel-establishment-and-rpc" } } },
+          "else": { "properties": { "measuredWindow": { "const": "rpc-operation" } } }
+        },
+        {
+          "if": { "properties": { "grpcEncoding": { "const": "gzip" } }, "required": ["grpcEncoding"] },
+          "then": {
+            "properties": {
+              "grpcFrameSha256": { "const": null },
+              "encoderProvenance": { "type": "object" },
+              "compressedWireBytes": { "minimum": 1 }
+            }
+          },
+          "else": {
+            "properties": {
+              "grpcFrameSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "encoderProvenance": { "const": null },
+              "compressedWireBytes": { "const": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "grpcStatus": { "const": 0 } }, "required": ["grpcStatus"] },
+          "then": {
+            "properties": {
+              "responsePolicy": { "const": "messages-and-trailers" },
+              "trailersObserved": { "const": true },
+              "responseMessages": { "minimum": 1 },
+              "terminalInitiator": { "const": "server" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "grpcStatus": { "const": 3 } }, "required": ["grpcStatus"] },
+          "then": {
+            "properties": {
+              "responsePolicy": { "const": "trailers-only" },
+              "trailersObserved": { "const": true },
+              "responseMessages": { "const": 0 },
+              "terminalInitiator": { "const": "server" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "grpcStatus": { "const": 4 } }, "required": ["grpcStatus"] },
+          "then": {
+            "properties": {
+              "responsePolicy": { "const": "client-observed-terminal-status" },
+              "trailersObserved": { "const": false },
+              "responseMessages": { "const": 0 },
+              "terminalInitiator": { "const": "client-deadline" },
+              "deadlineExceededOperations": { "minimum": 1 },
+              "failedOperations": { "const": 0 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "grpcStatus": { "const": 1 },
+              "path": { "pattern": "/ClientCancellation$" }
+            },
+            "required": ["grpcStatus", "path"]
+          },
+          "then": {
+            "properties": {
+              "responsePolicy": { "const": "client-observed-terminal-status" },
+              "trailersObserved": { "const": false },
+              "responseMessages": { "const": 0 },
+              "terminalInitiator": { "const": "client-cancellation" },
+              "cancelledOperations": { "minimum": 1 },
+              "failedOperations": { "const": 0 }
+            }
+          }
+        }
+      ]
+    },
+    "dnsEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "transport",
+        "fixtureId",
+        "queryWireSha256",
+        "responseWireSha256",
+        "alpn",
+        "tlsVersion",
+        "rcode",
+        "answer",
+        "answerCount",
+        "authorityCount",
+        "additionalCount",
+        "truncated",
+        "fallbackTriggered",
+        "completedOperations",
+        "malformedOperations",
+        "retryCount",
+        "failedOperations",
+        "timedOutOperations"
+      ],
+      "properties": {
+        "family": {
+          "type": "string",
+          "enum": ["dns.secure", "dns"]
+        },
+        "transport": {
+          "type": "string",
+          "enum": [
+            "dot",
+            "doh2",
+            "doh3",
+            "doq",
+            "udp",
+            "tcp",
+            "udp-tcp"
+          ]
+        },
+        "fixtureId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "queryWireSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "responseWireSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "alpn": {
+          "type": ["string", "null"]
+        },
+        "tlsVersion": {
+          "type": ["string", "null"],
+          "enum": ["tls1.3", null]
+        },
+        "rcode": {
+          "type": "string",
+          "enum": ["NOERROR", "NXDOMAIN", "SERVFAIL", "REFUSED"]
+        },
+        "answer": {
+          "type": ["string", "null"]
+        },
+        "answerCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "authorityCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "additionalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "fallbackTriggered": {
+          "type": "boolean"
+        },
+        "completedOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "malformedOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retryCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failedOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timedOutOperations": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "family": { "const": "dns.secure" } }, "required": ["family"] },
+          "then": {
+            "properties": {
+              "alpn": { "type": "string", "minLength": 1 },
+              "tlsVersion": { "const": "tls1.3" }
+            }
+          },
+          "else": {
+            "properties": {
+              "alpn": { "const": null },
+              "tlsVersion": { "const": null }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "transport": { "const": "udp-tcp" } }, "required": ["transport"] },
+          "then": {
+            "properties": {
+              "fallbackTriggered": { "const": true },
+              "retryCount": { "const": 1 }
+            }
+          },
+          "else": {
+            "properties": {
+              "fallbackTriggered": { "const": false },
+              "retryCount": { "const": 0 }
+            }
+          }
+        }
+      ]
+    },
+    "websocketEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "binding",
+        "handshakeStatus",
+        "handshakeProof",
+        "extensions",
+        "subprotocol",
+        "subprotocolMatched",
+        "extensionValidation",
+        "fragmentation",
+        "fragmentationValidated",
+        "messagesInOrder",
+        "messageType",
+        "sentMessages",
+        "receivedMessages",
+        "payloadSha256",
+        "closeCode",
+        "completedOperations",
+        "failedOperations",
+        "timedOutOperations"
+      ],
+      "properties": {
+        "family": {
+          "const": "websocket"
+        },
+        "binding": {
+          "type": "string",
+          "enum": [
+            "http1-upgrade",
+            "http2-extended-connect",
+            "http3-extended-connect"
+          ]
+        },
+        "handshakeStatus": {
+          "type": "integer",
+          "enum": [
+            101,
+            200
+          ]
+        },
+        "handshakeProof": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/websocketHttp1HandshakeProof"
+            },
+            {
+              "$ref": "#/$defs/websocketExtendedConnectHandshakeProof"
+            }
+          ]
+        },
+        "extensions": {
+          "type": "string",
+          "enum": [
+            "none",
+            "permessage-deflate-no-context-takeover"
+          ]
+        },
+        "subprotocol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subprotocolMatched": {
+          "const": true
+        },
+        "extensionValidation": {
+          "type": "string",
+          "enum": [
+            "none-negotiated",
+            "permessage-deflate-decompressed-payload-matched"
+          ]
+        },
+        "fragmentation": {
+          "type": "string",
+          "enum": [
+            "none",
+            "diagnostic"
+          ]
+        },
+        "fragmentationValidated": {
+          "const": true
+        },
+        "messagesInOrder": {
+          "const": true
+        },
+        "messageType": {
+          "type": "string",
+          "enum": [
+            "none",
+            "text",
+            "binary",
+            "control"
+          ]
+        },
+        "sentMessages": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "receivedMessages": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "payloadSha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "closeCode": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 4999
+        },
+        "completedOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failedOperations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timedOutOperations": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "binding": {
+                "const": "http1-upgrade"
+              }
+            },
+            "required": [
+              "binding"
+            ]
+          },
+          "then": {
+            "properties": {
+              "handshakeStatus": {
+                "const": 101
+              },
+              "handshakeProof": {
+                "$ref": "#/$defs/websocketHttp1HandshakeProof"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "handshakeStatus": {
+                "const": 200
+              },
+              "handshakeProof": {
+                "$ref": "#/$defs/websocketExtendedConnectHandshakeProof"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "extensions": {
+                "const": "none"
+              }
+            },
+            "required": [
+              "extensions"
+            ]
+          },
+          "then": {
+            "properties": {
+              "extensionValidation": {
+                "const": "none-negotiated"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "extensionValidation": {
+                "const": "permessage-deflate-decompressed-payload-matched"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "websocketHttp1HandshakeProof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "openingHandshakes",
+        "keyReuseCount",
+        "invalidDecodedKeyCount",
+        "acceptMismatchCount",
+        "sampleSecWebSocketKey",
+        "sampleSecWebSocketAccept",
+        "upgradeRequestHeadersMatched",
+        "upgradeResponseHeadersMatched"
+      ],
+      "properties": {
+        "binding": {
+          "const": "http1-upgrade"
+        },
+        "openingHandshakes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "keyReuseCount": {
+          "const": 0
+        },
+        "invalidDecodedKeyCount": {
+          "const": 0
+        },
+        "acceptMismatchCount": {
+          "const": 0
+        },
+        "sampleSecWebSocketKey": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{22}==$"
+        },
+        "sampleSecWebSocketAccept": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{27}=$"
+        },
+        "upgradeRequestHeadersMatched": {
+          "const": true
+        },
+        "upgradeResponseHeadersMatched": {
+          "const": true
+        }
+      }
+    },
+    "websocketExtendedConnectHandshakeProof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "settingsEnableConnectProtocol",
+        "requestMethod",
+        "requestProtocol",
+        "requestScheme",
+        "pseudoHeadersMatched",
+        "unexpectedConnectionHeaderCount",
+        "unexpectedUpgradeHeaderCount",
+        "unexpectedSecWebSocketKeyCount",
+        "unexpectedSecWebSocketAcceptCount"
+      ],
+      "properties": {
+        "binding": {
+          "type": "string",
+          "enum": [
+            "http2-extended-connect",
+            "http3-extended-connect"
+          ]
+        },
+        "settingsEnableConnectProtocol": {
+          "const": 1
+        },
+        "requestMethod": {
+          "const": "CONNECT"
+        },
+        "requestProtocol": {
+          "const": "websocket"
+        },
+        "requestScheme": {
+          "const": "https"
+        },
+        "pseudoHeadersMatched": {
+          "const": true
+        },
+        "unexpectedConnectionHeaderCount": {
+          "const": 0
+        },
+        "unexpectedUpgradeHeaderCount": {
+          "const": 0
+        },
+        "unexpectedSecWebSocketKeyCount": {
+          "const": 0
+        },
+        "unexpectedSecWebSocketAcceptCount": {
+          "const": 0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+id: http3-websocket-performance-smoke
+name: HTTP/3 WebSocket performance contract smoke suite
+description: Fast RFC 9220 establishment, control-frame, echo, and close validity selection using preserved package-aligned IDs.
+purpose: diagnostic
+resultKind: diagnostic
+loadProfileId: websocket-smoke
+scenarios: [http3.websocket.rfc9220.extended-connect, http3.websocket.rfc9220.control-frames, http3.websocket.rfc9220.text-echo, http3.websocket.rfc9220.binary-echo, http3.websocket.rfc9220.close]
+protocol: h3
+notes: Public contract selection does not import the package-local aioquic suite's proof or support status.
+tags: [http3, websocket, rfc9220, smoke, non-publishable]

@@ -1,0 +1,10 @@
+id: http1-websocket-cleartext-performance-comparison
+name: HTTP/1.1 cleartext WebSocket performance comparison candidate suite
+description: Non-publishable RFC 6455 cleartext establishment and echo comparison selection.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: websocket-comparison
+scenarios: [http1.websocket.rfc6455.cleartext.upgrade, http1.websocket.rfc6455.cleartext.text-echo, http1.websocket.rfc6455.cleartext.binary-echo]
+protocol: h1
+notes: Cleartext ws results are distinct from TLS wss and other WebSocket bindings.
+tags: [http1, websocket, cleartext, ws, comparison, non-publishable]

@@ -121,6 +121,36 @@
           "REQ-PL-PUBLIC-0007"
         ]
       }
+    },
+    {
+      "id": "REQ-PL-REPORT-0006",
+      "title": "Preserve normalized stack and evidence identity",
+      "statement": "A public ProtocolLab report MUST preserve the normalized protocol stack, binding, implementation role, execution variant, and evidence tier associated with each result.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": ["ARC-PL-REPORT"],
+        "verified_by": ["VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"]
+      }
+    },
+    {
+      "id": "REQ-PL-REPORT-0007",
+      "title": "Preserve non-comparable reasons",
+      "statement": "A public ProtocolLab report MUST preserve an explicit not-comparable reason when protocol, payload, load, network, role, platform, provenance, topology, validation, telemetry, saturation, or repetition compatibility is absent.",
+      "x_coverage_expectations": {
+        "positive": "required",
+        "negative": "required",
+        "edge": "required",
+        "fuzz": "not_applicable"
+      },
+      "trace": {
+        "satisfied_by": ["ARC-PL-REPORT"],
+        "verified_by": ["VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"]
+      }
     }
   ]
 }

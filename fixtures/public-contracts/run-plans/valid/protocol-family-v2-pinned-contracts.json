@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "protocol-lab-run-plan-v2",
+  "runPlanId": "http1-core-smoke-pinned-contracts-v2",
+  "runPlanVersion": "2.0.0",
+  "displayName": "HTTP/1 core smoke reference run",
+  "packages": [
+    {
+      "packageId": "protocol-lab-http1-core-scenarios",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "packageId": "protocol-lab-reference-http1-test-executor",
+      "packageVersion": "0.1.2-fixture",
+      "sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+    },
+    {
+      "packageId": "kestrel-http1",
+      "packageVersion": "0.0.0-fixture",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  ],
+  "suiteIds": [
+    "http1-core-smoke"
+  ],
+  "scenarioIds": [
+    "http1.core.plaintext",
+    "http1.core.json",
+    "http1.payload.bytes.1kb"
+  ],
+  "implementationIds": [
+    "kestrel-http1"
+  ],
+  "testExecutorIds": [
+    "protocol-lab-reference-http1-test-executor"
+  ],
+  "protocols": [
+    "h1"
+  ],
+  "targetMode": "implementation-resolved",
+  "targetNetworkMode": "published-endpoint",
+  "requiredCapabilities": [
+    {
+      "name": "protocol-lab.public-contracts",
+      "value": "true"
+    }
+  ],
+  "comparisonGroups": [
+    {
+      "groupId": "http1-core",
+      "scenarioIds": [
+        "http1.core.plaintext",
+        "http1.core.json",
+        "http1.payload.bytes.1kb"
+      ],
+      "sameExecutorRequired": true,
+      "sameLoadProfileRequired": true
+    }
+  ],
+  "publicationIntent": "non-public",
+  "labels": [
+    "result-kind:conformance",
+    "suite-purpose:conformance"
+  ],
+  "notes": "Reference fixture proving run-plan v2 pins resolved scenario, suite, and load-profile contract snapshots in addition to package bytes.",
+  "loadProfileSnapshot": {
+    "id": "smoke",
+    "version": "1.0.0",
+    "sha256": "87c1f24ebcf2ad35bc3fe56dd1a975ab130d7252f6008b4191a3e8993ca9b18f",
+    "canonicalization": "yaml-parse-json-sort-keys-utf8-no-whitespace-v1"
+  },
+  "scenarioSnapshots": [
+    {
+      "id": "http1.core.plaintext",
+      "version": "1.0.0",
+      "sha256": "30c6a9a11475b8c683b246710e80fadf79224e8ed7371e44963948ec70a4b0f6",
+      "canonicalization": "yaml-parse-json-sort-keys-utf8-no-whitespace-v1"
+    },
+    {
+      "id": "http1.core.json",
+      "version": "1.0.0",
+      "sha256": "b821d663f3a3cf654c8685f32ed4f62dbf74421e8f3e97cec3b75f4ad82bce6a",
+      "canonicalization": "yaml-parse-json-sort-keys-utf8-no-whitespace-v1"
+    },
+    {
+      "id": "http1.payload.bytes.1kb",
+      "version": "1.0.0",
+      "sha256": "ae7018e66eb5418efa7a954eb192f757e706acd0ebf00c2a697a1cdf6c026cb2",
+      "canonicalization": "yaml-parse-json-sort-keys-utf8-no-whitespace-v1"
+    }
+  ],
+  "suiteSnapshots": [
+    {
+      "id": "http1-core-smoke",
+      "version": "1.0.0",
+      "sha256": "27d8b5e8e37fa1ebd5b4add17b9520c3cbab42a09199f5cf245869b2a499e1c4",
+      "canonicalization": "yaml-parse-json-sort-keys-utf8-no-whitespace-v1"
+    }
+  ]
+}

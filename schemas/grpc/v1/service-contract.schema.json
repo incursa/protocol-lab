@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/grpc/v1/service-contract.schema.json",
+  "title": "ProtocolLab gRPC Service Contract v1",
+  "description": "Exact language-neutral proto3 surface and fixed method behavior for the ProtocolLab deterministic gRPC performance service.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "protoSyntax",
+    "package",
+    "service",
+    "fullyQualifiedService",
+    "messages",
+    "methods"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "protocol-lab.grpc-service.v1"},
+    "protoSyntax": {"const": "proto3"},
+    "package": {"const": "protocollab.performance.v1"},
+    "service": {"const": "EchoService"},
+    "fullyQualifiedService": {"const": "protocollab.performance.v1.EchoService"},
+    "messages": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/echoRequest"},
+        {"$ref": "#/$defs/echoResponse"}
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "methods": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/unaryEcho"},
+        {"$ref": "#/$defs/serverStreamingEcho"},
+        {"$ref": "#/$defs/bidirectionalStreamingEcho"}
+      ],
+      "items": false,
+      "minItems": 3,
+      "maxItems": 3
+    }
+  },
+  "$defs": {
+    "payloadField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "name", "type", "cardinality"],
+      "properties": {
+        "number": {"const": 1},
+        "name": {"const": "payload"},
+        "type": {"const": "bytes"},
+        "cardinality": {"const": "singular"}
+      }
+    },
+    "echoRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "fields"],
+      "properties": {
+        "name": {"const": "EchoRequest"},
+        "fields": {
+          "type": "array",
+          "prefixItems": [{"$ref": "#/$defs/payloadField"}],
+          "items": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    },
+    "echoResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "fields"],
+      "properties": {
+        "name": {"const": "EchoResponse"},
+        "fields": {
+          "type": "array",
+          "prefixItems": [{"$ref": "#/$defs/payloadField"}],
+          "items": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    },
+    "methodBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "path",
+        "input",
+        "output",
+        "clientStreaming",
+        "serverStreaming",
+        "responseBehavior",
+        "responsesPerRequest"
+      ],
+      "properties": {
+        "name": {"type": "string"},
+        "path": {"type": "string"},
+        "input": {"const": "EchoRequest"},
+        "output": {"const": "EchoResponse"},
+        "clientStreaming": {"type": "boolean"},
+        "serverStreaming": {"type": "boolean"},
+        "responseBehavior": {
+          "enum": ["echo-request-once", "repeat-request-100", "echo-each-request-in-order"]
+        },
+        "responsesPerRequest": {"type": "integer", "minimum": 1}
+      }
+    },
+    "unaryEcho": {
+      "allOf": [
+        {"$ref": "#/$defs/methodBase"},
+        {
+          "properties": {
+            "name": {"const": "UnaryEcho"},
+            "path": {"const": "/protocollab.performance.v1.EchoService/UnaryEcho"},
+            "clientStreaming": {"const": false},
+            "serverStreaming": {"const": false},
+            "responseBehavior": {"const": "echo-request-once"},
+            "responsesPerRequest": {"const": 1}
+          }
+        }
+      ]
+    },
+    "serverStreamingEcho": {
+      "allOf": [
+        {"$ref": "#/$defs/methodBase"},
+        {
+          "properties": {
+            "name": {"const": "ServerStreamingEcho"},
+            "path": {"const": "/protocollab.performance.v1.EchoService/ServerStreamingEcho"},
+            "clientStreaming": {"const": false},
+            "serverStreaming": {"const": true},
+            "responseBehavior": {"const": "repeat-request-100"},
+            "responsesPerRequest": {"const": 100}
+          }
+        }
+      ]
+    },
+    "bidirectionalStreamingEcho": {
+      "allOf": [
+        {"$ref": "#/$defs/methodBase"},
+        {
+          "properties": {
+            "name": {"const": "BidirectionalStreamingEcho"},
+            "path": {"const": "/protocollab.performance.v1.EchoService/BidirectionalStreamingEcho"},
+            "clientStreaming": {"const": true},
+            "serverStreaming": {"const": true},
+            "responseBehavior": {"const": "echo-each-request-in-order"},
+            "responsesPerRequest": {"const": 1}
+          }
+        }
+      ]
+    }
+  }
+}

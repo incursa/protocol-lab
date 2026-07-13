@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/tls/v1/record-coverage-profile.schema.json",
+  "title": "ProtocolLab TLS Record Coverage Profile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "profileId", "payloadGenerator", "payloadOctet", "cases"],
+  "properties": {
+    "schemaVersion": {"const": "protocol-lab.tls-record-coverage.v1"},
+    "profileId": {"const": "plab-tls-record-coverage-v1"},
+    "payloadGenerator": {"const": "repeated-octet"},
+    "payloadOctet": {"const": 90},
+    "cases": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/client1k"}, {"$ref": "#/$defs/server1k"},
+        {"$ref": "#/$defs/client64k"}, {"$ref": "#/$defs/server64k"},
+        {"$ref": "#/$defs/client1m"}, {"$ref": "#/$defs/server1m"}
+      ],
+      "items": false,
+      "minItems": 6,
+      "maxItems": 6
+    }
+  },
+  "$defs": {
+    "baseCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caseId", "direction", "applicationDataBytes", "payloadSha256", "measuredWindow"],
+      "properties": {
+        "caseId": {"type": "string"},
+        "direction": {"enum": ["client-to-server", "server-to-client"]},
+        "applicationDataBytes": {"enum": [1024, 65536, 1048576]},
+        "payloadSha256": {"pattern": "^[a-f0-9]{64}$"},
+        "measuredWindow": {"const": "application-data-transfer"}
+      }
+    },
+    "client1k": {"allOf": [{"$ref": "#/$defs/baseCase"}, {"properties": {"caseId": {"const": "client-to-server-1kib"}, "direction": {"const": "client-to-server"}, "applicationDataBytes": {"const": 1024}, "payloadSha256": {"const": "e8fb68ce4d4d002dba40c0a459d96807c96ded1c2fdefae3f56f8a0c06a4fecf"}}}]},
+    "server1k": {"allOf": [{"$ref": "#/$defs/baseCase"}, {"properties": {"caseId": {"const": "server-to-client-1kib"}, "direction": {"const": "server-to-client"}, "applicationDataBytes": {"const": 1024}, "payloadSha256": {"const": "e8fb68ce4d4d002dba40c0a459d96807c96ded1c2fdefae3f56f8a0c06a4fecf"}}}]},
+    "client64k": {"allOf": [{"$ref": "#/$defs/baseCase"}, {"properties": {"caseId": {"const": "client-to-server-64kib"}, "direction": {"const": "client-to-server"}, "applicationDataBytes": {"const": 65536}, "payloadSha256": {"const": "944044fe482bc4e91085c15c5a923a1b9e02eac98d3bce04997d6dbecd2a5b8d"}}}]},
+    "server64k": {"allOf": [{"$ref": "#/$defs/baseCase"}, {"properties": {"caseId": {"const": "server-to-client-64kib"}, "direction": {"const": "server-to-client"}, "applicationDataBytes": {"const": 65536}, "payloadSha256": {"const": "944044fe482bc4e91085c15c5a923a1b9e02eac98d3bce04997d6dbecd2a5b8d"}}}]},
+    "client1m": {"allOf": [{"$ref": "#/$defs/baseCase"}, {"properties": {"caseId": {"const": "client-to-server-1mib"}, "direction": {"const": "client-to-server"}, "applicationDataBytes": {"const": 1048576}, "payloadSha256": {"const": "bf63d8a95fcc2e64619813aae35fdcbe871fdd9264caa3f365eb3aed0f679129"}}}]},
+    "server1m": {"allOf": [{"$ref": "#/$defs/baseCase"}, {"properties": {"caseId": {"const": "server-to-client-1mib"}, "direction": {"const": "server-to-client"}, "applicationDataBytes": {"const": 1048576}, "payloadSha256": {"const": "bf63d8a95fcc2e64619813aae35fdcbe871fdd9264caa3f365eb3aed0f679129"}}}]}
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "protocol-lab.tls-profile.v1",
+  "profileId": "plab-tls13-p256-v1",
+  "tlsVersion": "tls1.3",
+  "serverName": "tls.plab.test",
+  "alpn": "protocol-lab-tls",
+  "cipherSuite": "TLS_AES_128_GCM_SHA256",
+  "keyExchangeGroup": "x25519",
+  "signatureScheme": "ecdsa_secp256r1_sha256",
+  "peerAuthentication": "server-certificate-required",
+  "evidence": {
+    "negotiatedParametersRequired": true,
+    "leafCertificateDerSha256Required": true,
+    "platformProvenanceRequired": true,
+    "accelerationProvenanceRequired": true
+  }
+}

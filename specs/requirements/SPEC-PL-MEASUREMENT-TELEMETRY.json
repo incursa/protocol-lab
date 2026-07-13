@@ -28,8 +28,12 @@
       "title": "Normalized telemetry bundle",
       "statement": "ProtocolLab telemetry bundles MUST use the normalized public telemetry bundle contract and MUST NOT require OpenTelemetry, Prometheus, qlog, JSON logs, binary traces, EventPipe, pcap, or any specific instrumentation backend.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/telemetry-bundle.schema.json",
           "fixtures/public-contracts/measurement/valid/runner-only-smoke-telemetry-bundle.json",
@@ -42,9 +46,15 @@
       "title": "Measurement profile vocabulary",
       "statement": "Measurement profile identifiers MUST be limited to smoke, diagnostic, regression, benchmark, and soak.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
-        "related": ["schemas/measurement/v1/measurement-profile.schema.json"]
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
+        "related": [
+          "schemas/measurement/v1/measurement-profile.schema.json"
+        ]
       }
     },
     {
@@ -52,8 +62,12 @@
       "title": "Profile claim constraint",
       "statement": "A measurement profile MUST constrain the claim level a result can support.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/measurement-profile.schema.json",
           "specs/requirements/measurement-requirements.md"
@@ -65,8 +79,12 @@
       "title": "Benchmark timing authority",
       "statement": "Runner-observed request results MUST be the canonical evidence for benchmark timing unless a specific test-executor contract explicitly defines another timing authority.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/measurement-summary.schema.json",
           "fixtures/public-contracts/measurement/valid/benchmark-latency-and-load-summary.json"
@@ -78,8 +96,12 @@
       "title": "Optional implementation telemetry",
       "statement": "Implementation-side telemetry MAY be included as auxiliary evidence, but missing implementation telemetry MUST NOT fail an otherwise valid conformance run unless the run plan explicitly requires that telemetry.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "fixtures/public-contracts/measurement/valid/implementation-custom-json-telemetry-bundle.json",
           "fixtures/public-contracts/measurement/valid/implementation-opentelemetry-optional-telemetry-bundle.json"
@@ -91,8 +113,12 @@
       "title": "Benchmark provenance and load shape",
       "statement": "Benchmark telemetry MUST disclose measurement provenance, requested load shape, effective load shape when available, and warnings when overhead or environment uncertainty affects comparability.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/telemetry-bundle.schema.json",
           "schemas/measurement/v1/collector-descriptor.schema.json",
@@ -105,8 +131,12 @@
       "title": "Diagnostic evidence boundary",
       "statement": "Diagnostic profile telemetry MAY include high-overhead collectors and raw artifact references, but diagnostic evidence MUST NOT be treated as clean benchmark evidence.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/collector-descriptor.schema.json",
           "fixtures/public-contracts/artifacts/valid/raw-binary-trace-artifact-bundle.json"
@@ -118,9 +148,15 @@
       "title": "Comparability as evidence statement",
       "statement": "Comparability classes MUST be evidence statements and MUST NOT be interpreted as numeric scores.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
-        "related": ["schemas/measurement/v1/comparability-class.schema.json"]
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
+        "related": [
+          "schemas/measurement/v1/comparability-class.schema.json"
+        ]
       }
     },
     {
@@ -128,8 +164,12 @@
       "title": "Producer source and scope separation",
       "statement": "Telemetry bundles MUST distinguish producer, source, and scope so runner, implementation, test-executor, load-generator, environment, protocol, artifact, and other observations remain separable.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/telemetry-bundle.schema.json",
           "schemas/measurement/v1/measurement-sample.schema.json",
@@ -142,8 +182,12 @@
       "title": "External correlation is optional",
       "statement": "Telemetry bundles MAY preserve external correlation identifiers, but ProtocolLab MUST NOT make external telemetry identifiers canonical or required.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/measurement-sample.schema.json",
           "fixtures/public-contracts/measurement/valid/implementation-opentelemetry-optional-telemetry-bundle.json"
@@ -155,11 +199,66 @@
       "title": "Telemetry cannot decide conformance",
       "statement": "A telemetry bundle MUST NOT claim, revise, or override conformance pass/fail status after the fact.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/telemetry-bundle.schema.json",
           "fixtures/public-contracts/measurement/invalid/telemetry-claims-conformance-result.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-MEASURE-012",
+      "title": "Validity before performance acceptance",
+      "statement": "A performance measurement MUST be ineligible for comparison or ranking unless all required protocol, operation, payload, completion, failure, timeout, and component-identity validation checks pass.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/validation/v1/check-outcomes.schema.json",
+          "schemas/measurement/v1/measurement-summary.schema.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-MEASURE-013",
+      "title": "Requested and effective load and saturation",
+      "statement": "Performance evidence MUST preserve requested and effective connections, concurrency, streams or outstanding operations, rate or count, duration, warmup, repetitions, timeouts, and target and load-generator saturation state when available.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/load-profile/v2/load-profile.schema.json",
+          "schemas/measurement/v1/measurement-summary.schema.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-MEASURE-014",
+      "title": "Exact stack comparison compatibility",
+      "statement": "Matched performance comparisons MUST require compatible scenario, semantic template, payload, exact protocol stack and binding, execution variant, load, network profile, implementation role, platform, package provenance, topology, validation, telemetry, saturation, and repetition policy.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/measurement/v1/comparability-class.schema.json",
+          "docs/architecture/measurement-model.md"
         ]
       }
     },
@@ -168,8 +267,12 @@
       "title": "Adapter optional telemetry discovery",
       "statement": "Adapter manifests and health responses MAY advertise telemetry export capability, but adapter telemetry export MUST remain optional unless a run plan explicitly requires it.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/adapter/v1/common.schema.json",
           "schemas/adapter/v1/manifest.schema.json",
@@ -183,8 +286,12 @@
       "title": "Test executor optional telemetry discovery",
       "statement": "Test-executor manifests and health responses MAY advertise telemetry export capability, but test-executor telemetry export MUST remain optional unless a run plan explicitly requires it.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001"
+        ],
         "related": [
           "schemas/test-executor/v1/common.schema.json",
           "schemas/test-executor/v1/manifest.schema.json",
@@ -198,12 +305,54 @@
       "title": "Report claim level from measurement profile",
       "statement": "Public reports SHOULD state measurement profile and comparability limits when presenting measurement evidence.",
       "trace": {
-        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY", "ARC-PL-REPORT"],
-        "verified_by": ["VER-PL-MEASUREMENT-CONTRACT-0001", "VER-PL-REPORT-0001"],
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY",
+          "ARC-PL-REPORT"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001",
+          "VER-PL-REPORT-0001"
+        ],
         "related": [
           "schemas/measurement/v1/comparability-class.schema.json",
           "schemas/public-report/v1/evidence-report-v1.schema.json",
           "docs/architecture/report-model.md"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-MEASURE-015",
+      "title": "Canonical protocol metric semantics",
+      "statement": "Typed protocol-family scenarios MUST resolve every required metric to the Protocol Metric Catalog v2, which fixes metric identity, kind, unit, aggregation, measured window, and timing authority.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001",
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/measurement/v2/protocol-metric-catalog.schema.json",
+          "fixtures/public-contracts/measurement/valid/protocol-family-metric-catalog-v2.json"
+        ]
+      }
+    },
+    {
+      "id": "PLAB-MEASURE-016",
+      "title": "Normalized protocol execution result",
+      "statement": "Executing typed protocol-family tests MUST emit a Protocol Execution Result v2 that binds run, cell, repetition, scenario, load profile, packages, selected component, endpoint, requested and observed protocol, required check outcomes, canonical metrics, artifacts, and family-specific proof.",
+      "trace": {
+        "satisfied_by": [
+          "ARC-PL-MEASUREMENT-TELEMETRY"
+        ],
+        "verified_by": [
+          "VER-PL-MEASUREMENT-CONTRACT-0001",
+          "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+        ],
+        "related": [
+          "schemas/measurement/v2/protocol-execution-result.schema.json",
+          "fixtures/public-contracts/measurement/valid/protocol-execution-result-v2-tls-full.json"
         ]
       }
     }

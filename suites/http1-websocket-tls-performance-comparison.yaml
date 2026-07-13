@@ -1,0 +1,10 @@
+id: http1-websocket-tls-performance-comparison
+name: HTTP/1.1 TLS WebSocket performance comparison candidate suite
+description: Non-publishable RFC 6455 TLS 1.3 establishment and echo comparison selection.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: websocket-comparison
+scenarios: [http1.websocket.rfc6455.tls.upgrade, http1.websocket.rfc6455.tls.text-echo, http1.websocket.rfc6455.tls.binary-echo]
+protocol: h1
+notes: TLS wss results are distinct from cleartext ws and other WebSocket bindings.
+tags: [http1, websocket, tls, tls1.3, wss, comparison, non-publishable]

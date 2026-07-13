@@ -29,12 +29,14 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
+          import hashlib
           import json
           import pathlib
           import re
           import sys
           import yaml
           from jsonschema import Draft202012Validator
+          from referencing import Registry, Resource
 
           root = pathlib.Path(".").resolve()
           errors = []
@@ -67,18 +69,131 @@ jobs:
               except Exception as exc:
                   errors.append(f"{rel(path)}: invalid YAML: {exc}")
 
-          scenario_schema = load_json(root / "schemas" / "scenario.schema.json")
+          scenario_schemas = {
+              "1.0": load_json(root / "schemas" / "scenario.schema.json"),
+              "2.0": load_json(root / "schemas" / "scenario" / "v2" / "scenario.schema.json"),
+          }
           suite_schema = load_json(root / "schemas" / "suite" / "v1" / "suite.schema.json")
-          load_profile_schema = load_json(root / "schemas" / "load-profile" / "load-profile.schema.json")
+          load_profile_schemas = {
+              "protocol-lab.load-profile.v1": load_json(root / "schemas" / "load-profile" / "load-profile.schema.json"),
+              "protocol-lab.load-profile.v2": load_json(root / "schemas" / "load-profile" / "v2" / "load-profile.schema.json"),
+          }
           package_schema = load_json(root / "schemas" / "package" / "v2" / "package.schema.json")
-          run_plan_schema = load_json(root / "schemas" / "run-plan" / "v1" / "run-plan.schema.json")
+          run_plan_schemas = {
+              "protocol-lab-run-plan-v1": load_json(root / "schemas" / "run-plan" / "v1" / "run-plan.schema.json"),
+              "protocol-lab-run-plan-v2": load_json(root / "schemas" / "run-plan" / "v2" / "run-plan.schema.json"),
+          }
+          prepare_v2_schema = load_json(root / "schemas" / "test-executor" / "v2" / "prepare-request.schema.json")
+          test_executor_common_schema = load_json(root / "schemas" / "test-executor" / "v1" / "common.schema.json")
           validation_check_outcomes_schema = load_json(root / "schemas" / "validation" / "v1" / "check-outcomes.schema.json")
-          scenario_validator = Draft202012Validator(scenario_schema)
+          grpc_service_schemas = {
+              "protocol-lab.grpc-service.v1": load_json(root / "schemas" / "grpc" / "v1" / "service-contract.schema.json"),
+              "protocol-lab.grpc-service.v2": load_json(root / "schemas" / "grpc" / "v2" / "service-contract.schema.json"),
+          }
+          dns_wire_fixture_schemas = {
+              "protocol-lab.dns-wire-fixture.v1": load_json(root / "schemas" / "dns" / "v1" / "dns-wire-fixture.schema.json"),
+              "protocol-lab.dns-wire-fixture.v2": load_json(root / "schemas" / "dns" / "v2" / "dns-wire-fixture.schema.json"),
+          }
+          secure_dns_tls_profile_schema = load_json(root / "schemas" / "dns" / "v1" / "secure-dns-tls-profile.schema.json")
+          tls_profile_schemas = {
+              "protocol-lab.tls-profile.v1": load_json(root / "schemas" / "tls" / "v1" / "tls-profile.schema.json"),
+              "protocol-lab.tls-profile.v2": load_json(root / "schemas" / "tls" / "v2" / "tls-profile.schema.json"),
+          }
+          tls_record_coverage_schema = load_json(root / "schemas" / "tls" / "v1" / "record-coverage-profile.schema.json")
+          protocol_metric_catalog_schema = load_json(root / "schemas" / "measurement" / "v2" / "protocol-metric-catalog.schema.json")
+          protocol_execution_result_schema = load_json(root / "schemas" / "measurement" / "v2" / "protocol-execution-result.schema.json")
+          schema_registry = Registry().with_resources(
+              (schema["$id"], Resource.from_contents(schema))
+              for schema in [*scenario_schemas.values(), *load_profile_schemas.values()]
+          )
+          scenario_validators = {
+              version: Draft202012Validator(schema, registry=schema_registry)
+              for version, schema in scenario_schemas.items()
+          }
           suite_validator = Draft202012Validator(suite_schema)
-          load_profile_validator = Draft202012Validator(load_profile_schema)
+          load_profile_validators = {
+              version: Draft202012Validator(schema, registry=schema_registry)
+              for version, schema in load_profile_schemas.items()
+          }
           package_validator = Draft202012Validator(package_schema)
-          run_plan_validator = Draft202012Validator(run_plan_schema)
+          run_plan_validators = {version: Draft202012Validator(schema) for version, schema in run_plan_schemas.items()}
+          prepare_registry = schema_registry.with_resource(
+              "https://schemas.incursa.com/protocol-lab/test-executor/v1/common.schema.json",
+              Resource.from_contents(test_executor_common_schema),
+          )
+          prepare_v2_validator = Draft202012Validator(prepare_v2_schema, registry=prepare_registry)
           validation_check_outcomes_validator = Draft202012Validator(validation_check_outcomes_schema)
+          grpc_service_validators = {
+              version: Draft202012Validator(schema)
+              for version, schema in grpc_service_schemas.items()
+          }
+          dns_wire_fixture_validators = {
+              version: Draft202012Validator(schema)
+              for version, schema in dns_wire_fixture_schemas.items()
+          }
+          secure_dns_tls_profile_validator = Draft202012Validator(secure_dns_tls_profile_schema)
+          protocol_metric_catalog_validator = Draft202012Validator(protocol_metric_catalog_schema)
+          protocol_execution_result_validator = Draft202012Validator(protocol_execution_result_schema)
+
+          def validator_for(data, validators, path, label):
+              version = data.get("schemaVersion") if isinstance(data, dict) else None
+              validator = validators.get(version)
+              if validator is None:
+                  errors.append(f"{rel(path)}: unknown {label} schemaVersion {version}")
+                  return None
+              scenario_v2_fields = {
+                  "semanticTemplateId", "protocolStack", "upstreamStandards",
+                  "tls", "grpc", "dns", "websocket", "executionProfile", "availability",
+              }
+              load_profile_v2_fields = {"tls", "grpc", "dns", "websocket"}
+              if version == "1.0" and (
+                  scenario_v2_fields.intersection(data)
+                  or "protocol" in (data.get("validation") or {})
+              ):
+                  errors.append(f"{rel(path)}: {label} uses v2 fields with schemaVersion 1.0")
+              if version == "protocol-lab.load-profile.v1" and load_profile_v2_fields.intersection(data):
+                  errors.append(f"{rel(path)}: {label} uses v2 fields with schemaVersion protocol-lab.load-profile.v1")
+              return validator
+
+          def check_dns_wire_fixture_integrity(path, data):
+              messages = data.get("messages", {})
+              wire = {}
+              for message_name in ["query", "canonicalResponse"]:
+                  bare_wire = messages.get(message_name, {}).get("bareWire", {})
+                  try:
+                      message_wire = bytes.fromhex(bare_wire.get("hex", ""))
+                  except (TypeError, ValueError):
+                      errors.append(f"{rel(path)}: DNS {message_name} bare wire is not valid hexadecimal")
+                      continue
+                  wire[message_name] = message_wire
+                  if len(message_wire) != bare_wire.get("lengthBytes"):
+                      errors.append(
+                          f"{rel(path)}: DNS {message_name} lengthBytes {bare_wire.get('lengthBytes')} "
+                          f"does not match {len(message_wire)} bare-wire bytes"
+                      )
+                  digest = hashlib.sha256(message_wire).hexdigest()
+                  if digest != bare_wire.get("sha256"):
+                      errors.append(f"{rel(path)}: DNS {message_name} SHA-256 does not match bare wire")
+
+              if set(wire) != {"query", "canonicalResponse"}:
+                  return
+              for transport in ["dot", "doq"]:
+                  framing = data.get("transportFraming", {}).get(transport, {})
+                  for field, message_name in [
+                      ("canonicalQueryWireHex", "query"),
+                      ("canonicalResponseWireHex", "canonicalResponse"),
+                  ]:
+                      expected = len(wire[message_name]).to_bytes(2, byteorder="big") + wire[message_name]
+                      try:
+                          framed = bytes.fromhex(framing.get(field, ""))
+                      except (TypeError, ValueError):
+                          errors.append(f"{rel(path)}: DNS {transport} {field} is not valid hexadecimal")
+                          continue
+                      if framed != expected:
+                          errors.append(
+                              f"{rel(path)}: DNS {transport} {field} must be the two-byte "
+                              f"big-endian message length followed by the bare DNS message"
+                          )
 
           specification_schema_root = root / "schemas" / "specification" / "v1"
           specification_schema_files = {
@@ -147,6 +262,356 @@ jobs:
               if validation_check_outcomes_validator.is_valid(data):
                   errors.append(f"{rel(path)}: invalid validation check outcomes fixture unexpectedly passes schema validation")
 
+          grpc_service_valid_roots = {
+              "protocol-lab.grpc-service.v1": root / "fixtures" / "public-contracts" / "grpc" / "valid",
+              "protocol-lab.grpc-service.v2": root / "fixtures" / "public-contracts" / "grpc" / "v2" / "valid",
+          }
+          grpc_service_invalid_roots = {
+              "protocol-lab.grpc-service.v1": root / "fixtures" / "public-contracts" / "grpc" / "invalid",
+              "protocol-lab.grpc-service.v2": root / "fixtures" / "public-contracts" / "grpc" / "v2" / "invalid",
+          }
+          grpc_service_contracts = {}
+          grpc_service_ids = set()
+          for path, data in json_docs.items():
+              grpc_version = data.get("schemaVersion") if isinstance(data, dict) else None
+              grpc_service_validator = grpc_service_validators.get(grpc_version)
+              valid_root = grpc_service_valid_roots.get(grpc_version)
+              invalid_root = grpc_service_invalid_roots.get(grpc_version)
+              if grpc_service_validator is not None and valid_root is not None and path.is_relative_to(valid_root):
+                  fixture_errors = list(grpc_service_validator.iter_errors(data))
+                  for error in fixture_errors:
+                      errors.append(f"{rel(path)}: gRPC service contract schema: {error.message}")
+                  if not fixture_errors:
+                      contract_id = data.get("fullyQualifiedService") or data.get("contractId")
+                      canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+                      contract_hash = hashlib.sha256(canonical).hexdigest()
+                      grpc_service_contracts[(contract_id, contract_hash)] = (path, data, contract_hash)
+                      grpc_service_ids.add(contract_id)
+              if grpc_service_validator is not None and invalid_root is not None and path.is_relative_to(invalid_root):
+                  if grpc_service_validator.is_valid(data):
+                      errors.append(f"{rel(path)}: invalid gRPC service fixture unexpectedly passes schema validation")
+
+          valid_dns_fixture_root = root / "fixtures" / "public-contracts" / "dns" / "valid"
+          invalid_dns_fixture_root = root / "fixtures" / "public-contracts" / "dns" / "invalid"
+          dns_wire_fixtures = {}
+          secure_dns_tls_profiles = {}
+          for path, data in json_docs.items():
+              if path.is_relative_to(valid_dns_fixture_root):
+                  dns_wire_fixture_validator = dns_wire_fixture_validators.get(data.get("schemaVersion"))
+                  if dns_wire_fixture_validator is not None:
+                      fixture_errors = list(dns_wire_fixture_validator.iter_errors(data))
+                      for error in fixture_errors:
+                          errors.append(f"{rel(path)}: DNS wire fixture schema: {error.message}")
+                      if not fixture_errors:
+                          check_dns_wire_fixture_integrity(path, data)
+                          dns_wire_fixtures[data.get("fixtureId")] = (path, data)
+                  elif data.get("schemaVersion") == "protocol-lab.secure-dns-tls-profile.v1":
+                      fixture_errors = list(secure_dns_tls_profile_validator.iter_errors(data))
+                      for error in fixture_errors:
+                          errors.append(f"{rel(path)}: secure DNS TLS profile schema: {error.message}")
+                      if not fixture_errors:
+                          secure_dns_tls_profiles[data.get("profileId")] = (path, data)
+                  else:
+                      errors.append(f"{rel(path)}: unknown DNS fixture schemaVersion {data.get('schemaVersion')}")
+              if path.is_relative_to(invalid_dns_fixture_root):
+                  dns_wire_fixture_validator = dns_wire_fixture_validators.get(data.get("schemaVersion"))
+                  if dns_wire_fixture_validator is not None and dns_wire_fixture_validator.is_valid(data):
+                      errors.append(f"{rel(path)}: invalid DNS wire fixture unexpectedly passes schema validation")
+                  if data.get("schemaVersion") == "protocol-lab.secure-dns-tls-profile.v1" and secure_dns_tls_profile_validator.is_valid(data):
+                      errors.append(f"{rel(path)}: invalid secure DNS TLS profile unexpectedly passes schema validation")
+
+          tls_profile_valid_roots = {
+              "protocol-lab.tls-profile.v1": root / "fixtures" / "public-contracts" / "tls" / "valid",
+              "protocol-lab.tls-profile.v2": root / "fixtures" / "public-contracts" / "tls-profile-v2" / "valid",
+          }
+          tls_profile_invalid_roots = {
+              "protocol-lab.tls-profile.v1": root / "fixtures" / "public-contracts" / "tls" / "invalid",
+              "protocol-lab.tls-profile.v2": root / "fixtures" / "public-contracts" / "tls-profile-v2" / "invalid",
+          }
+          tls_profile_validators = {version: Draft202012Validator(schema) for version, schema in tls_profile_schemas.items()}
+          tls_profiles = {}
+          for path, data in json_docs.items():
+              version = data.get("schemaVersion") if isinstance(data, dict) else None
+              valid_root = tls_profile_valid_roots.get(version)
+              invalid_root = tls_profile_invalid_roots.get(version)
+              if valid_root and path.is_relative_to(valid_root):
+                  fixture_errors = list(tls_profile_validators[version].iter_errors(data))
+                  for error in fixture_errors:
+                      errors.append(f"{rel(path)}: TLS profile schema: {error.message}")
+                  profile_id = data.get("profileId") if isinstance(data, dict) else None
+                  if profile_id in tls_profiles:
+                      errors.append(f"{rel(path)}: duplicate TLS profileId {profile_id}")
+                  elif not fixture_errors:
+                      tls_profiles[profile_id] = (path, data)
+              if invalid_root and path.is_relative_to(invalid_root):
+                  if tls_profile_validators[version].is_valid(data):
+                      errors.append(f"{rel(path)}: invalid TLS profile unexpectedly passes schema validation")
+
+          tls_record_coverage_profiles = {}
+          tls_record_coverage_root = root / "fixtures" / "public-contracts" / "tls-record-coverage" / "valid"
+          tls_record_coverage_invalid_root = root / "fixtures" / "public-contracts" / "tls-record-coverage" / "invalid"
+          tls_record_coverage_validator = Draft202012Validator(tls_record_coverage_schema)
+          for path, data in json_docs.items():
+              if path.is_relative_to(tls_record_coverage_root):
+                  fixture_errors = list(tls_record_coverage_validator.iter_errors(data))
+                  for error in fixture_errors:
+                      errors.append(f"{rel(path)}: TLS record coverage schema: {error.message}")
+                  if not fixture_errors:
+                      tls_record_coverage_profiles[data.get("profileId")] = (path, data)
+              if path.is_relative_to(tls_record_coverage_invalid_root) and tls_record_coverage_validator.is_valid(data):
+                  errors.append(f"{rel(path)}: invalid TLS record coverage fixture unexpectedly passes schema validation")
+
+          metric_catalog_path = root / "fixtures" / "public-contracts" / "measurement" / "valid" / "protocol-family-metric-catalog-v2.json"
+          metric_catalog_document = json_docs.get(metric_catalog_path) or load_json(metric_catalog_path)
+          for error in protocol_metric_catalog_validator.iter_errors(metric_catalog_document):
+              errors.append(f"{rel(metric_catalog_path)}: protocol metric catalog schema: {error.message}")
+          metric_catalog = {}
+          for definition in metric_catalog_document.get("metrics", []):
+              metric_id = definition.get("metricId")
+              if metric_id in metric_catalog:
+                  errors.append(f"{rel(metric_catalog_path)}: duplicate metricId {metric_id}")
+              metric_catalog[metric_id] = definition
+
+          for path, data in json_docs.items():
+              if data.get("schemaVersion") == "protocol-lab.protocol-metric-catalog.v2" and path != metric_catalog_path:
+                  if path.is_relative_to(root / "fixtures" / "public-contracts" / "measurement" / "invalid"):
+                      if protocol_metric_catalog_validator.is_valid(data):
+                          errors.append(f"{rel(path)}: invalid protocol metric catalog unexpectedly passes schema validation")
+
+              if data.get("schemaVersion") == "protocol-lab.protocol-execution-result.v2":
+                  is_valid_fixture = path.is_relative_to(root / "fixtures" / "public-contracts" / "measurement" / "valid")
+                  is_invalid_fixture = path.is_relative_to(root / "fixtures" / "public-contracts" / "measurement" / "invalid")
+                  result_errors = list(protocol_execution_result_validator.iter_errors(data))
+                  if is_valid_fixture:
+                      for error in result_errors:
+                          errors.append(f"{rel(path)}: protocol execution result schema: {error.message}")
+                      seen_metrics = set()
+                      for metric in data.get("metrics", []):
+                          metric_id = metric.get("metricId")
+                          if metric_id in seen_metrics:
+                              errors.append(f"{rel(path)}: duplicate result metricId {metric_id}")
+                          seen_metrics.add(metric_id)
+                          definition = metric_catalog.get(metric_id)
+                          if not definition:
+                              errors.append(f"{rel(path)}: result metricId {metric_id} does not resolve")
+                          elif (metric.get("unit"), metric.get("aggregation")) != (definition.get("unit"), definition.get("aggregation")):
+                              errors.append(f"{rel(path)}: result metric {metric_id} unit/aggregation conflicts with catalog")
+                      check_ids = [check.get("checkId") for check in data.get("validation", {}).get("checks", [])]
+                      if len(check_ids) != len(set(check_ids)):
+                          errors.append(f"{rel(path)}: validation checkId values must be unique")
+                      if data.get("validation", {}).get("overallOutcome") == "pass" and any(
+                          check.get("required") and check.get("outcome") != "pass"
+                          for check in data.get("validation", {}).get("checks", [])
+                      ):
+                          errors.append(f"{rel(path)}: overall pass requires every required check to pass")
+                  if is_invalid_fixture and not result_errors:
+                      errors.append(f"{rel(path)}: invalid protocol execution result unexpectedly passes schema validation")
+
+          def protobuf_varint(value):
+              encoded = bytearray()
+              while True:
+                  byte = value & 0x7f
+                  value >>= 7
+                  encoded.append(byte | (0x80 if value else 0))
+                  if not value:
+                      return bytes(encoded)
+
+          def check_typed_scenario_integrity(path, data):
+              tls = data.get("tls")
+              if isinstance(tls, dict):
+                  profile_record = tls_profiles.get(tls.get("profileId"))
+                  if not profile_record:
+                      errors.append(f"{rel(path)}: TLS profileId {tls.get('profileId')} does not resolve")
+                  else:
+                      profile = profile_record[1]
+                      expected = {
+                          "version": profile.get("tlsVersion"),
+                          "serverName": profile.get("serverName"),
+                          "alpn": profile.get("alpn"),
+                          "cipherSuite": profile.get("cipherSuite"),
+                          "keyExchangeGroup": profile.get("keyExchangeGroup"),
+                          "signatureScheme": profile.get("signatureScheme"),
+                          "peerAuthentication": profile.get("peerAuthentication"),
+                          "certificateProfile": profile.get("certificate", {}).get("profileId"),
+                      }
+                      if profile.get("clientCertificate"):
+                          expected["clientCertificateProfile"] = profile.get("clientCertificate", {}).get("profileId")
+                      for field, expected_value in expected.items():
+                          if tls.get(field) != expected_value:
+                              errors.append(f"{rel(path)}: TLS {field} does not match profile {tls.get('profileId')}")
+                  if tls.get("payloadGenerator") == "repeated-octet" and isinstance(tls.get("applicationDataBytes"), int):
+                      payload = bytes([tls.get("payloadOctet", 0)]) * tls["applicationDataBytes"]
+                      if hashlib.sha256(payload).hexdigest() != tls.get("payloadSha256"):
+                          errors.append(f"{rel(path)}: TLS payload SHA-256 does not match payloadOctet/applicationDataBytes")
+                  if tls.get("mode") == "record-coverage" and tls.get("recordCoverageProfileId") not in tls_record_coverage_profiles:
+                      errors.append(f"{rel(path)}: TLS recordCoverageProfileId {tls.get('recordCoverageProfileId')} does not resolve")
+
+              grpc = data.get("grpc")
+              if isinstance(grpc, dict):
+                  contract_key = (grpc.get("serviceContractId"), grpc.get("serviceContractSha256"))
+                  contract_record = grpc_service_contracts.get(contract_key)
+                  if not contract_record:
+                      if grpc.get("serviceContractId") in grpc_service_ids:
+                          errors.append(f"{rel(path)}: gRPC serviceContractSha256 does not match a canonical service contract")
+                      else:
+                          errors.append(f"{rel(path)}: gRPC serviceContractId {grpc.get('serviceContractId')} does not resolve")
+                  else:
+                      contract = contract_record[1]
+                      method = next((item for item in contract.get("methods", []) if item.get("name") == grpc.get("method")), None)
+                      expected_streaming = {
+                          "unary": (False, False),
+                          "server-streaming": (False, True),
+                          "client-streaming": (True, False),
+                          "bidirectional-streaming": (True, True),
+                      }.get(grpc.get("rpcType"))
+                      method_path = method.get("path") if method else None
+                      if method and method_path is None:
+                          method_path = f"/{grpc.get('serviceContractId')}/{method.get('name')}"
+                      if not method or method_path != grpc.get("path"):
+                          errors.append(f"{rel(path)}: gRPC method/path does not resolve in canonical service contract")
+                      elif expected_streaming != (method.get("clientStreaming"), method.get("serverStreaming")):
+                          errors.append(f"{rel(path)}: gRPC rpcType conflicts with canonical method streaming flags")
+                      else:
+                          expected_count = (method.get("requestMessages"), method.get("responseMessages"))
+                          actual_count = (grpc.get("request", {}).get("count"), grpc.get("response", {}).get("count"))
+                          if None not in expected_count and expected_count != actual_count:
+                              errors.append(f"{rel(path)}: gRPC request/response counts conflict with canonical method")
+                          terminal_status = method.get("terminalStatus", {}).get("code")
+                          if terminal_status is not None and terminal_status != grpc.get("expectedGrpcStatus"):
+                              errors.append(f"{rel(path)}: gRPC expected status conflicts with canonical method")
+                          compression_profile = "gzip-semantic-v1" if grpc.get("compression") == "gzip" else "identity-v1"
+                          if method.get("compressionProfile") and method.get("compressionProfile") != compression_profile:
+                              errors.append(f"{rel(path)}: gRPC compression profile conflicts with canonical method")
+                          if method.get("metadataProfile") and method.get("metadataProfile") != grpc.get("metadataPolicy"):
+                              errors.append(f"{rel(path)}: gRPC metadata profile conflicts with canonical method")
+                  for direction in ["request", "response"]:
+                      message = grpc.get(direction, {})
+                      if message.get("payloadGenerator") != "repeated-octet" or not isinstance(message.get("payloadBytes"), int):
+                          continue
+                      payload = bytes([message.get("payloadOctet", 0)]) * message["payloadBytes"]
+                      protobuf = b"" if not payload else b"\x0a" + protobuf_varint(len(payload)) + payload
+                      expected_values = {
+                          "payloadSha256": hashlib.sha256(payload).hexdigest(),
+                          "serializedProtobufBytes": len(protobuf),
+                          "serializedProtobufSha256": hashlib.sha256(protobuf).hexdigest(),
+                      }
+                      if grpc.get("compression") == "identity":
+                          frame = b"\x00" + len(protobuf).to_bytes(4, byteorder="big") + protobuf
+                          expected_values.update({
+                              "grpcFrameBytes": len(frame),
+                              "grpcFrameSha256": hashlib.sha256(frame).hexdigest(),
+                          })
+                      for field, expected_value in expected_values.items():
+                          if message.get(field) != expected_value:
+                              errors.append(f"{rel(path)}: gRPC {direction} {field} does not match deterministic bytes")
+
+              dns = data.get("dns")
+              if isinstance(dns, dict):
+                  transport = dns.get("transport")
+                  if transport in {"dot", "doh2", "doh3", "doq"}:
+                      tls_policy = dns.get("tlsPolicy", {})
+                      tls_profile_record = secure_dns_tls_profiles.get(tls_policy.get("profileId"))
+                      if not tls_profile_record:
+                          errors.append(f"{rel(path)}: secure DNS TLS profileId {tls_policy.get('profileId')} does not resolve")
+                      else:
+                          profile = tls_profile_record[1]
+                          expected_tls = {
+                              "version": profile.get("tlsVersion"),
+                              "resumptionPolicy": profile.get("resumptionPolicy"),
+                              "earlyData": profile.get("earlyData"),
+                              "alpn": profile.get("alpnByTransport", {}).get(transport),
+                              "certificateProfile": profile.get("certificate", {}).get("profileId"),
+                              "cipherSuite": profile.get("cipherSuite"),
+                              "keyExchangeGroup": profile.get("keyExchangeGroup"),
+                              "signatureScheme": profile.get("signatureScheme"),
+                              "peerAuthentication": profile.get("peerAuthentication"),
+                          }
+                          for field, expected_value in expected_tls.items():
+                              if tls_policy.get(field) != expected_value:
+                                  errors.append(f"{rel(path)}: secure DNS TLS {field} does not match profile")
+                  fixture_record = dns_wire_fixtures.get(dns.get("fixtureId"))
+                  if not fixture_record:
+                      errors.append(f"{rel(path)}: DNS fixtureId {dns.get('fixtureId')} does not resolve")
+                  else:
+                      fixture = fixture_record[1]
+                      expected_query = fixture.get("messages", {}).get("query", {}).get("bareWire", {})
+                      expected_response = fixture.get("messages", {}).get("canonicalResponse", {}).get("bareWire", {})
+                      runtime_transport = "udp" if transport == "udp-tcp" else transport
+                      comparisons = [
+                          (dns.get("query", {}).get("wireLength"), expected_query.get("lengthBytes"), "query wireLength"),
+                          (dns.get("query", {}).get("normalizedWireSha256"), expected_query.get("sha256"), "query normalizedWireSha256"),
+                          (dns.get("expectedResponse", {}).get("wireLength"), expected_response.get("lengthBytes"), "response wireLength"),
+                          (dns.get("expectedResponse", {}).get("normalizedWireSha256"), expected_response.get("sha256"), "response normalizedWireSha256"),
+                          (dns.get("runtimeIdPolicy"), fixture.get("runtimeIdPolicy", {}).get(runtime_transport), "runtimeIdPolicy"),
+                          (dns.get("responseNormalization"), fixture.get("responseNormalization"), "responseNormalization"),
+                      ]
+                      for actual, expected_value, label in comparisons:
+                          if actual != expected_value:
+                              errors.append(f"{rel(path)}: DNS {label} does not match canonical fixture")
+
+              websocket = data.get("websocket")
+              if isinstance(websocket, dict):
+                  handshake = websocket.get("handshake", {})
+                  if handshake.get("binding") != websocket.get("binding"):
+                      errors.append(f"{rel(path)}: WebSocket handshake binding does not match websocket binding")
+                  if websocket.get("binding") == "http1-upgrade":
+                      request_headers = handshake.get("requestHeaders", {})
+                      response_headers = handshake.get("responseHeaders", {})
+                      if request_headers.get("host") != websocket.get("authority"):
+                          errors.append(f"{rel(path)}: WebSocket HTTP/1 Host does not match authority")
+                  else:
+                      request_headers = handshake.get("requestHeaders", {})
+                      response_headers = handshake.get("responseHeaders", {})
+                  if websocket.get("binding") in {"http2-extended-connect", "http3-extended-connect"}:
+                      pseudo = handshake.get("requestPseudoHeaders", {})
+                      if pseudo.get("authority") != websocket.get("authority"):
+                          errors.append(f"{rel(path)}: WebSocket Extended CONNECT authority does not match")
+                      if pseudo.get("path") != websocket.get("path"):
+                          errors.append(f"{rel(path)}: WebSocket Extended CONNECT path does not match")
+                  subprotocol = websocket.get("subprotocol")
+                  expected_protocol_present = isinstance(subprotocol, str)
+                  if request_headers.get("secWebSocketProtocolPresent") != expected_protocol_present or response_headers.get("secWebSocketProtocolPresent") != expected_protocol_present:
+                      errors.append(f"{rel(path)}: WebSocket subprotocol presence does not match scenario policy")
+                  if expected_protocol_present and (request_headers.get("secWebSocketProtocol") != subprotocol or response_headers.get("secWebSocketProtocol") != subprotocol):
+                      errors.append(f"{rel(path)}: WebSocket negotiated subprotocol does not match scenario subprotocol")
+                  extensions = websocket.get("extensions")
+                  expected_extensions_present = extensions != "none"
+                  if request_headers.get("secWebSocketExtensionsPresent") != expected_extensions_present or response_headers.get("secWebSocketExtensionsPresent") != expected_extensions_present:
+                      errors.append(f"{rel(path)}: WebSocket extension presence does not match scenario policy")
+                  if extensions == "permessage-deflate-no-context-takeover":
+                      extension_policy = websocket.get("extensionPolicy", {})
+                      if request_headers.get("secWebSocketExtensions") != extension_policy.get("offer") or response_headers.get("secWebSocketExtensions") != extension_policy.get("accept"):
+                          errors.append(f"{rel(path)}: WebSocket permessage-deflate handshake does not match extension policy")
+                  if websocket.get("messageCount", 0) > 1 and websocket.get("messageOrdering") != "strict-in-order":
+                      errors.append(f"{rel(path)}: multi-message WebSocket scenario must require strict ordering")
+                  if websocket.get("fragmentation") == "diagnostic":
+                      fragment_plan = websocket.get("fragmentPlan", {})
+                      frame_bytes = fragment_plan.get("framePayloadBytes") or []
+                      if sum(frame_bytes) != websocket.get("messageBytes"):
+                          errors.append(f"{rel(path)}: WebSocket fragment payload bytes do not sum to messageBytes")
+                      if fragment_plan.get("firstOpcode") != websocket.get("messageType"):
+                          errors.append(f"{rel(path)}: WebSocket fragment first opcode does not match message type")
+                  payload = None
+                  if websocket.get("payloadGenerator") == "exact-utf8" and isinstance(websocket.get("payloadText"), str):
+                      payload = websocket["payloadText"].encode("utf-8")
+                  if websocket.get("payloadGenerator") == "repeated-octet" and isinstance(websocket.get("messageBytes"), int):
+                      payload = bytes([websocket.get("payloadOctet", 0)]) * websocket["messageBytes"]
+                  if payload is not None:
+                      if len(payload) != websocket.get("messageBytes") or hashlib.sha256(payload).hexdigest() != websocket.get("payloadSha256"):
+                          errors.append(f"{rel(path)}: WebSocket payload bytes/hash do not match deterministic payload")
+                  if websocket.get("controlPayloadGenerator") == "exact-utf8" and isinstance(websocket.get("controlPayloadText"), str):
+                      control = websocket["controlPayloadText"].encode("utf-8")
+                      if len(control) != websocket.get("controlPayloadBytes") or hashlib.sha256(control).hexdigest() != websocket.get("controlPayloadSha256"):
+                          errors.append(f"{rel(path)}: WebSocket control payload bytes/hash do not match deterministic payload")
+
+              primary_metrics = set(data.get("benchmarkCompat", {}).get("primaryMetrics") or [])
+              required_metrics = set(data.get("requiredMetrics") or [])
+              if not primary_metrics.issubset(required_metrics):
+                  errors.append(f"{rel(path)}: benchmark primaryMetrics must be included in requiredMetrics")
+              unknown_metrics = required_metrics.difference(metric_catalog)
+              if unknown_metrics:
+                  errors.append(f"{rel(path)}: requiredMetrics missing from protocol metric catalog: {sorted(unknown_metrics)}")
+
           scenario_ids = {}
           for path, data in yaml_docs.items():
               if not isinstance(data, dict):
@@ -156,8 +621,12 @@ jobs:
               if "network" in path.parts and "profiles" in path.parts:
                   continue
               if data.get("schemaVersion"):
-                  for error in scenario_validator.iter_errors(data):
-                      errors.append(f"{rel(path)}: scenario schema: {error.message}")
+                  validator = validator_for(data, scenario_validators, path, "scenario")
+                  if validator:
+                      for error in validator.iter_errors(data):
+                          errors.append(f"{rel(path)}: scenario schema: {error.message}")
+                      if data.get("schemaVersion") == "2.0":
+                          check_typed_scenario_integrity(path, data)
                   scenario_id = data.get("id")
                   if scenario_id in scenario_ids:
                       errors.append(f"{rel(path)}: duplicate scenario id {scenario_id} also in {rel(scenario_ids[scenario_id])}")
@@ -268,17 +737,36 @@ jobs:
           for path, data in yaml_docs.items():
               if not isinstance(data, dict) or not path.is_relative_to(root / "load-profiles"):
                   continue
-              for error in load_profile_validator.iter_errors(data):
-                  errors.append(f"{rel(path)}: load-profile schema: {error.message}")
+              validator = validator_for(data, load_profile_validators, path, "load-profile")
+              if validator:
+                  for error in validator.iter_errors(data):
+                      errors.append(f"{rel(path)}: load-profile schema: {error.message}")
+              if data.get("schemaVersion") == "protocol-lab.load-profile.v2":
+                  if isinstance(data.get("tls"), dict) and data["tls"].get("concurrency", 0) > data["tls"].get("connections", 0):
+                      errors.append(f"{rel(path)}: TLS concurrency cannot exceed allocated connections")
+                  if isinstance(data.get("grpc"), dict):
+                      grpc_load = data["grpc"]
+                      capacity = (
+                          grpc_load.get("channels", 0)
+                          * grpc_load.get("connectionsPerChannel", 0)
+                          * grpc_load.get("streamsPerConnection", 0)
+                      )
+                      if grpc_load.get("concurrency", 0) > capacity:
+                          errors.append(f"{rel(path)}: gRPC concurrency exceeds channel/connection/stream capacity")
+                  if isinstance(data.get("dns"), dict):
+                      dns_load = data["dns"]
+                      capacity = dns_load.get("connections", 0) * dns_load.get("outstandingQueries", 0)
+                      if dns_load.get("concurrency", 0) > capacity:
+                          errors.append(f"{rel(path)}: DNS concurrency exceeds connection/outstanding-query capacity")
+                  if isinstance(data.get("websocket"), dict) and data["websocket"].get("concurrency", 0) > data["websocket"].get("connections", 0):
+                      errors.append(f"{rel(path)}: WebSocket concurrency cannot exceed allocated connections")
               load_profile_id = data.get("id")
               if load_profile_id in load_profile_ids:
                   errors.append(f"{rel(path)}: duplicate load profile id {load_profile_id} also in {rel(load_profile_ids[load_profile_id])}")
               load_profile_ids[load_profile_id] = path
 
           valid_fixture_validators = [
-              (root / "fixtures" / "public-contracts" / "scenarios" / "valid", scenario_validator, "scenario fixture"),
               (root / "fixtures" / "public-contracts" / "suites" / "valid", suite_validator, "suite fixture"),
-              (root / "fixtures" / "public-contracts" / "load-profiles" / "valid", load_profile_validator, "load-profile fixture"),
           ]
           for fixture_root, validator, label in valid_fixture_validators:
               for path, data in json_docs.items():
@@ -286,6 +774,41 @@ jobs:
                       continue
                   for error in validator.iter_errors(data):
                       errors.append(f"{rel(path)}: {label} schema: {error.message}")
+
+          versioned_valid_fixture_validators = [
+              (root / "fixtures" / "public-contracts" / "scenarios" / "valid", scenario_validators, "scenario fixture"),
+              (root / "fixtures" / "public-contracts" / "load-profiles" / "valid", load_profile_validators, "load-profile fixture"),
+          ]
+          for fixture_root, validators, label in versioned_valid_fixture_validators:
+              for path, data in json_docs.items():
+                  if not path.is_relative_to(fixture_root):
+                      continue
+                  validator = validator_for(data, validators, path, label)
+                  if validator:
+                      for error in validator.iter_errors(data):
+                          errors.append(f"{rel(path)}: {label} schema: {error.message}")
+
+          invalid_fixture_validators = [
+              (root / "fixtures" / "public-contracts" / "suites" / "invalid", suite_validator, "suite fixture"),
+          ]
+          for fixture_root, validator, label in invalid_fixture_validators:
+              for path, data in json_docs.items():
+                  if not path.is_relative_to(fixture_root):
+                      continue
+                  if validator.is_valid(data):
+                      errors.append(f"{rel(path)}: invalid {label} unexpectedly passes schema validation")
+
+          versioned_invalid_fixture_validators = [
+              (root / "fixtures" / "public-contracts" / "scenarios" / "invalid", scenario_validators, "scenario fixture"),
+              (root / "fixtures" / "public-contracts" / "load-profiles" / "invalid", load_profile_validators, "load-profile fixture"),
+          ]
+          for fixture_root, validators, label in versioned_invalid_fixture_validators:
+              for path, data in json_docs.items():
+                  if not path.is_relative_to(fixture_root):
+                      continue
+                  validator = validator_for(data, validators, path, label)
+                  if validator and validator.is_valid(data):
+                      errors.append(f"{rel(path)}: invalid {label} unexpectedly passes schema validation")
 
           root_suite_ids = {}
           for path, data in yaml_docs.items():
@@ -295,8 +818,10 @@ jobs:
                   errors.append(f"{rel(path)}: suite schema: {error.message}")
               suite_id = data.get("id")
               root_suite_ids[suite_id] = path
-              if data.get("loadProfileId") not in load_profile_ids:
+              load_profile_path = load_profile_ids.get(data.get("loadProfileId"))
+              if load_profile_path is None:
                   errors.append(f"{rel(path)}: suite loadProfileId {data.get('loadProfileId')} does not resolve")
+              load_profile = yaml_docs.get(load_profile_path, {}) if load_profile_path is not None else {}
               for scenario_id in data.get("scenarios") or []:
                   scenario_path = scenario_ids.get(scenario_id)
                   if not scenario_path:
@@ -305,6 +830,12 @@ jobs:
                   scenario_protocol = yaml_docs[scenario_path].get("protocol")
                   if data.get("protocol") != scenario_protocol:
                       errors.append(f"{rel(path)}: suite protocol {data.get('protocol')} mismatches {scenario_id} protocol {scenario_protocol}")
+                  scenario_grpc = yaml_docs[scenario_path].get("grpc", {})
+                  load_grpc = load_profile.get("grpc", {}) if isinstance(load_profile, dict) else {}
+                  if scenario_grpc.get("connectionLifecycle") == "new-channel-per-operation" and load_grpc.get("channelReuse") != "churn":
+                      errors.append(f"{rel(path)}: new-channel scenario {scenario_id} requires gRPC channelReuse churn")
+                  if scenario_grpc.get("connectionLifecycle") == "pre-established-channel" and load_grpc and load_grpc.get("channelReuse") != "reuse":
+                      errors.append(f"{rel(path)}: pre-established scenario {scenario_id} requires gRPC channelReuse reuse")
 
           for suite_path, data in yaml_docs.items():
               if not isinstance(data, dict):
@@ -324,8 +855,10 @@ jobs:
                   scenario_data = yaml_docs.get(scenario_path)
                   if isinstance(scenario_data, dict) and scenario_data.get("id"):
                       local_scenarios[scenario_data["id"]] = scenario_path
-                      for error in scenario_validator.iter_errors(scenario_data):
-                          errors.append(f"{rel(scenario_path)}: package scenario schema: {error.message}")
+                      validator = validator_for(scenario_data, scenario_validators, scenario_path, "package scenario")
+                      if validator:
+                          for error in validator.iter_errors(scenario_data):
+                              errors.append(f"{rel(scenario_path)}: package scenario schema: {error.message}")
                       if isinstance(scenario_data.get("id"), str) and scenario_data["id"].startswith("http."):
                           errors.append(f"{rel(scenario_path)}: stale generic http.* package scenario id {scenario_data['id']}")
               for scenario_id in data.get("scenarios") or []:
@@ -458,16 +991,26 @@ jobs:
           for run_plan_path, run_plan in json_docs.items():
               if not run_plan_path.is_relative_to(invalid_run_plan_root):
                   continue
-              if not list(run_plan_validator.iter_errors(run_plan)):
+              run_plan_validator = run_plan_validators.get(run_plan.get("schemaVersion"))
+              if run_plan_validator is None:
+                  errors.append(f"{rel(run_plan_path)}: unknown run-plan schemaVersion {run_plan.get('schemaVersion')}")
+              elif not list(run_plan_validator.iter_errors(run_plan)):
                   errors.append(f"{rel(run_plan_path)}: invalid run-plan fixture unexpectedly passes schema validation")
 
           for run_plan_path, run_plan in json_docs.items():
               if not run_plan_path.is_relative_to(root / "fixtures" / "public-contracts" / "run-plans" / "valid"):
                   continue
+              run_plan_validator = run_plan_validators.get(run_plan.get("schemaVersion"))
+              if run_plan_validator is None:
+                  errors.append(f"{rel(run_plan_path)}: unknown run-plan schemaVersion {run_plan.get('schemaVersion')}")
+                  continue
               for error in run_plan_validator.iter_errors(run_plan):
                   errors.append(f"{rel(run_plan_path)}: run-plan schema: {error.message}")
-              if run_plan.get("loadProfileId") not in load_profile_ids:
-                  errors.append(f"{rel(run_plan_path)}: run-plan loadProfileId {run_plan.get('loadProfileId')} does not resolve")
+              load_profile_id = run_plan.get("loadProfileId")
+              if run_plan.get("schemaVersion") == "protocol-lab-run-plan-v2":
+                  load_profile_id = run_plan.get("loadProfileSnapshot", {}).get("id")
+              if load_profile_id not in load_profile_ids:
+                  errors.append(f"{rel(run_plan_path)}: run-plan load profile {load_profile_id} does not resolve")
 
               provided_scenarios = set()
               provided_suites = set()
@@ -497,6 +1040,50 @@ jobs:
               for test_executor_id in run_plan.get("testExecutorIds", []):
                   if test_executor_id not in provided_test_executors:
                       errors.append(f"{rel(run_plan_path)}: test executor {test_executor_id} is not provided by the pinned package fixtures")
+
+              if run_plan.get("schemaVersion") == "protocol-lab-run-plan-v2":
+                  snapshot_groups = [
+                      (run_plan.get("scenarioIds", []), run_plan.get("scenarioSnapshots", []), scenario_ids, "scenario"),
+                      (run_plan.get("suiteIds", []), run_plan.get("suiteSnapshots", []), root_suite_ids, "suite"),
+                      ([load_profile_id], [run_plan.get("loadProfileSnapshot", {})], load_profile_ids, "load profile"),
+                  ]
+                  for selected_ids, snapshots, path_index, label in snapshot_groups:
+                      snapshot_index = {item.get("id"): item for item in snapshots}
+                      if set(selected_ids) != set(snapshot_index):
+                          errors.append(f"{rel(run_plan_path)}: v2 {label} snapshots do not exactly match selections")
+                      for selected_id in selected_ids:
+                          source_path = path_index.get(selected_id)
+                          snapshot = snapshot_index.get(selected_id)
+                          if not source_path or not snapshot:
+                              continue
+                          source_document = yaml_docs.get(source_path)
+                          canonical = json.dumps(source_document, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+                          if snapshot.get("sha256") != hashlib.sha256(canonical).hexdigest():
+                              errors.append(f"{rel(run_plan_path)}: v2 {label} snapshot hash does not match {rel(source_path)}")
+
+          valid_prepare_root = root / "fixtures" / "public-contracts" / "test-executor" / "valid"
+          invalid_prepare_root = root / "fixtures" / "public-contracts" / "test-executor" / "invalid"
+          for prepare_path, prepare in json_docs.items():
+              if prepare.get("contractVersion") != "protocol-lab.test-executor.prepare.v2":
+                  continue
+              if prepare_path.is_relative_to(valid_prepare_root):
+                  for error in prepare_v2_validator.iter_errors(prepare):
+                      errors.append(f"{rel(prepare_path)}: executor prepare v2 schema: {error.message}")
+                  document_bindings = [
+                      ("testDocument", "testSnapshot"),
+                      ("scenarioDocument", "scenarioSnapshot"),
+                      ("loadProfileDocument", "loadProfileSnapshot"),
+                  ]
+                  for document_field, snapshot_field in document_bindings:
+                      canonical = json.dumps(prepare.get(document_field), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+                      if prepare.get(snapshot_field, {}).get("sha256") != hashlib.sha256(canonical).hexdigest():
+                          errors.append(f"{rel(prepare_path)}: {snapshot_field} hash does not match {document_field}")
+                  if prepare.get("scenarioId") != prepare.get("scenarioDocument", {}).get("id"):
+                      errors.append(f"{rel(prepare_path)}: scenarioId does not match scenarioDocument")
+                  if prepare.get("scenarioVersion") != prepare.get("scenarioDocument", {}).get("version"):
+                      errors.append(f"{rel(prepare_path)}: scenarioVersion does not match scenarioDocument")
+              if prepare_path.is_relative_to(invalid_prepare_root) and prepare_v2_validator.is_valid(prepare):
+                  errors.append(f"{rel(prepare_path)}: invalid executor prepare v2 fixture unexpectedly passes schema validation")
 
           forbidden_dirs = {
               "src", "tests", "scripts", "servers", "tools",

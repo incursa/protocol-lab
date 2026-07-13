@@ -1,0 +1,94 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-TLS-PERFORMANCE",
+  "artifact_type": "specification",
+  "title": "ProtocolLab TLS Performance Contracts",
+  "domain": "protocol-lab",
+  "capability": "tls-performance-contracts",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "tags": ["protocol-lab", "tls", "performance", "validity"],
+  "related_artifacts": ["SPEC-PL-CORE-CONTRACTS", "ARC-PL-TLS-PERFORMANCE", "VER-PL-TLS-PERFORMANCE-0001"],
+  "purpose": "Define implementation-neutral TLS handshake, authentication, early-data, key-update, and bounded record-transfer performance semantics with explicit validity gates.",
+  "scope": "TLS 1.3 remains the primary performance lane. TLS 1.2 is bounded to an explicit compatibility cell; ChaCha20, mutual authentication, 0-RTT outcomes, KeyUpdate, and record direction/size coverage are separate profile or diagnostic cells.",
+  "requirements": [
+    {
+      "id": "REQ-PL-TLSPERF-0001",
+      "title": "Exact TLS version",
+      "statement": "TLS scenarios MUST request and observe their declared TLS version without silent downgrade; TLS 1.2 is permitted only in the explicit compatibility contract.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc9846"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0002",
+      "title": "Full handshake semantics",
+      "statement": "A full-handshake scenario MUST establish a fresh authenticated TLS session without offered or accepted resumption state.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/full.yaml"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc9846", "https://www.rfc-editor.org/rfc/rfc9525"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0003",
+      "title": "Resumed handshake semantics",
+      "statement": "A resumed-handshake scenario MUST prove accepted TLS 1.3 PSK resumption and preserve the source-session provenance without sending 0-RTT application data.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/resumed.yaml"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc9846"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0004",
+      "title": "TLS cryptographic and identity profile",
+      "statement": "TLS scenarios MUST declare SNI, ALPN, certificate-chain profile, cipher suite, key-exchange group, signature algorithm, session-reuse mode, and platform or hardware-acceleration provenance as comparison metadata.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc9846", "https://www.rfc-editor.org/rfc/rfc7301", "https://www.rfc-editor.org/rfc/rfc9525"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0005",
+      "title": "TLS validity gate",
+      "statement": "TLS measurements MUST require successful handshake or record completion, expected negotiated parameters, deterministic application-data bytes when present, and zero unexpected failures or timeouts.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["schemas/scenario/v2/scenario.schema.json"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0006",
+      "title": "TLS metrics and artifacts",
+      "statement": "TLS scenarios MUST declare handshake rate or byte throughput, latency percentiles, transferred bytes, completion, failure and timeout counts, and raw negotiation, validation, stdout, stderr, and normalized-result artifacts as applicable.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/", "SPEC-PL-MEASUREMENT-TELEMETRY", "SPEC-PL-ARTIFACTS"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0007",
+      "title": "TLS comparison isolation",
+      "statement": "TLS comparisons MUST match exact TLS version, handshake mode, cryptographic profile, certificate-chain profile, ALPN, role, execution profile, platform, topology, load, network, and repetition policy.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["load-profiles/tls-comparison.yaml"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0008",
+      "title": "TLS 1.2 compatibility boundary",
+      "statement": "TLS 1.2 MUST use its dedicated compatibility profile, exact ECDHE-ECDSA AES-128-GCM suite, no 0-RTT or KeyUpdate semantics, and MUST NOT be aggregated with TLS 1.3 comparison cells.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/full-tls12.yaml"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc5246", "https://www.rfc-editor.org/rfc/rfc9325"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0009",
+      "title": "TLS 1.3 ChaCha20 profile",
+      "statement": "ChaCha20 measurements MUST use the exact TLS_CHACHA20_POLY1305_SHA256 profile and remain a distinct comparison cell from AES-GCM.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/full-chacha20.yaml"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0010",
+      "title": "Mutual TLS authentication",
+      "statement": "Mutual TLS MUST require and validate both server and client certificate profiles and record both leaf DER hashes without publishing private keys.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/mutual-auth.yaml"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0011",
+      "title": "Bounded 0-RTT outcomes",
+      "statement": "Accepted and rejected 0-RTT MUST be separate cells using identical replay-safe deterministic input, proven single-use ticket provenance, explicit acceptance or rejection, and exactly-once post-handshake recovery when rejected.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/early-data/accepted.yaml", "scenarios/tls/early-data/rejected.yaml"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0012",
+      "title": "KeyUpdate diagnostic",
+      "statement": "The KeyUpdate diagnostic MUST use TLS 1.3 on a proven connection, request exactly one client-initiated update, prove the traffic-secret transition without publishing secrets, and complete deterministic post-update data.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/diagnostic/key-update.yaml"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0013",
+      "title": "Record direction and size coverage",
+      "statement": "Record coverage MUST execute the canonical client-to-server and server-to-client 1 KiB, 64 KiB, and 1 MiB plaintext cases with per-case byte counts and payload hashes, without prescribing TLS wire-record segmentation.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["schemas/tls/v1/record-coverage-profile.schema.json", "scenarios/tls/record/coverage.yaml"]}
+    }
+  ]
+}

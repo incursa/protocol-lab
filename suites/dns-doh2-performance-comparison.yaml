@@ -1,0 +1,10 @@
+id: dns-doh2-performance-comparison
+name: DNS over HTTPS HTTP/2 performance comparison candidate suite
+description: Non-publishable DoH2 comparison selection.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: secure-dns-comparison
+scenarios: [dns.doh2.query.a]
+protocol: doh2
+notes: DoH2 results compare only with matched DoH2 results using the same local authority, disabled cache, connection reuse, and 32 total concurrent streams.
+tags: [dns, doh, h2, comparison, non-publishable]

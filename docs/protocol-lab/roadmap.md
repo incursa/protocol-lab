@@ -27,6 +27,19 @@ in implementation repositories.
 - Measurement and artifact contracts
 - Public report bundle and index contracts
 - Traceability and fixture coverage
+- TLS 1.2/1.3, gRPC/H2, secure and classic diagnostic DNS, and
+  binding-specific WebSocket performance
+  contract maturation
+
+## Deferred Protocol Families
+
+- WebTransport until its HTTP mappings are final standards
+- WebRTC and WebRTC DataChannel
+- Oblivious HTTP
+- gRPC-Web and gRPC over HTTP/3
+- Executable MASQUE CONNECT-IP until a deterministic packet fixture and
+  package-backed proxy role are approved
+- MQTT, AMQP, CoAP, database wire protocols, and media protocols
 
 ## Out Of Scope For This Repository
 

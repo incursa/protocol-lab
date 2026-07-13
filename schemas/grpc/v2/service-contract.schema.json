@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/grpc/v2/service-contract.schema.json",
+  "title": "ProtocolLab gRPC Service Contract v2",
+  "description": "Exact language-neutral protobuf and gRPC/H2 behavior contract for ProtocolLab breadth scenarios.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contractId",
+    "package",
+    "service",
+    "wireFormat",
+    "messages",
+    "compressionProfiles",
+    "metadataProfiles",
+    "methods"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "protocol-lab.grpc-service.v2" },
+    "contractId": { "const": "protocollab.performance.v1.EchoService" },
+    "package": { "const": "protocollab.performance.v1" },
+    "service": { "const": "EchoService" },
+    "wireFormat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protobufEdition", "messageEncoding", "grpcEnvelope", "hashScope"],
+      "properties": {
+        "protobufEdition": { "const": "proto3" },
+        "messageEncoding": { "const": "canonical-field-order-single-bytes-field" },
+        "grpcEnvelope": { "const": "compressed-flag-plus-uint32be-length" },
+        "hashScope": { "const": "per-message-uncompressed-payload-protobuf-and-envelope" }
+      }
+    },
+    "messages": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/message" }
+    },
+    "compressionProfiles": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/compressionProfile" }
+    },
+    "metadataProfiles": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/metadataProfile" }
+    },
+    "methods": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/method" }
+    }
+  },
+  "$defs": {
+    "message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "fields"],
+      "properties": {
+        "name": { "type": "string", "enum": ["EchoRequest", "EchoResponse"] },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["number", "name", "type"],
+            "properties": {
+              "number": { "const": 1 },
+              "name": { "const": "payload" },
+              "type": { "const": "bytes" }
+            }
+          }
+        }
+      }
+    },
+    "compressionProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "grpcEncoding", "compressedFlag", "validation", "wireBytesComparable"],
+      "oneOf": [
+        {
+          "properties": {
+            "id": { "const": "identity-v1" },
+            "grpcEncoding": { "const": "identity" },
+            "compressedFlag": { "const": 0 },
+            "validation": { "const": "compare-uncompressed-protobuf-sha256" },
+            "wireBytesComparable": { "const": true }
+          }
+        },
+        {
+          "properties": {
+            "id": { "const": "gzip-semantic-v1" },
+            "grpcEncoding": { "const": "gzip" },
+            "compressedFlag": { "const": 1 },
+            "validation": { "const": "decompress-then-compare-uncompressed-protobuf-sha256" },
+            "wireBytesComparable": { "const": false }
+          }
+        }
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "grpcEncoding": { "type": "string" },
+        "compressedFlag": { "type": "integer" },
+        "validation": { "type": "string" },
+        "wireBytesComparable": { "type": "boolean" }
+      }
+    },
+    "metadataProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "requestInitialMetadata", "expectedResponseInitialMetadata", "expectedResponseTrailingMetadata"],
+      "oneOf": [
+        {
+          "properties": {
+            "id": { "const": "fixed-empty-user-metadata" },
+            "requestInitialMetadata": { "const": [] },
+            "expectedResponseInitialMetadata": { "const": [] },
+            "expectedResponseTrailingMetadata": { "const": [] }
+          }
+        },
+        {
+          "properties": {
+            "id": { "const": "fixed-ascii-and-binary-metadata-v1" },
+            "requestInitialMetadata": {
+              "const": [
+                { "name": "x-plab-text", "value": "protocol-lab" },
+                { "name": "x-plab-bin-bin", "valueBase64": "AAECAw==" }
+              ]
+            },
+            "expectedResponseInitialMetadata": {
+              "const": [{ "name": "x-plab-text", "value": "protocol-lab" }]
+            },
+            "expectedResponseTrailingMetadata": {
+              "const": [{ "name": "x-plab-bin-bin", "valueBase64": "AAECAw==" }]
+            }
+          }
+        }
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "requestInitialMetadata": { "type": "array" },
+        "expectedResponseInitialMetadata": { "type": "array" },
+        "expectedResponseTrailingMetadata": { "type": "array" }
+      }
+    },
+    "method": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name", "input", "output", "clientStreaming", "serverStreaming",
+        "requestMessages", "responseMessages", "behavior", "compressionProfile",
+        "metadataProfile", "terminalStatus", "responsePolicy", "completionTrigger"
+      ],
+      "properties": {
+        "name": { "type": "string" },
+        "input": { "const": "EchoRequest" },
+        "output": { "const": "EchoResponse" },
+        "clientStreaming": { "type": "boolean" },
+        "serverStreaming": { "type": "boolean" },
+        "requestMessages": { "type": "integer", "minimum": 1 },
+        "responseMessages": { "type": "integer", "minimum": 0 },
+        "behavior": { "type": "string" },
+        "compressionProfile": { "type": "string", "enum": ["identity-v1", "gzip-semantic-v1"] },
+        "metadataProfile": { "type": "string", "enum": ["fixed-empty-user-metadata", "fixed-ascii-and-binary-metadata-v1"] },
+        "terminalStatus": { "$ref": "#/$defs/status" },
+        "responsePolicy": { "type": "string", "enum": ["messages-and-trailers", "trailers-only", "client-observed-terminal-status"] },
+        "completionTrigger": { "type": "string" }
+      },
+      "oneOf": [
+        { "$ref": "#/$defs/unaryEcho" },
+        { "$ref": "#/$defs/serverStreamingEcho" },
+        { "$ref": "#/$defs/clientStreamingEcho" },
+        { "$ref": "#/$defs/bidirectionalStreamingEcho" },
+        { "$ref": "#/$defs/trailersOnlyStatus" },
+        { "$ref": "#/$defs/deadlineExceeded" },
+        { "$ref": "#/$defs/clientCancellation" },
+        { "$ref": "#/$defs/unaryGzip" },
+        { "$ref": "#/$defs/unaryFixedMetadata" }
+      ]
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "name", "message"],
+      "properties": {
+        "code": { "type": "integer", "minimum": 0, "maximum": 16 },
+        "name": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    },
+    "unaryEcho": {
+      "properties": {
+        "name": { "const": "UnaryEcho" }, "clientStreaming": { "const": false }, "serverStreaming": { "const": false },
+        "requestMessages": { "const": 1 }, "responseMessages": { "const": 1 }, "behavior": { "const": "echo-request-payload" },
+        "compressionProfile": { "const": "identity-v1" }, "metadataProfile": { "const": "fixed-empty-user-metadata" },
+        "terminalStatus": { "const": { "code": 0, "name": "OK", "message": "" } }, "responsePolicy": { "const": "messages-and-trailers" },
+        "completionTrigger": { "const": "request-message" }
+      }
+    },
+    "serverStreamingEcho": {
+      "properties": {
+        "name": { "const": "ServerStreamingEcho" }, "clientStreaming": { "const": false }, "serverStreaming": { "const": true },
+        "requestMessages": { "const": 1 }, "responseMessages": { "const": 100 }, "behavior": { "const": "repeat-request-payload-100-times" },
+        "compressionProfile": { "const": "identity-v1" }, "metadataProfile": { "const": "fixed-empty-user-metadata" },
+        "terminalStatus": { "const": { "code": 0, "name": "OK", "message": "" } }, "responsePolicy": { "const": "messages-and-trailers" },
+        "completionTrigger": { "const": "request-message" }
+      }
+    },
+    "clientStreamingEcho": {
+      "properties": {
+        "name": { "const": "ClientStreamingEcho" }, "clientStreaming": { "const": true }, "serverStreaming": { "const": false },
+        "requestMessages": { "const": 100 }, "responseMessages": { "const": 1 }, "behavior": { "const": "respond-with-final-request-payload" },
+        "compressionProfile": { "const": "identity-v1" }, "metadataProfile": { "const": "fixed-empty-user-metadata" },
+        "terminalStatus": { "const": { "code": 0, "name": "OK", "message": "" } }, "responsePolicy": { "const": "messages-and-trailers" },
+        "completionTrigger": { "const": "client-half-close-after-100-messages" }
+      }
+    },
+    "bidirectionalStreamingEcho": {
+      "properties": {
+        "name": { "const": "BidirectionalStreamingEcho" }, "clientStreaming": { "const": true }, "serverStreaming": { "const": true },
+        "requestMessages": { "const": 100 }, "responseMessages": { "const": 100 }, "behavior": { "const": "ordered-one-to-one-echo" },
+        "compressionProfile": { "const": "identity-v1" }, "metadataProfile": { "const": "fixed-empty-user-metadata" },
+        "terminalStatus": { "const": { "code": 0, "name": "OK", "message": "" } }, "responsePolicy": { "const": "messages-and-trailers" },
+        "completionTrigger": { "const": "client-half-close-after-100-messages" }
+      }
+    },
+    "trailersOnlyStatus": {
+      "properties": {
+        "name": { "const": "TrailersOnlyStatus" }, "clientStreaming": { "const": false }, "serverStreaming": { "const": false },
+        "requestMessages": { "const": 1 }, "responseMessages": { "const": 0 }, "behavior": { "const": "return-invalid-argument-without-data" },
+        "compressionProfile": { "const": "identity-v1" }, "metadataProfile": { "const": "fixed-empty-user-metadata" },
+        "terminalStatus": { "const": { "code": 3, "name": "INVALID_ARGUMENT", "message": "plab invalid fixture" } }, "responsePolicy": { "const": "trailers-only" },
+        "completionTrigger": { "const": "request-message" }
+      }
+    },
+    "deadlineExceeded": {
+      "properties": {
+        "name": { "const": "DeadlineExceeded" }, "clientStreaming": { "const": false }, "serverStreaming": { "const": false },
+        "requestMessages": { "const": 1 }, "responseMessages": { "const": 0 }, "behavior": { "const": "remain-open-until-client-deadline" },
+        "compressionProfile": { "const": "identity-v1" }, "metadataProfile": { "const": "fixed-empty-user-metadata" },
+        "terminalStatus": { "const": { "code": 4, "name": "DEADLINE_EXCEEDED", "message": "" } }, "responsePolicy": { "const": "client-observed-terminal-status" },
+        "completionTrigger": { "const": "client-deadline" }
+      }
+    },
+    "clientCancellation": {
+      "properties": {
+        "name": { "const": "ClientCancellation" }, "clientStreaming": { "const": false }, "serverStreaming": { "const": true },
+        "requestMessages": { "const": 1 }, "responseMessages": { "const": 0 }, "behavior": { "const": "send-ready-initial-metadata-then-wait-for-client-cancel" },
+        "compressionProfile": { "const": "identity-v1" }, "metadataProfile": { "const": "fixed-empty-user-metadata" },
+        "terminalStatus": { "const": { "code": 1, "name": "CANCELLED", "message": "" } }, "responsePolicy": { "const": "client-observed-terminal-status" },
+        "completionTrigger": { "const": "client-cancel-after-ready-initial-metadata" }
+      }
+    },
+    "unaryGzip": {
+      "properties": {
+        "name": { "const": "UnaryGzip" }, "clientStreaming": { "const": false }, "serverStreaming": { "const": false },
+        "requestMessages": { "const": 1 }, "responseMessages": { "const": 1 }, "behavior": { "const": "echo-request-payload" },
+        "compressionProfile": { "const": "gzip-semantic-v1" }, "metadataProfile": { "const": "fixed-empty-user-metadata" },
+        "terminalStatus": { "const": { "code": 0, "name": "OK", "message": "" } }, "responsePolicy": { "const": "messages-and-trailers" },
+        "completionTrigger": { "const": "request-message" }
+      }
+    },
+    "unaryFixedMetadata": {
+      "properties": {
+        "name": { "const": "UnaryFixedMetadata" }, "clientStreaming": { "const": false }, "serverStreaming": { "const": false },
+        "requestMessages": { "const": 1 }, "responseMessages": { "const": 1 }, "behavior": { "const": "echo-request-payload-and-fixed-metadata" },
+        "compressionProfile": { "const": "identity-v1" }, "metadataProfile": { "const": "fixed-ascii-and-binary-metadata-v1" },
+        "terminalStatus": { "const": { "code": 0, "name": "OK", "message": "" } }, "responsePolicy": { "const": "messages-and-trailers" },
+        "completionTrigger": { "const": "request-message" }
+      }
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "2.0",
+  "version": "2.0.0",
+  "id": "http3.websocket.invalid.permessage-deflate-missing-policy",
+  "title": "RFC 9220 WebSocket Binary Echo Fixture",
+  "status": "draft",
+  "kind": "workload",
+  "layer": "application",
+  "protocol": "h3",
+  "family": "websocket",
+  "roles": [
+    "client",
+    "server"
+  ],
+  "requires": {
+    "protocols": [
+      "h3"
+    ]
+  },
+  "trafficShape": "bidirectional-stream",
+  "semanticTemplateId": "websocket.echo.binary.6000b",
+  "protocolStack": [
+    "websocket",
+    "h3",
+    "quic",
+    "tls1.3"
+  ],
+  "upstreamStandards": [
+    "https://www.rfc-editor.org/rfc/rfc6455",
+    "https://www.rfc-editor.org/rfc/rfc9220",
+    "https://www.rfc-editor.org/rfc/rfc9114"
+  ],
+  "websocket": {
+    "binding": "http3-extended-connect",
+    "standard": "rfc9220",
+    "authority": "websocket.plab.test",
+    "path": "/websocket-proof",
+    "subprotocol": null,
+    "extensions": "permessage-deflate-no-context-takeover",
+    "bootstrapPolicy": "rfc9220-extended-connect",
+    "operation": "binary-echo",
+    "messageType": "binary",
+    "messageBytes": 6000,
+    "messageCount": 1,
+    "payloadGenerator": "repeated-octet",
+    "payloadOctet": 165,
+    "payloadSha256": "8f8d8f75d55c80475ffb0c12b1ede7083d6df689e8ef04f05176c5050873bfb7",
+    "fragmentation": "none",
+    "masking": "client-required",
+    "closeCode": 1000,
+    "closeReasonPolicy": "empty-utf8-reason",
+    "connectionLifecycle": "pre-established-connection-per-operation",
+    "measuredWindow": "message-round-trip",
+    "handshake": {
+      "binding": "http3-extended-connect",
+      "settingsEnableConnectProtocol": 1,
+      "requestPseudoHeaders": {
+        "method": "CONNECT",
+        "protocol": "websocket",
+        "scheme": "https",
+        "authority": "websocket.plab.test",
+        "path": "/websocket-proof"
+      },
+      "requestHeaders": {
+        "secWebSocketVersion": "13",
+        "originPresent": false,
+        "secWebSocketProtocolPresent": false,
+        "secWebSocketExtensionsPresent": false,
+        "secWebSocketKeyPresent": false
+      },
+      "prohibitedConnectionHeadersPresent": false,
+      "responseStatus": 200,
+      "responseHeaders": {
+        "secWebSocketAcceptPresent": false,
+        "secWebSocketProtocolPresent": false,
+        "secWebSocketExtensionsPresent": false
+      }
+    }
+  },
+  "executionProfile": {
+    "transportSecurity": "tls",
+    "protocolVariant": "websocket-h3-extended-connect",
+    "implementationRole": "origin-server",
+    "selectedComponentProofRequired": true,
+    "executionModePolicy": "record-effective-mode"
+  },
+  "validation": {
+    "required": true,
+    "checks": [
+      "protocol:h3",
+      "no-fallback",
+      "payload-sha256"
+    ],
+    "protocol": {
+      "requested": "websocket-over-h3",
+      "expectedObserved": "websocket-over-h3",
+      "fallbackAllowed": false
+    }
+  },
+  "benchmarkCompat": {
+    "compatibleLoadShapes": [
+      "smoke"
+    ],
+    "primaryMetrics": [
+      "messagesPerSecond"
+    ]
+  },
+  "requiredMetrics": [
+    "messagesPerSecond"
+  ],
+  "availability": {
+    "onUnsupported": "unsupported",
+    "onUnavailable": "unavailable",
+    "onBindingMismatch": "validation-failed"
+  }
+}

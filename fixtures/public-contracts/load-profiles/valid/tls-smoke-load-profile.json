@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v2",
+  "id": "tls-smoke-fixture",
+  "title": "TLS smoke fixture",
+  "status": "experimental",
+  "purpose": "smoke",
+  "durationSeconds": 5,
+  "warmupSeconds": 1,
+  "repetitions": 1,
+  "tls": {
+    "connections": 1,
+    "concurrency": 1,
+    "totalOperations": null,
+    "operationRateLimitPerSecond": null,
+    "operationTimeoutMilliseconds": 5000
+  },
+  "evidence": {
+    "minimumTier": "smoke",
+    "publishable": false
+  },
+  "artifacts": {
+    "required": [
+      "validation.json",
+      "protocol-proof.json",
+      "result.json"
+    ],
+    "optional": []
+  },
+  "version": "2.0.0"
+}

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/dns/v1/secure-dns-tls-profile.schema.json",
+  "title": "ProtocolLab Secure DNS TLS Profile v1",
+  "description": "Exact TLS 1.3 endpoint identity and cryptographic profile shared by the DoT, DoH2, DoH3, and DoQ fixture lanes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "tlsVersion",
+    "serverName",
+    "alpnByTransport",
+    "cipherSuite",
+    "keyExchangeGroup",
+    "signatureScheme",
+    "peerAuthentication",
+    "resumptionPolicy",
+    "earlyData",
+    "certificate",
+    "evidence"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "protocol-lab.secure-dns-tls-profile.v1"},
+    "profileId": {"const": "plab-secure-dns-tls13-v1"},
+    "tlsVersion": {"const": "tls1.3"},
+    "serverName": {"const": "dns.plab.test"},
+    "alpnByTransport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dot", "doh2", "doh3", "doq"],
+      "properties": {
+        "dot": {"const": "dot"},
+        "doh2": {"const": "h2"},
+        "doh3": {"const": "h3"},
+        "doq": {"const": "doq"}
+      }
+    },
+    "cipherSuite": {"const": "TLS_AES_128_GCM_SHA256"},
+    "keyExchangeGroup": {"const": "x25519"},
+    "signatureScheme": {"const": "ecdsa_secp256r1_sha256"},
+    "peerAuthentication": {"const": "server-certificate-required"},
+    "resumptionPolicy": {"const": "not-offered"},
+    "earlyData": {"const": "not-attempted"},
+    "certificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId",
+        "leafKeyAlgorithm",
+        "leafNamedCurve",
+        "dnsSubjectAlternativeName",
+        "sentCertificateCount",
+        "trustAnchorSent",
+        "trustModel",
+        "mustBeValidAtExecution",
+        "provisioningMeasured",
+        "exactDerHashRequiredForComparison",
+        "privateKeyPublication"
+      ],
+      "properties": {
+        "profileId": {"const": "plab-secure-dns-single-leaf-p256-v1"},
+        "leafKeyAlgorithm": {"const": "ecdsa"},
+        "leafNamedCurve": {"const": "secp256r1"},
+        "dnsSubjectAlternativeName": {"const": "dns.plab.test"},
+        "sentCertificateCount": {"const": 1},
+        "trustAnchorSent": {"const": false},
+        "trustModel": {"const": "configured-test-trust-anchor"},
+        "mustBeValidAtExecution": {"const": true},
+        "provisioningMeasured": {"const": false},
+        "exactDerHashRequiredForComparison": {"const": true},
+        "privateKeyPublication": {"const": "forbidden"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "negotiatedParametersRequired",
+        "leafCertificateDerSha256Required",
+        "platformProvenanceRequired",
+        "accelerationProvenanceRequired"
+      ],
+      "properties": {
+        "negotiatedParametersRequired": {"const": true},
+        "leafCertificateDerSha256Required": {"const": true},
+        "platformProvenanceRequired": {"const": true},
+        "accelerationProvenanceRequired": {"const": true}
+      }
+    }
+  }
+}

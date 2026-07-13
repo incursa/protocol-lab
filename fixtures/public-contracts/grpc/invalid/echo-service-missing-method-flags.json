@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "protocol-lab.grpc-service.v1",
+  "protoSyntax": "proto3",
+  "package": "protocollab.performance.v1",
+  "service": "EchoService",
+  "fullyQualifiedService": "protocollab.performance.v1.EchoService",
+  "messages": [
+    {"name": "EchoRequest", "fields": [{"number": 1, "name": "payload", "type": "bytes", "cardinality": "singular"}]},
+    {"name": "EchoResponse", "fields": [{"number": 1, "name": "payload", "type": "bytes", "cardinality": "singular"}]}
+  ],
+  "methods": [
+    {"name": "UnaryEcho", "input": "EchoRequest", "output": "EchoResponse"}
+  ]
+}

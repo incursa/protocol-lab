@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/test-executor/v2/prepare-request.schema.json",
+  "title": "ProtocolLab Test Executor Contract v2 Prepare Request",
+  "description": "Self-contained executor preparation request with immutable run-plan, test, scenario, and resolved load-profile snapshots and documents.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "testId",
+    "scenarioId",
+    "scenarioVersion",
+    "protocol",
+    "runPlanSnapshot",
+    "testSnapshot",
+    "scenarioSnapshot",
+    "loadProfileSnapshot",
+    "testDocument",
+    "scenarioDocument",
+    "loadProfileDocument",
+    "targetEndpoints",
+    "runId",
+    "cellId",
+    "artifactOutputExpectations",
+    "integrityPolicy"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": "protocol-lab.test-executor.prepare.v2"
+    },
+    "testId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenarioId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenarioVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "protocol": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runPlanSnapshot": {
+      "$ref": "#/$defs/versionedSnapshot"
+    },
+    "testSnapshot": {
+      "$ref": "#/$defs/versionedSnapshot"
+    },
+    "scenarioSnapshot": {
+      "$ref": "#/$defs/versionedSnapshot"
+    },
+    "loadProfileSnapshot": {
+      "$ref": "#/$defs/versionedSnapshot"
+    },
+    "testDocument": {
+      "type": "object"
+    },
+    "scenarioDocument": {
+      "$ref": "https://schemas.incursa.com/protocol-lab/scenario/v2/scenario.schema.json"
+    },
+    "loadProfileDocument": {
+      "$ref": "https://schemas.incursa.com/protocol-lab/load-profile/v2/load-profile.schema.json"
+    },
+    "targetEndpoints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "../v1/common.schema.json#/$defs/targetEndpoint"
+      }
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cellId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifactOutputExpectations": {
+      "type": "array",
+      "items": {
+        "$ref": "../v1/common.schema.json#/$defs/artifactExpectation"
+      }
+    },
+    "integrityPolicy": {
+      "const": "reject-on-snapshot-document-hash-mismatch"
+    },
+    "extensions": {
+      "$ref": "../v1/common.schema.json#/$defs/extensions"
+    }
+  },
+  "$defs": {
+    "versionedSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "sha256",
+        "canonicalization"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "canonicalization": {
+          "const": "json-sort-keys-utf8-no-whitespace-v1"
+        }
+      }
+    }
+  }
+}

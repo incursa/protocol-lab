@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-SECURE-DNS-PERFORMANCE-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab Secure DNS Contract Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-SECURE-DNS-PERFORMANCE", "ARC-PL-SECURE-DNS-PERFORMANCE"],
+  "verifies": ["REQ-PL-SECDNS-0001", "REQ-PL-SECDNS-0002", "REQ-PL-SECDNS-0003", "REQ-PL-SECDNS-0004", "REQ-PL-SECDNS-0005", "REQ-PL-SECDNS-0006", "REQ-PL-SECDNS-0007", "REQ-PL-SECDNS-0008", "REQ-PL-SECDNS-0009", "REQ-PL-SECDNS-0010", "REQ-PL-SECDNS-0011", "REQ-PL-SECDNS-0012"],
+  "scope": "Verify secure DNS public contract structure only; do not query a resolver or verify an executor, server, implementation, or benchmark.",
+  "verification_method": "Schema validation, deterministic DNS fixture inspection, suite and profile resolution, invalid-fixture checks, and standards-link inspection.",
+  "procedure": ["Validate every canonical DNS wire fixture, exact bare-message lengths and SHA-256 digests, and each declared length-prefixed encoding.", "Confirm the bounded corpus contains A, AAAA, CNAME-chain, NXDOMAIN, NOERROR/NODATA, and large EDNS/DNSSEC-shaped semantics without a full transport cross-product.", "Confirm the invalid DNS fixture fails validation.", "Validate the secure-DNS TLS profile and confirm each secure lane resolves endpoint identity, cryptographic policy, certificate shape, and transport ALPN from that profile.", "Validate secure DNS and classic diagnostic scenarios and suite/profile resolution.", "Confirm DoH GET uses the exact unpadded base64url query parameter, has no request body, and retains response media type, cache, status, and normalized semantic validation.", "Confirm DoQ declares one client-initiated bidirectional stream per transaction, client and server FIN, and RFC 9250 cancellation and error behavior.", "Confirm DoT declares two-octet framing, pipelining, outstanding message-ID uniqueness, ID-plus-question response correlation, and no timed-out ID reuse before connection close.", "Confirm classic UDP is a bare datagram, classic TCP uses two-octet framing, and TC on the 512-byte UDP calibration triggers one identical-question TCP retry for the full 630-byte response.", "Confirm responses are semantic-validated and canonical-reserialized before normalized length and hash comparison.", "Confirm the local authoritative zone disables recursion, cache, and external upstream access.", "Confirm connection, handshake, query, and drain timeouts plus zero retries are explicit.", "Confirm required metrics, transport proof artifacts, diagnostic-only classic intent, and non-publishable comparison intent are explicit."],
+  "expected_result": "The secure DNS family is deterministic, transport-specific, and implementation-neutral without implying executable support."
+}

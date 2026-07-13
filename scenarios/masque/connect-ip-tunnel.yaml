@@ -1,0 +1,46 @@
+schemaVersion: "2.0"
+version: "2.0.0"
+id: masque.connect-ip-tunnel
+title: MASQUE CONNECT-IP Tunnel
+description: Deferred public identity for a future RFC 9484 IP proxying tunnel contract; no packet fixture, executor, package-backed proxy target, suite, or executable support is currently approved.
+status: draft
+kind: workload
+layer: application
+protocol: h3
+family: masque
+semanticTemplateId: masque.tunnel.connect-ip.echo
+protocolStack: [ip-proxying, capsule-protocol, http-datagram, h3, quic, tls1.3]
+upstreamStandards: [https://www.rfc-editor.org/rfc/rfc9297, https://www.rfc-editor.org/rfc/rfc9484, https://www.rfc-editor.org/rfc/rfc9114]
+roles: [client, proxy]
+requires:
+  capabilities: [masque.client, masque.proxy, masque.connect-ip]
+  protocols: [h3]
+  roles: [client, proxy]
+trafficShape: datagram
+masque:
+  behavior: connect-ip-tunnel
+  tunnelMode: connect-ip
+  targetAuthority: fixture.invalid
+  datagramPolicy: required
+  contractReadiness: deferred
+  executableSupportImplied: false
+  blockers: [approved-deterministic-packet-fixture, compatible-executor, package-backed-proxy-target, executable-suite]
+  futurePacketSemantic: deterministic-ipv4-echo-1024b-unassigned
+  futureAcceptanceChecks: [extended-connect, tunnel-established, capsule-protocol, assigned-address, packet-count, packet-size:1024, payload-sha256, tunnel-closed]
+executionProfile: {transportSecurity: tls, protocolVariant: masque-connect-ip-h3, implementationRole: proxy, selectedComponentProofRequired: true, executionModePolicy: record-effective-mode}
+validation:
+  required: false
+  checks: [deferred:no-approved-fixture-executor-or-target]
+  protocol: {requested: masque-connect-ip-over-h3, expectedObserved: masque-connect-ip-over-h3, fallbackAllowed: false}
+benchmarkCompat:
+  compatibleLoadShapes: []
+artifacts:
+  required: []
+  optional: []
+availability:
+  onUnsupported: unsupported
+  onUnavailable: unavailable
+  onBindingMismatch: validation-failed
+  knownUnsupported: [no-approved-packet-fixture, no-compatible-executor, no-package-backed-proxy-target, no-executable-suite, connect-udp-substitution, origin-server-role, uncontrolled-external-route]
+networkProfile: clean
+tags: [masque, connect-ip, http-datagram, capsule, h3, draft, deferred, non-executable]

@@ -1,0 +1,237 @@
+{
+  "schemaVersion": "protocol-lab.protocol-execution-result.v2",
+  "resultId": "result-tls-full-fixture",
+  "runBinding": {
+    "runId": "run-contract-fixture",
+    "cellId": "cell-tls-full",
+    "repetition": 1,
+    "runPlanSnapshot": {
+      "id": "protocol-family-contract-freeze",
+      "version": "2.0.0",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "canonicalization": "json-sort-keys-utf8-no-whitespace-v1"
+    },
+    "scenarioSnapshot": {
+      "id": "tls.handshake.full.fixture",
+      "version": "2.0.0",
+      "sha256": "2d06cc43c266d17093671664c15d8f249b7771fc06a723071fd328637bdef4de",
+      "canonicalization": "json-sort-keys-utf8-no-whitespace-v1"
+    },
+    "loadProfileSnapshot": {
+      "id": "tls-smoke-fixture",
+      "version": "2.0.0",
+      "sha256": "b772b2542356092229ac6fe8bc7164eef6a0dc6a50d27623b4c60fcbcca76492",
+      "canonicalization": "json-sort-keys-utf8-no-whitespace-v1"
+    },
+    "packageSnapshots": [
+      {
+        "id": "example.tls.executor",
+        "version": "1.0.0",
+        "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "canonicalization": "json-sort-keys-utf8-no-whitespace-v1"
+      }
+    ]
+  },
+  "selectedComponent": {
+    "implementationId": "example-tls-implementation",
+    "testExecutorId": "example-tls-executor",
+    "role": "library-backed-target",
+    "executionMode": "library",
+    "selectionProof": "package-and-capability-resolution"
+  },
+  "endpointProof": {
+    "bindingId": "tls-target",
+    "scheme": "tls",
+    "authority": "tls.plab.test",
+    "host": "tls.plab.test",
+    "port": 443
+  },
+  "protocolProof": {
+    "requested": "tls1.3",
+    "observed": "tls1.3",
+    "binding": "tls-over-tcp",
+    "protocolStack": [
+      "tls1.3",
+      "tcp"
+    ],
+    "fallbackAllowed": false,
+    "fallbackOccurred": false
+  },
+  "validation": {
+    "overallOutcome": "pass",
+    "allRequiredChecksPassed": true,
+    "checks": [
+      {
+        "checkId": "protocol:tls1.3",
+        "required": true,
+        "outcome": "pass"
+      },
+      {
+        "checkId": "no-fallback",
+        "required": true,
+        "outcome": "pass"
+      },
+      {
+        "checkId": "handshake-complete",
+        "required": true,
+        "outcome": "pass"
+      }
+    ]
+  },
+  "metrics": [
+    {
+      "metricId": "handshakesPerSecond",
+      "value": 200,
+      "unit": "operations-per-second",
+      "aggregation": "measured-window-rate",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "handshakeLatencyMean",
+      "value": 5.1,
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "handshakeLatencyP50",
+      "value": 5,
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "handshakeLatencyP75",
+      "value": 5.2,
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "handshakeLatencyP90",
+      "value": 5.5,
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "handshakeLatencyP95",
+      "value": 5.8,
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "handshakeLatencyP99",
+      "value": 6.4,
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "completedOperations",
+      "value": 1000,
+      "unit": "operations",
+      "aggregation": "total",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "failedOperations",
+      "value": 0,
+      "unit": "operations",
+      "aggregation": "total",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "timedOutOperations",
+      "value": 0,
+      "unit": "operations",
+      "aggregation": "total",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    },
+    {
+      "metricId": "totalTransferredBytes",
+      "value": 640000,
+      "unit": "bytes",
+      "aggregation": "total",
+      "windowStartUtc": "2026-07-13T12:00:00Z",
+      "windowEndUtc": "2026-07-13T12:00:05Z",
+      "source": "test-executor",
+      "sampleCount": 1000
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "protocol-proof.json",
+      "mediaType": "application/json",
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    {
+      "path": "tls-negotiation.json",
+      "mediaType": "application/json",
+      "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+    },
+    {
+      "path": "result.json",
+      "mediaType": "application/json",
+      "sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+    }
+  ],
+  "familyEvidence": {
+    "family": "tls",
+    "mode": "full-handshake",
+    "version": "tls1.3",
+    "serverName": "tls.plab.test",
+    "alpn": "protocol-lab-tls",
+    "cipherSuite": "TLS_AES_128_GCM_SHA256",
+    "keyExchangeGroup": "x25519",
+    "signatureScheme": "ecdsa_secp256r1_sha256",
+    "certificateDerSha256": "8888888888888888888888888888888888888888888888888888888888888888",
+    "peerAuthentication": "server-certificate-required",
+    "clientCertificateDerSha256": null,
+    "resumption": "not-offered",
+    "earlyData": "not-attempted",
+    "earlyDataRetryCount": 0,
+    "keyUpdateCount": 0,
+    "recordCoverageCases": 0,
+    "payloadSha256": null,
+    "measuredWindow": "full-handshake",
+    "platformProvenance": {
+      "os": "fixture"
+    },
+    "accelerationProvenance": {
+      "mode": "software"
+    }
+  },
+  "outcome": "completed"
+}

@@ -1,0 +1,459 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/dns/v2/dns-wire-fixture.schema.json",
+  "title": "ProtocolLab DNS Wire Fixture v2",
+  "description": "A declarative DNS query/response wire fixture with bounded semantic identity, DoH GET metadata, secure and classic transport framing, runtime message-ID policy, and response normalization rules.",
+  "$comment": "Consumers must verify decoded bare-wire lengths and SHA-256 values, every declared length-prefixed transport encoding, DoH GET base64url identity, and any UDP-truncated response selected by classic framing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "fixtureId",
+    "description",
+    "semanticKind",
+    "upstreamStandards",
+    "question",
+    "messages",
+    "transportFraming",
+    "runtimeIdPolicy",
+    "responseNormalization"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "required": ["transportFraming"],
+        "properties": {
+          "transportFraming": {
+            "required": ["udp"],
+            "properties": {
+              "udp": {
+                "required": ["responseSource"],
+                "properties": {
+                  "responseSource": {"const": "messages.udpTruncatedResponse.bareWire.hex"}
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "messages": {"required": ["udpTruncatedResponse"]}
+        }
+      }
+    }
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "protocol-lab.dns-wire-fixture.v2"
+    },
+    "fixtureId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "semanticKind": {
+      "type": "string",
+      "enum": ["positive-answer", "alias-chain", "negative-name", "negative-type", "large-dnssec-shaped"]
+    },
+    "upstreamStandards": {
+      "type": "array",
+      "items": {"type": "string", "format": "uri"},
+      "minItems": 3,
+      "uniqueItems": true
+    },
+    "question": {
+      "$ref": "#/$defs/question"
+    },
+    "messages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["query", "canonicalResponse"],
+      "properties": {
+        "query": {
+          "$ref": "#/$defs/queryMessage"
+        },
+        "canonicalResponse": {
+          "$ref": "#/$defs/responseMessage"
+        },
+        "udpTruncatedResponse": {
+          "$ref": "#/$defs/responseMessage"
+        }
+      }
+    },
+    "transportFraming": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dot", "doq", "doh2", "doh3"],
+      "properties": {
+        "dot": {
+          "$ref": "#/$defs/lengthPrefixedTransport"
+        },
+        "doq": {
+          "$ref": "#/$defs/lengthPrefixedTransport"
+        },
+        "doh2": {
+          "$ref": "#/$defs/httpTransport"
+        },
+        "doh3": {
+          "$ref": "#/$defs/httpTransport"
+        },
+        "udp": {
+          "$ref": "#/$defs/datagramTransport"
+        },
+        "tcp": {
+          "$ref": "#/$defs/lengthPrefixedTransport"
+        }
+      }
+    },
+    "runtimeIdPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["doh2", "doh3", "doq", "dot"],
+      "properties": {
+        "doh2": {
+          "$ref": "#/$defs/zeroIdPolicy"
+        },
+        "doh3": {
+          "$ref": "#/$defs/zeroIdPolicy"
+        },
+        "doq": {
+          "$ref": "#/$defs/zeroIdPolicy"
+        },
+        "dot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["messageId", "canonicalHashNormalization"],
+          "properties": {
+            "messageId": {
+              "const": "unique-among-outstanding-queries"
+            },
+            "canonicalHashNormalization": {
+              "const": "set-message-id-to-zero"
+            }
+          }
+        },
+        "udp": {
+          "$ref": "#/$defs/classicIdPolicy"
+        },
+        "tcp": {
+          "$ref": "#/$defs/classicIdPolicy"
+        },
+        "udp-tcp": {
+          "$ref": "#/$defs/classicIdPolicy"
+        }
+      }
+    },
+    "responseNormalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rawResponseEqualityRequired",
+        "compressionMayDiffer",
+        "procedure"
+      ],
+      "properties": {
+        "rawResponseEqualityRequired": {
+          "const": false
+        },
+        "compressionMayDiffer": {
+          "const": true
+        },
+        "procedure": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "parse-dns-message"},
+            {"const": "canonical-reserialize"},
+            {"const": "compare-normalized-sha256"}
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    }
+  },
+  "$defs": {
+    "hex": {
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{2})+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "class"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+$"
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9-]*$"
+        },
+        "class": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9-]*$"
+        }
+      }
+    },
+    "bareWire": {
+      "type": "object",
+      "description": "Canonical bare DNS message bytes. lengthBytes and sha256 describe the decoded hex bytes and are semantic integrity invariants in addition to this structural schema.",
+      "additionalProperties": false,
+      "required": ["hex", "lengthBytes", "sha256"],
+      "properties": {
+        "hex": {
+          "$ref": "#/$defs/hex"
+        },
+        "lengthBytes": {
+          "type": "integer",
+          "minimum": 12,
+          "maximum": 65535
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "headerFlags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["QR", "AA", "TC", "RD", "RA", "AD", "CD"]
+      },
+      "uniqueItems": true
+    },
+    "sectionCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "answer", "authority", "additional"],
+      "properties": {
+        "question": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "answer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "authority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "additional": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        }
+      }
+    },
+    "queryMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["messageId", "flags", "sectionCounts", "bareWire"],
+      "properties": {
+        "messageId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "flags": {
+          "$ref": "#/$defs/headerFlags"
+        },
+        "sectionCounts": {
+          "$ref": "#/$defs/sectionCounts"
+        },
+        "bareWire": {
+          "$ref": "#/$defs/bareWire"
+        },
+        "additionals": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/resourceRecord"}
+        }
+      }
+    },
+    "responseMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "messageId",
+        "flags",
+        "responseCode",
+        "sectionCounts",
+        "answers",
+        "bareWire"
+      ],
+      "properties": {
+        "messageId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "flags": {
+          "$ref": "#/$defs/headerFlags"
+        },
+        "responseCode": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9-]*$"
+        },
+        "sectionCounts": {
+          "$ref": "#/$defs/sectionCounts"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resourceRecord"
+          }
+        },
+        "authorities": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/resourceRecord"}
+        },
+        "additionals": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/resourceRecord"}
+        },
+        "bareWire": {
+          "$ref": "#/$defs/bareWire"
+        }
+      }
+    },
+    "resourceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "type", "class", "ttlSeconds", "rdata"],
+      "properties": {
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9-]*$"
+        },
+        "class": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9-]*$"
+        },
+        "ttlSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "rdata": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "lengthPrefixedTransport": {
+      "type": "object",
+      "description": "Canonical transport bytes; runtime DoT message IDs are substituted before transmission and restored to zero before canonical hashing.",
+      "additionalProperties": false,
+      "required": [
+        "framing",
+        "lengthPrefixOctets",
+        "byteOrder",
+        "canonicalQueryWireHex",
+        "canonicalResponseWireHex"
+      ],
+      "properties": {
+        "framing": {
+          "const": "length-prefixed-dns-message"
+        },
+        "lengthPrefixOctets": {
+          "const": 2
+        },
+        "byteOrder": {
+          "const": "network"
+        },
+        "canonicalQueryWireHex": {
+          "$ref": "#/$defs/hex"
+        },
+        "canonicalResponseWireHex": {
+          "$ref": "#/$defs/hex"
+        }
+      }
+    },
+    "httpTransport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["framing", "mediaType", "queryBodySource", "responseBodySource"],
+      "properties": {
+        "framing": {
+          "const": "bare-dns-message-body"
+        },
+        "mediaType": {
+          "const": "application/dns-message"
+        },
+        "queryBodySource": {
+          "const": "messages.query.bareWire.hex"
+        },
+        "responseBodySource": {
+          "const": "messages.canonicalResponse.bareWire.hex"
+        },
+        "get": {
+          "$ref": "#/$defs/dohGet"
+        }
+      }
+    },
+    "dohGet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["queryParameter", "encoding", "padding", "queryValue", "requestTarget", "requestBody"],
+      "properties": {
+        "queryParameter": {"const": "dns"},
+        "encoding": {"const": "base64url"},
+        "padding": {"const": "omitted"},
+        "queryValue": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+        "requestTarget": {"type": "string", "pattern": "^/dns-query\\?dns=[A-Za-z0-9_-]+$"},
+        "requestBody": {"const": "absent"}
+      }
+    },
+    "datagramTransport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["framing", "querySource", "responseSource"],
+      "properties": {
+        "framing": {"const": "bare-dns-message-datagram"},
+        "querySource": {"const": "messages.query.bareWire.hex"},
+        "responseSource": {
+          "enum": ["messages.canonicalResponse.bareWire.hex", "messages.udpTruncatedResponse.bareWire.hex"]
+        }
+      }
+    },
+    "classicIdPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["messageId", "canonicalHashNormalization"],
+      "properties": {
+        "messageId": {"const": "unique-among-outstanding-queries"},
+        "canonicalHashNormalization": {"const": "set-message-id-to-zero"}
+      }
+    },
+    "zeroIdPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["messageId", "canonicalHashNormalization"],
+      "properties": {
+        "messageId": {
+          "const": "zero"
+        },
+        "canonicalHashNormalization": {
+          "const": "identity"
+        }
+      }
+    }
+  }
+}

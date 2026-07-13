@@ -31,3 +31,20 @@ public contract data without claiming a required impairment engine or runner.
 An implementation chooses how to translate public load intent into traffic and
 measurements. It must preserve the requested load profile, record effective
 load shape, and report unsupported or unavailable load behavior explicitly.
+
+TLS, gRPC/H2, secure DNS, and WebSocket profiles use load-profile v2
+(`schemaVersion: protocol-lab.load-profile.v2`) and carry their own semantic
+`version`. Scenarios own payload, protocol deadline, connection lifecycle,
+prerequisite, and measured-window semantics. Profiles own pressure and
+scheduling: connection or channel capacity, concurrency, operation budget or
+rate limit, outer executor timeout, duration, warmup, and repetitions. Suites
+select a profile and do not duplicate those values. Load-profile v1 remains
+frozen for existing consumers.
+
+Run Plan v2 pins the resolved load-profile snapshot. Test Executor Prepare v2
+then carries both that snapshot and the exact resolved load-profile document;
+an executor rejects a digest mismatch instead of looking up mutable settings
+by ID.
+
+Smoke profiles establish contract validity and are not comparisons. The new
+comparison profiles remain non-publishable candidates even when a run succeeds.

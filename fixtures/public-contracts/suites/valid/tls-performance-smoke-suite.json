@@ -1,0 +1,1 @@
+{"id":"tls-performance-smoke","name":"TLS smoke","purpose":"diagnostic","resultKind":"diagnostic","loadProfileId":"tls-smoke","scenarios":["tls.handshake.full"],"protocol":"tls"}

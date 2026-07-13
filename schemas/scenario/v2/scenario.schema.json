@@ -1,0 +1,1720 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/scenario/v2/scenario.schema.json",
+  "title": "ProtocolLab Scenario v2",
+  "description": "Schema for ProtocolLab v2 scenario definition files, including typed TLS, gRPC, secure DNS, and binding-specific WebSocket contracts.",
+  "unevaluatedProperties": false,
+  "allOf": [
+    {
+      "$ref": "https://schemas.incursa.com/protocol-lab/scenario.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "2.0"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version of this scenario document's behavior"
+        },
+        "semanticTemplateId": {
+          "type": "string",
+          "description": "Stable shared workload-semantic identity used across binding-specific scenarios",
+          "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
+        },
+        "protocolStack": {
+          "type": "array",
+          "description": "Ordered application-to-transport protocol stack required by the scenario",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "upstreamStandards": {
+          "type": "array",
+          "description": "Official standards or protocol source documents governing the scenario binding",
+          "items": { "type": "string", "format": "uri" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "tls": {
+          "type": "object",
+          "description": "TLS handshake or record-workload binding",
+          "additionalProperties": false,
+          "required": [
+            "profileId", "version", "mode", "resumptionPolicy", "earlyData", "serverName", "alpn",
+            "certificateProfile", "cipherSuite", "keyExchangeGroup", "signatureScheme",
+            "peerAuthentication", "connectionLifecycle", "measuredWindow", "applicationDataBytes",
+            "direction", "prerequisitePolicy", "warmupIsolation"
+          ],
+          "properties": {
+            "profileId": { "type": "string", "enum": ["plab-tls13-p256-v1", "plab-tls13-aes128gcm-p256-server-auth-v2", "plab-tls12-aes128gcm-p256-server-auth-v2", "plab-tls13-chacha20-p256-server-auth-v2", "plab-tls13-aes128gcm-p256-mutual-auth-v2"] },
+            "version": { "type": "string", "enum": ["tls1.2", "tls1.3"] },
+            "mode": { "type": "string", "enum": ["full-handshake", "resumed-handshake", "record-throughput", "early-data", "key-update-diagnostic", "record-coverage"] },
+            "resumptionPolicy": {
+              "type": "string",
+              "description": "Whether resumption is not offered or an accepted PSK from a proven single-use ticket is required",
+              "enum": ["not-offered", "accepted-psk-single-use-ticket"]
+            },
+            "earlyData": { "type": "string", "enum": ["not-applicable", "not-attempted", "accepted", "rejected"] },
+            "earlyDataReplayPolicy": { "type": "string", "enum": ["replay-safe-idempotent-fixture-only", "replay-safe-retry-once-after-handshake"] },
+            "applicationDataBytes": { "type": "integer", "minimum": 0, "description": "Application-data payload size in bytes" },
+            "payloadGenerator": { "const": "repeated-octet" },
+            "payloadOctet": { "type": "integer", "minimum": 0, "maximum": 255 },
+            "payloadSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "serverName": { "type": "string", "minLength": 1, "description": "Exact SNI and certificate reference identity" },
+            "alpn": { "type": "string", "minLength": 1 },
+            "certificateProfile": { "type": "string", "minLength": 1 },
+            "clientCertificateProfile": { "const": "plab-single-leaf-p256-client-v2" },
+            "cipherSuite": { "type": "string", "pattern": "^TLS_[A-Z0-9_]+$" },
+            "keyExchangeGroup": { "type": "string", "minLength": 1 },
+            "signatureScheme": { "type": "string", "minLength": 1 },
+            "peerAuthentication": { "type": "string", "enum": ["server-certificate-required", "mutual-certificate-required"] },
+            "connectionLifecycle": {
+              "type": "string",
+              "enum": [
+                "fresh-connection-per-operation",
+                "resumed-connection-per-operation",
+                "pre-established-full-authenticated-connection",
+                "pre-established-full-authenticated-connection-per-case"
+              ]
+            },
+            "measuredWindow": {
+              "type": "string",
+              "enum": ["full-handshake", "resumed-handshake", "application-data-transfer", "early-data-and-resumed-handshake", "early-data-rejection-and-retry", "key-update-and-post-update-transfer", "application-data-transfer-per-case"]
+            },
+            "direction": { "type": "string", "enum": ["not-applicable", "client-to-server", "server-to-client", "bidirectional", "profile-matrix"] },
+            "prerequisitePolicy": {
+              "type": "string",
+              "enum": [
+                "clear-resumption-state-before-each-operation",
+                "clear-session-state-before-each-operation",
+                "unmeasured-source-session-per-measured-operation",
+                "unmeasured-source-session-and-single-use-ticket",
+                "unmeasured-full-handshake-before-measured-transfer",
+                "unmeasured-full-handshake-before-key-update",
+                "unmeasured-full-handshake-before-each-case",
+                "provision-both-trust-anchors-before-operation"
+              ]
+            },
+            "warmupIsolation": { "type": "string", "enum": ["warmup-state-not-reused-by-measurement", "warmup-tickets-not-reused-by-measurement", "fresh-connection-for-each-measured-operation", "fresh-connection-for-each-measured-case"] },
+            "recordCoverageProfileId": { "const": "plab-tls-record-coverage-v1" },
+            "keyUpdatePolicy": { "$ref": "#/$defs/tlsKeyUpdatePolicy" }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "mode": { "const": "full-handshake" } }, "required": ["mode"] },
+              "then": {
+                "properties": {
+                  "resumptionPolicy": { "const": "not-offered" },
+                  "connectionLifecycle": { "const": "fresh-connection-per-operation" },
+                  "measuredWindow": { "const": "full-handshake" },
+                  "applicationDataBytes": { "const": 0 },
+                  "direction": { "const": "not-applicable" },
+                  "prerequisitePolicy": { "enum": ["clear-resumption-state-before-each-operation", "clear-session-state-before-each-operation", "provision-both-trust-anchors-before-operation"] }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "mode": { "const": "resumed-handshake" } }, "required": ["mode"] },
+              "then": {
+                "properties": {
+                  "resumptionPolicy": { "const": "accepted-psk-single-use-ticket" },
+                  "connectionLifecycle": { "const": "resumed-connection-per-operation" },
+                  "measuredWindow": { "const": "resumed-handshake" },
+                  "applicationDataBytes": { "const": 0 },
+                  "direction": { "const": "not-applicable" },
+                  "prerequisitePolicy": { "const": "unmeasured-source-session-per-measured-operation" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "mode": { "const": "record-throughput" } }, "required": ["mode"] },
+              "then": {
+                "required": ["payloadGenerator", "payloadOctet", "payloadSha256"],
+                "properties": {
+                  "resumptionPolicy": { "const": "not-offered" },
+                  "connectionLifecycle": { "const": "pre-established-full-authenticated-connection" },
+                  "measuredWindow": { "const": "application-data-transfer" },
+                  "applicationDataBytes": { "minimum": 1 },
+                  "direction": { "const": "server-to-client" },
+                  "prerequisitePolicy": { "const": "unmeasured-full-handshake-before-measured-transfer" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "mode": { "const": "early-data" } }, "required": ["mode"] },
+              "then": {
+                "required": ["payloadGenerator", "payloadOctet", "payloadSha256", "earlyDataReplayPolicy"],
+                "properties": {
+                  "version": { "const": "tls1.3" },
+                  "resumptionPolicy": { "const": "accepted-psk-single-use-ticket" },
+                  "earlyData": { "enum": ["accepted", "rejected"] },
+                  "applicationDataBytes": { "minimum": 1 },
+                  "payloadGenerator": { "const": "repeated-octet" },
+                  "connectionLifecycle": { "const": "resumed-connection-per-operation" },
+                  "measuredWindow": { "enum": ["early-data-and-resumed-handshake", "early-data-rejection-and-retry"] },
+                  "direction": { "const": "client-to-server" },
+                  "prerequisitePolicy": { "const": "unmeasured-source-session-and-single-use-ticket" },
+                  "warmupIsolation": { "const": "warmup-tickets-not-reused-by-measurement" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "mode": { "const": "key-update-diagnostic" } }, "required": ["mode"] },
+              "then": {
+                "required": ["payloadGenerator", "payloadOctet", "payloadSha256", "keyUpdatePolicy"],
+                "properties": {
+                  "version": { "const": "tls1.3" },
+                  "resumptionPolicy": { "const": "not-offered" },
+                  "earlyData": { "const": "not-attempted" },
+                  "applicationDataBytes": { "minimum": 1 },
+                  "payloadGenerator": { "const": "repeated-octet" },
+                  "connectionLifecycle": { "const": "pre-established-full-authenticated-connection" },
+                  "measuredWindow": { "const": "key-update-and-post-update-transfer" },
+                  "direction": { "const": "bidirectional" },
+                  "prerequisitePolicy": { "const": "unmeasured-full-handshake-before-key-update" },
+                  "warmupIsolation": { "const": "fresh-connection-for-each-measured-operation" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "mode": { "const": "record-coverage" } }, "required": ["mode"] },
+              "then": {
+                "required": ["recordCoverageProfileId"],
+                "properties": {
+                  "version": { "const": "tls1.3" },
+                  "resumptionPolicy": { "const": "not-offered" },
+                  "earlyData": { "const": "not-attempted" },
+                  "applicationDataBytes": { "const": 0 },
+                  "connectionLifecycle": { "const": "pre-established-full-authenticated-connection-per-case" },
+                  "measuredWindow": { "const": "application-data-transfer-per-case" },
+                  "direction": { "const": "profile-matrix" },
+                  "prerequisitePolicy": { "const": "unmeasured-full-handshake-before-each-case" },
+                  "warmupIsolation": { "const": "fresh-connection-for-each-measured-case" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "version": { "const": "tls1.2" } }, "required": ["version"] },
+              "then": {
+                "properties": {
+                  "profileId": { "const": "plab-tls12-aes128gcm-p256-server-auth-v2" },
+                  "earlyData": { "const": "not-applicable" },
+                  "cipherSuite": { "const": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "peerAuthentication": { "const": "mutual-certificate-required" } }, "required": ["peerAuthentication"] },
+              "then": { "required": ["clientCertificateProfile"] }
+            }
+          ]
+        },
+        "grpc": {
+          "type": "object",
+          "description": "Language-neutral gRPC over HTTP/2 operation binding",
+          "additionalProperties": false,
+          "required": [
+            "binding", "alpn", "serviceContractId", "serviceContractSha256", "serviceContractCanonicalization",
+            "service", "method", "path", "rpcType", "request", "response",
+            "compression", "metadataPolicy", "deadlineMilliseconds", "connectionLifecycle", "measuredWindow",
+            "requestContentType", "responseContentType", "te", "trailersRequired",
+            "expectedGrpcStatus", "messageFraming", "scheme", "httpMethod", "authority",
+            "grpcEncoding", "grpcAcceptEncoding", "retryPolicy", "hedgingPolicy",
+            "waitForReady", "effectiveHttp2SettingsRequired", "byteAccounting"
+          ],
+          "properties": {
+            "binding": { "const": "grpc-over-h2" },
+            "alpn": { "const": "h2" },
+            "serviceContractId": { "const": "protocollab.performance.v1.EchoService" },
+            "serviceContractSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "serviceContractCanonicalization": { "const": "json-sort-keys-utf8-no-whitespace-v1" },
+            "scheme": { "const": "https" },
+            "httpMethod": { "const": "POST" },
+            "authority": { "type": "string", "minLength": 1 },
+            "service": { "const": "protocollab.performance.v1.EchoService" },
+            "method": { "type": "string", "minLength": 1 },
+            "path": { "type": "string", "pattern": "^/[A-Za-z0-9_.]+/[A-Za-z0-9_]+$" },
+            "rpcType": { "type": "string", "enum": ["unary", "server-streaming", "client-streaming", "bidirectional-streaming"] },
+            "compression": { "type": "string", "enum": ["identity", "gzip"] },
+            "metadataPolicy": { "type": "string", "enum": ["fixed-empty-user-metadata", "fixed-ascii-and-binary-metadata-v1"] },
+            "deadlineMilliseconds": { "type": "integer", "minimum": 1, "description": "gRPC deadline in milliseconds" },
+            "deadlinePolicy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["serverMinimumWaitMilliseconds", "expectedInitiator"],
+              "properties": {
+                "serverMinimumWaitMilliseconds": { "type": "integer", "minimum": 1 },
+                "expectedInitiator": { "const": "client-deadline" }
+              }
+            },
+            "cancellationPolicy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["trigger", "readyMetadataName", "readyMetadataValue", "cancelDelayMilliseconds", "expectedInitiator"],
+              "properties": {
+                "trigger": { "const": "after-ready-initial-metadata" },
+                "readyMetadataName": { "const": "x-plab-ready" },
+                "readyMetadataValue": { "const": "1" },
+                "cancelDelayMilliseconds": { "type": "integer", "minimum": 1 },
+                "expectedInitiator": { "const": "client" }
+              }
+            },
+            "connectionLifecycle": { "type": "string", "enum": ["pre-established-channel", "new-channel-per-operation"] },
+            "measuredWindow": { "type": "string", "enum": ["rpc-operation", "channel-establishment-and-rpc"] },
+            "requestContentType": { "const": "application/grpc+proto" },
+            "responseContentType": { "const": "application/grpc+proto" },
+            "te": { "const": "trailers" },
+            "grpcEncoding": { "type": "string", "enum": ["identity", "gzip"] },
+            "grpcAcceptEncoding": { "type": "string", "enum": ["identity", "gzip", "identity,gzip"] },
+            "retryPolicy": { "const": "disabled" },
+            "hedgingPolicy": { "const": "disabled" },
+            "waitForReady": { "const": false },
+            "effectiveHttp2SettingsRequired": { "const": true },
+            "byteAccounting": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["hashScope", "grpcFrameIncludesPrefix", "totalTransferredBytesScope"],
+              "properties": {
+                "hashScope": { "const": "per-message" },
+                "grpcFrameIncludesPrefix": { "const": true },
+                "totalTransferredBytesScope": { "const": "bidirectional-on-wire-transport-bytes-including-protocol-overhead" }
+              }
+            },
+            "trailersRequired": { "type": "boolean" },
+            "expectedGrpcStatus": { "type": "integer", "minimum": 0, "maximum": 16 },
+            "expectedGrpcMessage": { "type": "string" },
+            "responsePolicy": { "type": "string", "enum": ["messages-and-trailers", "trailers-only", "client-observed-terminal-status"] },
+            "compressionValidation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["profileId", "decompressedProtobufSha256Required", "compressedWireSha256Required", "encoderProvenanceRequired"],
+              "properties": {
+                "profileId": { "const": "gzip-semantic-v1" },
+                "decompressedProtobufSha256Required": { "const": true },
+                "compressedWireSha256Required": { "const": false },
+                "encoderProvenanceRequired": { "const": true }
+              }
+            },
+            "messageFraming": { "$ref": "#/$defs/grpcMessageFraming" },
+            "request": { "$ref": "#/$defs/deterministicMessage" },
+            "response": {
+              "oneOf": [
+                { "$ref": "#/$defs/deterministicMessage" },
+                { "$ref": "#/$defs/grpcNoMessageSequence" }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "method": { "const": "UnaryEcho" } }, "required": ["method"] },
+              "then": {
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/UnaryEcho" },
+                  "rpcType": { "const": "unary" },
+                  "request": { "properties": { "count": { "const": 1 } } },
+                  "response": { "properties": { "count": { "const": 1 } } },
+                  "trailersRequired": { "const": true },
+                  "expectedGrpcStatus": { "const": 0 }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "method": { "const": "ServerStreamingEcho" } }, "required": ["method"] },
+              "then": {
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/ServerStreamingEcho" },
+                  "rpcType": { "const": "server-streaming" },
+                  "request": { "properties": { "count": { "const": 1 } } },
+                  "response": { "properties": { "count": { "const": 100 } } },
+                  "trailersRequired": { "const": true },
+                  "expectedGrpcStatus": { "const": 0 }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "method": { "const": "BidirectionalStreamingEcho" } }, "required": ["method"] },
+              "then": {
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/BidirectionalStreamingEcho" },
+                  "rpcType": { "const": "bidirectional-streaming" },
+                  "request": { "properties": { "count": { "const": 100 } } },
+                  "response": { "properties": { "count": { "const": 100 } } },
+                  "trailersRequired": { "const": true },
+                  "expectedGrpcStatus": { "const": 0 }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "method": { "const": "ClientStreamingEcho" } }, "required": ["method"] },
+              "then": {
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/ClientStreamingEcho" },
+                  "rpcType": { "const": "client-streaming" },
+                  "request": { "properties": { "count": { "const": 100 } } },
+                  "response": { "properties": { "count": { "const": 1 } } },
+                  "trailersRequired": { "const": true },
+                  "expectedGrpcStatus": { "const": 0 }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "method": { "const": "TrailersOnlyStatus" } }, "required": ["method"] },
+              "then": {
+                "required": ["expectedGrpcMessage", "responsePolicy"],
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/TrailersOnlyStatus" },
+                  "rpcType": { "const": "unary" },
+                  "request": { "properties": { "count": { "const": 1 } } },
+                  "response": { "$ref": "#/$defs/grpcNoMessageSequence" },
+                  "trailersRequired": { "const": true },
+                  "expectedGrpcStatus": { "const": 3 },
+                  "expectedGrpcMessage": { "const": "plab invalid fixture" },
+                  "responsePolicy": { "const": "trailers-only" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "method": { "const": "DeadlineExceeded" } }, "required": ["method"] },
+              "then": {
+                "required": ["deadlinePolicy", "responsePolicy"],
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/DeadlineExceeded" },
+                  "rpcType": { "const": "unary" },
+                  "request": { "properties": { "count": { "const": 1 } } },
+                  "response": { "$ref": "#/$defs/grpcNoMessageSequence" },
+                  "trailersRequired": { "const": false },
+                  "expectedGrpcStatus": { "const": 4 },
+                  "responsePolicy": { "const": "client-observed-terminal-status" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "method": { "const": "ClientCancellation" } }, "required": ["method"] },
+              "then": {
+                "required": ["cancellationPolicy", "responsePolicy"],
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/ClientCancellation" },
+                  "rpcType": { "const": "server-streaming" },
+                  "request": { "properties": { "count": { "const": 1 } } },
+                  "response": { "$ref": "#/$defs/grpcNoMessageSequence" },
+                  "trailersRequired": { "const": false },
+                  "expectedGrpcStatus": { "const": 1 },
+                  "responsePolicy": { "const": "client-observed-terminal-status" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "method": { "const": "UnaryGzip" } }, "required": ["method"] },
+              "then": {
+                "required": ["compressionValidation"],
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/UnaryGzip" },
+                  "rpcType": { "const": "unary" },
+                  "compression": { "const": "gzip" },
+                  "grpcEncoding": { "const": "gzip" },
+                  "grpcAcceptEncoding": { "enum": ["gzip", "identity,gzip"] },
+                  "trailersRequired": { "const": true },
+                  "expectedGrpcStatus": { "const": 0 },
+                  "messageFraming": {
+                    "properties": {
+                      "compressedFlag": { "const": 1 },
+                      "lengthValueSource": { "const": "compressedMessageBytes" }
+                    }
+                  },
+                  "request": { "allOf": [{ "properties": { "count": { "const": 1 } } }, { "$ref": "#/$defs/grpcCompressedMessage" }] },
+                  "response": { "allOf": [{ "properties": { "count": { "const": 1 } } }, { "$ref": "#/$defs/grpcCompressedMessage" }] }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "method": { "const": "UnaryFixedMetadata" } }, "required": ["method"] },
+              "then": {
+                "properties": {
+                  "path": { "const": "/protocollab.performance.v1.EchoService/UnaryFixedMetadata" },
+                  "rpcType": { "const": "unary" },
+                  "metadataPolicy": { "const": "fixed-ascii-and-binary-metadata-v1" },
+                  "request": { "properties": { "count": { "const": 1 } } },
+                  "response": { "properties": { "count": { "const": 1 } } },
+                  "trailersRequired": { "const": true },
+                  "expectedGrpcStatus": { "const": 0 }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "compression": { "const": "identity" } }, "required": ["compression"] },
+              "then": {
+                "properties": {
+                  "grpcEncoding": { "const": "identity" },
+                  "messageFraming": {
+                    "properties": {
+                      "compressedFlag": { "const": 0 },
+                      "lengthValueSource": { "const": "serializedProtobufBytes" }
+                    }
+                  },
+                  "request": { "required": ["grpcFrameBytes", "grpcFrameSha256"] }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "connectionLifecycle": { "const": "new-channel-per-operation" } }, "required": ["connectionLifecycle"] },
+              "then": { "properties": { "measuredWindow": { "const": "channel-establishment-and-rpc" } } },
+              "else": { "properties": { "measuredWindow": { "const": "rpc-operation" } } }
+            },
+            {
+              "if": {
+                "properties": {
+                  "expectedGrpcStatus": { "const": 0 },
+                  "compression": { "const": "identity" }
+                },
+                "required": ["expectedGrpcStatus", "compression"]
+              },
+              "then": { "properties": { "response": { "required": ["grpcFrameBytes", "grpcFrameSha256"] } } }
+            },
+            {
+              "if": { "properties": { "method": { "enum": ["TrailersOnlyStatus", "DeadlineExceeded", "ClientCancellation"] } }, "required": ["method"] },
+              "then": {},
+              "else": {
+                "properties": {
+                  "expectedGrpcStatus": { "const": 0 },
+                  "trailersRequired": { "const": true }
+                }
+              }
+            }
+          ]
+        },
+        "dns": {
+          "type": "object",
+          "description": "Deterministic DNS query semantics with secure or classic diagnostic transport binding",
+          "additionalProperties": false,
+          "required": [
+            "fixtureId",
+            "transport",
+            "query",
+            "expectedResponse",
+            "authorityMode",
+            "cacheState",
+            "connectionReuse",
+            "endpoint",
+            "authorityPolicy",
+            "framing",
+            "operationPolicy",
+            "runtimeIdPolicy",
+            "responseNormalization"
+          ],
+          "properties": {
+            "fixtureId": {
+              "type": "string",
+              "description": "Stable identity of the canonical DNS wire fixture used by this scenario",
+              "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+            },
+            "transport": { "type": "string", "enum": ["udp", "tcp", "udp-tcp", "dot", "doh2", "doh3", "doq"] },
+            "authorityMode": { "const": "local-fixture-authoritative" },
+            "cacheState": { "const": "disabled" },
+            "alpn": { "type": "string", "minLength": 1 },
+            "connectionReuse": { "type": "string", "enum": ["reuse", "churn"] },
+            "endpoint": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["host", "port", "serverName", "addressResolution"],
+              "properties": {
+                "host": { "type": "string", "minLength": 1 },
+                "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+                "serverName": { "type": "string", "minLength": 1 },
+                "addressResolution": { "const": "runner-provided-local-binding" }
+              }
+            },
+            "tlsPolicy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "profileId", "version", "resumptionPolicy", "earlyData", "alpn",
+                "certificateProfile", "cipherSuite", "keyExchangeGroup", "signatureScheme", "peerAuthentication",
+                "connectionLifecycle", "measuredWindow"
+              ],
+              "properties": {
+                "profileId": { "const": "plab-secure-dns-tls13-v1" },
+                "version": { "const": "tls1.3" },
+                "resumptionPolicy": { "const": "not-offered" },
+                "earlyData": { "const": "not-attempted" },
+                "alpn": { "type": "string", "minLength": 1 },
+                "certificateProfile": { "const": "plab-secure-dns-single-leaf-p256-v1" },
+                "cipherSuite": { "const": "TLS_AES_128_GCM_SHA256" },
+                "keyExchangeGroup": { "const": "x25519" },
+                "signatureScheme": { "const": "ecdsa_secp256r1_sha256" },
+                "peerAuthentication": { "const": "server-certificate-required" },
+                "connectionLifecycle": { "const": "pre-established-full-authenticated-connection" },
+                "measuredWindow": { "const": "dns-query-response" }
+              }
+            },
+            "authorityPolicy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["zone", "authoritativeAnswer", "recursionDesired", "recursionAvailable", "externalUpstream", "outOfZoneResponse", "unknownNameResponse", "existingNameUnknownTypeResponse"],
+              "properties": {
+                "zone": { "const": "plab.test." }, "authoritativeAnswer": { "const": true },
+                "recursionDesired": { "const": false }, "recursionAvailable": { "const": false },
+                "externalUpstream": { "const": "prohibited" }, "outOfZoneResponse": { "const": "REFUSED" },
+                "unknownNameResponse": { "const": "NXDOMAIN" }, "existingNameUnknownTypeResponse": { "const": "NOERROR-NODATA" }
+              }
+            },
+            "framing": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": { "enum": ["two-octet-network-order-length-prefix", "bare-dns-message-body", "bare-dns-message-datagram", "udp-truncation-then-tcp-retry"] },
+                "lengthPrefixOctets": { "const": 2 }, "byteOrder": { "const": "network" },
+                "canonicalQueryMessageLength": { "type": "integer", "minimum": 12 },
+                "canonicalQueryPrefixHex": { "type": "string", "pattern": "^[a-f0-9]{4}$" },
+                "canonicalResponseMessageLength": { "type": "integer", "minimum": 12 },
+                "canonicalResponsePrefixHex": { "type": "string", "pattern": "^[a-f0-9]{4}$" },
+                "requestBodyLength": { "type": "integer", "minimum": 12 },
+                "canonicalResponseLength": { "type": "integer", "minimum": 12 },
+                "udpAdvertisedPayloadBytes": { "type": "integer", "minimum": 512, "maximum": 65535 },
+                "udpTruncatedResponseLength": { "type": "integer", "minimum": 12, "maximum": 65535 },
+                "tcpCanonicalResponseLength": { "type": "integer", "minimum": 12, "maximum": 65535 }
+              }
+            },
+            "fallbackPolicy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["trigger", "retryTransport", "retryQuestion", "retryMessageId"],
+              "properties": {
+                "trigger": { "const": "udp-response-tc-bit-set" },
+                "retryTransport": { "const": "tcp" },
+                "retryQuestion": { "const": "identical" },
+                "retryMessageId": { "const": "new-unique-id" }
+              }
+            },
+            "operationPolicy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["timeoutSource", "retries", "onTimeout"],
+              "properties": {
+                "timeoutSource": { "const": "load-profile.dns.queryTimeoutMilliseconds" },
+                "retries": { "const": 0 },
+                "onTimeout": { "enum": ["abandon-query-and-record", "cancel-operation-and-record", "cancel-stream-and-record"] },
+                "zeroRtt": { "const": "not-attempted" }
+              }
+            },
+            "concurrencyPolicy": {
+              "type": "object", "additionalProperties": false,
+              "required": [
+                "pipelining", "messageIdScope", "messageIdUniqueness", "responseOrdering",
+                "responseCorrelation", "timedOutMessageIdReuse"
+              ],
+              "properties": {
+                "pipelining": { "const": "allowed" }, "messageIdScope": { "const": "tls-connection" },
+                "messageIdUniqueness": { "const": "outstanding-queries" }, "responseOrdering": { "const": "may-differ-from-query-order" },
+                "responseCorrelation": { "const": ["message-id", "qname", "qtype", "qclass"] },
+                "timedOutMessageIdReuse": { "const": "prohibited-until-connection-close" }
+              }
+            },
+            "streamPolicy": {
+              "type": "object", "additionalProperties": false,
+              "required": ["streamType", "queriesPerStream", "responsesPerStream", "clientFinAfterQuery", "serverFinAfterResponse", "unidirectionalStreams", "serverInitiatedBidirectionalStreams"],
+              "properties": {
+                "streamType": { "const": "client-initiated-bidirectional" }, "queriesPerStream": { "const": 1 }, "responsesPerStream": { "const": 1 },
+                "clientFinAfterQuery": { "const": "required" }, "serverFinAfterResponse": { "const": "required" },
+                "unidirectionalStreams": { "const": "prohibited" }, "serverInitiatedBidirectionalStreams": { "const": "prohibited" }
+              }
+            },
+            "errorPolicy": {
+              "type": "object", "additionalProperties": false,
+              "required": ["nonZeroMessageId", "incompleteLengthPrefixedMessage", "missingFin", "extraQueryOrResponse", "internalError", "timeoutCancellation"],
+              "properties": {
+                "nonZeroMessageId": { "const": "connection-close-DOQ_PROTOCOL_ERROR" }, "incompleteLengthPrefixedMessage": { "const": "connection-close-DOQ_PROTOCOL_ERROR" },
+                "missingFin": { "const": "connection-close-DOQ_PROTOCOL_ERROR" }, "extraQueryOrResponse": { "const": "connection-close-DOQ_PROTOCOL_ERROR" },
+                "internalError": { "const": "reset-stream-DOQ_INTERNAL_ERROR" }, "timeoutCancellation": { "const": "stop-sending-DOQ_REQUEST_CANCELLED" }
+              }
+            },
+            "http": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "version", "scheme", "authority", "method", "path", "requestHeaders",
+                "responseHeaders", "bodyFraming", "expectedStatus"
+              ],
+              "properties": {
+                "version": { "type": "string", "enum": ["h2", "h3"] },
+                "scheme": { "const": "https" },
+                "authority": { "type": "string", "minLength": 1 },
+                "method": { "type": "string", "enum": ["GET", "POST"] },
+                "path": { "const": "/dns-query" },
+                "requestHeaders": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["accept", "cacheControl"],
+                  "properties": {
+                    "contentType": { "const": "application/dns-message" },
+                    "accept": { "const": "application/dns-message" },
+                    "cacheControl": { "const": "no-cache" }
+                  }
+                },
+                "responseHeaders": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["contentType", "cacheControl"],
+                  "properties": {
+                    "contentType": { "const": "application/dns-message" },
+                    "cacheControl": { "const": "no-store" }
+                  }
+                },
+                "queryParameter": { "const": "dns" },
+                "queryEncoding": { "const": "base64url-unpadded" },
+                "queryValue": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+                "requestTarget": { "type": "string", "pattern": "^/dns-query\\?dns=[A-Za-z0-9_-]+$" },
+                "requestBody": { "const": "absent" },
+                "bodyFraming": { "const": "bare-dns-message-body" },
+                "expectedStatus": { "const": 200 }
+              }
+            },
+            "query": { "$ref": "#/$defs/dnsMessage" },
+            "expectedResponse": { "$ref": "#/$defs/dnsResponse" },
+            "runtimeIdPolicy": { "$ref": "#/$defs/dnsRuntimeIdPolicy" },
+            "responseNormalization": { "$ref": "#/$defs/dnsResponseNormalization" }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "transport": { "enum": ["dot", "doh2", "doh3", "doq"] } }, "required": ["transport"] },
+              "then": { "required": ["alpn", "tlsPolicy"] }
+            },
+            {
+              "if": { "properties": { "transport": { "enum": ["udp", "tcp", "udp-tcp"] } }, "required": ["transport"] },
+              "then": {
+                "properties": {
+                  "alpn": { "const": "none" },
+                  "runtimeIdPolicy": {
+                    "properties": {
+                      "messageId": { "const": "unique-among-outstanding-queries" },
+                      "canonicalHashNormalization": { "const": "set-message-id-to-zero" }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "const": "dot" } }, "required": ["transport"] },
+              "then": {
+                "properties": {
+                  "runtimeIdPolicy": {
+                    "properties": {
+                      "messageId": { "const": "unique-among-outstanding-queries" },
+                      "canonicalHashNormalization": { "const": "set-message-id-to-zero" }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "enum": ["doh2", "doh3", "doq"] } }, "required": ["transport"] },
+              "then": {
+                "properties": {
+                  "runtimeIdPolicy": {
+                    "properties": {
+                      "messageId": { "const": "zero" },
+                      "canonicalHashNormalization": { "const": "identity" }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "const": "doh2" } }, "required": ["transport"] },
+              "then": {
+                "required": ["http"],
+                "properties": {
+                  "tlsPolicy": { "properties": { "alpn": { "const": "h2" } } },
+                  "framing": {
+                    "required": ["kind", "requestBodyLength", "canonicalResponseLength"],
+                    "properties": { "kind": { "const": "bare-dns-message-body" } }
+                  },
+                  "http": { "properties": { "version": { "const": "h2" } } }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "const": "doh3" } }, "required": ["transport"] },
+              "then": {
+                "required": ["http"],
+                "properties": {
+                  "tlsPolicy": { "properties": { "alpn": { "const": "h3" } } },
+                  "framing": {
+                    "required": ["kind", "requestBodyLength", "canonicalResponseLength"],
+                    "properties": { "kind": { "const": "bare-dns-message-body" } }
+                  },
+                  "http": { "properties": { "version": { "const": "h3" } } }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "const": "doq" } }, "required": ["transport"] },
+              "then": {
+                "required": ["streamPolicy", "errorPolicy"],
+                "properties": {
+                  "tlsPolicy": { "properties": { "alpn": { "const": "doq" } } },
+                  "framing": {
+                    "required": [
+                      "kind", "lengthPrefixOctets", "byteOrder", "canonicalQueryMessageLength",
+                      "canonicalQueryPrefixHex", "canonicalResponseMessageLength", "canonicalResponsePrefixHex"
+                    ],
+                    "properties": { "kind": { "const": "two-octet-network-order-length-prefix" } }
+                  }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "const": "dot" } }, "required": ["transport"] },
+              "then": {
+                "required": ["concurrencyPolicy"],
+                "properties": {
+                  "framing": {
+                    "required": [
+                      "kind", "lengthPrefixOctets", "byteOrder", "canonicalQueryMessageLength",
+                      "canonicalQueryPrefixHex", "canonicalResponseMessageLength", "canonicalResponsePrefixHex"
+                    ],
+                    "properties": { "kind": { "const": "two-octet-network-order-length-prefix" } }
+                  }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "const": "udp" } }, "required": ["transport"] },
+              "then": {
+                "properties": {
+                  "framing": {
+                    "required": ["kind", "canonicalQueryMessageLength", "canonicalResponseMessageLength"],
+                    "properties": { "kind": { "const": "bare-dns-message-datagram" } }
+                  }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "const": "tcp" } }, "required": ["transport"] },
+              "then": {
+                "properties": {
+                  "framing": {
+                    "required": ["kind", "lengthPrefixOctets", "byteOrder", "canonicalQueryMessageLength", "canonicalQueryPrefixHex", "canonicalResponseMessageLength", "canonicalResponsePrefixHex"],
+                    "properties": { "kind": { "const": "two-octet-network-order-length-prefix" } }
+                  }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "transport": { "const": "udp-tcp" } }, "required": ["transport"] },
+              "then": {
+                "required": ["fallbackPolicy"],
+                "properties": {
+                  "framing": {
+                    "required": ["kind", "udpAdvertisedPayloadBytes", "udpTruncatedResponseLength", "tcpCanonicalResponseLength"],
+                    "properties": { "kind": { "const": "udp-truncation-then-tcp-retry" } }
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": ["http"],
+                "properties": { "http": { "properties": { "method": { "const": "GET" } }, "required": ["method"] } }
+              },
+              "then": {
+                "properties": {
+                  "http": {
+                    "required": ["queryParameter", "queryEncoding", "queryValue", "requestTarget", "requestBody"],
+                    "properties": {
+                      "requestHeaders": { "not": { "required": ["contentType"] } }
+                    }
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "http": {
+                    "properties": {
+                      "requestHeaders": { "required": ["contentType"] }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "websocket": {
+          "type": "object",
+          "description": "Binding-specific WebSocket workload",
+          "additionalProperties": false,
+          "required": [
+            "binding", "standard", "path", "subprotocol", "operation", "messageType",
+            "messageBytes", "messageCount", "fragmentation", "masking", "closeCode",
+            "authority", "extensions", "bootstrapPolicy", "closeReasonPolicy",
+            "connectionLifecycle", "measuredWindow", "handshake"
+          ],
+          "properties": {
+            "binding": { "type": "string", "enum": ["http1-upgrade", "http2-extended-connect", "http3-extended-connect"] },
+            "standard": { "type": "string", "enum": ["rfc6455", "rfc8441", "rfc9220"] },
+            "scheme": { "type": "string", "enum": ["ws", "wss"] },
+            "authority": { "type": "string", "minLength": 1 },
+            "path": { "type": "string", "pattern": "^/" },
+            "subprotocol": { "type": ["string", "null"] },
+            "extensions": { "type": "string", "enum": ["none", "permessage-deflate-no-context-takeover"] },
+            "extensionPolicy": { "$ref": "#/$defs/websocketExtensionPolicy" },
+            "bootstrapPolicy": {
+              "type": "string",
+              "enum": ["rfc6455-http1-upgrade", "rfc8441-extended-connect", "rfc9220-extended-connect"]
+            },
+            "operation": { "type": "string", "enum": ["establish", "text-echo", "binary-echo", "control-frames", "close"] },
+            "messageType": { "type": "string", "enum": ["none", "text", "binary"] },
+            "messageBytes": { "type": "integer", "minimum": 0 },
+            "messageCount": { "type": "integer", "minimum": 0 },
+            "messageOrdering": { "type": "string", "enum": ["strict-in-order"] },
+            "payloadGenerator": { "type": "string", "enum": ["exact-utf8", "repeated-octet"] },
+            "payloadText": { "type": "string" },
+            "payloadOctet": { "type": "integer", "minimum": 0, "maximum": 255 },
+            "payloadSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "controlPayloadGenerator": { "const": "exact-utf8" },
+            "controlPayloadText": { "type": "string" },
+            "controlPayloadBytes": { "type": "integer", "minimum": 0, "maximum": 125 },
+            "controlPayloadSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "fragmentation": { "type": "string", "enum": ["none", "diagnostic"] },
+            "fragmentPlan": { "$ref": "#/$defs/websocketFragmentPlan" },
+            "masking": { "type": "string", "enum": ["client-required"] },
+            "closeCode": { "type": "integer", "minimum": 1000, "maximum": 4999 },
+            "closeReasonPolicy": { "const": "empty-utf8-reason" },
+            "handshake": { "$ref": "#/$defs/websocketHandshake" },
+            "connectionLifecycle": {
+              "type": "string",
+              "enum": ["new-connection-per-operation", "pre-established-connection-per-operation"]
+            },
+            "measuredWindow": {
+              "type": "string",
+              "enum": ["opening-handshake", "message-round-trip", "control-frame-round-trip", "closing-handshake"]
+            }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "binding": { "const": "http1-upgrade" } }, "required": ["binding"] },
+              "then": {
+                "properties": {
+                  "bootstrapPolicy": { "const": "rfc6455-http1-upgrade" },
+                  "handshake": { "properties": { "binding": { "const": "http1-upgrade" } } }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "binding": { "const": "http2-extended-connect" } }, "required": ["binding"] },
+              "then": {
+                "properties": {
+                  "bootstrapPolicy": { "const": "rfc8441-extended-connect" },
+                  "handshake": { "properties": { "binding": { "const": "http2-extended-connect" } } }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "binding": { "const": "http3-extended-connect" } }, "required": ["binding"] },
+              "then": {
+                "properties": {
+                  "bootstrapPolicy": { "const": "rfc9220-extended-connect" },
+                  "handshake": { "properties": { "binding": { "const": "http3-extended-connect" } } }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": ["operation"],
+                "properties": { "operation": { "const": "control-frames" } }
+              },
+              "then": {
+                "required": ["controlPayloadGenerator", "controlPayloadText", "controlPayloadBytes", "controlPayloadSha256"],
+                "properties": {
+                  "messageType": { "const": "none" },
+                  "messageBytes": { "const": 0 },
+                  "messageCount": { "minimum": 1 },
+                  "connectionLifecycle": { "const": "pre-established-connection-per-operation" },
+                  "measuredWindow": { "const": "control-frame-round-trip" }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": ["operation"],
+                "properties": { "operation": { "enum": ["text-echo", "binary-echo"] } }
+              },
+              "then": {
+                "required": ["payloadGenerator", "payloadSha256"],
+                "properties": {
+                  "messageBytes": { "minimum": 1 },
+                  "messageCount": { "minimum": 1 },
+                  "connectionLifecycle": { "const": "pre-established-connection-per-operation" },
+                  "measuredWindow": { "const": "message-round-trip" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "operation": { "const": "text-echo" } }, "required": ["operation"] },
+              "then": {
+                "required": ["payloadText"],
+                "properties": {
+                  "messageType": { "const": "text" },
+                  "payloadGenerator": { "const": "exact-utf8" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "operation": { "const": "binary-echo" } }, "required": ["operation"] },
+              "then": {
+                "required": ["payloadOctet"],
+                "properties": {
+                  "messageType": { "const": "binary" },
+                  "payloadGenerator": { "const": "repeated-octet" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "operation": { "const": "establish" } }, "required": ["operation"] },
+              "then": {
+                "properties": {
+                  "messageType": { "const": "none" },
+                  "messageBytes": { "const": 0 },
+                  "messageCount": { "const": 0 },
+                  "connectionLifecycle": { "const": "new-connection-per-operation" },
+                  "measuredWindow": { "const": "opening-handshake" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "operation": { "const": "close" } }, "required": ["operation"] },
+              "then": {
+                "properties": {
+                  "messageType": { "const": "none" },
+                  "messageBytes": { "const": 0 },
+                  "messageCount": { "const": 0 },
+                  "connectionLifecycle": { "const": "pre-established-connection-per-operation" },
+                  "measuredWindow": { "const": "closing-handshake" }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "messageCount": { "minimum": 2 } }, "required": ["messageCount"] },
+              "then": {
+                "required": ["messageOrdering"],
+                "properties": { "messageOrdering": { "const": "strict-in-order" } }
+              }
+            },
+            {
+              "if": { "properties": { "fragmentation": { "const": "diagnostic" } }, "required": ["fragmentation"] },
+              "then": { "required": ["fragmentPlan"] }
+            },
+            {
+              "if": { "properties": { "subprotocol": { "type": "string" } }, "required": ["subprotocol"] },
+              "then": {
+                "properties": {
+                  "handshake": {
+                    "properties": {
+                      "requestHeaders": {
+                        "required": ["secWebSocketProtocol"],
+                        "properties": { "secWebSocketProtocolPresent": { "const": true } }
+                      },
+                      "responseHeaders": {
+                        "required": ["secWebSocketProtocol"],
+                        "properties": { "secWebSocketProtocolPresent": { "const": true } }
+                      }
+                    }
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "handshake": {
+                    "properties": {
+                      "requestHeaders": { "properties": { "secWebSocketProtocolPresent": { "const": false } } },
+                      "responseHeaders": { "properties": { "secWebSocketProtocolPresent": { "const": false } } }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": { "properties": { "extensions": { "const": "permessage-deflate-no-context-takeover" } }, "required": ["extensions"] },
+              "then": {
+                "required": ["extensionPolicy"],
+                "properties": {
+                  "handshake": {
+                    "properties": {
+                      "requestHeaders": {
+                        "required": ["secWebSocketExtensions"],
+                        "properties": { "secWebSocketExtensionsPresent": { "const": true } }
+                      },
+                      "responseHeaders": {
+                        "required": ["secWebSocketExtensions"],
+                        "properties": { "secWebSocketExtensionsPresent": { "const": true } }
+                      }
+                    }
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "handshake": {
+                    "properties": {
+                      "requestHeaders": { "properties": { "secWebSocketExtensionsPresent": { "const": false } } },
+                      "responseHeaders": { "properties": { "secWebSocketExtensionsPresent": { "const": false } } }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "executionProfile": {
+          "type": "object",
+          "description": "Implementation-neutral execution and security facts required for comparison",
+          "additionalProperties": false,
+          "required": [
+            "transportSecurity", "protocolVariant", "implementationRole",
+            "selectedComponentProofRequired", "executionModePolicy"
+          ],
+          "properties": {
+            "transportSecurity": { "type": "string", "enum": ["cleartext", "tls"] },
+            "protocolVariant": { "type": "string", "minLength": 1 },
+            "implementationRole": { "type": "string", "enum": ["origin-server", "authoritative-server", "proxy", "gateway", "client", "library-backed-target"] },
+            "selectedComponentProofRequired": { "const": true },
+            "executionModePolicy": { "const": "record-effective-mode" },
+            "platformProvenanceRequired": { "type": "boolean" },
+            "accelerationProvenanceRequired": { "type": "boolean" }
+          }
+        },
+        "availability": {
+          "type": "object",
+          "description": "Fail-closed unsupported and unavailable behavior",
+          "additionalProperties": false,
+          "required": ["onUnsupported", "onUnavailable", "onBindingMismatch"],
+          "properties": {
+            "onUnsupported": { "const": "unsupported" },
+            "onUnavailable": { "const": "unavailable" },
+            "onBindingMismatch": { "const": "validation-failed" },
+            "knownUnsupported": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+          }
+        },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "requested": { "type": "string", "minLength": 1 },
+                "expectedObserved": { "type": "string", "minLength": 1 },
+                "fallbackAllowed": { "type": "boolean" }
+              },
+              "required": ["requested", "expectedObserved", "fallbackAllowed"]
+            }
+          }
+        },
+        "requiredMetrics": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$" }
+        },
+        "benchmarkCompat": {
+          "type": "object",
+          "properties": {
+            "primaryMetrics": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["dns"],
+            "properties": {
+              "dns": {
+                "required": ["transport"],
+                "properties": { "transport": { "const": "udp-tcp" } }
+              }
+            }
+          },
+          "then": {
+            "properties": { "validation": { "properties": { "protocol": { "properties": { "fallbackAllowed": { "const": true } } } } } }
+          },
+          "else": {
+            "properties": { "validation": { "properties": { "protocol": { "properties": { "fallbackAllowed": { "const": false } } } } } }
+          }
+        },
+        {
+          "if": {
+            "anyOf": [
+              { "required": ["tls"] },
+              { "required": ["grpc"] },
+              { "required": ["dns"] },
+              { "required": ["websocket"] }
+            ]
+          },
+          "then": {
+            "required": [
+              "version", "family", "semanticTemplateId", "protocolStack", "upstreamStandards",
+              "executionProfile", "availability", "benchmarkCompat", "requiredMetrics"
+            ],
+            "properties": {
+              "validation": { "required": ["protocol"] }
+            },
+            "oneOf": [
+              { "required": ["tls"] },
+              { "required": ["grpc"] },
+              { "required": ["dns"] },
+              { "required": ["websocket"] }
+            ]
+          }
+        },
+        {
+          "if": { "required": ["tls"] },
+          "then": {
+            "properties": {
+              "family": { "const": "tls" },
+              "protocol": { "const": "tls" },
+              "executionProfile": {
+                "required": ["platformProvenanceRequired", "accelerationProvenanceRequired"],
+                "properties": {
+                  "transportSecurity": { "const": "tls" },
+                  "platformProvenanceRequired": { "const": true },
+                  "accelerationProvenanceRequired": { "const": true }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "required": ["grpc"] },
+          "then": {
+            "properties": {
+              "family": { "const": "grpc" },
+              "protocol": { "const": "h2" },
+              "executionProfile": {
+                "properties": {
+                  "transportSecurity": { "const": "tls" },
+                  "protocolVariant": { "enum": ["grpc-over-h2-tls-alpn", "grpc-over-h2-tls-new-channel"] }
+                }
+              },
+              "validation": {
+                "properties": {
+                  "protocol": {
+                    "properties": {
+                      "requested": { "enum": ["grpc-over-h2", "grpc-over-h2-new-channel"] },
+                      "expectedObserved": { "enum": ["grpc-over-h2", "grpc-over-h2-new-channel"] }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["grpc"],
+            "properties": {
+              "grpc": {
+                "required": ["connectionLifecycle"],
+                "properties": { "connectionLifecycle": { "const": "new-channel-per-operation" } }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "executionProfile": { "properties": { "protocolVariant": { "const": "grpc-over-h2-tls-new-channel" } } },
+              "validation": { "properties": { "protocol": { "properties": {
+                "requested": { "const": "grpc-over-h2-new-channel" },
+                "expectedObserved": { "const": "grpc-over-h2-new-channel" }
+              } } } }
+            }
+          },
+          "else": {
+            "if": { "required": ["grpc"] },
+            "then": {
+              "properties": {
+                "executionProfile": { "properties": { "protocolVariant": { "const": "grpc-over-h2-tls-alpn" } } },
+                "validation": { "properties": { "protocol": { "properties": {
+                  "requested": { "const": "grpc-over-h2" },
+                  "expectedObserved": { "const": "grpc-over-h2" }
+                } } } }
+              }
+            }
+          }
+        },
+        {
+          "if": { "required": ["dns"] },
+          "then": {
+            "properties": {
+              "family": { "type": "string", "enum": ["dns.secure", "dns"] }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["dns"],
+            "properties": {
+              "dns": {
+                "required": ["transport"],
+                "properties": { "transport": { "enum": ["dot", "doh2", "doh3", "doq"] } }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": { "const": "dns.secure" },
+              "executionProfile": { "properties": { "transportSecurity": { "const": "tls" } } }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["dns"],
+            "properties": {
+              "dns": {
+                "required": ["transport"],
+                "properties": { "transport": { "enum": ["udp", "tcp", "udp-tcp"] } }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": { "const": "dns" },
+              "protocol": { "const": "dns" },
+              "executionProfile": { "properties": { "transportSecurity": { "const": "cleartext" } } }
+            }
+          }
+        },
+        {
+          "if": { "required": ["websocket"] },
+          "then": {
+            "required": ["executionProfile"],
+            "properties": {
+              "family": { "const": "websocket" },
+              "executionProfile": { "required": ["transportSecurity"] }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["websocket"],
+            "properties": {
+              "websocket": {
+                "required": ["binding"],
+                "properties": { "binding": { "const": "http1-upgrade" } }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "websocket": {
+                "required": ["scheme"],
+                "properties": { "standard": { "const": "rfc6455" } }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["websocket"],
+            "properties": {
+              "websocket": {
+                "required": ["binding", "scheme"],
+                "properties": {
+                  "binding": { "const": "http1-upgrade" },
+                  "scheme": { "const": "ws" }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "executionProfile": {
+                "properties": {
+                  "transportSecurity": { "const": "cleartext" },
+                  "protocolVariant": { "const": "websocket-h1-cleartext-upgrade" }
+                }
+              },
+              "validation": {
+                "properties": {
+                  "protocol": {
+                    "properties": {
+                      "requested": { "const": "websocket-over-h1-cleartext" },
+                      "expectedObserved": { "const": "websocket-over-h1-cleartext" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["websocket"],
+            "properties": {
+              "websocket": {
+                "required": ["binding", "scheme"],
+                "properties": {
+                  "binding": { "const": "http1-upgrade" },
+                  "scheme": { "const": "wss" }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "executionProfile": {
+                "properties": {
+                  "transportSecurity": { "const": "tls" },
+                  "protocolVariant": { "const": "websocket-h1-tls1.3-upgrade" }
+                }
+              },
+              "validation": {
+                "properties": {
+                  "protocol": {
+                    "properties": {
+                      "requested": { "const": "websocket-over-h1-tls" },
+                      "expectedObserved": { "const": "websocket-over-h1-tls" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["websocket"],
+            "properties": {
+              "websocket": {
+                "required": ["binding"],
+                "properties": {
+                  "binding": { "enum": ["http2-extended-connect", "http3-extended-connect"] }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "websocket": {
+                "properties": {
+                  "standard": { "enum": ["rfc8441", "rfc9220"] }
+                }
+              },
+              "executionProfile": {
+                "properties": { "transportSecurity": { "const": "tls" } }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["websocket"],
+            "properties": {
+              "websocket": { "properties": { "binding": { "const": "http2-extended-connect" } } }
+            }
+          },
+          "then": {
+            "properties": {
+              "websocket": { "properties": { "standard": { "const": "rfc8441" } } },
+              "executionProfile": { "properties": { "protocolVariant": { "const": "websocket-h2-extended-connect" } } },
+              "validation": {
+                "properties": {
+                  "protocol": {
+                    "properties": {
+                      "requested": { "const": "websocket-over-h2" },
+                      "expectedObserved": { "const": "websocket-over-h2" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["websocket"],
+            "properties": {
+              "websocket": { "properties": { "binding": { "const": "http3-extended-connect" } } }
+            }
+          },
+          "then": {
+            "properties": {
+              "websocket": { "properties": { "standard": { "const": "rfc9220" } } },
+              "executionProfile": { "properties": { "protocolVariant": { "const": "websocket-h3-extended-connect" } } },
+              "validation": {
+                "properties": {
+                  "protocol": {
+                    "properties": {
+                      "requested": { "const": "websocket-over-h3" },
+                      "expectedObserved": { "const": "websocket-over-h3" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "$defs": {
+    "tlsKeyUpdatePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["initiator", "requestedUpdates", "peerUpdateRequested", "postUpdateBytesRequired"],
+      "properties": {
+        "initiator": { "type": "string", "enum": ["client", "server"] },
+        "requestedUpdates": { "const": 1 },
+        "peerUpdateRequested": { "type": "boolean" },
+        "postUpdateBytesRequired": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "websocketHandshake": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["binding", "requestMethod", "requestVersion", "requestHeaders", "responseStatus", "responseHeaders"],
+          "properties": {
+            "binding": { "const": "http1-upgrade" },
+            "requestMethod": { "const": "GET" },
+            "requestVersion": { "const": "HTTP/1.1" },
+            "requestHeaders": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["host", "upgrade", "connection", "secWebSocketKeyPolicy", "secWebSocketVersion", "originPresent", "secWebSocketProtocolPresent", "secWebSocketExtensionsPresent"],
+              "properties": {
+                "host": { "type": "string", "minLength": 1 },
+                "upgrade": { "const": "websocket" },
+                "connection": { "const": "Upgrade" },
+                "secWebSocketKeyPolicy": { "const": "fresh-random-16-octets-per-opening-handshake" },
+                "secWebSocketVersion": { "const": "13" },
+                "originPresent": { "const": false },
+                "secWebSocketProtocolPresent": { "type": "boolean" },
+                "secWebSocketProtocol": { "type": "string", "minLength": 1 },
+                "secWebSocketExtensionsPresent": { "type": "boolean" },
+                "secWebSocketExtensions": { "type": "string", "minLength": 1 }
+              }
+            },
+            "responseStatus": { "const": 101 },
+            "responseHeaders": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["upgrade", "connection", "secWebSocketAcceptPolicy", "secWebSocketProtocolPresent", "secWebSocketExtensionsPresent"],
+              "properties": {
+                "upgrade": { "const": "websocket" },
+                "connection": { "const": "Upgrade" },
+                "secWebSocketAcceptPolicy": { "const": "base64-sha1-runtime-key-plus-rfc6455-guid" },
+                "secWebSocketProtocolPresent": { "type": "boolean" },
+                "secWebSocketProtocol": { "type": "string", "minLength": 1 },
+                "secWebSocketExtensionsPresent": { "type": "boolean" },
+                "secWebSocketExtensions": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["binding", "settingsEnableConnectProtocol", "requestPseudoHeaders", "requestHeaders", "prohibitedConnectionHeadersPresent", "responseStatus", "responseHeaders"],
+          "properties": {
+            "binding": { "type": "string", "enum": ["http2-extended-connect", "http3-extended-connect"] },
+            "settingsEnableConnectProtocol": { "const": 1 },
+            "requestPseudoHeaders": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["method", "protocol", "scheme", "authority", "path"],
+              "properties": {
+                "method": { "const": "CONNECT" },
+                "protocol": { "const": "websocket" },
+                "scheme": { "const": "https" },
+                "authority": { "type": "string", "minLength": 1 },
+                "path": { "type": "string", "pattern": "^/" }
+              }
+            },
+            "requestHeaders": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["secWebSocketVersion", "originPresent", "secWebSocketProtocolPresent", "secWebSocketExtensionsPresent", "secWebSocketKeyPresent"],
+              "properties": {
+                "secWebSocketVersion": { "const": "13" },
+                "originPresent": { "const": false },
+                "secWebSocketProtocolPresent": { "type": "boolean" },
+                "secWebSocketProtocol": { "type": "string", "minLength": 1 },
+                "secWebSocketExtensionsPresent": { "type": "boolean" },
+                "secWebSocketExtensions": { "type": "string", "minLength": 1 },
+                "secWebSocketKeyPresent": { "const": false }
+              }
+            },
+            "prohibitedConnectionHeadersPresent": { "const": false },
+            "responseStatus": { "const": 200 },
+            "responseHeaders": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["secWebSocketAcceptPresent", "secWebSocketProtocolPresent", "secWebSocketExtensionsPresent"],
+              "properties": {
+                "secWebSocketAcceptPresent": { "const": false },
+                "secWebSocketProtocolPresent": { "type": "boolean" },
+                "secWebSocketProtocol": { "type": "string", "minLength": 1 },
+                "secWebSocketExtensionsPresent": { "type": "boolean" },
+                "secWebSocketExtensions": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "websocketFragmentPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["framePayloadBytes", "firstOpcode", "continuationOpcode", "firstFrameFin", "finalFrameFin", "interleavedControlFrames"],
+      "properties": {
+        "framePayloadBytes": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "minItems": 2
+        },
+        "firstOpcode": { "type": "string", "enum": ["text", "binary"] },
+        "continuationOpcode": { "const": "continuation" },
+        "firstFrameFin": { "const": false },
+        "finalFrameFin": { "const": true },
+        "interleavedControlFrames": { "type": "boolean" }
+      }
+    },
+    "websocketExtensionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["offer", "accept", "clientNoContextTakeover", "serverNoContextTakeover", "compressedMessages", "validation"],
+      "properties": {
+        "offer": { "const": "permessage-deflate; client_no_context_takeover; server_no_context_takeover" },
+        "accept": { "const": "permessage-deflate; client_no_context_takeover; server_no_context_takeover" },
+        "clientNoContextTakeover": { "const": true },
+        "serverNoContextTakeover": { "const": true },
+        "compressedMessages": { "const": "data-messages-required" },
+        "validation": { "const": "decompress-and-compare-payload-sha256" }
+      }
+    },
+    "deterministicMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count", "payloadGenerator", "payloadOctet", "payloadBytes", "payloadSha256",
+        "serializedProtobufBytes", "serializedProtobufSha256"
+      ],
+      "properties": {
+        "count": { "type": "integer", "minimum": 1 },
+        "payloadGenerator": { "const": "repeated-octet" },
+        "payloadOctet": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "payloadBytes": { "type": "integer", "minimum": 0, "description": "Raw bytes field payload size" },
+        "payloadSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of the raw bytes field payload" },
+        "serializedProtobufBytes": { "type": "integer", "minimum": 0, "description": "Encoded protobuf message size before gRPC framing" },
+        "serializedProtobufSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of the encoded protobuf message" },
+        "grpcFrameBytes": { "type": "integer", "minimum": 5, "description": "Five-byte gRPC envelope plus encoded protobuf message" },
+        "grpcFrameSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of the complete gRPC message frame" }
+      }
+    },
+    "grpcCompressedMessage": {
+      "allOf": [
+        { "$ref": "#/$defs/deterministicMessage" },
+        {
+          "not": {
+            "anyOf": [
+              { "required": ["grpcFrameBytes"] },
+              { "required": ["grpcFrameSha256"] }
+            ]
+          }
+        }
+      ]
+    },
+    "grpcNoMessageSequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count"],
+      "properties": { "count": { "const": 0 } }
+    },
+    "grpcMessageFraming": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compressedFlag", "lengthPrefixBytes", "byteOrder",
+        "lengthValueSource", "dataFrameBoundariesDefineMessageBoundaries"
+      ],
+      "properties": {
+        "compressedFlag": { "type": "integer", "enum": [0, 1] },
+        "lengthPrefixBytes": { "const": 4 },
+        "byteOrder": { "const": "network" },
+        "lengthValueSource": { "type": "string", "enum": ["serializedProtobufBytes", "compressedMessageBytes"] },
+        "dataFrameBoundariesDefineMessageBoundaries": { "const": false }
+      }
+    },
+    "dnsMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "class", "wireLength", "normalizedWireSha256"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+$" },
+        "type": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]*$" },
+        "class": { "const": "IN" },
+        "wireLength": { "type": "integer", "minimum": 12, "maximum": 65535 },
+        "normalizedWireSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "dnsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rcode", "answer", "ttl", "wireLength", "normalizedWireSha256"],
+      "properties": {
+        "rcode": { "type": "string", "enum": ["NOERROR", "NXDOMAIN", "SERVFAIL", "REFUSED"] },
+        "answer": { "type": ["string", "null"] },
+        "ttl": { "type": ["integer", "null"], "minimum": 0 },
+        "answerCount": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "authorityCount": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "additionalCount": { "type": "integer", "minimum": 0, "maximum": 65535 },
+        "truncated": { "type": "boolean" },
+        "wireLength": { "type": "integer", "minimum": 12, "maximum": 65535 },
+        "normalizedWireSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "dnsRuntimeIdPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["messageId", "canonicalHashNormalization"],
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "enum": ["zero", "unique-among-outstanding-queries"]
+        },
+        "canonicalHashNormalization": {
+          "type": "string",
+          "enum": ["identity", "set-message-id-to-zero"]
+        }
+      }
+    },
+    "dnsResponseNormalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rawResponseEqualityRequired", "compressionMayDiffer", "procedure"],
+      "properties": {
+        "rawResponseEqualityRequired": { "const": false },
+        "compressionMayDiffer": { "const": true },
+        "procedure": {
+          "type": "array",
+          "prefixItems": [
+            { "const": "parse-dns-message" },
+            { "const": "canonical-reserialize" },
+            { "const": "compare-normalized-sha256" }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-WEBSOCKET-PERFORMANCE",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab WebSocket Contract Architecture",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-WEBSOCKET-PERFORMANCE", "VER-PL-WEBSOCKET-PERFORMANCE-0001", "ARC-PL-CORE-CONTRACTS"],
+  "purpose": "Describe shared WebSocket message workloads and exact RFC 6455, RFC 8441, and RFC 9220 binding-specific identities.",
+  "satisfies": ["REQ-PL-WSPERF-0001", "REQ-PL-WSPERF-0002", "REQ-PL-WSPERF-0003", "REQ-PL-WSPERF-0004", "REQ-PL-WSPERF-0005", "REQ-PL-WSPERF-0006", "REQ-PL-WSPERF-0007", "REQ-PL-WSPERF-0008", "REQ-PL-WSPERF-0009"],
+  "design_summary": "Each HTTP binding retains protocol-specific scenario IDs while sharing establishment, text-echo, binary-echo, control-frame, and close semantic templates. HTTP/1.1 uses separate cleartext ws and TLS-protected wss identities and suites. Capability-gated diagnostics add ordered multi-message exchange, exact fragmentation, subprotocol negotiation, and permessage-deflate without multiplying every diagnostic across every binding. Sustained concurrency, connection churn, and duration remain load-profile dimensions. The existing generic websocket.echo ID remains a placeholder.",
+  "key_components": ["RFC 6455 cleartext scenarios", "RFC 6455 TLS scenarios", "RFC 8441 scenarios", "RFC 9220 scenarios", "ordered and fragmented message diagnostics", "subprotocol and permessage-deflate diagnostics", "binding-and-security-specific smoke and comparison suites", "shared WebSocket load profiles", "WebSocket fixtures"],
+  "data_and_state_considerations": "Clients mask frames as required. Echo payloads are deterministic. Close state is clean and explicit. Frame captures may contain payload and therefore require public-safe fixture data or redaction before publication.",
+  "edge_cases_and_constraints": ["WebSocket is not WebTransport.", "HTTP/1.1 cleartext and TLS results are separate comparison groups.", "H2 and H3 Extended CONNECT require binding-specific SETTINGS proof.", "Fragmentation, compression, subprotocol negotiation, and ordered multi-message exchange remain capability-gated diagnostics, not initial ranking scenarios.", "permessage-deflate diagnostics prohibit client and server context takeover so validation is deterministic without requiring identical compressed bytes.", "The package-local aioquic RFC 9220 suite is diagnostic proof and does not itself satisfy public suite-v1."],
+  "alternatives_considered": ["One generic WebSocket scenario was rejected.", "Hiding HTTP/1.1 cleartext versus TLS inside execution metadata was rejected because it would make distinct security and handshake costs share one scenario identity.", "Separate scenarios for every size, count, fragmentation, and concurrency combination were rejected."],
+  "risks": ["Libraries can silently fall back to HTTP/1.1 upgrade.", "Message throughput can be misreported as target throughput if executor-side processing is not separated."]
+}

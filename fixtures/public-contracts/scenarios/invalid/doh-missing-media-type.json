@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2.0",
+  "id": "dns.doh2.invalid",
+  "title": "Invalid DoH2 Query",
+  "status": "draft",
+  "kind": "workload",
+  "layer": "application",
+  "protocol": "doh2",
+  "roles": ["client", "authoritative-server"],
+  "requires": {"protocols": ["doh2"]},
+  "trafficShape": "request-response",
+  "dns": {
+    "fixtureId": "dns.plab-test-a.canonical",
+    "transport": "doh2",
+    "authorityMode": "local-fixture-authoritative",
+    "cacheState": "disabled",
+    "connectionReuse": "reuse",
+    "http": {"version": "h2", "method": "POST", "path": "/dns-query", "expectedStatus": 200},
+    "query": {"name": "plab.test.", "type": "A", "class": "IN", "wireLength": 27, "normalizedWireSha256": "c46b9fb76019b5a644d0884b17e816cb7c3076275d9468c27d180f70488eb8ec"},
+    "expectedResponse": {"rcode": "NOERROR", "answer": "192.0.2.1", "ttl": 0, "wireLength": 43, "normalizedWireSha256": "9d488461675ad5ab9f74c7b203861e1ad17521e413a407a25e6611012a595620"},
+    "runtimeIdPolicy": {"messageId": "zero", "canonicalHashNormalization": "identity"},
+    "responseNormalization": {"rawResponseEqualityRequired": false, "compressionMayDiffer": true, "procedure": ["parse-dns-message", "canonical-reserialize", "compare-normalized-sha256"]}
+  },
+  "validation": {"required": true}
+}

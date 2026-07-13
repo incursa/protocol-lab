@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v2",
+  "id": "grpc-h2-smoke-fixture",
+  "title": "gRPC/H2 smoke fixture",
+  "status": "experimental",
+  "purpose": "smoke",
+  "durationSeconds": 5,
+  "warmupSeconds": 1,
+  "repetitions": 1,
+  "grpc": {
+    "channels": 1,
+    "connectionsPerChannel": 1,
+    "concurrency": 1,
+    "streamsPerConnection": 1,
+    "channelReuse": "reuse",
+    "operationTimeoutMilliseconds": 20000,
+    "totalRpcs": null,
+    "rpcRateLimitPerSecond": null
+  },
+  "evidence": {
+    "minimumTier": "smoke",
+    "publishable": false
+  },
+  "artifacts": {
+    "required": [
+      "validation.json",
+      "protocol-proof.json",
+      "result.json"
+    ],
+    "optional": []
+  },
+  "version": "2.0.0"
+}

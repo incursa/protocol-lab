@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/measurement/v2/protocol-metric-catalog.schema.json",
+  "title": "ProtocolLab Protocol Metric Catalog v2",
+  "description": "Canonical identities, units, aggregations, and windows for metrics required by typed protocol-family scenarios.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "catalogId",
+    "version",
+    "metrics"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "protocol-lab.protocol-metric-catalog.v2"
+    },
+    "catalogId": {
+      "const": "protocol-lab.protocol-family-metrics"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/metricDefinition"
+      }
+    }
+  },
+  "$defs": {
+    "metricDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metricId",
+        "kind",
+        "unit",
+        "aggregation",
+        "window",
+        "timingAuthority",
+        "description"
+      ],
+      "properties": {
+        "metricId": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9]*$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "rate",
+            "latency",
+            "count",
+            "bytes",
+            "gauge"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "operations-per-second",
+            "messages-per-second",
+            "bytes-per-second",
+            "milliseconds",
+            "operations",
+            "bytes",
+            "count"
+          ]
+        },
+        "aggregation": {
+          "type": "string",
+          "enum": [
+            "measured-window-rate",
+            "mean",
+            "p50",
+            "p75",
+            "p90",
+            "p95",
+            "p99",
+            "total",
+            "time-weighted-mean"
+          ]
+        },
+        "window": {
+          "type": "string",
+          "enum": [
+            "scenario-measured-window",
+            "connection-establishment",
+            "channel-establishment-and-rpc",
+            "rpc-operation",
+            "message-round-trip"
+          ]
+        },
+        "timingAuthority": {
+          "const": "runner-or-contract-selected-test-executor"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

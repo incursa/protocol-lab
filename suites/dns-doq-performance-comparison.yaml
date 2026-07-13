@@ -1,0 +1,10 @@
+id: dns-doq-performance-comparison
+name: DNS over QUIC performance comparison candidate suite
+description: Non-publishable DoQ comparison selection.
+purpose: benchmark
+resultKind: benchmark
+loadProfileId: secure-dns-comparison
+scenarios: [dns.doq.query.a]
+protocol: doq
+notes: DoQ results compare only with matched DoQ results; each query uses one client-initiated bidirectional stream with FIN in both directions.
+tags: [dns, doq, comparison, non-publishable]

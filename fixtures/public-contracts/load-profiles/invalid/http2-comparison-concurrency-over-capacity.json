@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v2",
+  "version": "2.0.0",
+  "id": "http2-comparison",
+  "title": "Invalid HTTP/2 comparison capacity",
+  "status": "stable",
+  "purpose": "comparison",
+  "durationSeconds": 30,
+  "warmupSeconds": 10,
+  "repetitions": 3,
+  "http2": {
+    "connections": 16,
+    "concurrency": 129,
+    "streamsPerConnection": 8,
+    "operationDistribution": "balanced-round-robin",
+    "requestTimeoutSeconds": 10
+  },
+  "evidence": { "minimumTier": "comparison", "publishable": false },
+  "artifacts": { "required": ["result.json"], "optional": [] }
+}

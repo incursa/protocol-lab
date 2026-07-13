@@ -1,0 +1,20 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-HTTP2-COMPARISON-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab HTTP/2 Comparison Topology Contract Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-CORE-CONTRACTS", "ARC-PL-CORE-CONTRACTS"],
+  "verifies": ["REQ-PL-CORE-0011", "REQ-PL-CORE-0012", "REQ-PL-CORE-0013"],
+  "scope": "Verify the public HTTP/2 v2 comparison load identity and requested-versus-observed topology boundary without claiming executor or implementation support.",
+  "verification_method": "SpecTrace review, v2 schema validation, valid and invalid fixture validation, suite/profile reference review, and repository-health checks.",
+  "procedure": [
+    "Validate that http2-comparison requests 16 connections, 128 global in-flight operations, an 8-stream per-connection configured cap, and balanced-round-robin distribution.",
+    "Confirm global concurrency does not exceed configured aggregate stream capacity.",
+    "Confirm required topology evidence distinguishes configured values from observed active connections, streams, peer limits, clamping, and redistribution.",
+    "Confirm the comparison suite selects only the initially supported deterministic plaintext and JSON workloads."
+  ],
+  "expected_result": "The HTTP/2 comparison contract has one exact schedulable requested topology and requires distinct observed-topology evidence before results can be compared."
+}

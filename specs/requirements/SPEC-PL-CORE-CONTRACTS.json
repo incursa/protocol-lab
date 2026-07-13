@@ -21,7 +21,8 @@
     "SPEC-PL-LABPKG2",
     "SPEC-PL-REPORT",
     "SPEC-PL-MEASUREMENT-TELEMETRY",
-    "SPEC-PL-ARTIFACTS"
+    "SPEC-PL-ARTIFACTS",
+    "VER-PL-HTTP2-COMPARISON-0001"
   ],
   "purpose": "Define the canonical requirements for the public ProtocolLab contract areas that are not owned by the measurement, artifact, package, report, or public-boundary specifications alone.",
   "scope": "This specification covers adapter, test-executor, scenario, suite, load-profile, run-plan, schema, fixture, versioning, and compatibility contract requirements. It does not define any runner implementation, validation tool, generated SDK, hosted lab, telemetry backend, or executable workflow.",
@@ -330,6 +331,40 @@
           "scenarios/network/profiles/",
           "docs/architecture/load-model.md"
         ]
+      }
+    },
+    {
+      "id": "REQ-PL-CORE-0011",
+      "title": "HTTP/2 load-field semantics",
+      "statement": "An HTTP/2 v2 load profile MUST treat connections as simultaneously established connections, concurrency as the global maximum in-flight operation count, and streamsPerConnection as a configured per-connection in-flight stream cap rather than a multiplier or observed-activity claim.",
+      "rationale": "Separating global pressure, configured capacity, and observed activity prevents incompatible topologies from appearing matched.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-HTTP2-COMPARISON-0001"],
+        "related": ["schemas/load-profile/v2/load-profile.schema.json", "load-profiles/http2-comparison.yaml"],
+        "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc9113"]
+      }
+    },
+    {
+      "id": "REQ-PL-CORE-0012",
+      "title": "HTTP/2 stream-capacity constraint",
+      "statement": "An HTTP/2 v2 load profile MUST keep global concurrency less than or equal to requested connections multiplied by the configured per-connection stream cap.",
+      "rationale": "A requested global operation count above declared capacity cannot be scheduled without clamping, queueing beyond the contract, or substitution.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-HTTP2-COMPARISON-0001"],
+        "related": ["schemas/load-profile/v2/load-profile.schema.json", "fixtures/public-contracts/load-profiles/invalid/http2-comparison-concurrency-over-capacity.json"]
+      }
+    },
+    {
+      "id": "REQ-PL-CORE-0013",
+      "title": "HTTP/2 comparison topology proof",
+      "statement": "HTTP/2 comparison evidence MUST preserve requested and observed connection count, global concurrency, configured stream cap, per-connection maximum active streams, peer-advertised stream limits, operation distribution, and any clamping or redistribution outcome.",
+      "rationale": "Configured capacity is intent and cannot substitute for evidence of the topology actually exercised.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-HTTP2-COMPARISON-0001"],
+        "related": ["schemas/load-profile/v2/load-profile.schema.json", "load-profiles/http2-comparison.yaml", "fixtures/public-contracts/load-profiles/valid/http2-comparison-load-profile.json"]
       }
     },
     {

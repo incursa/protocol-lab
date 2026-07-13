@@ -10,7 +10,8 @@
     "SPEC-PL-CORE-CONTRACTS",
     "SPEC-PL-PUBLIC-CONTRACTS",
     "VER-PL-CONTRACT-COVERAGE-0001",
-    "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001"
+    "VER-PL-PROTOCOL-LANE-NORMALIZATION-0001",
+    "VER-PL-HTTP2-COMPARISON-0001"
   ],
   "purpose": "Describe how the public repository organizes core contract surfaces across SpecTrace requirements, schemas, fixtures, documentation, and traceability links.",
   "satisfies": [
@@ -30,9 +31,12 @@
     "PLAB-SCENARIO-003",
     "PLAB-EXECUTIONPROFILE-001",
     "PLAB-NETWORKPROFILE-001",
-    "PLAB-EXECUTOR-PREPARE-002"
+    "PLAB-EXECUTOR-PREPARE-002",
+    "REQ-PL-CORE-0011",
+    "REQ-PL-CORE-0012",
+    "REQ-PL-CORE-0013"
   ],
-  "design_summary": "The public repository separates contract selection, capability discovery, declarative scenario and suite data, load intent, run-plan binding, evidence contracts, and fixture examples. JSON Schemas define machine-readable shapes. SpecTrace JSON artifacts define normative requirements and verification. Markdown supports discovery and explanation only. Run Plan v2 and Test Executor Prepare v2 close the ID-only execution gap by carrying canonical, hash-bound scenario, suite, test, and resolved load-profile snapshots and by delivering exact scenario and load-profile documents to the executor.",
+  "design_summary": "The public repository separates contract selection, capability discovery, declarative scenario and suite data, load intent, run-plan binding, evidence contracts, and fixture examples. HTTP/2 v2 load intent defines global concurrency independently from connection count and configured per-connection stream capacity, while observed topology remains evidence. JSON Schemas define machine-readable shapes. SpecTrace JSON artifacts define normative requirements and verification. Markdown supports discovery and explanation only. Run Plan v2 and Test Executor Prepare v2 close the ID-only execution gap by carrying canonical, hash-bound scenario, suite, test, and resolved load-profile snapshots and by delivering exact scenario and load-profile documents to the executor.",
   "key_components": [
     "adapter contract schemas and fixtures",
     "test-executor contract schemas and fixtures",
@@ -54,6 +58,9 @@
     "A valid suite selects scenarios but does not make performance claims by itself.",
     "A valid load profile constrains load intent and evidence tier, but it does not define how traffic is generated.",
     "A declared run-plan cell ordering policy controls deterministic scheduling order without changing scenario semantics or load shape.",
+    "HTTP/2 global concurrency cannot exceed connections multiplied by the configured per-connection stream cap.",
+    "Balanced round-robin assignment does not claim that every connection reached its configured capacity; observed active topology remains evidence.",
+    "Silent connection, concurrency, stream-cap, distribution, clamping, or redistribution substitution invalidates HTTP/2 comparison evidence.",
     "Adapter and test-executor telemetry discovery is optional and cannot change conformance pass/fail status by itself.",
     "Invalid fixtures should each demonstrate one clear contract failure."
   ],

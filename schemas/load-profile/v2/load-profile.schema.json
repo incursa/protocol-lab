@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.incursa.com/protocol-lab/load-profile/v2/load-profile.schema.json",
   "title": "ProtocolLab Load Profile v2",
-  "description": "Schema for ProtocolLab v2 load profiles with typed TLS, gRPC, secure DNS, and WebSocket intensity settings.",
+  "description": "Schema for ProtocolLab v2 load profiles with typed HTTP/2, TLS, gRPC, secure DNS, and WebSocket intensity settings.",
   "unevaluatedProperties": false,
   "allOf": [
     {
@@ -19,6 +19,22 @@
           "type": "string",
           "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
           "description": "Semantic version of the resolved load-profile behavior"
+        },
+        "http2": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "HTTP/2 load intent with global concurrency independent from per-connection stream capacity",
+          "required": [
+            "connections", "concurrency", "streamsPerConnection",
+            "operationDistribution", "requestTimeoutSeconds"
+          ],
+          "properties": {
+            "connections": { "type": "integer", "minimum": 1, "description": "Requested simultaneously established HTTP/2 connections" },
+            "concurrency": { "type": "integer", "minimum": 1, "description": "Requested global maximum in-flight HTTP operations across all connections" },
+            "streamsPerConnection": { "type": "integer", "minimum": 1, "description": "Configured per-connection in-flight stream cap, not an observed active-stream count" },
+            "operationDistribution": { "const": "balanced-round-robin", "description": "Assign each operation to the next connection with available configured stream capacity" },
+            "requestTimeoutSeconds": { "type": "integer", "minimum": 1 }
+          }
         },
         "tls": {
           "type": "object",
@@ -97,10 +113,31 @@
         }
       },
       "oneOf": [
+        { "required": ["http2"] },
         { "required": ["tls"] },
         { "required": ["grpc"] },
         { "required": ["dns"] },
         { "required": ["websocket"] }
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": { "id": { "const": "http2-comparison" } },
+            "required": ["id"]
+          },
+          "then": {
+            "properties": {
+              "http2": {
+                "properties": {
+                  "connections": { "const": 16 },
+                  "concurrency": { "const": 128 },
+                  "streamsPerConnection": { "const": 8 },
+                  "operationDistribution": { "const": "balanced-round-robin" }
+                }
+              }
+            }
+          }
+        }
       ]
     }
   ]

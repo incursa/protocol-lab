@@ -18,7 +18,9 @@ control-plane surfaces when needed.
 - [`load-profile/load-profile.schema.json`](load-profile/load-profile.schema.json) -
   the legacy v1 load-profile contract.
 - [`load-profile/v2/`](load-profile/v2/) - v2 load profiles, adding typed
-  `tls`, `grpc`, `dns`, and `websocket` intensity settings to the v1 contract.
+  `http2`, `tls`, `grpc`, `dns`, and `websocket` intensity settings to the v1
+  contract. HTTP/2 v2 keeps global concurrency, configured per-connection
+  stream capacity, operation distribution, and observed topology distinct.
 - [`measurement/v1/`](measurement/v1/) - measurement profiles, telemetry bundles, samples,
   summaries, collector descriptors, and comparability classes.
 - [`measurement/v2/`](measurement/v2/) - canonical protocol metric definitions and

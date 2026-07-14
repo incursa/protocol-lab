@@ -20,7 +20,7 @@ The root catalog includes two suite groups:
 
 | Protocol | Compatibility Suites | Protocol-Specific Profile Suites |
 | --- | --- | --- |
-| HTTP/1 | `http1-core-smoke`, `http1-conformance-smoke`, `http1-benchmark-smoke` | `http1-smoke-conformance`, `http1-diagnostic-suite`, `http1-regression-suite`, `http1-comparison-benchmark`, `http1-soak-suite` |
+| HTTP/1 | `http1-core-smoke`, `http1-conformance-smoke`, `http1-benchmark-smoke` | `http1-performance-smoke`, `http1-smoke-conformance`, `http1-diagnostic-suite`, `http1-regression-suite`, `http1-comparison-benchmark`, `http1-soak-suite` |
 | HTTP/2 | `http2-core-smoke` | `http2-performance-smoke`, `http2-smoke-conformance`, `http2-diagnostic-suite`, `http2-regression-suite`, `http2-comparison-benchmark`, `http2-soak-suite` |
 | HTTP/3 | `http3-core-smoke`, `http3-protocol-diagnostic`, `http3-peer-characterization` | `http3-smoke-conformance`, `http3-diagnostic-suite`, `http3-regression-suite`, `http3-comparison-benchmark`, `http3-soak-suite` |
 | QUIC | `quic-transport-smoke`, `quic-transport-diagnostic` | `quic-smoke-conformance`, `quic-diagnostic-suite`, `quic-regression-suite`, `quic-comparison-benchmark`, `quic-soak-suite` |

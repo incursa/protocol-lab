@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/dns/v2/secure-dns-tls-profile.schema.json",
+  "title": "ProtocolLab Secure DNS TLS Interoperability Profile v2",
+  "description": "Standards-based secure DNS TLS policy that preserves authenticated endpoint identity and exact protocol binding while allowing conforming implementations to negotiate modern cryptographic parameters.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "purpose",
+    "serverName",
+    "transportPolicies",
+    "certificate",
+    "evidence"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "protocol-lab.secure-dns-tls-profile.v2"},
+    "profileId": {"const": "plab-secure-dns-interoperability-v2"},
+    "purpose": {"const": "interoperability-baseline"},
+    "serverName": {"const": "dns.plab.test"},
+    "transportPolicies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dot", "doh2", "doh3", "doq"],
+      "properties": {
+        "dot": {"$ref": "#/$defs/tls12Or13Transport"},
+        "doh2": {"$ref": "#/$defs/tls12Or13Transport"},
+        "doh3": {"$ref": "#/$defs/tls13Transport"},
+        "doq": {"$ref": "#/$defs/tls13Transport"}
+      }
+    },
+    "certificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId",
+        "dnsSubjectAlternativeName",
+        "allowedLeafKeyAlgorithms",
+        "trustModel",
+        "mustBeValidAtExecution",
+        "provisioningMeasured",
+        "exactDerHashRequiredForComparison",
+        "privateKeyPublication"
+      ],
+      "properties": {
+        "profileId": {"const": "plab-secure-dns-interoperability-leaf-v2"},
+        "dnsSubjectAlternativeName": {"const": "dns.plab.test"},
+        "allowedLeafKeyAlgorithms": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "rsa"},
+            {"const": "ecdsa"},
+            {"const": "ed25519"}
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "trustModel": {"const": "configured-test-trust-anchor"},
+        "mustBeValidAtExecution": {"const": true},
+        "provisioningMeasured": {"const": false},
+        "exactDerHashRequiredForComparison": {"const": false},
+        "privateKeyPublication": {"const": "forbidden"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "negotiatedTlsVersionRequired",
+        "negotiatedAlpnRequired",
+        "negotiatedCipherSuiteRequired",
+        "negotiatedKeyExchangeGroupRequired",
+        "negotiatedSignatureSchemeRequired",
+        "leafCertificateAlgorithmRequired",
+        "leafCertificateDerSha256Required",
+        "platformProvenanceRequired",
+        "accelerationProvenanceRequired"
+      ],
+      "properties": {
+        "negotiatedTlsVersionRequired": {"const": true},
+        "negotiatedAlpnRequired": {"const": true},
+        "negotiatedCipherSuiteRequired": {"const": true},
+        "negotiatedKeyExchangeGroupRequired": {"const": true},
+        "negotiatedSignatureSchemeRequired": {"const": true},
+        "leafCertificateAlgorithmRequired": {"const": true},
+        "leafCertificateDerSha256Required": {"const": true},
+        "platformProvenanceRequired": {"const": true},
+        "accelerationProvenanceRequired": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "commonTransportProperties": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowedTlsVersions",
+        "alpn",
+        "cipherSuitePolicy",
+        "keyExchangeGroupPolicy",
+        "signatureSchemePolicy",
+        "peerAuthentication",
+        "resumptionPolicy",
+        "earlyData"
+      ],
+      "properties": {
+        "allowedTlsVersions": {
+          "type": "array",
+          "items": {"enum": ["tls1.2", "tls1.3"]},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "alpn": {"enum": ["dot", "h2", "h3", "doq"]},
+        "cipherSuitePolicy": {"const": "negotiated-rfc9325-compatible"},
+        "keyExchangeGroupPolicy": {"const": "negotiated-rfc9325-compatible"},
+        "signatureSchemePolicy": {"const": "negotiated-rfc9325-compatible"},
+        "peerAuthentication": {"const": "server-certificate-required"},
+        "resumptionPolicy": {"const": "not-offered"},
+        "earlyData": {"const": "not-attempted"}
+      }
+    },
+    "tls12Or13Transport": {
+      "allOf": [
+        {"$ref": "#/$defs/commonTransportProperties"},
+        {
+          "properties": {
+            "allowedTlsVersions": {
+              "prefixItems": [{"const": "tls1.2"}, {"const": "tls1.3"}],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      ]
+    },
+    "tls13Transport": {
+      "allOf": [
+        {"$ref": "#/$defs/commonTransportProperties"},
+        {
+          "properties": {
+            "allowedTlsVersions": {
+              "prefixItems": [{"const": "tls1.3"}],
+              "items": false,
+              "minItems": 1,
+              "maxItems": 1
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -27,11 +27,11 @@ The root catalog includes two suite groups:
 | TLS | `tls-performance-smoke`, `tls-contract-breadth-smoke`, `tls-security-diagnostics` | `tls-performance-comparison` |
 | gRPC/H2 | `grpc-h2-performance-smoke`, `grpc-h2-contract-breadth-smoke`, `grpc-h2-terminal-outcomes-diagnostic`, `grpc-h2-new-channel-diagnostic` | `grpc-h2-performance-comparison` |
 | Classic DNS diagnostics | `dns-classic-calibration-diagnostic-smoke` | None |
-| DoT | `dns-dot-performance-smoke` | `dns-dot-performance-comparison` |
-| DoH2 | `dns-doh2-performance-smoke` | `dns-doh2-performance-comparison` |
-| DoH3 | `dns-doh3-performance-smoke` | `dns-doh3-performance-comparison` |
+| DoT | `dns-dot-performance-smoke`, `dns-dot-interoperability-smoke`, `dns-dot-resolver-interoperability-smoke` | `dns-dot-performance-comparison` |
+| DoH2 | `dns-doh2-performance-smoke`, `dns-doh2-interoperability-smoke`, `dns-doh2-resolver-interoperability-smoke` | `dns-doh2-performance-comparison` |
+| DoH3 | `dns-doh3-performance-smoke`, `dns-doh3-interoperability-smoke` | `dns-doh3-performance-comparison` |
 | DoH3 semantics | `dns-doh3-semantics-diagnostic-smoke` | None |
-| DoQ | `dns-doq-performance-smoke` | `dns-doq-performance-comparison` |
+| DoQ | `dns-doq-performance-smoke`, `dns-doq-interoperability-smoke` | `dns-doq-performance-comparison` |
 | WebSocket/H1 cleartext | `http1-websocket-cleartext-performance-smoke` | `http1-websocket-cleartext-performance-comparison` |
 | WebSocket/H1 TLS | `http1-websocket-tls-performance-smoke` | `http1-websocket-tls-performance-comparison` |
 | WebSocket/H2 | `http2-websocket-performance-smoke` | `http2-websocket-performance-comparison` |
@@ -52,6 +52,10 @@ All new comparison suites are candidates only. Their load profiles set
 `publishable: false`, and each exact protocol binding remains a separate
 comparison group. MASQUE has no root suite because no approved deterministic
 tunnel fixture, executor, and package-backed target role exists.
+
+Secure-DNS interoperability and resolver-role suites are diagnostic and
+non-publishable. Strict-profile, interoperability-profile,
+authoritative-server, and recursive-resolver results remain separate cohorts.
 
 Package fixture suites under
 [`fixtures/public-contracts/packages/`](../../fixtures/public-contracts/packages/)

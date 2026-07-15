@@ -26,10 +26,10 @@ or executable validation logic.
 | TLS | `tls.*` | `tls` | [`scenarios/tls/`](../../scenarios/tls/) | TLS 1.2/1.3 lifecycle, authentication, early-data, KeyUpdate, and record contracts |
 | gRPC over HTTP/2 | `grpc.h2.*` | `h2` | [`scenarios/grpc/h2/`](../../scenarios/grpc/h2/) | Unary, all streaming shapes, terminal outcomes, gzip, metadata, size boundaries, and channel lifecycle |
 | Classic DNS diagnostics | `dns.classic.*` | `dns` | [`scenarios/dns/classic/`](../../scenarios/dns/classic/) | UDP, TCP, and truncated-UDP-to-TCP calibration contracts |
-| DNS over TLS | `dns.dot.*` | `dot` | [`scenarios/dns/dot/`](../../scenarios/dns/dot/) | Draft public contracts |
-| DNS over HTTPS/2 | `dns.doh2.*` | `doh2` | [`scenarios/dns/doh2/`](../../scenarios/dns/doh2/) | Draft public contracts |
-| DNS over HTTPS/3 | `dns.doh3.*` | `doh3` | [`scenarios/dns/doh3/`](../../scenarios/dns/doh3/) | Draft public contracts |
-| DNS over QUIC | `dns.doq.*` | `doq` | [`scenarios/dns/doq/`](../../scenarios/dns/doq/) | Draft public contracts |
+| DNS over TLS | `dns.dot.*` | `dot` | [`scenarios/dns/dot/`](../../scenarios/dns/dot/) | Strict and interoperability authoritative contracts plus recursive-resolver diagnostics |
+| DNS over HTTPS/2 | `dns.doh2.*` | `doh2` | [`scenarios/dns/doh2/`](../../scenarios/dns/doh2/) | Strict and interoperability authoritative contracts plus recursive-resolver diagnostics |
+| DNS over HTTPS/3 | `dns.doh3.*` | `doh3` | [`scenarios/dns/doh3/`](../../scenarios/dns/doh3/) | Strict and interoperability authoritative contracts |
+| DNS over QUIC | `dns.doq.*` | `doq` | [`scenarios/dns/doq/`](../../scenarios/dns/doq/) | Strict and interoperability authoritative contracts |
 
 HTTP/3 protocol scenarios use `http3.protocol.*` IDs even though their wire
 protocol token is `h3`. HTTP/3 external peer characterization uses
@@ -59,6 +59,12 @@ implementation-neutral scenario shape is ready.
   boundary, and channel-lifecycle scenarios: `grpc.h2.*`
 - secure and classic diagnostic DNS scenarios: `dns.dot.*`, `dns.doh2.*`,
   `dns.doh3.*`, `dns.doq.*`, `dns.classic.*`
+
+Secure-DNS `*.interoperability.*` scenarios retain exact protocol binding and
+authenticated endpoint identity while recording standards-compatible
+negotiated cryptography. Resolver-role scenarios are cold-cache diagnostics
+with a runner-provided local authority as their only upstream; they are not
+comparable with authoritative-server scenarios.
 - binding-specific WebSocket scenarios: `http1.websocket.*`, `http2.websocket.*`, `http3.websocket.*`
 - Future placeholders: `websocket.*`, `webtransport.*`, and the retained MASQUE CONNECT-UDP IDs
 - Network profile documents under

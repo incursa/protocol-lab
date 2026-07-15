@@ -94,7 +94,10 @@ jobs:
               "protocol-lab.dns-wire-fixture.v1": load_json(root / "schemas" / "dns" / "v1" / "dns-wire-fixture.schema.json"),
               "protocol-lab.dns-wire-fixture.v2": load_json(root / "schemas" / "dns" / "v2" / "dns-wire-fixture.schema.json"),
           }
-          secure_dns_tls_profile_schema = load_json(root / "schemas" / "dns" / "v1" / "secure-dns-tls-profile.schema.json")
+          secure_dns_tls_profile_schemas = {
+              "protocol-lab.secure-dns-tls-profile.v1": load_json(root / "schemas" / "dns" / "v1" / "secure-dns-tls-profile.schema.json"),
+              "protocol-lab.secure-dns-tls-profile.v2": load_json(root / "schemas" / "dns" / "v2" / "secure-dns-tls-profile.schema.json"),
+          }
           tls_profile_schemas = {
               "protocol-lab.tls-profile.v1": load_json(root / "schemas" / "tls" / "v1" / "tls-profile.schema.json"),
               "protocol-lab.tls-profile.v2": load_json(root / "schemas" / "tls" / "v2" / "tls-profile.schema.json"),
@@ -131,7 +134,10 @@ jobs:
               version: Draft202012Validator(schema)
               for version, schema in dns_wire_fixture_schemas.items()
           }
-          secure_dns_tls_profile_validator = Draft202012Validator(secure_dns_tls_profile_schema)
+          secure_dns_tls_profile_validators = {
+              version: Draft202012Validator(schema)
+              for version, schema in secure_dns_tls_profile_schemas.items()
+          }
           protocol_metric_catalog_validator = Draft202012Validator(protocol_metric_catalog_schema)
           protocol_execution_result_validator = Draft202012Validator(protocol_execution_result_schema)
 
@@ -305,7 +311,8 @@ jobs:
                       if not fixture_errors:
                           check_dns_wire_fixture_integrity(path, data)
                           dns_wire_fixtures[data.get("fixtureId")] = (path, data)
-                  elif data.get("schemaVersion") == "protocol-lab.secure-dns-tls-profile.v1":
+                  elif data.get("schemaVersion") in secure_dns_tls_profile_validators:
+                      secure_dns_tls_profile_validator = secure_dns_tls_profile_validators[data.get("schemaVersion")]
                       fixture_errors = list(secure_dns_tls_profile_validator.iter_errors(data))
                       for error in fixture_errors:
                           errors.append(f"{rel(path)}: secure DNS TLS profile schema: {error.message}")
@@ -317,7 +324,8 @@ jobs:
                   dns_wire_fixture_validator = dns_wire_fixture_validators.get(data.get("schemaVersion"))
                   if dns_wire_fixture_validator is not None and dns_wire_fixture_validator.is_valid(data):
                       errors.append(f"{rel(path)}: invalid DNS wire fixture unexpectedly passes schema validation")
-                  if data.get("schemaVersion") == "protocol-lab.secure-dns-tls-profile.v1" and secure_dns_tls_profile_validator.is_valid(data):
+                  secure_dns_tls_profile_validator = secure_dns_tls_profile_validators.get(data.get("schemaVersion"))
+                  if secure_dns_tls_profile_validator is not None and secure_dns_tls_profile_validator.is_valid(data):
                       errors.append(f"{rel(path)}: invalid secure DNS TLS profile unexpectedly passes schema validation")
 
           tls_profile_valid_roots = {
@@ -515,17 +523,32 @@ jobs:
                           errors.append(f"{rel(path)}: secure DNS TLS profileId {tls_policy.get('profileId')} does not resolve")
                       else:
                           profile = tls_profile_record[1]
-                          expected_tls = {
-                              "version": profile.get("tlsVersion"),
-                              "resumptionPolicy": profile.get("resumptionPolicy"),
-                              "earlyData": profile.get("earlyData"),
-                              "alpn": profile.get("alpnByTransport", {}).get(transport),
-                              "certificateProfile": profile.get("certificate", {}).get("profileId"),
-                              "cipherSuite": profile.get("cipherSuite"),
-                              "keyExchangeGroup": profile.get("keyExchangeGroup"),
-                              "signatureScheme": profile.get("signatureScheme"),
-                              "peerAuthentication": profile.get("peerAuthentication"),
-                          }
+                          if profile.get("schemaVersion") == "protocol-lab.secure-dns-tls-profile.v1":
+                              expected_tls = {
+                                  "version": profile.get("tlsVersion"),
+                                  "resumptionPolicy": profile.get("resumptionPolicy"),
+                                  "earlyData": profile.get("earlyData"),
+                                  "alpn": profile.get("alpnByTransport", {}).get(transport),
+                                  "certificateProfile": profile.get("certificate", {}).get("profileId"),
+                                  "cipherSuite": profile.get("cipherSuite"),
+                                  "keyExchangeGroup": profile.get("keyExchangeGroup"),
+                                  "signatureScheme": profile.get("signatureScheme"),
+                                  "peerAuthentication": profile.get("peerAuthentication"),
+                              }
+                          else:
+                              transport_policy = profile.get("transportPolicies", {}).get(transport, {})
+                              expected_tls = {
+                                  "allowedVersions": transport_policy.get("allowedTlsVersions"),
+                                  "resumptionPolicy": transport_policy.get("resumptionPolicy"),
+                                  "earlyData": transport_policy.get("earlyData"),
+                                  "alpn": transport_policy.get("alpn"),
+                                  "certificateProfile": profile.get("certificate", {}).get("profileId"),
+                                  "cipherSuitePolicy": transport_policy.get("cipherSuitePolicy"),
+                                  "keyExchangeGroupPolicy": transport_policy.get("keyExchangeGroupPolicy"),
+                                  "signatureSchemePolicy": transport_policy.get("signatureSchemePolicy"),
+                                  "peerAuthentication": transport_policy.get("peerAuthentication"),
+                                  "negotiatedParametersRequired": True,
+                              }
                           for field, expected_value in expected_tls.items():
                               if tls_policy.get(field) != expected_value:
                                   errors.append(f"{rel(path)}: secure DNS TLS {field} does not match profile")

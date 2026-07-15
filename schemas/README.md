@@ -11,7 +11,8 @@ control-plane surfaces when needed.
 - [`dns/v1/`](dns/v1/) - declarative canonical DNS wire fixtures, transport
   framing, runtime message-ID policy, and response normalization.
 - [`dns/v2/`](dns/v2/) - versioned semantic DNS fixtures with DoH GET,
-  classic UDP/TCP framing, truncation fallback, and broader response shapes.
+  classic UDP/TCP framing, truncation fallback, broader response shapes, and
+  the standards-based secure-DNS TLS interoperability profile.
 - [`grpc/v1/`](grpc/v1/) - language-neutral deterministic gRPC service and message descriptors.
 - [`grpc/v2/`](grpc/v2/) - the frozen-v1-compatible gRPC service breadth
   contract for all RPC shapes, expected terminal outcomes, gzip, and metadata.

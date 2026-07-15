@@ -1,0 +1,28 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "WI-PL-SECDNS-PORTABILITY-0001",
+  "artifact_type": "work_item",
+  "title": "Add secure DNS interoperability and resolver-role contract surfaces",
+  "domain": "protocol-lab",
+  "status": "complete",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": [
+    "SPEC-PL-SECURE-DNS-PERFORMANCE",
+    "ARC-PL-SECURE-DNS-PERFORMANCE",
+    "VER-PL-SECURE-DNS-PERFORMANCE-0001"
+  ],
+  "addresses": ["REQ-PL-SECDNS-0013", "REQ-PL-SECDNS-0014"],
+  "design_links": ["ARC-PL-SECURE-DNS-PERFORMANCE"],
+  "summary": "Preserve the exact secure-DNS diagnostic profile while adding implementation-neutral standards-based portability lanes and bounded recursive-resolver diagnostics.",
+  "verification_links": ["VER-PL-SECURE-DNS-PERFORMANCE-0001"],
+  "planned_changes": "Add a versioned secure-DNS interoperability TLS profile and schema, valid and invalid fixtures, authoritative DoT/DoH2/DoH3/DoQ A-query scenarios, recursive-resolver DoT/DoH2 A-query scenarios with exact RD/RA wire identity and local-upstream isolation, diagnostic suites, canonical requirement and architecture updates, traceability, and repository-health validation for both profile versions.",
+  "out_of_scope": [
+    "changing or weakening the exact v1 secure-DNS TLS profile or its existing scenarios",
+    "declaring any implementation conformant or adding runner, executor, package, or server behavior",
+    "public or externally managed recursive resolvers",
+    "resolver-role DoH3 or DoQ before cache and upstream control can be proven coherently",
+    "publication-grade benchmark or cross-profile ranking claims"
+  ],
+  "verification_plan": "Validate both secure-DNS TLS profile schemas and their positive and negative fixtures; resolve every scenario fixture, suite, and load profile; verify authoritative and recursive wire hashes and transport framing; prove resolver cache and upstream-isolation requirements are structurally present; confirm strict, interoperability, authoritative, and recursive cohorts remain distinct; and run all repository-health checks.",
+  "completion_notes": "Completed on 2026-07-14 as a public-contract-only portability slice. Runtime packages and live implementation evidence remain downstream work in their owning repositories."
+}

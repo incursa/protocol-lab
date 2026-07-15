@@ -24,6 +24,7 @@
     "specs/architecture/ARC-PL-WEBSOCKET-PERFORMANCE.json",
     "specs/work-items/WI-PL-PUBLIC-REPOSITION-0001.json",
     "specs/work-items/WI-PL-SPECIFICATION-COVERAGE-0001.json",
+    "specs/work-items/WI-PL-SECDNS-PORTABILITY-0001.json",
     "specs/verification/VER-PL-PUBLIC-REPOSITION-0001.json",
     "specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json",
     "specs/verification/VER-PL-MEASUREMENT-CONTRACT-0001.json",
@@ -1111,6 +1112,20 @@
       "id": "REQ-PL-SECDNS-0012",
       "schemas": ["schemas/dns/v2/dns-wire-fixture.schema.json", "schemas/scenario/v2/scenario.schema.json"],
       "fixtures": ["scenarios/dns/classic/query-a-udp.yaml", "scenarios/dns/classic/query-a-tcp.yaml", "scenarios/dns/classic/udp-truncated-tcp-retry.yaml"],
+      "architecture": ["specs/architecture/ARC-PL-SECURE-DNS-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-SECURE-DNS-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SECDNS-0013",
+      "schemas": ["schemas/dns/v1/secure-dns-tls-profile.schema.json", "schemas/dns/v2/secure-dns-tls-profile.schema.json", "schemas/scenario/v2/scenario.schema.json"],
+      "fixtures": ["fixtures/public-contracts/dns/valid/secure-dns-tls13-profile-v1.json", "fixtures/public-contracts/dns/valid/secure-dns-interoperability-profile-v2.json", "fixtures/public-contracts/dns/invalid/secure-dns-interoperability-profile-missing-negotiated-evidence-v2.json", "scenarios/dns/dot/interoperability-query-a.yaml", "scenarios/dns/doh2/interoperability-query-a.yaml", "scenarios/dns/doh3/interoperability-query-a.yaml", "scenarios/dns/doq/interoperability-query-a.yaml"],
+      "architecture": ["specs/architecture/ARC-PL-SECURE-DNS-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-SECURE-DNS-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SECDNS-0014",
+      "schemas": ["schemas/dns/v2/dns-wire-fixture.schema.json", "schemas/scenario/v2/scenario.schema.json"],
+      "fixtures": ["fixtures/public-contracts/dns/valid/canonical-resolver-plab-test-a-v2.json", "fixtures/public-contracts/scenarios/valid/dns-dot-resolver-interoperability-query-a.json", "fixtures/public-contracts/scenarios/invalid/dns-resolver-missing-cache-preparation.json", "scenarios/dns/dot/resolver-interoperability-query-a.yaml", "scenarios/dns/doh2/resolver-interoperability-query-a.yaml", "suites/dns-dot-resolver-interoperability-smoke.yaml", "suites/dns-doh2-resolver-interoperability-smoke.yaml"],
       "architecture": ["specs/architecture/ARC-PL-SECURE-DNS-PERFORMANCE.json"],
       "verification": ["specs/verification/VER-PL-SECURE-DNS-PERFORMANCE-0001.json"]
     },

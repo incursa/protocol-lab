@@ -498,7 +498,6 @@
             "cacheState",
             "connectionReuse",
             "endpoint",
-            "authorityPolicy",
             "framing",
             "operationPolicy",
             "runtimeIdPolicy",
@@ -511,8 +510,8 @@
               "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
             },
             "transport": { "type": "string", "enum": ["udp", "tcp", "udp-tcp", "dot", "doh2", "doh3", "doq"] },
-            "authorityMode": { "const": "local-fixture-authoritative" },
-            "cacheState": { "const": "disabled" },
+            "authorityMode": { "type": "string", "enum": ["local-fixture-authoritative", "local-fixture-recursive"] },
+            "cacheState": { "type": "string", "enum": ["disabled", "cold-before-operation"] },
             "alpn": { "type": "string", "minLength": 1 },
             "connectionReuse": { "type": "string", "enum": ["reuse", "churn"] },
             "endpoint": {
@@ -527,27 +526,10 @@
               }
             },
             "tlsPolicy": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "profileId", "version", "resumptionPolicy", "earlyData", "alpn",
-                "certificateProfile", "cipherSuite", "keyExchangeGroup", "signatureScheme", "peerAuthentication",
-                "connectionLifecycle", "measuredWindow"
-              ],
-              "properties": {
-                "profileId": { "const": "plab-secure-dns-tls13-v1" },
-                "version": { "const": "tls1.3" },
-                "resumptionPolicy": { "const": "not-offered" },
-                "earlyData": { "const": "not-attempted" },
-                "alpn": { "type": "string", "minLength": 1 },
-                "certificateProfile": { "const": "plab-secure-dns-single-leaf-p256-v1" },
-                "cipherSuite": { "const": "TLS_AES_128_GCM_SHA256" },
-                "keyExchangeGroup": { "const": "x25519" },
-                "signatureScheme": { "const": "ecdsa_secp256r1_sha256" },
-                "peerAuthentication": { "const": "server-certificate-required" },
-                "connectionLifecycle": { "const": "pre-established-full-authenticated-connection" },
-                "measuredWindow": { "const": "dns-query-response" }
-              }
+              "oneOf": [
+                { "$ref": "#/$defs/strictSecureDnsTlsPolicy" },
+                { "$ref": "#/$defs/interoperabilitySecureDnsTlsPolicy" }
+              ]
             },
             "authorityPolicy": {
               "type": "object",
@@ -558,6 +540,28 @@
                 "recursionDesired": { "const": false }, "recursionAvailable": { "const": false },
                 "externalUpstream": { "const": "prohibited" }, "outOfZoneResponse": { "const": "REFUSED" },
                 "unknownNameResponse": { "const": "NXDOMAIN" }, "existingNameUnknownTypeResponse": { "const": "NOERROR-NODATA" }
+              }
+            },
+            "resolverPolicy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "recursiveResolver", "recursionDesired", "recursionAvailable", "authoritativeAnswer",
+                "upstreamAuthority", "externalUpstream", "cachePreparation", "cacheReuse",
+                "outOfZoneResponse", "unknownNameResponse", "existingNameUnknownTypeResponse"
+              ],
+              "properties": {
+                "recursiveResolver": { "const": "selected-target" },
+                "recursionDesired": { "const": true },
+                "recursionAvailable": { "const": true },
+                "authoritativeAnswer": { "const": false },
+                "upstreamAuthority": { "const": "runner-provided-local-fixture-authority" },
+                "externalUpstream": { "const": "prohibited" },
+                "cachePreparation": { "const": "flush-before-each-measured-operation" },
+                "cacheReuse": { "const": "prohibited" },
+                "outOfZoneResponse": { "const": "REFUSED" },
+                "unknownNameResponse": { "const": "NXDOMAIN" },
+                "existingNameUnknownTypeResponse": { "const": "NOERROR-NODATA" }
               }
             },
             "framing": {
@@ -678,6 +682,21 @@
           },
           "allOf": [
             {
+              "if": { "properties": { "authorityMode": { "const": "local-fixture-authoritative" } }, "required": ["authorityMode"] },
+              "then": { "required": ["authorityPolicy"], "not": { "required": ["resolverPolicy"] }, "properties": { "cacheState": { "const": "disabled" } } }
+            },
+            {
+              "if": { "properties": { "authorityMode": { "const": "local-fixture-recursive" } }, "required": ["authorityMode"] },
+              "then": {
+                "required": ["resolverPolicy"],
+                "not": { "required": ["authorityPolicy"] },
+                "properties": {
+                  "transport": { "enum": ["dot", "doh2"] },
+                  "cacheState": { "const": "cold-before-operation" }
+                }
+              }
+            },
+            {
               "if": { "properties": { "transport": { "enum": ["dot", "doh2", "doh3", "doq"] } }, "required": ["transport"] },
               "then": { "required": ["alpn", "tlsPolicy"] }
             },
@@ -726,7 +745,13 @@
               "then": {
                 "required": ["http"],
                 "properties": {
-                  "tlsPolicy": { "properties": { "alpn": { "const": "h2" } } },
+                  "alpn": { "const": "h2" },
+                  "tlsPolicy": {
+                    "properties": {
+                      "alpn": { "const": "h2" },
+                      "allowedVersions": { "const": ["tls1.2", "tls1.3"] }
+                    }
+                  },
                   "framing": {
                     "required": ["kind", "requestBodyLength", "canonicalResponseLength"],
                     "properties": { "kind": { "const": "bare-dns-message-body" } }
@@ -740,7 +765,13 @@
               "then": {
                 "required": ["http"],
                 "properties": {
-                  "tlsPolicy": { "properties": { "alpn": { "const": "h3" } } },
+                  "alpn": { "const": "h3" },
+                  "tlsPolicy": {
+                    "properties": {
+                      "alpn": { "const": "h3" },
+                      "allowedVersions": { "const": ["tls1.3"] }
+                    }
+                  },
                   "framing": {
                     "required": ["kind", "requestBodyLength", "canonicalResponseLength"],
                     "properties": { "kind": { "const": "bare-dns-message-body" } }
@@ -754,7 +785,13 @@
               "then": {
                 "required": ["streamPolicy", "errorPolicy"],
                 "properties": {
-                  "tlsPolicy": { "properties": { "alpn": { "const": "doq" } } },
+                  "alpn": { "const": "doq" },
+                  "tlsPolicy": {
+                    "properties": {
+                      "alpn": { "const": "doq" },
+                      "allowedVersions": { "const": ["tls1.3"] }
+                    }
+                  },
                   "framing": {
                     "required": [
                       "kind", "lengthPrefixOctets", "byteOrder", "canonicalQueryMessageLength",
@@ -770,6 +807,13 @@
               "then": {
                 "required": ["concurrencyPolicy"],
                 "properties": {
+                  "alpn": { "const": "dot" },
+                  "tlsPolicy": {
+                    "properties": {
+                      "alpn": { "const": "dot" },
+                      "allowedVersions": { "const": ["tls1.2", "tls1.3"] }
+                    }
+                  },
                   "framing": {
                     "required": [
                       "kind", "lengthPrefixOctets", "byteOrder", "canonicalQueryMessageLength",
@@ -1078,7 +1122,7 @@
           "properties": {
             "transportSecurity": { "type": "string", "enum": ["cleartext", "tls"] },
             "protocolVariant": { "type": "string", "minLength": 1 },
-            "implementationRole": { "type": "string", "enum": ["origin-server", "authoritative-server", "proxy", "gateway", "client", "library-backed-target"] },
+            "implementationRole": { "type": "string", "enum": ["origin-server", "authoritative-server", "recursive-resolver", "proxy", "gateway", "client", "library-backed-target"] },
             "selectedComponentProofRequired": { "const": true },
             "executionModePolicy": { "const": "record-effective-mode" },
             "platformProvenanceRequired": { "type": "boolean" },
@@ -1287,6 +1331,22 @@
               "family": { "const": "dns" },
               "protocol": { "const": "dns" },
               "executionProfile": { "properties": { "transportSecurity": { "const": "cleartext" } } }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["dns"],
+            "properties": {
+              "dns": {
+                "required": ["authorityMode"],
+                "properties": { "authorityMode": { "const": "local-fixture-recursive" } }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "executionProfile": { "properties": { "implementationRole": { "const": "recursive-resolver" } } }
             }
           }
         },
@@ -1651,6 +1711,58 @@
         "byteOrder": { "const": "network" },
         "lengthValueSource": { "type": "string", "enum": ["serializedProtobufBytes", "compressedMessageBytes"] },
         "dataFrameBoundariesDefineMessageBoundaries": { "const": false }
+      }
+    },
+    "strictSecureDnsTlsPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId", "version", "resumptionPolicy", "earlyData", "alpn",
+        "certificateProfile", "cipherSuite", "keyExchangeGroup", "signatureScheme", "peerAuthentication",
+        "connectionLifecycle", "measuredWindow"
+      ],
+      "properties": {
+        "profileId": { "const": "plab-secure-dns-tls13-v1" },
+        "version": { "const": "tls1.3" },
+        "resumptionPolicy": { "const": "not-offered" },
+        "earlyData": { "const": "not-attempted" },
+        "alpn": { "type": "string", "minLength": 1 },
+        "certificateProfile": { "const": "plab-secure-dns-single-leaf-p256-v1" },
+        "cipherSuite": { "const": "TLS_AES_128_GCM_SHA256" },
+        "keyExchangeGroup": { "const": "x25519" },
+        "signatureScheme": { "const": "ecdsa_secp256r1_sha256" },
+        "peerAuthentication": { "const": "server-certificate-required" },
+        "connectionLifecycle": { "const": "pre-established-full-authenticated-connection" },
+        "measuredWindow": { "const": "dns-query-response" }
+      }
+    },
+    "interoperabilitySecureDnsTlsPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId", "allowedVersions", "resumptionPolicy", "earlyData", "alpn",
+        "certificateProfile", "cipherSuitePolicy", "keyExchangeGroupPolicy", "signatureSchemePolicy",
+        "peerAuthentication", "connectionLifecycle", "measuredWindow", "negotiatedParametersRequired"
+      ],
+      "properties": {
+        "profileId": { "const": "plab-secure-dns-interoperability-v2" },
+        "allowedVersions": {
+          "type": "array",
+          "items": { "enum": ["tls1.2", "tls1.3"] },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "resumptionPolicy": { "const": "not-offered" },
+        "earlyData": { "const": "not-attempted" },
+        "alpn": { "type": "string", "minLength": 1 },
+        "certificateProfile": { "const": "plab-secure-dns-interoperability-leaf-v2" },
+        "cipherSuitePolicy": { "const": "negotiated-rfc9325-compatible" },
+        "keyExchangeGroupPolicy": { "const": "negotiated-rfc9325-compatible" },
+        "signatureSchemePolicy": { "const": "negotiated-rfc9325-compatible" },
+        "peerAuthentication": { "const": "server-certificate-required" },
+        "connectionLifecycle": { "const": "pre-established-full-authenticated-connection" },
+        "measuredWindow": { "const": "dns-query-response" },
+        "negotiatedParametersRequired": { "const": true }
       }
     },
     "dnsMessage": {

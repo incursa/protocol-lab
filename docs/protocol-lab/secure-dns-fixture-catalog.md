@@ -1,6 +1,6 @@
 # Secure DNS Fixture and Diagnostic Catalog
 
-This catalog defines the bounded public DNS semantic corpus used by the secure-DNS contract family. The local `plab.test.` authority is authoritative, non-recursive, cache-disabled, and prohibited from using an external upstream. TTL values are zero.
+This catalog defines the bounded public DNS semantic corpus used by the secure-DNS contract family. Authoritative scenarios use the local `plab.test.` authority directly with recursion disabled. Resolver-role diagnostics use a selected local recursive resolver, flush its cache before every measured operation, and route only to a runner-provided local `plab.test.` fixture authority. External upstream access is prohibited in both roles. TTL values are zero.
 
 The corpus deliberately does not multiply every semantic case across DoT, DoH2, DoH3, and DoQ. The A fixture remains the cross-transport baseline. Additional semantic breadth and the representative DoH GET binding are selected on DoH3 only.
 
@@ -12,6 +12,7 @@ DNS wire fixture v1 is frozen at `schemas/dns/v1/dns-wire-fixture.schema.json` a
 |---|---|---|---:|---|
 | `dns.plab-test-a.canonical` (v1) | `plab.test. IN A` | `NOERROR`, `192.0.2.1` | 27 / 43 | Frozen secure-transport A baseline |
 | `dns.plab-test-a-v2.canonical` | `plab.test. IN A` | `NOERROR`, `192.0.2.1` | 27 / 43 | v2 DoH GET and classic UDP/TCP bindings |
+| `dns.resolver-plab-test-a-v2.canonical` | `plab.test. IN A` with RD | `NOERROR`, `192.0.2.1`, RA set and AA clear | 27 / 43 | DoT and DoH2 recursive-resolver diagnostics |
 | `dns.plab-test-aaaa.canonical` | `plab.test. IN AAAA` | `NOERROR`, `2001:db8::1` | 27 / 55 | `dns.doh3.query.aaaa` |
 | `dns.alias-plab-test-cname-chain.canonical` | `alias.plab.test. IN A` | CNAME to `target.plab.test.`, then `192.0.2.1` | 33 / 95 | `dns.doh3.query.cname-chain` |
 | `dns.missing-plab-test-nxdomain.canonical` | `missing.plab.test. IN A` | `NXDOMAIN` with SOA authority | 35 / 112 | `dns.doh3.query.nxdomain` |
@@ -19,6 +20,29 @@ DNS wire fixture v1 is frozen at `schemas/dns/v1/dns-wire-fixture.schema.json` a
 | `dns.dnskey-plab-test-large-edns-dnssec-shaped.canonical` | `dnskey.plab.test. IN DNSKEY`, EDNS DO, UDP 512 | 630-byte DNSKEY/RRSIG-shaped response | 45 / 630 | `dns.doh3.query.large-dnssec-shaped`; `dns.classic.udp-truncated-tcp-retry` |
 
 The large fixture exercises EDNS sizing, DNSKEY/RRSIG-shaped record parsing, and truncation behavior. It does not claim that the synthetic RRSIG is cryptographically valid.
+
+## TLS profile selection
+
+The exact `plab-secure-dns-tls13-v1` profile remains the strict diagnostic
+lane: it fixes TLS 1.3, cipher suite, key-exchange group, signature scheme, and
+leaf-certificate shape. The additive
+`plab-secure-dns-interoperability-v2` profile retains authenticated
+`dns.plab.test` identity, exact ALPN, no fallback, no early data, and explicit
+connection reuse while allowing standards-compatible negotiated cryptography.
+DoT and DoH2 allow TLS 1.2 or TLS 1.3; DoH3 and DoQ remain TLS 1.3 only. Every
+negotiated parameter and certificate digest remains required evidence, and
+results from different profile IDs or effective parameter cohorts are not
+comparable.
+
+## Recursive-resolver diagnostics
+
+`dns.dot.resolver.interoperability.query.a` and
+`dns.doh2.resolver.interoperability.query.a` use the resolver fixture. They
+set RD in the query, require RA and clear AA in the response, flush cache
+before each measured operation, prohibit cache reuse, and require resolver
+and upstream proof artifacts. These scenarios are diagnostic and
+non-publishable. Resolver-role DoH3 and DoQ are deferred until independent
+targets can expose equally coherent cache and upstream control.
 
 ## DoH GET identity
 
@@ -38,5 +62,7 @@ The truncation-driven retry is part of the classic diagnostic identity. It is no
 
 - `dns-doh3-semantics-diagnostic-smoke` selects the five additional semantic cases and the representative GET binding with `secure-dns-smoke`.
 - `dns-classic-calibration-diagnostic-smoke` selects UDP, TCP, and truncation-to-TCP calibration with `dns-classic-diagnostic`.
+- `dns-*-interoperability-smoke` suites select the authoritative interoperability baseline for each secure transport with `secure-dns-smoke`.
+- `dns-dot-resolver-interoperability-smoke` and `dns-doh2-resolver-interoperability-smoke` select the bounded cold-cache resolver role with `secure-dns-smoke`.
 
 Both suites produce diagnostic results only and are intentionally unsuitable for ranking or publication as benchmark comparisons.

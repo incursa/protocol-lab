@@ -660,7 +660,7 @@
                 "responseHeaders": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["contentType", "cacheControl"],
+                  "required": ["contentType"],
                   "properties": {
                     "contentType": { "const": "application/dns-message" },
                     "cacheControl": { "const": "no-store" }
@@ -681,6 +681,27 @@
             "responseNormalization": { "$ref": "#/$defs/dnsResponseNormalization" }
           },
           "allOf": [
+            {
+              "if": {
+                "required": ["transport", "tlsPolicy"],
+                "properties": {
+                  "transport": { "enum": ["doh2", "doh3"] },
+                  "tlsPolicy": {
+                    "required": ["profileId"],
+                    "properties": { "profileId": { "const": "plab-secure-dns-tls13-v1" } }
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "http": {
+                    "properties": {
+                      "responseHeaders": { "required": ["contentType", "cacheControl"] }
+                    }
+                  }
+                }
+              }
+            },
             {
               "if": { "properties": { "authorityMode": { "const": "local-fixture-authoritative" } }, "required": ["authorityMode"] },
               "then": { "required": ["authorityPolicy"], "not": { "required": ["resolverPolicy"] }, "properties": { "cacheState": { "const": "disabled" } } }

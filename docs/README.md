@@ -152,6 +152,7 @@ directly.
 
 - [`contracts/coverage-matrix.md`](contracts/coverage-matrix.md)
 - [`protocol-lab/roadmap.md`](protocol-lab/roadmap.md)
+- [`protocol-lab/webtransport-masque-component-surface-audit.md`](protocol-lab/webtransport-masque-component-surface-audit.md) - dated, non-normative audit of public WebTransport and MASQUE contracts against current component surfaces
 - [`overview.md`](overview.md)
 
 ## Traceability

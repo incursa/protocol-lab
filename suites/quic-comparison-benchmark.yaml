@@ -6,9 +6,14 @@ resultKind: benchmark
 loadProfileId: quic-comparison
 scenarios:
   - quic.transport.handshake-cold
+  - quic.transport.stream-throughput.64kb
   - quic.transport.stream-throughput.1mb
+  - quic.transport.stream-throughput.16mb
   - quic.transport.duplex-streams
+  - quic.transport.duplex-streams.16x1mb
+  - quic.transport.multiplex.100x1kb
   - quic.transport.multiplex.100x64kb
+  - quic.transport.multiplex.16x1mb
 protocol: quic
 defaults:
   durationSeconds: 30

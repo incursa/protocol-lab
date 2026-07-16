@@ -15,6 +15,7 @@ scenarios:
   - quic.transport.multiplex.100x1kb
   - quic.transport.multiplex.100x64kb
   - quic.transport.multiplex.16x1mb
+  - quic.transport.multiplex.mixed-4x16
 protocol: quic
 defaults:
   durationSeconds: 30

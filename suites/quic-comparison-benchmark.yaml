@@ -8,6 +8,7 @@ scenarios:
   - quic.transport.handshake-cold
   - quic.transport.stream-throughput.64kb
   - quic.transport.stream-throughput.1mb
+  - quic.transport.stream-download.1mb
   - quic.transport.stream-throughput.16mb
   - quic.transport.duplex-streams
   - quic.transport.duplex-streams.16x1mb

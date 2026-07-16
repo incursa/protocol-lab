@@ -41,4 +41,4 @@ requiredMetrics: [queriesPerSecond, queryLatencyMean, queryLatencyP50, queryLate
 artifacts: {required: [validation.json, protocol-proof.json, dns-wire-summary.json, dns-resolver-summary.json, upstream-proof.json, tls-negotiation.json, result.json, load.stdout.log, load.stderr.log], optional: [packet-summary.json, target-telemetry.json, load-generator-telemetry.json]}
 availability: {onUnsupported: unsupported, onUnavailable: unavailable, onBindingMismatch: validation-failed, knownUnsupported: [external-recursive-resolver, public-recursive-resolver, unflushable-cache, external-upstream]}
 networkProfile: clean
-tags: [dns, dot, tls, interoperability, recursive-resolver, cold-cache, query, a, diagnostic, non-publishable]
+tags: [dns, dot, tls, interoperability, recursive-resolver, cold-cache, query, a, diagnostic, non-rankable]

@@ -40,8 +40,9 @@ comparable.
 `dns.doh2.resolver.interoperability.query.a` use the resolver fixture. They
 set RD in the query, require RA and clear AA in the response, flush cache
 before each measured operation, prohibit cache reuse, and require resolver
-and upstream proof artifacts. These scenarios are diagnostic and
-non-publishable. Resolver-role DoH3 and DoQ are deferred until independent
+and upstream proof artifacts. These scenarios produce real measured validation
+that may be published, but they remain diagnostic, non-rankable, and separate
+from authoritative-server cohorts. Resolver-role DoH3 and DoQ are deferred until independent
 targets can expose equally coherent cache and upstream control.
 
 ## DoH GET identity
@@ -50,7 +51,8 @@ targets can expose equally coherent cache and upstream control.
 
 ## Classic diagnostic calibration
 
-Classic DNS identities are diagnostic-only and non-publishable:
+Classic DNS identities produce real measured calibration that may be published,
+but they remain diagnostic-only and non-rankable:
 
 - `dns.classic.udp.query.a` sends the 27-byte query and receives the 43-byte response as bare UDP datagrams.
 - `dns.classic.tcp.query.a` uses two-octet network-order prefixes `001b` and `002b` for those messages.
@@ -65,4 +67,4 @@ The truncation-driven retry is part of the classic diagnostic identity. It is no
 - `dns-*-interoperability-smoke` suites select the authoritative interoperability baseline for each secure transport with `secure-dns-smoke`.
 - `dns-dot-resolver-interoperability-smoke` and `dns-doh2-resolver-interoperability-smoke` select the bounded cold-cache resolver role with `secure-dns-smoke`.
 
-Both suites produce diagnostic results only and are intentionally unsuitable for ranking or publication as benchmark comparisons.
+These suites produce diagnostic results only. Their measured validation may be published, but it remains intentionally unsuitable for ranking or benchmark-comparison claims.

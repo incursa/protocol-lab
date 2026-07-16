@@ -6,5 +6,5 @@ resultKind: diagnostic
 loadProfileId: dns-classic-diagnostic
 scenarios: [dns.classic.udp.query.a, dns.classic.tcp.query.a, dns.classic.udp-truncated-tcp-retry]
 protocol: dns
-notes: Diagnostic-only and non-publishable; these identities are not comparable secure-DNS transport results.
-tags: [dns, classic-dns, udp, tcp, truncation, smoke, non-publishable]
+notes: Publishable measured calibration that remains diagnostic-only, non-rankable, and incomparable with secure-DNS transport results.
+tags: [dns, classic-dns, udp, tcp, truncation, smoke, non-rankable]

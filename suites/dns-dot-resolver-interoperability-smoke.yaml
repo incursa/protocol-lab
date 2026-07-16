@@ -7,4 +7,4 @@ loadProfileId: secure-dns-smoke
 scenarios: [dns.dot.resolver.interoperability.query.a]
 protocol: dot
 notes: Resolver-role evidence is diagnostic and is never compared with authoritative-server evidence.
-tags: [dns, dot, interoperability, recursive-resolver, cold-cache, smoke, non-publishable]
+tags: [dns, dot, interoperability, recursive-resolver, cold-cache, smoke, non-rankable]

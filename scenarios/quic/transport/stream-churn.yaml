@@ -30,7 +30,7 @@ quicTransport:
   payloadSizeBytes: 128
   payloadDirection: bidirectional
   openPattern: churn
-  expectedBytes: 128000
+  expectedBytes: 256000
 validation:
   required: true
   checks:

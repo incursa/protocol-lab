@@ -1,6 +1,6 @@
 id: quic-transport-v1-comparison
 name: ProtocolLab stable raw QUIC transport comparison suite
-description: Stable raw QUIC comparison coverage across handshake, throughput, multiplexing, flow control, connection churn, and duplex scenarios.
+description: Stable raw QUIC comparison coverage across handshake, throughput, multiplexing, flow control, connection churn, stream churn, and duplex scenarios.
 purpose: benchmark
 resultKind: benchmark
 loadProfileId: raw-quic-peer-confidence
@@ -11,6 +11,7 @@ scenarios:
   - quic.transport.stream-limits.100x64kb
   - quic.transport.flow-control.slow-reader-16x64kb
   - quic.transport.connection-churn
+  - quic.transport.stream-churn
   - quic.transport.duplex-streams
   - quic.transport.handshake-cold
 protocol: quic
@@ -21,4 +22,4 @@ defaults:
 counterCapture:
   enabledByDefault: false
   tool: dotnet-counters
-notes: Stable raw QUIC comparison input. The raw-quic-peer-confidence profile supplies timing and repetition policy while each scenario retains its valid connection and stream matrix. Stream-limit pressure intentionally remains a one-connection semantic capacity check. The slow-reader lane delays response reads by exactly 100 milliseconds to expose sender-side backpressure. Evidence remains local-lab only.
+notes: Stable raw QUIC comparison input. The raw-quic-peer-confidence profile supplies timing and repetition policy while each scenario retains its valid connection and stream matrix. Connection churn establishes a fresh connection per operation; stream churn opens and closes 1,000 sequential streams on one stable connection. Stream-limit pressure intentionally remains a one-connection semantic capacity check. The slow-reader lane delays response reads by exactly 100 milliseconds to expose sender-side backpressure. Evidence remains local-lab only.

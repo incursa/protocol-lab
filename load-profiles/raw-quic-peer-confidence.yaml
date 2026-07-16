@@ -1,0 +1,34 @@
+# Load Profile Contract v1
+schemaVersion: protocol-lab.load-profile.v1
+
+id: raw-quic-peer-confidence
+title: Raw QUIC Peer Confidence
+status: stable
+purpose: comparison
+
+description: >
+  Repeated raw QUIC peer-comparison profile. Scenario definitions retain
+  authority over their connection and stream matrices so handshake,
+  throughput, multiplex, churn, and duplex workloads are not forced into one
+  invalid shared shape. This profile is not publishable benchmark evidence by
+  itself.
+
+durationSeconds: 15
+warmupSeconds: 5
+cooldownSeconds: 5
+repetitions: 5
+
+evidence:
+  minimumTier: comparison
+  publishable: false
+
+artifacts:
+  required:
+    - load.stdout.log
+    - load.stderr.log
+    - validation.json
+    - result.json
+  optional:
+    - counters
+    - protocol-diagnostic-artifact
+    - telemetry-bundle.json

@@ -47,6 +47,11 @@ benchmark:
   repetitions: 1
   connections:
     - 1
+    - 4
+    - 16
+    - 32
+    - 64
+    - 128
   streamsPerConnection:
     - 16
 benchmarkCompat:

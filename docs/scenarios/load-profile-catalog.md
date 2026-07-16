@@ -37,6 +37,7 @@ runner, programming language, process model, telemetry backend, or hosted lab.
 | `quic-diagnostic` | diagnostic | stable | QUIC-specific |
 | `quic-regression` | regression | stable | QUIC-specific |
 | `quic-comparison` | comparison | stable | QUIC-specific |
+| `raw-quic-peer-confidence` | comparison | stable | Raw QUIC peer comparison; scenario-owned connection and stream matrices with five repetitions |
 | `quic-soak` | soak | experimental | QUIC-specific |
 
 The profile-level keys `http1`, `http2`, `http3`, and `quic` are

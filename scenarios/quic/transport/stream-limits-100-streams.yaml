@@ -1,0 +1,83 @@
+schemaVersion: "1.0"
+id: quic.transport.stream-limits.100x64kb
+version: "1.0"
+title: QUIC Stream Limit Pressure 100x64 KiB
+name: QUIC Stream Limit Pressure 100x64 KiB
+family: quic.transport
+description: Validate a 100-stream bidirectional batch against one QUIC connection to exercise advertised stream capacity independently of HTTP/3.
+status: stable
+kind: protocolValidation
+layer: transport
+protocol: quic
+roles:
+  - server
+requires:
+  capabilities:
+    - quic.server
+  protocols:
+    - quic
+  roles:
+    - server
+trafficShape: bidirectional-stream
+implementationRole: server
+requiredCapabilities:
+  - quicTransport
+  - quicStreams
+  - quicMultiplexing
+quicTransport:
+  behavior: stream-limit-pressure
+  connectionCount: 1
+  streamType: bidirectional
+  streamCount: 100
+  payloadSizeBytes: 65536
+  payloadDirection: bidirectional
+  openPattern: concurrent
+  expectedBytes: 13107200
+validation:
+  required: true
+  checks:
+    - concurrent-streams-complete
+    - completed-streams-match-expected
+    - echoed-bytes-match-expected
+    - no-stream-limit-deadlock
+    - zero-timeouts-and-errors
+    - protocol:quic
+benchmark:
+  warmupSeconds: 5
+  durationSeconds: 15
+  repetitions: 1
+  connections:
+    - 1
+  streamsPerConnection:
+    - 100
+benchmarkCompat:
+  compatibleLoadShapes:
+    - quic-stream-limit-pressure
+    - smoke
+    - regression
+    - comparison
+  primaryMetrics:
+    - streamsPerSecond
+    - latencyP50
+    - latencyP95
+    - latencyP99
+    - errorRate
+artifacts:
+  required:
+    - validation.json
+    - result.json
+  optional:
+    - protocol-diagnostic-artifact
+    - counters
+networkProfile: clean
+requiredMetrics:
+  - quic.stream.maxActiveStreams
+  - quic.stream.completedStreams
+artifactRequirements:
+  - load-generator.stdout.txt
+  - load-generator.stderr.txt
+  - protocol-diagnostic-artifact
+tags:
+  - phase6
+  - quic
+  - stream-limits

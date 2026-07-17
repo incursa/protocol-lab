@@ -1,0 +1,18 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-WEBTRANSPORT-PERFORMANCE",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab WebTransport Contract Architecture",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-WEBTRANSPORT-PERFORMANCE", "VER-PL-WEBTRANSPORT-PERFORMANCE-0001", "ARC-PL-CORE-CONTRACTS"],
+  "purpose": "Describe the narrow executable WebTransport-over-HTTP/3 session and bidirectional-stream contract.",
+  "satisfies": ["REQ-PL-WTPERF-0001", "REQ-PL-WTPERF-0002", "REQ-PL-WTPERF-0003", "REQ-PL-WTPERF-0004", "REQ-PL-WTPERF-0005"],
+  "design_summary": "The initial lane treats session establishment as a validity prerequisite and measures one deterministic 65,536-byte client-initiated bidirectional-stream round trip. A typed scenario object owns binding and payload semantics; a typed load profile owns single-session pressure. Package-backed executors must fail closed on protocol substitution, byte-count mismatch, payload-hash mismatch, unexpected failure, or timeout. The smoke suite remains diagnostic and non-rankable until repeated, topology-controlled comparison policy exists.",
+  "key_components": ["typed WebTransport scenario", "single-session smoke load profile", "diagnostic root suite", "package-backed client executor", "independent server targets", "protocol and payload proof artifacts"],
+  "data_and_state_considerations": "Each measured operation opens a fresh authenticated session, creates one client-initiated bidirectional stream, writes a deterministic public-safe payload, closes the write side, verifies the complete echoed payload, and closes the session with code zero.",
+  "edge_cases_and_constraints": ["WebTransport is not WebSocket.", "Ordinary HTTP/3 request-response success is not WebTransport evidence.", "Session establishment without stream and payload proof is insufficient.", "The draft protocol remains subject to upstream evolution, so exact package versions and observed protocol proof are retained.", "Single-host smoke evidence is real but non-rankable."],
+  "alternatives_considered": ["A session-open-only result was rejected because it does not prove the data path.", "Browser automation was rejected for the initial lane because a native protocol client provides more deterministic process and artifact control.", "WebTransport datagrams and multiple concurrent streams were deferred until the first exact stream lane is live-proven."],
+  "risks": ["Independent libraries may implement different draft revisions.", "A client library can hide protocol negotiation details unless exact response and connection evidence are retained.", "Executor-side hashing can dominate very small samples, so the initial result is diagnostic rather than ranked."]
+}

@@ -13,6 +13,7 @@
     "specs/requirements/SPEC-PL-GRPC-H2-PERFORMANCE.json",
     "specs/requirements/SPEC-PL-SECURE-DNS-PERFORMANCE.json",
     "specs/requirements/SPEC-PL-WEBSOCKET-PERFORMANCE.json",
+    "specs/requirements/SPEC-PL-WEBTRANSPORT-PERFORMANCE.json",
     "specs/architecture/ARC-PL-PUBLIC-CONTRACTS.json",
     "specs/architecture/ARC-PL-CORE-CONTRACTS.json",
     "specs/architecture/ARC-PL-MEASUREMENT-TELEMETRY.json",
@@ -22,6 +23,7 @@
     "specs/architecture/ARC-PL-GRPC-H2-PERFORMANCE.json",
     "specs/architecture/ARC-PL-SECURE-DNS-PERFORMANCE.json",
     "specs/architecture/ARC-PL-WEBSOCKET-PERFORMANCE.json",
+    "specs/architecture/ARC-PL-WEBTRANSPORT-PERFORMANCE.json",
     "specs/work-items/WI-PL-PUBLIC-REPOSITION-0001.json",
     "specs/work-items/WI-PL-SPECIFICATION-COVERAGE-0001.json",
     "specs/work-items/WI-PL-SECDNS-PORTABILITY-0001.json",
@@ -35,7 +37,8 @@
     "specs/verification/VER-PL-TLS-PERFORMANCE-0001.json",
     "specs/verification/VER-PL-GRPC-H2-PERFORMANCE-0001.json",
     "specs/verification/VER-PL-SECURE-DNS-PERFORMANCE-0001.json",
-    "specs/verification/VER-PL-WEBSOCKET-PERFORMANCE-0001.json"
+    "specs/verification/VER-PL-WEBSOCKET-PERFORMANCE-0001.json",
+    "specs/verification/VER-PL-WEBTRANSPORT-PERFORMANCE-0001.json"
   ],
   "requirements": [
     {
@@ -1183,6 +1186,27 @@
       "verification": [
         "specs/verification/VER-PL-PROTOCOL-LANE-NORMALIZATION-0001.json"
       ]
+    },
+    {
+      "id": "REQ-PL-WTPERF-0001",
+      "schemas": ["schemas/scenario/v2/scenario.schema.json"],
+      "fixtures": ["scenarios/webtransport/session-bidi-echo.yaml"],
+      "architecture": ["specs/architecture/ARC-PL-WEBTRANSPORT-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-WEBTRANSPORT-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-WTPERF-0003",
+      "schemas": ["schemas/scenario/v2/scenario.schema.json", "schemas/validation/v1/check-outcomes.schema.json"],
+      "fixtures": ["scenarios/webtransport/session-bidi-echo.yaml"],
+      "architecture": ["specs/architecture/ARC-PL-WEBTRANSPORT-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-WEBTRANSPORT-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-WTPERF-0005",
+      "schemas": ["schemas/scenario/v2/scenario.schema.json", "schemas/load-profile/v2/load-profile.schema.json"],
+      "fixtures": ["scenarios/webtransport/session-bidi-echo.yaml", "load-profiles/webtransport-smoke.yaml", "suites/webtransport-performance-smoke.yaml"],
+      "architecture": ["specs/architecture/ARC-PL-WEBTRANSPORT-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-WEBTRANSPORT-PERFORMANCE-0001.json"]
     },
     {
       "id": "PLAB-MEASURE-015",

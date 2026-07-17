@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-WEBTRANSPORT-PERFORMANCE-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab WebTransport Contract Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-WEBTRANSPORT-PERFORMANCE", "ARC-PL-WEBTRANSPORT-PERFORMANCE"],
+  "verifies": ["REQ-PL-WTPERF-0001", "REQ-PL-WTPERF-0002", "REQ-PL-WTPERF-0003", "REQ-PL-WTPERF-0004", "REQ-PL-WTPERF-0005"],
+  "scope": "Verify WebTransport public contract structure only; executable implementation, executor, package, lab, and performance proof remain implementation-owned.",
+  "verification_method": "Schema validation, scenario-suite-profile reference resolution, deterministic payload recomputation, trace-link validation, and official protocol-source inspection.",
+  "procedure": ["Validate the typed WebTransport scenario and load profile.", "Recompute the 65,536-byte counter-octets-mod-251 SHA-256.", "Confirm the suite selects the exact scenario and profile.", "Confirm validation requires WebTransport over HTTP/3 without fallback.", "Confirm required metrics and artifacts cover session establishment, stream echo, byte and hash integrity, outcomes, and raw evidence.", "Confirm the smoke profile is non-publishable and non-rankable by contract."],
+  "expected_result": "The public repository exposes one coherent executable-contract-ready WebTransport stream lane without implying target or executor support."
+}

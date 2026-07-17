@@ -1,7 +1,7 @@
 {
   "schemaVersion": "protocol-lab.protocol-metric-catalog.v2",
   "catalogId": "protocol-lab.protocol-family-metrics",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "metrics": [
     {
       "metricId": "bytesPerSecond",
@@ -380,6 +380,69 @@
       "window": "scenario-measured-window",
       "timingAuthority": "runner-or-contract-selected-test-executor",
       "description": "Canonical messagesPerSecond measurement for the declared scenario measured window."
+    },
+    {
+      "metricId": "sessionsPerSecond",
+      "kind": "rate",
+      "unit": "operations-per-second",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Completed authenticated WebTransport session and stream operations per second."
+    },
+    {
+      "metricId": "streamLatencyMean",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "message-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Mean WebTransport bidirectional-stream payload round-trip latency."
+    },
+    {
+      "metricId": "streamLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "message-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P50 WebTransport bidirectional-stream payload round-trip latency."
+    },
+    {
+      "metricId": "streamLatencyP75",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "window": "message-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P75 WebTransport bidirectional-stream payload round-trip latency."
+    },
+    {
+      "metricId": "streamLatencyP90",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "window": "message-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P90 WebTransport bidirectional-stream payload round-trip latency."
+    },
+    {
+      "metricId": "streamLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "message-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P95 WebTransport bidirectional-stream payload round-trip latency."
+    },
+    {
+      "metricId": "streamLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "message-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P99 WebTransport bidirectional-stream payload round-trip latency."
     },
     {
       "metricId": "queriesPerSecond",

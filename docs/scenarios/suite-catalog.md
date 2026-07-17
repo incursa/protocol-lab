@@ -36,6 +36,7 @@ The root catalog includes two suite groups:
 | WebSocket/H1 TLS | `http1-websocket-tls-performance-smoke` | `http1-websocket-tls-performance-comparison` |
 | WebSocket/H2 | `http2-websocket-performance-smoke` | `http2-websocket-performance-comparison` |
 | WebSocket/H3 | `http3-websocket-performance-smoke` | `http3-websocket-performance-comparison` |
+| WebTransport/H3 | `webtransport-performance-smoke` | None |
 
 ## Intent Rules
 
@@ -48,7 +49,7 @@ The `http3-peer-characterization` suite is diagnostic external-peer evidence:
 it can make package-backed peer rows visible in reports, but it does not create
 an official payload benchmark ranking.
 
-All new comparison suites are candidates only. Their load profiles set
+The WebTransport smoke suite is diagnostic and non-rankable. All new comparison suites are candidates only. Their load profiles set
 `publishable: false`, and each exact protocol binding remains a separate
 comparison group. MASQUE has no root suite because no approved deterministic
 tunnel fixture, executor, and package-backed target role exists.

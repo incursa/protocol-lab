@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.incursa.com/protocol-lab/scenario/v2/scenario.schema.json",
   "title": "ProtocolLab Scenario v2",
-  "description": "Schema for ProtocolLab v2 scenario definition files, including typed TLS, gRPC, secure DNS, and binding-specific WebSocket contracts.",
+  "description": "Schema for ProtocolLab v2 scenario definition files, including typed TLS, gRPC, secure DNS, binding-specific WebSocket, and WebTransport contracts.",
   "unevaluatedProperties": false,
   "allOf": [
     {
@@ -1136,6 +1136,49 @@
             }
           ]
         },
+        "webTransport": {
+          "type": "object",
+          "description": "WebTransport-over-HTTP/3 session and stream workload",
+          "additionalProperties": false,
+          "required": [
+            "binding", "authority", "path", "operation", "sessionCount",
+            "bidirectionalStreamCount", "payloadBytes", "payloadDirection",
+            "payloadGenerator", "payloadSha256", "closeCode",
+            "connectionLifecycle", "measuredWindow", "handshake"
+          ],
+          "properties": {
+            "binding": { "const": "webtransport-over-http3" },
+            "authority": { "type": "string", "minLength": 1 },
+            "path": { "type": "string", "pattern": "^/" },
+            "operation": { "const": "session-bidi-echo" },
+            "sessionCount": { "const": 1 },
+            "bidirectionalStreamCount": { "const": 1 },
+            "payloadBytes": { "type": "integer", "minimum": 1 },
+            "payloadDirection": { "const": "client-to-server-then-server-to-client" },
+            "payloadGenerator": { "const": "counter-octets-mod-251" },
+            "payloadSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "closeCode": { "const": 0 },
+            "connectionLifecycle": { "const": "new-session-per-operation" },
+            "measuredWindow": { "const": "bidirectional-stream-round-trip" },
+            "handshake": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "method", "protocol", "scheme", "authority", "path",
+                "responseStatus", "datagramsEnabled"
+              ],
+              "properties": {
+                "method": { "const": "CONNECT" },
+                "protocol": { "const": "webtransport" },
+                "scheme": { "const": "https" },
+                "authority": { "type": "string", "minLength": 1 },
+                "path": { "type": "string", "pattern": "^/" },
+                "responseStatus": { "const": 200 },
+                "datagramsEnabled": { "const": true }
+              }
+            }
+          }
+        },
         "executionProfile": {
           "type": "object",
           "description": "Implementation-neutral execution and security facts required for comparison",
@@ -1223,7 +1266,8 @@
               { "required": ["tls"] },
               { "required": ["grpc"] },
               { "required": ["dns"] },
-              { "required": ["websocket"] }
+              { "required": ["websocket"] },
+              { "required": ["webTransport"] }
             ]
           },
           "then": {
@@ -1238,8 +1282,36 @@
               { "required": ["tls"] },
               { "required": ["grpc"] },
               { "required": ["dns"] },
-              { "required": ["websocket"] }
+              { "required": ["websocket"] },
+              { "required": ["webTransport"] }
             ]
+          }
+        },
+        {
+          "if": { "required": ["webTransport"] },
+          "then": {
+            "properties": {
+              "family": { "const": "webtransport" },
+              "protocol": { "const": "webtransport" },
+              "executionProfile": {
+                "properties": {
+                  "transportSecurity": { "const": "tls" },
+                  "protocolVariant": { "const": "webtransport-over-h3" },
+                  "implementationRole": { "const": "origin-server" }
+                }
+              },
+              "validation": {
+                "properties": {
+                  "protocol": {
+                    "properties": {
+                      "requested": { "const": "webtransport-over-h3" },
+                      "expectedObserved": { "const": "webtransport-over-h3" },
+                      "fallbackAllowed": { "const": false }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         {

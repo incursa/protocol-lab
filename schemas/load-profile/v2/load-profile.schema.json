@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.incursa.com/protocol-lab/load-profile/v2/load-profile.schema.json",
   "title": "ProtocolLab Load Profile v2",
-  "description": "Schema for ProtocolLab v2 load profiles with typed HTTP/2, TLS, gRPC, secure DNS, and WebSocket intensity settings.",
+  "description": "Schema for ProtocolLab v2 load profiles with typed HTTP/2, TLS, gRPC, secure DNS, WebSocket, and WebTransport intensity settings.",
   "unevaluatedProperties": false,
   "allOf": [
     {
@@ -110,6 +110,23 @@
             "operationRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum operation starts per second; null means unlimited closed-loop starts" },
             "operationTimeoutMilliseconds": { "type": "integer", "minimum": 1 }
           }
+        },
+        "webtransport": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Scenario-neutral WebTransport session pressure for a fixed per-session stream shape",
+          "required": [
+            "sessions", "concurrency", "bidirectionalStreamsPerSession",
+            "totalOperations", "operationRateLimitPerSecond", "operationTimeoutMilliseconds"
+          ],
+          "properties": {
+            "sessions": { "type": "integer", "minimum": 1 },
+            "concurrency": { "type": "integer", "minimum": 1 },
+            "bidirectionalStreamsPerSession": { "type": "integer", "minimum": 1 },
+            "totalOperations": { "type": ["integer", "null"], "minimum": 1, "description": "Total operation budget; null means duration-driven" },
+            "operationRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum operation starts per second; null means unlimited closed-loop starts" },
+            "operationTimeoutMilliseconds": { "type": "integer", "minimum": 1 }
+          }
         }
       },
       "oneOf": [
@@ -117,7 +134,8 @@
         { "required": ["tls"] },
         { "required": ["grpc"] },
         { "required": ["dns"] },
-        { "required": ["websocket"] }
+        { "required": ["websocket"] },
+        { "required": ["webtransport"] }
       ],
       "allOf": [
         {

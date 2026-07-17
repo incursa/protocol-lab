@@ -39,8 +39,9 @@ runner, programming language, process model, telemetry backend, or hosted lab.
 | `quic-comparison` | comparison | stable | QUIC-specific |
 | `raw-quic-peer-confidence` | comparison | stable | Raw QUIC peer comparison; scenario-owned connection and stream matrices with five repetitions |
 | `quic-soak` | soak | experimental | QUIC-specific |
+| `webtransport-smoke` | smoke | experimental | WebTransport-over-HTTP/3-specific |
 
-The profile-level keys `http1`, `http2`, `http3`, and `quic` are
+The profile-level keys `http1`, `http2`, `http3`, `quic`, and `webtransport` are
 protocol-specific intensity settings. The same profile ID can be used by
 multiple protocol suites when the scenario behavior remains unchanged and only
 the load shape changes.

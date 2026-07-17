@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-MASQUE-CONNECT-UDP-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab MASQUE CONNECT-UDP Contract Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-MASQUE-CONNECT-UDP", "ARC-PL-MASQUE-CONNECT-UDP"],
+  "verifies": ["REQ-PL-MASQUE-0001", "REQ-PL-MASQUE-0002", "REQ-PL-MASQUE-0003", "REQ-PL-MASQUE-0004", "REQ-PL-MASQUE-0005"],
+  "scope": "Verify MASQUE public contract structure only; executable implementation, executor, package, lab, and performance proof remain implementation-owned.",
+  "verification_method": "Schema validation, scenario-suite-profile reference resolution, deterministic datagram-set recomputation, trace-link validation, and official RFC inspection.",
+  "procedure": ["Validate the typed MASQUE scenario and load profile.", "Recompute the concatenated SHA-256 for 32 indexed 256-byte modulo-251 datagrams.", "Confirm the suite selects the exact scenario and profile.", "Confirm validation requires RFC 9298 CONNECT-UDP over HTTP/3 with HTTP Datagrams, Context ID zero, explicit proxy and UDP target roles, and no fallback.", "Confirm required metrics and artifacts cover tunnel establishment, exact datagram echo, loss, byte and hash integrity, outcomes, and raw evidence.", "Confirm the comparison profile requires three repetitions and remains non-rankable by contract."],
+  "expected_result": "The public repository exposes one coherent executable-contract-ready MASQUE CONNECT-UDP lane without implying package or lab support."
+}

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.incursa.com/protocol-lab/load-profile/v2/load-profile.schema.json",
   "title": "ProtocolLab Load Profile v2",
-  "description": "Schema for ProtocolLab v2 load profiles with typed HTTP/2, TLS, gRPC, secure DNS, WebSocket, and WebTransport intensity settings.",
+  "description": "Schema for ProtocolLab v2 load profiles with typed HTTP/2, TLS, gRPC, secure DNS, WebSocket, WebTransport, and MASQUE intensity settings.",
   "unevaluatedProperties": false,
   "allOf": [
     {
@@ -127,6 +127,23 @@
             "operationRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum operation starts per second; null means unlimited closed-loop starts" },
             "operationTimeoutMilliseconds": { "type": "integer", "minimum": 1 }
           }
+        },
+        "masque": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Scenario-neutral MASQUE CONNECT-UDP tunnel pressure for a fixed per-tunnel datagram shape",
+          "required": [
+            "tunnels", "concurrency", "datagramsPerTunnel",
+            "totalOperations", "operationRateLimitPerSecond", "operationTimeoutMilliseconds"
+          ],
+          "properties": {
+            "tunnels": { "type": "integer", "minimum": 1 },
+            "concurrency": { "type": "integer", "minimum": 1 },
+            "datagramsPerTunnel": { "type": "integer", "minimum": 1 },
+            "totalOperations": { "type": ["integer", "null"], "minimum": 1, "description": "Total tunnel-operation budget; null means duration-driven" },
+            "operationRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum tunnel operation starts per second; null means unlimited closed-loop starts" },
+            "operationTimeoutMilliseconds": { "type": "integer", "minimum": 1 }
+          }
         }
       },
       "oneOf": [
@@ -135,7 +152,8 @@
         { "required": ["grpc"] },
         { "required": ["dns"] },
         { "required": ["websocket"] },
-        { "required": ["webtransport"] }
+        { "required": ["webtransport"] },
+        { "required": ["masque"] }
       ],
       "allOf": [
         {

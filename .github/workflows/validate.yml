@@ -149,9 +149,10 @@ jobs:
                   return None
               scenario_v2_fields = {
                   "semanticTemplateId", "protocolStack", "upstreamStandards",
-                  "tls", "grpc", "dns", "websocket", "executionProfile", "availability",
+                  "tls", "grpc", "dns", "websocket", "webTransport", "masqueConnectUdp",
+                  "executionProfile", "availability",
               }
-              load_profile_v2_fields = {"tls", "grpc", "dns", "websocket"}
+              load_profile_v2_fields = {"tls", "grpc", "dns", "websocket", "webtransport", "masque"}
               if version == "1.0" and (
                   scenario_v2_fields.intersection(data)
                   or "protocol" in (data.get("validation") or {})

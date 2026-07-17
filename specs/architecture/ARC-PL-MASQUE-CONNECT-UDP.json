@@ -1,0 +1,18 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-MASQUE-CONNECT-UDP",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab MASQUE CONNECT-UDP Contract Architecture",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-MASQUE-CONNECT-UDP", "VER-PL-MASQUE-CONNECT-UDP-0001", "ARC-PL-CORE-CONTRACTS"],
+  "purpose": "Describe the narrow executable RFC 9298 CONNECT-UDP tunnel and deterministic UDP echo contract.",
+  "satisfies": ["REQ-PL-MASQUE-0001", "REQ-PL-MASQUE-0002", "REQ-PL-MASQUE-0003", "REQ-PL-MASQUE-0004", "REQ-PL-MASQUE-0005"],
+  "design_summary": "The initial lane treats an authenticated HTTP/3 CONNECT-UDP tunnel as a validity prerequisite and measures 32 deterministic UDP echo datagram round trips to a package-backed target. The typed scenario owns protocol, URI-template, role, target, datagram, and hash semantics. The typed profile owns tunnel pressure and three clean repetitions. Package-backed executors fail closed on protocol substitution, target mismatch, loss, reordering, byte mismatch, hash mismatch, unexpected failure, or timeout. Results are comparable observations but non-rankable until meaningful controlled multi-host proxy, target, and load topology policy exists.",
+  "key_components": ["typed MASQUE scenario", "three-repetition comparison profile", "comparison candidate suite", "package-backed CONNECT-UDP client executor", "independent proxy targets", "package-backed UDP echo target", "protocol and datagram proof artifacts"],
+  "data_and_state_considerations": "Each measured operation opens a fresh authenticated HTTP/3 connection and CONNECT-UDP tunnel, sends 32 indexed deterministic datagrams to the declared UDP echo target, validates every exact response in order, and closes the tunnel and connection cleanly.",
+  "edge_cases_and_constraints": ["CONNECT-UDP is not ordinary CONNECT or generic HTTP proxying.", "CONNECT-IP is a different protocol and cannot substitute.", "HTTP/3 origin success is not MASQUE evidence.", "An uncontrolled external UDP target is not accepted.", "Context ID zero and HTTP Datagram support must be observed.", "Single-physical-host evidence is real but non-rankable."],
+  "alternatives_considered": ["A tunnel-open-only result was rejected because it does not prove UDP forwarding.", "An external DNS or QUIC endpoint was rejected because it would not be deterministic or package-backed.", "CONNECT-IP was rejected because it changes the protocol and topology contract.", "A generic HTTP proxy benchmark was rejected because it does not prove RFC 9298 semantics."],
+  "risks": ["CONNECT-UDP support remains less mature than core HTTP/3.", "Proxy implementations may expose different configuration and telemetry surfaces.", "Container networking and name resolution can accidentally bypass the declared target unless the executor retains destination proof.", "Small diagnostic samples can be dominated by setup overhead, so results remain non-rankable."]
+}

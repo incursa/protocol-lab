@@ -37,6 +37,7 @@ The root catalog includes two suite groups:
 | WebSocket/H2 | `http2-websocket-performance-smoke` | `http2-websocket-performance-comparison` |
 | WebSocket/H3 | `http3-websocket-performance-smoke` | `http3-websocket-performance-comparison` |
 | WebTransport/H3 | `webtransport-performance-smoke` | None |
+| MASQUE CONNECT-UDP/H3 | None | `masque-connect-udp-performance-comparison` |
 
 ## Intent Rules
 
@@ -51,8 +52,9 @@ an official payload benchmark ranking.
 
 The WebTransport smoke suite is diagnostic and non-rankable. All new comparison suites are candidates only. Their load profiles set
 `publishable: false`, and each exact protocol binding remains a separate
-comparison group. MASQUE has no root suite because no approved deterministic
-tunnel fixture, executor, and package-backed target role exists.
+comparison group. The MASQUE comparison suite requires explicit client, proxy,
+and UDP echo-target roles and cannot be satisfied by ordinary HTTP proxying,
+CONNECT-IP, an origin server, or an uncontrolled external target.
 
 Secure-DNS interoperability and resolver-role suites are diagnostic and
 non-publishable. Strict-profile, interoperability-profile,

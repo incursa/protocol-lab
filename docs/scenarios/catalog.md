@@ -22,7 +22,7 @@ or executable validation logic.
 | WebSocket over HTTP/2 | `http2.websocket.rfc8441.*` | `h2` | [`scenarios/http2/websocket/`](../../scenarios/http2/websocket/) | Draft public contracts |
 | WebSocket over HTTP/3 | `http3.websocket.rfc9220.*` | `h3` | [`scenarios/http3/websocket/`](../../scenarios/http3/websocket/) | Draft public contracts; package-aligned IDs retained |
 | WebTransport | `webtransport.*` | `webtransport` over `h3` | [`scenarios/webtransport/`](../../scenarios/webtransport/) | `webtransport.session-bidi-echo` is executable-contract ready; `session-open` remains a placeholder |
-| MASQUE | `masque.*` | `h3` | [`scenarios/masque/`](../../scenarios/masque/) | CONNECT-UDP placeholders plus draft CONNECT-IP contract |
+| MASQUE | `masque.*` | `masque` over `h3` | [`scenarios/masque/`](../../scenarios/masque/) | `masque.connect-udp-tunnel` is executable-contract ready; the setup-only CONNECT-UDP placeholder and CONNECT-IP draft remain non-executable |
 | TLS | `tls.*` | `tls` | [`scenarios/tls/`](../../scenarios/tls/) | TLS 1.2/1.3 lifecycle, authentication, early-data, KeyUpdate, and record contracts |
 | gRPC over HTTP/2 | `grpc.h2.*` | `h2` | [`scenarios/grpc/h2/`](../../scenarios/grpc/h2/) | Unary, all streaming shapes, terminal outcomes, gzip, metadata, size boundaries, and channel lifecycle |
 | Classic DNS diagnostics | `dns.classic.*` | `dns` | [`scenarios/dns/classic/`](../../scenarios/dns/classic/) | UDP, TCP, and truncated-UDP-to-TCP calibration contracts |
@@ -66,7 +66,8 @@ negotiated cryptography. Resolver-role scenarios are cold-cache diagnostics
 with a runner-provided local authority as their only upstream; they are not
 comparable with authoritative-server scenarios.
 - binding-specific WebSocket scenarios: `http1.websocket.*`, `http2.websocket.*`, `http3.websocket.*`
-- Future placeholders: `webtransport.session-open` and the retained MASQUE CONNECT-UDP IDs
+- WebTransport and MASQUE data-path scenarios: `webtransport.session-bidi-echo`, `masque.connect-udp-tunnel`
+- Future placeholders: `webtransport.session-open`, `masque.connect-udp`, and `masque.connect-ip-tunnel`
 - Network profile documents under
   [`scenarios/network/profiles/`](../../scenarios/network/profiles/) are
   supporting declarative profiles, not executable protocol scenarios. The

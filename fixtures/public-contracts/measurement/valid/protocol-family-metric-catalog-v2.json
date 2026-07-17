@@ -1,7 +1,7 @@
 {
   "schemaVersion": "protocol-lab.protocol-metric-catalog.v2",
   "catalogId": "protocol-lab.protocol-family-metrics",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "metrics": [
     {
       "metricId": "bytesPerSecond",
@@ -389,6 +389,105 @@
       "window": "scenario-measured-window",
       "timingAuthority": "runner-or-contract-selected-test-executor",
       "description": "Completed authenticated WebTransport session and stream operations per second."
+    },
+    {
+      "metricId": "tunnelsPerSecond",
+      "kind": "rate",
+      "unit": "operations-per-second",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Completed authenticated MASQUE CONNECT-UDP tunnel and deterministic datagram-echo operations per second."
+    },
+    {
+      "metricId": "datagramsPerSecond",
+      "kind": "rate",
+      "unit": "datagrams-per-second",
+      "aggregation": "measured-window-rate",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Successfully echoed UDP datagrams observed through an established MASQUE CONNECT-UDP tunnel per second."
+    },
+    {
+      "metricId": "datagramLatencyMean",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "mean",
+      "window": "datagram-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Mean client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+    },
+    {
+      "metricId": "datagramLatencyP50",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p50",
+      "window": "datagram-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P50 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+    },
+    {
+      "metricId": "datagramLatencyP75",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p75",
+      "window": "datagram-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P75 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+    },
+    {
+      "metricId": "datagramLatencyP90",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p90",
+      "window": "datagram-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P90 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+    },
+    {
+      "metricId": "datagramLatencyP95",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p95",
+      "window": "datagram-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P95 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+    },
+    {
+      "metricId": "datagramLatencyP99",
+      "kind": "latency",
+      "unit": "milliseconds",
+      "aggregation": "p99",
+      "window": "datagram-round-trip",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "P99 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+    },
+    {
+      "metricId": "sentDatagrams",
+      "kind": "count",
+      "unit": "count",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Total deterministic UDP datagrams submitted by the client to validated CONNECT-UDP tunnels."
+    },
+    {
+      "metricId": "receivedDatagrams",
+      "kind": "count",
+      "unit": "count",
+      "aggregation": "total",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Total exact UDP echo datagrams received by the client through validated CONNECT-UDP tunnels."
+    },
+    {
+      "metricId": "effectiveTunnels",
+      "kind": "gauge",
+      "unit": "count",
+      "aggregation": "time-weighted-mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Effective concurrently established MASQUE CONNECT-UDP tunnels during the measured window."
     },
     {
       "metricId": "streamLatencyMean",

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.incursa.com/protocol-lab/scenario/v2/scenario.schema.json",
   "title": "ProtocolLab Scenario v2",
-  "description": "Schema for ProtocolLab v2 scenario definition files, including typed TLS, gRPC, secure DNS, binding-specific WebSocket, and WebTransport contracts.",
+  "description": "Schema for ProtocolLab v2 scenario definition files, including typed TLS, gRPC, secure DNS, binding-specific WebSocket, WebTransport, and MASQUE CONNECT-UDP contracts.",
   "unevaluatedProperties": false,
   "allOf": [
     {
@@ -1179,6 +1179,51 @@
             }
           }
         },
+        "masqueConnectUdp": {
+          "type": "object",
+          "description": "MASQUE CONNECT-UDP over HTTP/3 tunnel and deterministic UDP echo workload",
+          "additionalProperties": false,
+          "required": [
+            "binding", "proxyAuthority", "uriTemplate", "targetHost", "targetPort",
+            "operation", "tunnelCount", "datagramCount", "payloadBytesPerDatagram",
+            "payloadGenerator", "payloadSetSha256", "payloadDirection", "contextId",
+            "connectionLifecycle", "measuredWindow", "handshake"
+          ],
+          "properties": {
+            "binding": { "const": "connect-udp-over-http3" },
+            "proxyAuthority": { "type": "string", "minLength": 1 },
+            "uriTemplate": { "const": "/.well-known/masque/udp/{target_host}/{target_port}/" },
+            "targetHost": { "const": "masque-echo.plab.test" },
+            "targetPort": { "const": 4433 },
+            "operation": { "const": "connect-udp-datagram-echo" },
+            "tunnelCount": { "const": 1 },
+            "datagramCount": { "const": 32 },
+            "payloadBytesPerDatagram": { "const": 256 },
+            "payloadGenerator": { "const": "datagram-index-plus-octet-mod-251" },
+            "payloadSetSha256": { "const": "2e975a37b4bff0a8022c0f89ab19e9a8e2599300e557e9b8ce3eff364cd33e8b" },
+            "payloadDirection": { "const": "client-to-target-then-target-to-client-via-proxy" },
+            "contextId": { "const": 0 },
+            "connectionLifecycle": { "const": "new-tunnel-per-operation" },
+            "measuredWindow": { "const": "connect-udp-establishment-and-datagram-round-trips" },
+            "handshake": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "method", "protocol", "scheme", "authority", "pathTemplate",
+                "responseStatus", "datagramsEnabled"
+              ],
+              "properties": {
+                "method": { "const": "CONNECT" },
+                "protocol": { "const": "connect-udp" },
+                "scheme": { "const": "https" },
+                "authority": { "type": "string", "minLength": 1 },
+                "pathTemplate": { "const": "/.well-known/masque/udp/{target_host}/{target_port}/" },
+                "responseStatus": { "const": 200 },
+                "datagramsEnabled": { "const": true }
+              }
+            }
+          }
+        },
         "executionProfile": {
           "type": "object",
           "description": "Implementation-neutral execution and security facts required for comparison",
@@ -1267,7 +1312,8 @@
               { "required": ["grpc"] },
               { "required": ["dns"] },
               { "required": ["websocket"] },
-              { "required": ["webTransport"] }
+              { "required": ["webTransport"] },
+              { "required": ["masqueConnectUdp"] }
             ]
           },
           "then": {
@@ -1283,7 +1329,8 @@
               { "required": ["grpc"] },
               { "required": ["dns"] },
               { "required": ["websocket"] },
-              { "required": ["webTransport"] }
+              { "required": ["webTransport"] },
+              { "required": ["masqueConnectUdp"] }
             ]
           }
         },
@@ -1306,6 +1353,33 @@
                     "properties": {
                       "requested": { "const": "webtransport-over-h3" },
                       "expectedObserved": { "const": "webtransport-over-h3" },
+                      "fallbackAllowed": { "const": false }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": { "required": ["masqueConnectUdp"] },
+          "then": {
+            "properties": {
+              "family": { "const": "masque" },
+              "protocol": { "const": "masque" },
+              "executionProfile": {
+                "properties": {
+                  "transportSecurity": { "const": "tls" },
+                  "protocolVariant": { "const": "masque-connect-udp-over-h3" },
+                  "implementationRole": { "const": "proxy" }
+                }
+              },
+              "validation": {
+                "properties": {
+                  "protocol": {
+                    "properties": {
+                      "requested": { "const": "masque-connect-udp-over-h3" },
+                      "expectedObserved": { "const": "masque-connect-udp-over-h3" },
                       "fallbackAllowed": { "const": false }
                     }
                   }

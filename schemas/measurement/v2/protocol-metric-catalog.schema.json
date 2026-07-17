@@ -63,6 +63,7 @@
           "enum": [
             "operations-per-second",
             "messages-per-second",
+            "datagrams-per-second",
             "bytes-per-second",
             "milliseconds",
             "operations",
@@ -91,7 +92,8 @@
             "connection-establishment",
             "channel-establishment-and-rpc",
             "rpc-operation",
-            "message-round-trip"
+            "message-round-trip",
+            "datagram-round-trip"
           ]
         },
         "timingAuthority": {

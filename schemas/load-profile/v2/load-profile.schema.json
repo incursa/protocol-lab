@@ -114,19 +114,24 @@
         "webtransport": {
           "type": "object",
           "additionalProperties": false,
-          "description": "Scenario-neutral WebTransport session pressure for a fixed per-session stream shape",
+          "description": "Scenario-neutral WebTransport session pressure for one fixed per-session stream or datagram shape",
           "required": [
-            "sessions", "concurrency", "bidirectionalStreamsPerSession",
-            "totalOperations", "operationRateLimitPerSecond", "operationTimeoutMilliseconds"
+            "sessions", "concurrency", "totalOperations",
+            "operationRateLimitPerSecond", "operationTimeoutMilliseconds"
           ],
           "properties": {
             "sessions": { "type": "integer", "minimum": 1 },
             "concurrency": { "type": "integer", "minimum": 1 },
             "bidirectionalStreamsPerSession": { "type": "integer", "minimum": 1 },
+            "datagramsPerSession": { "type": "integer", "minimum": 1 },
             "totalOperations": { "type": ["integer", "null"], "minimum": 1, "description": "Total operation budget; null means duration-driven" },
             "operationRateLimitPerSecond": { "type": ["integer", "null"], "minimum": 1, "description": "Maximum operation starts per second; null means unlimited closed-loop starts" },
             "operationTimeoutMilliseconds": { "type": "integer", "minimum": 1 }
-          }
+          },
+          "oneOf": [
+            { "required": ["bidirectionalStreamsPerSession"], "not": { "required": ["datagramsPerSession"] } },
+            { "required": ["datagramsPerSession"], "not": { "required": ["bidirectionalStreamsPerSession"] } }
+          ]
         },
         "masque": {
           "type": "object",

@@ -1138,28 +1138,29 @@
         },
         "webTransport": {
           "type": "object",
-          "description": "WebTransport-over-HTTP/3 session and stream workload",
+          "description": "WebTransport-over-HTTP/3 session workload with an exact stream or datagram data path",
           "additionalProperties": false,
           "required": [
             "binding", "authority", "path", "operation", "sessionCount",
-            "bidirectionalStreamCount", "payloadBytes", "payloadDirection",
-            "payloadGenerator", "payloadSha256", "closeCode",
-            "connectionLifecycle", "measuredWindow", "handshake"
+            "closeCode", "connectionLifecycle", "measuredWindow", "handshake"
           ],
           "properties": {
             "binding": { "const": "webtransport-over-http3" },
             "authority": { "type": "string", "minLength": 1 },
             "path": { "type": "string", "pattern": "^/" },
-            "operation": { "const": "session-bidi-echo" },
+            "operation": { "enum": ["session-bidi-echo", "session-datagram-echo"] },
             "sessionCount": { "const": 1 },
             "bidirectionalStreamCount": { "const": 1 },
             "payloadBytes": { "type": "integer", "minimum": 1 },
+            "datagramCount": { "type": "integer", "minimum": 1 },
+            "payloadBytesPerDatagram": { "type": "integer", "minimum": 1 },
             "payloadDirection": { "const": "client-to-server-then-server-to-client" },
-            "payloadGenerator": { "const": "counter-octets-mod-251" },
+            "payloadGenerator": { "enum": ["counter-octets-mod-251", "datagram-index-plus-octet-mod-251"] },
             "payloadSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "payloadSetSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
             "closeCode": { "const": 0 },
             "connectionLifecycle": { "const": "new-session-per-operation" },
-            "measuredWindow": { "const": "bidirectional-stream-round-trip" },
+            "measuredWindow": { "enum": ["bidirectional-stream-round-trip", "session-establishment-and-datagram-round-trips"] },
             "handshake": {
               "type": "object",
               "additionalProperties": false,
@@ -1177,7 +1178,29 @@
                 "datagramsEnabled": { "const": true }
               }
             }
-          }
+          },
+          "oneOf": [
+            {
+              "properties": {
+                "operation": { "const": "session-bidi-echo" },
+                "payloadDirection": { "const": "client-to-server-then-server-to-client" },
+                "payloadGenerator": { "const": "counter-octets-mod-251" },
+                "measuredWindow": { "const": "bidirectional-stream-round-trip" }
+              },
+              "required": ["bidirectionalStreamCount", "payloadBytes", "payloadDirection", "payloadGenerator", "payloadSha256"],
+              "not": { "anyOf": [{ "required": ["datagramCount"] }, { "required": ["payloadBytesPerDatagram"] }, { "required": ["payloadSetSha256"] }] }
+            },
+            {
+              "properties": {
+                "operation": { "const": "session-datagram-echo" },
+                "payloadDirection": { "const": "client-to-server-then-server-to-client" },
+                "payloadGenerator": { "const": "datagram-index-plus-octet-mod-251" },
+                "measuredWindow": { "const": "session-establishment-and-datagram-round-trips" }
+              },
+              "required": ["datagramCount", "payloadBytesPerDatagram", "payloadDirection", "payloadGenerator", "payloadSetSha256"],
+              "not": { "anyOf": [{ "required": ["bidirectionalStreamCount"] }, { "required": ["payloadBytes"] }, { "required": ["payloadSha256"] }] }
+            }
+          ]
         },
         "masqueConnectUdp": {
           "type": "object",

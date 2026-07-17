@@ -388,7 +388,7 @@
       "aggregation": "measured-window-rate",
       "window": "scenario-measured-window",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "Completed authenticated WebTransport session and stream operations per second."
+      "description": "Completed authenticated WebTransport session operations, including the scenario-selected stream or datagram data path, per second."
     },
     {
       "metricId": "tunnelsPerSecond",
@@ -406,7 +406,7 @@
       "aggregation": "measured-window-rate",
       "window": "scenario-measured-window",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "Successfully echoed UDP datagrams observed through an established MASQUE CONNECT-UDP tunnel per second."
+      "description": "Successfully echoed datagrams observed through the scenario-selected WebTransport or MASQUE data path per second."
     },
     {
       "metricId": "datagramLatencyMean",
@@ -415,7 +415,7 @@
       "aggregation": "mean",
       "window": "datagram-round-trip",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "Mean client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+      "description": "Mean client-observed round-trip latency for deterministic datagrams through the scenario-selected WebTransport or MASQUE data path."
     },
     {
       "metricId": "datagramLatencyP50",
@@ -424,7 +424,7 @@
       "aggregation": "p50",
       "window": "datagram-round-trip",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "P50 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+      "description": "P50 client-observed round-trip latency for deterministic datagrams through the scenario-selected WebTransport or MASQUE data path."
     },
     {
       "metricId": "datagramLatencyP75",
@@ -433,7 +433,7 @@
       "aggregation": "p75",
       "window": "datagram-round-trip",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "P75 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+      "description": "P75 client-observed round-trip latency for deterministic datagrams through the scenario-selected WebTransport or MASQUE data path."
     },
     {
       "metricId": "datagramLatencyP90",
@@ -442,7 +442,7 @@
       "aggregation": "p90",
       "window": "datagram-round-trip",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "P90 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+      "description": "P90 client-observed round-trip latency for deterministic datagrams through the scenario-selected WebTransport or MASQUE data path."
     },
     {
       "metricId": "datagramLatencyP95",
@@ -451,7 +451,7 @@
       "aggregation": "p95",
       "window": "datagram-round-trip",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "P95 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+      "description": "P95 client-observed round-trip latency for deterministic datagrams through the scenario-selected WebTransport or MASQUE data path."
     },
     {
       "metricId": "datagramLatencyP99",
@@ -460,7 +460,7 @@
       "aggregation": "p99",
       "window": "datagram-round-trip",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "P99 client-observed round-trip latency for deterministic UDP echo datagrams through the CONNECT-UDP tunnel."
+      "description": "P99 client-observed round-trip latency for deterministic datagrams through the scenario-selected WebTransport or MASQUE data path."
     },
     {
       "metricId": "sentDatagrams",
@@ -469,7 +469,7 @@
       "aggregation": "total",
       "window": "scenario-measured-window",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "Total deterministic UDP datagrams submitted by the client to validated CONNECT-UDP tunnels."
+      "description": "Total deterministic datagrams submitted by the client to a validated WebTransport session or MASQUE CONNECT-UDP tunnel."
     },
     {
       "metricId": "receivedDatagrams",
@@ -478,7 +478,7 @@
       "aggregation": "total",
       "window": "scenario-measured-window",
       "timingAuthority": "runner-or-contract-selected-test-executor",
-      "description": "Total exact UDP echo datagrams received by the client through validated CONNECT-UDP tunnels."
+      "description": "Total exact echoed datagrams received by the client through a validated WebTransport session or MASQUE CONNECT-UDP tunnel."
     },
     {
       "metricId": "effectiveTunnels",
@@ -488,6 +488,15 @@
       "window": "scenario-measured-window",
       "timingAuthority": "runner-or-contract-selected-test-executor",
       "description": "Effective concurrently established MASQUE CONNECT-UDP tunnels during the measured window."
+    },
+    {
+      "metricId": "effectiveSessions",
+      "kind": "gauge",
+      "unit": "count",
+      "aggregation": "time-weighted-mean",
+      "window": "scenario-measured-window",
+      "timingAuthority": "runner-or-contract-selected-test-executor",
+      "description": "Effective concurrently established WebTransport sessions during the measured window."
     },
     {
       "metricId": "streamLatencyMean",

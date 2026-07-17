@@ -1204,7 +1204,21 @@
     {
       "id": "REQ-PL-WTPERF-0005",
       "schemas": ["schemas/scenario/v2/scenario.schema.json", "schemas/load-profile/v2/load-profile.schema.json"],
-      "fixtures": ["scenarios/webtransport/session-bidi-echo.yaml", "load-profiles/webtransport-smoke.yaml", "suites/webtransport-performance-smoke.yaml"],
+      "fixtures": ["scenarios/webtransport/session-bidi-echo.yaml", "scenarios/webtransport/session-datagram-echo.yaml", "load-profiles/webtransport-smoke.yaml", "load-profiles/webtransport-datagram-smoke.yaml", "suites/webtransport-performance-smoke.yaml", "suites/webtransport-datagram-performance-smoke.yaml"],
+      "architecture": ["specs/architecture/ARC-PL-WEBTRANSPORT-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-WEBTRANSPORT-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-WTPERF-0006",
+      "schemas": ["schemas/scenario/v2/scenario.schema.json"],
+      "fixtures": ["scenarios/webtransport/session-datagram-echo.yaml"],
+      "architecture": ["specs/architecture/ARC-PL-WEBTRANSPORT-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-WEBTRANSPORT-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-WTPERF-0007",
+      "schemas": ["schemas/scenario/v2/scenario.schema.json", "schemas/load-profile/v2/load-profile.schema.json"],
+      "fixtures": ["scenarios/webtransport/session-datagram-echo.yaml", "load-profiles/webtransport-datagram-smoke.yaml", "suites/webtransport-datagram-performance-smoke.yaml"],
       "architecture": ["specs/architecture/ARC-PL-WEBTRANSPORT-PERFORMANCE.json"],
       "verification": ["specs/verification/VER-PL-WEBTRANSPORT-PERFORMANCE-0001.json"]
     },

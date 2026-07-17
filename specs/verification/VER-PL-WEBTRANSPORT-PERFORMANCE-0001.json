@@ -7,9 +7,9 @@
   "status": "planned",
   "owner": "protocol-lab-maintainers",
   "related_artifacts": ["SPEC-PL-WEBTRANSPORT-PERFORMANCE", "ARC-PL-WEBTRANSPORT-PERFORMANCE"],
-  "verifies": ["REQ-PL-WTPERF-0001", "REQ-PL-WTPERF-0002", "REQ-PL-WTPERF-0003", "REQ-PL-WTPERF-0004", "REQ-PL-WTPERF-0005"],
+  "verifies": ["REQ-PL-WTPERF-0001", "REQ-PL-WTPERF-0002", "REQ-PL-WTPERF-0003", "REQ-PL-WTPERF-0004", "REQ-PL-WTPERF-0005", "REQ-PL-WTPERF-0006", "REQ-PL-WTPERF-0007"],
   "scope": "Verify WebTransport public contract structure only; executable implementation, executor, package, lab, and performance proof remain implementation-owned.",
   "verification_method": "Schema validation, scenario-suite-profile reference resolution, deterministic payload recomputation, trace-link validation, and official protocol-source inspection.",
-  "procedure": ["Validate the typed WebTransport scenario and load profile.", "Recompute the 65,536-byte counter-octets-mod-251 SHA-256.", "Confirm the suite selects the exact scenario and profile.", "Confirm validation requires WebTransport over HTTP/3 without fallback.", "Confirm required metrics and artifacts cover session establishment, stream echo, byte and hash integrity, outcomes, and raw evidence.", "Confirm the smoke profile is non-publishable and non-rankable by contract."],
-  "expected_result": "The public repository exposes one coherent executable-contract-ready WebTransport stream lane without implying target or executor support."
+  "procedure": ["Validate the typed WebTransport stream and datagram scenarios and their separate load profiles.", "Recompute the 65,536-byte counter-octets-mod-251 SHA-256 and the ordered 32x256-byte datagram-index-plus-octet-mod-251 payload-set SHA-256.", "Confirm each suite selects its exact scenario and profile.", "Confirm validation requires WebTransport over HTTP/3 without fallback.", "Confirm stream evidence requires the selected stream path and datagram evidence requires the selected datagram path with zero loss.", "Confirm required metrics and artifacts cover session establishment, byte and hash integrity, outcomes, and raw evidence.", "Confirm both smoke profiles are non-publishable and non-rankable by contract."],
+  "expected_result": "The public repository exposes coherent executable-contract-ready WebTransport stream and datagram lanes without implying target or executor support or combining their comparison cohorts."
 }

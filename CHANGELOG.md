@@ -1,5 +1,13 @@
 # Changelog
 
+## grpc-protobuf-media-types - 2026-07-16
+
+- Declared `application/grpc` and `application/grpc+proto` as the exact
+  accepted protobuf response media-type set while retaining
+  `application/grpc+proto` as the canonical representation.
+- Required evidence to preserve the exact response media type observed from
+  each runtime.
+
 ## public-report-process-capacity - 2026-07-12
 
 - Added optional `logicalProcessorCount` process telemetry so public evidence

@@ -16,6 +16,15 @@ with canonical sorted-key compact-JSON SHA-256
 `b7b987814f8af5cd4f15c03989b9c309c1c0ec643972ae32668304d71502120f`.
 The v1 descriptor remains frozen for existing consumers.
 
+## Protobuf Media-Type Interoperability
+
+The canonical request and response representation remains
+`application/grpc+proto`, while every protobuf scenario admits the two
+standards-equivalent response values `application/grpc` and
+`application/grpc+proto`. Evidence preserves which value the runtime actually
+returned. `application/grpc+json`, gRPC-Web media types, and unrelated content
+types do not satisfy this protobuf contract.
+
 ## Bounded Scenario Families
 
 | Concern | Scenario IDs | Contract boundary |

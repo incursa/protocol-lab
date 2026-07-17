@@ -220,7 +220,7 @@
             "binding", "alpn", "serviceContractId", "serviceContractSha256", "serviceContractCanonicalization",
             "service", "method", "path", "rpcType", "request", "response",
             "compression", "metadataPolicy", "deadlineMilliseconds", "connectionLifecycle", "measuredWindow",
-            "requestContentType", "responseContentType", "te", "trailersRequired",
+            "requestContentType", "responseContentType", "acceptedResponseContentTypes", "te", "trailersRequired",
             "expectedGrpcStatus", "messageFraming", "scheme", "httpMethod", "authority",
             "grpcEncoding", "grpcAcceptEncoding", "retryPolicy", "hedgingPolicy",
             "waitForReady", "effectiveHttp2SettingsRequired", "byteAccounting"
@@ -266,6 +266,10 @@
             "measuredWindow": { "type": "string", "enum": ["rpc-operation", "channel-establishment-and-rpc"] },
             "requestContentType": { "const": "application/grpc+proto" },
             "responseContentType": { "const": "application/grpc+proto" },
+            "acceptedResponseContentTypes": {
+              "description": "Protobuf-equivalent response media types admitted by the gRPC over HTTP/2 protocol contract.",
+              "const": ["application/grpc", "application/grpc+proto"]
+            },
             "te": { "const": "trailers" },
             "grpcEncoding": { "type": "string", "enum": ["identity", "gzip"] },
             "grpcAcceptEncoding": { "type": "string", "enum": ["identity", "gzip", "identity,gzip"] },

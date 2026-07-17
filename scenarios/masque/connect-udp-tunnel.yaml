@@ -38,7 +38,7 @@ validation:
   protocol: {requested: masque-connect-udp-over-h3, expectedObserved: masque-connect-udp-over-h3, fallbackAllowed: false}
 benchmarkCompat: {compatibleLoadShapes: [smoke, comparison], primaryMetrics: [tunnelsPerSecond, datagramsPerSecond, datagramLatencyP95, datagramLatencyP99, failedOperations, timedOutOperations]}
 requiredMetrics: [tunnelsPerSecond, datagramsPerSecond, datagramLatencyMean, datagramLatencyP50, datagramLatencyP75, datagramLatencyP90, datagramLatencyP95, datagramLatencyP99, completedOperations, failedOperations, timedOutOperations, sentDatagrams, receivedDatagrams, totalTransferredBytes, effectiveTunnels]
-artifacts: {required: [validation.json, protocol-proof.json, masque-summary.json, datagram-hash.json, result.json, load.stdout.log, load.stderr.log, proxy.stdout.log, proxy.stderr.log, udp-target.stdout.log, udp-target.stderr.log], optional: [qlog, tls-key-log, target-telemetry.json, load-generator-telemetry.json]}
+artifacts: {required: [validation.json, protocol-proof.json, masque-summary.json, datagram-hash.json, result.json, load.stdout.log, load.stderr.log, target.stdout.log, target.stderr.log], optional: [qlog, tls-key-log, target-telemetry.json, load-generator-telemetry.json]}
 availability: {onUnsupported: unsupported, onUnavailable: unavailable, onBindingMismatch: validation-failed, knownUnsupported: [ordinary-http-connect-substitution, ordinary-http-forward-proxy-substitution, connect-ip-substitution, origin-server-role, external-uncontrolled-udp-target, missing-http-datagram-proof, missing-target-echo-proof]}
 networkProfile: clean
 tags: [masque, connect-udp, h3, quic, http-datagram, udp, echo, experimental]

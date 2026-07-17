@@ -11,4 +11,4 @@ cooldownSeconds: 3
 repetitions: 3
 masque: {tunnels: 1, concurrency: 1, datagramsPerTunnel: 32, totalOperations: null, operationRateLimitPerSecond: null, operationTimeoutMilliseconds: 15000}
 evidence: {minimumTier: comparison, publishable: false}
-artifacts: {required: [load.stdout.log, load.stderr.log, validation.json, protocol-proof.json, masque-summary.json, datagram-hash.json, result.json, proxy.stdout.log, proxy.stderr.log, udp-target.stdout.log, udp-target.stderr.log], optional: [qlog, target-telemetry.json, load-generator-telemetry.json]}
+artifacts: {required: [load.stdout.log, load.stderr.log, validation.json, protocol-proof.json, masque-summary.json, datagram-hash.json, result.json, target.stdout.log, target.stderr.log], optional: [qlog, target-telemetry.json, load-generator-telemetry.json]}

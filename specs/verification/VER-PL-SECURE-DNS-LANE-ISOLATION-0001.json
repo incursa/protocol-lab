@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-SECURE-DNS-LANE-ISOLATION-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab Secure DNS Lane Isolation Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-SECURE-DNS-PERFORMANCE", "ARC-PL-SECURE-DNS-PERFORMANCE"],
+  "verifies": ["REQ-PL-SECDNS-0001", "REQ-PL-SECDNS-0002", "REQ-PL-SECDNS-0003"],
+  "scope": "Verify the secure-DNS portfolio boundary and lane-isolation decision only; detailed scenarios, fixtures, profiles, executors, and benchmarks remain deferred.",
+  "verification_method": "Canonical requirement, architecture, standards-source, and roadmap inspection.",
+  "procedure": ["Confirm four independent lanes are named.", "Confirm shared DNS semantics do not merge comparison groups or protocol proof.", "Confirm DoH2 and DoH3 remain distinct and DoQ is not raw QUIC.", "Confirm public recursive resolvers and silent fallback are excluded."],
+  "expected_result": "The next secure-DNS contract slice has an unambiguous four-lane boundary without implying executable support."
+}

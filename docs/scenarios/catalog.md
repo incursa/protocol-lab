@@ -20,8 +20,8 @@ or executable validation logic.
 | WebSocket | `websocket.*` | `ws` | [`scenarios/websocket/`](../../scenarios/websocket/) | Placeholder only |
 | WebTransport | `webtransport.*` | `h3` | [`scenarios/webtransport/`](../../scenarios/webtransport/) | Placeholder only |
 | MASQUE | `masque.*` | `h3` | [`scenarios/masque/`](../../scenarios/masque/) | Placeholder only |
-| TLS | none yet | none yet | none yet | Planned/open |
-| DNS | none yet | none yet | none yet | Planned/open |
+| TLS | `tls.*` | `tls` | [`scenarios/tls/`](../../scenarios/tls/) | Initial TLS 1.3 full-handshake contract |
+| Secure DNS | proposed transport-specific IDs | `dot`, `doh2`, `doh3`, or `doq` when defined | none yet | Lane isolation canonical; executable scenarios deferred |
 | gRPC over HTTP/2 or HTTP/3 | none yet | `h2` or `h3` when defined | none yet | Planned/open |
 
 HTTP/3 protocol scenarios use `http3.protocol.*` IDs even though their wire
@@ -46,6 +46,10 @@ implementation-neutral scenario shape is ready.
 - HTTP/3 protocol scenarios: `http3.protocol.*`
 - HTTP/3 external peer characterization: `http3.external.*`
 - QUIC transport scenarios: `quic.transport.*`
+- TLS scenarios: `tls.handshake.*`; the initial executable future slice is
+  `tls.handshake.full` only
+- Secure DNS will use separate DoT, DoH/2, DoH/3, and DoQ scenario identities;
+  shared DNS message semantics must not collapse the transport lanes
 - Future placeholders: `websocket.*`, `webtransport.*`, `masque.*`
 - Network profile documents under
   [`scenarios/network/profiles/`](../../scenarios/network/profiles/) are

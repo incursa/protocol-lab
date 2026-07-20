@@ -1,0 +1,64 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-TLS-PERFORMANCE",
+  "artifact_type": "specification",
+  "title": "ProtocolLab TLS Performance Contracts",
+  "domain": "protocol-lab",
+  "capability": "tls-performance-contracts",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "tags": ["protocol-lab", "tls", "performance", "validity"],
+  "related_artifacts": ["SPEC-PL-CORE-CONTRACTS", "ARC-PL-TLS-PERFORMANCE", "VER-PL-TLS-PERFORMANCE-0001"],
+  "purpose": "Define implementation-neutral TLS 1.3 handshake performance semantics with a minimal validity gate.",
+  "scope": "The first executable contract slice is a fresh authenticated TLS 1.3 handshake with no resumption, early data, or application data. Resumption, 0-RTT, record throughput, and TLS 1.2 remain later work.",
+  "requirements": [
+    {
+      "id": "REQ-PL-TLSPERF-0001",
+      "title": "Exact TLS version",
+      "statement": "The TLS full-handshake scenario MUST request and observe TLS 1.3 without silent downgrade.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc9846"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0002",
+      "title": "Fresh authenticated handshake",
+      "statement": "The TLS full-handshake scenario MUST establish a fresh authenticated session without offered or accepted resumption state and without early data.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/full.yaml"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc9846", "https://www.rfc-editor.org/rfc/rfc9525"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0003",
+      "title": "Handshake-only workload",
+      "statement": "The first TLS handshake workload MUST transfer zero application-data bytes during each measured operation.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["load-profiles/tls-handshake-smoke.yaml"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0004",
+      "title": "Deterministic certificate identity",
+      "statement": "The TLS full-handshake scenario MUST bind SNI, ALPN, certificate-profile identity, leaf DER fingerprint, leaf SPKI fingerprint, chain shape, and trust-anchor identity to `plab-single-leaf-p256-v1`.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["fixtures/public-contracts/tls/plab-single-leaf-p256-v1/certificate-profile.json"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc7301", "https://www.rfc-editor.org/rfc/rfc9525"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0005",
+      "title": "TLS handshake validity gate",
+      "statement": "TLS handshake measurements MUST require the selected executor and generator, exact TLS 1.3, authenticated peer, fresh session, expected ALPN and certificate profile, successful completion, and zero unexpected failures or timeouts.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["schemas/scenario.schema.json"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0006",
+      "title": "TLS-only latency boundary",
+      "statement": "The primary TLS handshake latency MUST begin when client TLS handshake processing starts on an established TCP connection and end when authenticated TLS 1.3 establishment completes.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/full.yaml"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0007",
+      "title": "Connection-inclusive diagnostic latency",
+      "statement": "TLS handshake evidence MAY report a separate diagnostic latency from TCP-connect initiation through authenticated TLS completion.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/full.yaml"]}
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0008",
+      "title": "TLS metrics and artifacts",
+      "statement": "The TLS full-handshake scenario MUST declare handshake rate, TLS-only latency mean and percentiles, completed, failed and timed-out counts, negotiated cryptographic metadata, and raw negotiation, topology, validation, stdout, stderr, and normalized-result artifacts.",
+      "trace": {"satisfied_by": ["ARC-PL-TLS-PERFORMANCE"], "verified_by": ["VER-PL-TLS-PERFORMANCE-0001"], "related": ["scenarios/tls/handshake/full.yaml", "SPEC-PL-MEASUREMENT-TELEMETRY"]}
+    }
+  ]
+}

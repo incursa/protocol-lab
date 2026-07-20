@@ -117,6 +117,38 @@
       "type": "object",
       "description": "QUIC transport-level specification for quic.* scenarios"
     },
+    "tls": {
+      "type": "object",
+      "description": "TLS lifecycle and deterministic identity semantics.",
+      "additionalProperties": true,
+      "properties": {
+        "version": {"type": "string"},
+        "mode": {"type": "string"},
+        "sessionReuse": {"type": "string"},
+        "earlyData": {"type": "string"},
+        "applicationDataBytes": {"type": "integer", "minimum": 0},
+        "sni": {"type": "string"},
+        "alpn": {"type": "string"},
+        "certificateProfile": {"type": "string"},
+        "expectedCertificateDerSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "expectedCertificateSpkiSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "measurementBoundaries": {
+      "type": "object",
+      "description": "Named start and end boundaries for scenario measurements.",
+      "additionalProperties": false,
+      "properties": {
+        "tlsHandshakeLatency": {"const": "client-tls-handshake-start-to-authenticated-tls-complete"},
+        "connectionAndHandshakeLatency": {"const": "tcp-connect-start-to-authenticated-tls-complete"},
+        "excludedFromTlsHandshakeLatency": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
     "webTransport": {
       "type": "object",
       "description": "WebTransport specification"
@@ -259,5 +291,35 @@
       "items": { "type": "string" },
       "description": "Arbitrary tags"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"id": {"const": "tls.handshake.full"}}, "required": ["id"]},
+      "then": {
+        "required": ["tls", "measurementBoundaries"],
+        "properties": {
+          "protocol": {"const": "tls"},
+          "trafficShape": {"enum": ["handshakeOnly", "handshake-only"]},
+          "tls": {
+            "required": ["version", "mode", "sessionReuse", "earlyData", "applicationDataBytes", "sni", "alpn", "certificateProfile", "expectedCertificateDerSha256", "expectedCertificateSpkiSha256"],
+            "properties": {
+              "version": {"const": "tls1.3"},
+              "mode": {"const": "full-handshake"},
+              "sessionReuse": {"const": "none"},
+              "earlyData": {"const": "not-attempted"},
+              "applicationDataBytes": {"const": 0},
+              "sni": {"const": "tls.protocol-lab.test"},
+              "alpn": {"const": "protocol-lab-tls"},
+              "certificateProfile": {"const": "plab-single-leaf-p256-v1"},
+              "expectedCertificateDerSha256": {"const": "da2726daa05ed45fb402c07ad30397eacaf2b1e7613429e895616fc64cf04d27"},
+              "expectedCertificateSpkiSha256": {"const": "bdfb8c50b2fef0bea004230ce8839d1b1bf7c7dc1b058b8f3c4887d41a9c9dd8"}
+            }
+          },
+          "measurementBoundaries": {
+            "required": ["tlsHandshakeLatency", "connectionAndHandshakeLatency", "excludedFromTlsHandshakeLatency"]
+          }
+        }
+      }
+    }
+  ]
 }

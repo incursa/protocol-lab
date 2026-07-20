@@ -24,6 +24,7 @@ The root catalog includes two suite groups:
 | HTTP/2 | `http2-core-smoke` | `http2-smoke-conformance`, `http2-diagnostic-suite`, `http2-regression-suite`, `http2-comparison-benchmark`, `http2-soak-suite` |
 | HTTP/3 | `http3-core-smoke`, `http3-protocol-diagnostic`, `http3-peer-characterization` | `http3-smoke-conformance`, `http3-diagnostic-suite`, `http3-regression-suite`, `http3-comparison-benchmark`, `http3-soak-suite` |
 | QUIC | `quic-transport-smoke`, `quic-transport-diagnostic` | `quic-smoke-conformance`, `quic-diagnostic-suite`, `quic-regression-suite`, `quic-comparison-benchmark`, `quic-soak-suite` |
+| TLS | none | `tls-performance-smoke` |
 
 ## Intent Rules
 
@@ -35,6 +36,13 @@ public scenario contracts with different load intent and evidence shape.
 The `http3-peer-characterization` suite is diagnostic external-peer evidence:
 it can make package-backed peer rows visible in reports, but it does not create
 an official payload benchmark ranking.
+
+The initial HTTP/2 comparison suite includes only
+`http2.core.plaintext` and `http2.core.json`; streaming remains diagnostic or
+regression work until its comparison semantics are separately approved. The
+initial TLS suite selects only `tls.handshake.full` with
+`tls-handshake-smoke`; it does not claim resumed-handshake, 0-RTT, record
+throughput, or publishable comparison coverage.
 
 Package fixture suites under
 [`fixtures/public-contracts/packages/`](../../fixtures/public-contracts/packages/)

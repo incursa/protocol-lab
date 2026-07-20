@@ -1,0 +1,34 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "SPEC-PL-SECURE-DNS-PERFORMANCE",
+  "artifact_type": "specification",
+  "title": "ProtocolLab Secure DNS Performance Lane Isolation",
+  "domain": "protocol-lab",
+  "capability": "secure-dns-performance-lanes",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "tags": ["protocol-lab", "dns", "dot", "doh2", "doh3", "doq", "performance"],
+  "related_artifacts": ["ARC-PL-SECURE-DNS-PERFORMANCE", "VER-PL-SECURE-DNS-LANE-ISOLATION-0001"],
+  "purpose": "Define secure DNS transport lanes as independent performance and proof domains while permitting shared deterministic DNS semantics.",
+  "scope": "This slice records lane identity and comparison isolation for DNS over TLS, DNS over HTTP/2, DNS over HTTP/3, and DNS over QUIC. Detailed wire fixtures, profiles, suites, executors, and implementation packages remain a later contract slice.",
+  "requirements": [
+    {
+      "id": "REQ-PL-SECDNS-0001",
+      "title": "Independent secure DNS lanes",
+      "statement": "ProtocolLab MUST treat DoT, DoH over HTTP/2, DoH over HTTP/3, and DoQ as four independent execution, protocol-proof, executor-identity, and comparison lanes.",
+      "trace": {"satisfied_by": ["ARC-PL-SECURE-DNS-PERFORMANCE"], "verified_by": ["VER-PL-SECURE-DNS-LANE-ISOLATION-0001"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc7858", "https://www.rfc-editor.org/rfc/rfc8484", "https://www.rfc-editor.org/rfc/rfc9114", "https://www.rfc-editor.org/rfc/rfc9250"]}
+    },
+    {
+      "id": "REQ-PL-SECDNS-0002",
+      "title": "Shared deterministic DNS semantics",
+      "statement": "The four secure DNS lanes MAY share one deterministic local DNS question-and-answer fixture when each lane independently proves its exact transport binding and validates the same DNS message semantics.",
+      "trace": {"satisfied_by": ["ARC-PL-SECURE-DNS-PERFORMANCE"], "verified_by": ["VER-PL-SECURE-DNS-LANE-ISOLATION-0001"]}
+    },
+    {
+      "id": "REQ-PL-SECDNS-0003",
+      "title": "Secure DNS fallback rejection",
+      "statement": "A secure DNS lane MUST reject execution through another DNS transport, another HTTP version, raw QUIC, a public recursive resolver, or an uncontrolled upstream lookup as evidence for the requested lane.",
+      "trace": {"satisfied_by": ["ARC-PL-SECURE-DNS-PERFORMANCE"], "verified_by": ["VER-PL-SECURE-DNS-LANE-ISOLATION-0001"], "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc7858", "https://www.rfc-editor.org/rfc/rfc8484", "https://www.rfc-editor.org/rfc/rfc9250"]}
+    }
+  ]
+}

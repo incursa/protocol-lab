@@ -1,0 +1,27 @@
+{
+  "id": "tls-performance-smoke",
+  "name": "TLS 1.3 full-handshake contract smoke suite",
+  "description": "Fast package-neutral validity selection for one fresh authenticated TLS 1.3 handshake workload.",
+  "purpose": "diagnostic",
+  "resultKind": "diagnostic",
+  "loadProfileId": "tls-handshake-smoke",
+  "scenarios": [
+    "tls.handshake.full"
+  ],
+  "protocol": "tls",
+  "defaults": {
+    "durationSeconds": 5,
+    "warmupSeconds": 1,
+    "repetitions": 1,
+    "connections": 1,
+    "streamsPerConnection": 1
+  },
+  "notes": "Contract selection only; no executable support is implied.",
+  "tags": [
+    "tls",
+    "tls1.3",
+    "full-handshake",
+    "smoke",
+    "non-publishable"
+  ]
+}

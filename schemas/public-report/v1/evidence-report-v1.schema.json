@@ -312,6 +312,7 @@
         "scenarioId",
         "protocol",
         "connections",
+        "concurrency",
         "streamsPerConnection",
         "repetition",
         "benchmarkStatus"
@@ -327,6 +328,9 @@
           "$ref": "#/definitions/nonEmptyString"
         },
         "connections": {
+          "$ref": "#/definitions/count"
+        },
+        "concurrency": {
           "$ref": "#/definitions/count"
         },
         "streamsPerConnection": {
@@ -363,6 +367,7 @@
         "warmupSeconds",
         "repetition",
         "connections",
+        "concurrency",
         "streamsPerConnection",
         "networkProfile",
         "validation",
@@ -454,8 +459,23 @@
         "connections": {
           "$ref": "#/definitions/count"
         },
+        "concurrency": {
+          "$ref": "#/definitions/count"
+        },
         "streamsPerConnection": {
           "$ref": "#/definitions/count"
+        },
+        "protocolVariant": {
+          "type": "string"
+        },
+        "loadGeneratorIdentity": {
+          "$ref": "#/definitions/componentIdentity"
+        },
+        "requestedLoad": {
+          "$ref": "#/definitions/loadTopology"
+        },
+        "effectiveLoad": {
+          "$ref": "#/definitions/loadTopology"
         },
         "networkProfile": {
           "type": "string"
@@ -490,6 +510,47 @@
         "errors": {
           "$ref": "#/definitions/stringArray"
         }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"loadProfilePurpose": {"const": "comparison"}},
+            "required": ["loadProfilePurpose"]
+          },
+          "then": {
+            "required": ["testExecutorId", "protocolVariant", "loadGeneratorIdentity", "requestedLoad", "effectiveLoad"]
+          }
+        }
+      ]
+    },
+    "componentIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": {"$ref": "#/definitions/nonEmptyString"},
+        "version": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
+    "loadTopology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["connections", "concurrency", "streamsPerConnection", "operationDistribution"],
+      "properties": {
+        "connections": {"type": "integer", "minimum": 1},
+        "concurrency": {"type": "integer", "minimum": 1},
+        "streamsPerConnection": {"type": "integer", "minimum": 1},
+        "operationDistribution": {"type": "string", "minLength": 1},
+        "maximumActiveStreamsByConnection": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "peerAdvertisedMaxConcurrentStreamsByConnection": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "clamped": {"type": "boolean"},
+        "redistributed": {"type": "boolean"}
       }
     },
     "cellTelemetry": {
@@ -1021,6 +1082,12 @@
       "required": [
         "scenarioId",
         "protocol",
+        "protocolVariant",
+        "loadProfileId",
+        "testExecutorId",
+        "loadGeneratorIdentity",
+        "requestedLoad",
+        "effectiveLoad",
         "entries",
         "comparabilityWarnings"
       ],
@@ -1030,6 +1097,24 @@
         },
         "protocol": {
           "$ref": "#/definitions/nonEmptyString"
+        },
+        "protocolVariant": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "loadProfileId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "testExecutorId": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "loadGeneratorIdentity": {
+          "$ref": "#/definitions/componentIdentity"
+        },
+        "requestedLoad": {
+          "$ref": "#/definitions/loadTopology"
+        },
+        "effectiveLoad": {
+          "$ref": "#/definitions/loadTopology"
         },
         "entries": {
           "type": "array",

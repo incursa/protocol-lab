@@ -1,0 +1,18 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-TLS-PERFORMANCE",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab TLS Performance Contract Architecture",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-TLS-PERFORMANCE", "VER-PL-TLS-PERFORMANCE-0001", "ARC-PL-CORE-CONTRACTS"],
+  "purpose": "Describe the first fail-closed TLS 1.3 handshake contract without prescribing a runtime, operating system, cryptographic library, target, or load generator.",
+  "satisfies": ["REQ-PL-TLSPERF-0001", "REQ-PL-TLSPERF-0002", "REQ-PL-TLSPERF-0003", "REQ-PL-TLSPERF-0004", "REQ-PL-TLSPERF-0005", "REQ-PL-TLSPERF-0006", "REQ-PL-TLSPERF-0007", "REQ-PL-TLSPERF-0008"],
+  "design_summary": "The first vertical measures only fresh authenticated TLS 1.3 handshakes. The primary TLS-only latency excludes DNS, TCP establishment, target startup, certificate generation, and artifact writing; a connection-inclusive latency is optional diagnostic evidence. The public certificate profile fixes hostname, SNI, ALPN, chain shape, public certificates, and fingerprints. Test-only private-key provisioning belongs to an implementation package and is never evidence.",
+  "key_components": ["tls.handshake.full scenario", "tls-handshake-smoke profile", "tls-performance-smoke suite", "plab-single-leaf-p256-v1 certificate descriptor", "TLS-specific protocol proof and normalized result"],
+  "data_and_state_considerations": "Certificate generation and private-key loading occur outside the measured window. Each measured operation starts from an established TCP connection with no offered resumption state. Negotiated version, cipher suite, key-exchange group, signature algorithm, ALPN, SNI, certificate fingerprints, platform, and acceleration provenance are recorded.",
+  "edge_cases_and_constraints": ["A resumed session is a validation failure for this scenario.", "Any application-data transfer is a workload mismatch.", "TLS 1.2, wrong ALPN, wrong certificate identity, unauthenticated peer, or missing selected-component identity rejects metrics.", "The public fixture contains no private key."],
+  "alternatives_considered": ["Combining full, resumed, and record workloads in one smoke profile was rejected because their lifecycle and byte semantics differ.", "Measuring from TCP-connect start as the primary TLS latency was rejected because it mixes transport establishment with TLS processing.", "Prescribing a cryptographic library was rejected because the public contract is implementation-neutral."],
+  "risks": ["Runner result models that assume HTTP request semantics can mislabel TLS evidence.", "Certificate substitution can invalidate comparison unless fingerprints are checked.", "Unrecorded acceleration or platform differences can make otherwise valid measurements incomparable."]
+}

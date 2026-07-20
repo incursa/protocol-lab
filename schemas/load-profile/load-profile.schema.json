@@ -95,11 +95,29 @@
     "http2": {
       "type": "object",
       "description": "HTTP/2 profile settings",
+      "additionalProperties": false,
       "properties": {
-        "connections": { "type": "integer" },
-        "concurrency": { "type": "integer" },
-        "streamsPerConnection": { "type": "integer" },
-        "requestTimeoutSeconds": { "type": "integer" }
+        "connections": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Requested simultaneously established HTTP/2 connections."
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Requested global maximum in-flight HTTP operations across all connections; this value is not multiplied by connections or streamsPerConnection."
+        },
+        "streamsPerConnection": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Per-connection in-flight stream cap; this is capacity, not a claim that every connection observed the cap."
+        },
+        "operationDistribution": {
+          "type": "string",
+          "enum": ["balanced-round-robin"],
+          "description": "Assignment policy for new operations across usable connections while stream capacity permits."
+        },
+        "requestTimeoutSeconds": { "type": "integer", "minimum": 1 }
       }
     },
     "http3": {
@@ -121,6 +139,18 @@
         "streamBytes": { "type": "integer" },
         "connectionTimeoutSeconds": { "type": "integer" },
         "idleTimeoutSeconds": { "type": "integer" }
+      }
+    },
+    "tls": {
+      "type": "object",
+      "description": "TLS lifecycle and transfer load settings.",
+      "additionalProperties": false,
+      "properties": {
+        "connections": { "type": "integer", "minimum": 1 },
+        "concurrency": { "type": "integer", "minimum": 1 },
+        "handshakesPerConnection": { "type": "integer", "minimum": 1 },
+        "applicationDataBytes": { "type": "integer", "minimum": 0 },
+        "connectionTimeoutSeconds": { "type": "integer", "minimum": 1 }
       }
     },
     "evidence": {
@@ -150,5 +180,49 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"id": {"const": "http2-comparison"}}, "required": ["id"]},
+      "then": {
+        "required": ["durationSeconds", "warmupSeconds", "repetitions", "http2"],
+        "properties": {
+          "durationSeconds": {"const": 30},
+          "warmupSeconds": {"const": 10},
+          "repetitions": {"const": 3},
+          "http2": {
+            "required": ["connections", "concurrency", "streamsPerConnection", "operationDistribution", "requestTimeoutSeconds"],
+            "properties": {
+              "connections": {"const": 16},
+              "concurrency": {"const": 128},
+              "streamsPerConnection": {"const": 8},
+              "operationDistribution": {"const": "balanced-round-robin"},
+              "requestTimeoutSeconds": {"const": 10}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"id": {"const": "tls-handshake-smoke"}}, "required": ["id"]},
+      "then": {
+        "required": ["durationSeconds", "warmupSeconds", "repetitions", "tls"],
+        "properties": {
+          "durationSeconds": {"const": 5},
+          "warmupSeconds": {"const": 1},
+          "repetitions": {"const": 1},
+          "tls": {
+            "required": ["connections", "concurrency", "handshakesPerConnection", "applicationDataBytes", "connectionTimeoutSeconds"],
+            "properties": {
+              "connections": {"const": 1},
+              "concurrency": {"const": 1},
+              "handshakesPerConnection": {"const": 1},
+              "applicationDataBytes": {"const": 0},
+              "connectionTimeoutSeconds": {"const": 5}
+            }
+          }
+        }
+      }
+    }
+  ]
 }

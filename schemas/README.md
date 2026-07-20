@@ -19,6 +19,8 @@ control-plane surfaces when needed.
 - [`run-plan/v1/`](run-plan/v1/) - immutable run-plan selection documents.
 - [`suite/v1/`](suite/v1/) - declarative suite selection documents.
 - [`test-executor/v1/`](test-executor/v1/) - Test Executor Contract v1 control-plane payloads.
+- [`tls/v1/`](tls/v1/) - implementation-neutral TLS certificate-profile
+  metadata used to pin reproducible public test identities.
 - [`validation/v1/`](validation/v1/) - optional per-cell structured validation
   check outcomes used as inputs to specification coverage evidence.
 - [`scenario.schema.json`](scenario.schema.json) - scenario definition

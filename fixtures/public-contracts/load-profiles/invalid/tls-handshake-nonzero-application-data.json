@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v1",
+  "id": "tls-handshake-smoke",
+  "title": "Invalid TLS handshake smoke with application data",
+  "status": "experimental",
+  "purpose": "smoke",
+  "durationSeconds": 5,
+  "warmupSeconds": 1,
+  "repetitions": 1,
+  "tls": {
+    "connections": 1,
+    "concurrency": 1,
+    "handshakesPerConnection": 1,
+    "applicationDataBytes": 1048576,
+    "connectionTimeoutSeconds": 5
+  }
+}

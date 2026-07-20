@@ -7,18 +7,17 @@ loadProfileId: http2-comparison
 scenarios:
   - http2.core.plaintext
   - http2.core.json
-  - http2.streaming.response
 protocol: h2
 defaults:
   durationSeconds: 30
   warmupSeconds: 10
   repetitions: 3
-  connections: 128
-  streamsPerConnection: 100
+  connections: 16
+  streamsPerConnection: 8
 counterCapture:
   enabledByDefault: false
   tool: ""
-notes: This suite selects existing public HTTP/2 scenarios with the protocol-specific http2-comparison load profile; it does not imply a required runner or load generator.
+notes: This suite selects only the initially supported deterministic HTTP/2 response scenarios. The profile requests 128 globally concurrent operations across 16 established connections with a per-connection cap of 8 streams and balanced round-robin assignment; it does not imply executor, implementation, comparison, or publication support.
 tags:
   - http2
   - comparison

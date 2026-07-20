@@ -164,6 +164,26 @@
       }
     },
     {
+      "id": "REQ-PL-MEASURE-0012",
+      "title": "Comparison identity completeness",
+      "statement": "Matched comparison evidence MUST use compatible scenario, protocol variant, load profile, requested and effective load, network profile, executor identity, load-generator identity, implementation role, platform, topology, validation outcome, saturation state, and repetition policy.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-HTTP2-COMPARISON-0001"],
+        "related": ["schemas/public-report/v1/evidence-report-v1.schema.json"]
+      }
+    },
+    {
+      "id": "REQ-PL-MEASURE-0013",
+      "title": "Comparison mismatch rejection",
+      "statement": "A comparison group MUST reject cells whose requested or observed load topology, protocol variant, executor, load generator, validation state, or saturation state differs from the group identity.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-MEASUREMENT-TELEMETRY"],
+        "verified_by": ["VER-PL-HTTP2-COMPARISON-0001"],
+        "related": ["schemas/public-report/v1/evidence-report-v1.schema.json"]
+      }
+    },
+    {
       "id": "PLAB-ADAPTER-TELEMETRY-001",
       "title": "Adapter optional telemetry discovery",
       "statement": "Adapter manifests and health responses MAY advertise telemetry export capability, but adapter telemetry export MUST remain optional unless a run plan explicitly requires it.",

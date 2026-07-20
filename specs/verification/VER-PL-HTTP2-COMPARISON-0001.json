@@ -1,0 +1,21 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-HTTP2-COMPARISON-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab HTTP/2 Comparison Contract Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-CORE-CONTRACTS", "ARC-PL-CORE-CONTRACTS", "SPEC-PL-MEASUREMENT-TELEMETRY", "ARC-PL-MEASUREMENT-TELEMETRY"],
+  "verifies": ["REQ-PL-CORE-0011", "REQ-PL-CORE-0012", "REQ-PL-CORE-0013", "REQ-PL-MEASURE-0012", "REQ-PL-MEASURE-0013"],
+  "scope": "Verify the public HTTP/2 comparison contract structure only; do not claim executor, implementation, runner, comparison, benchmark, or publication proof.",
+  "verification_method": "Schema validation, valid and invalid fixture checks, suite and load-profile reference resolution, traceability inspection, and repository-boundary inspection.",
+  "procedure": [
+    "Confirm connections means established connections, concurrency means global in-flight operations, and streamsPerConnection means a per-connection cap.",
+    "Confirm http2-comparison is exactly 16 connections, 128 global concurrency, an 8-stream cap, and balanced-round-robin distribution.",
+    "Confirm the comparison suite selects only http2.core.plaintext and http2.core.json.",
+    "Confirm comparison report contracts preserve requested and effective topology plus executor and load-generator identity.",
+    "Confirm invalid fixtures reject over-capacity load, missing distribution, and missing comparison concurrency evidence."
+  ],
+  "expected_result": "The HTTP/2 comparison contract is unambiguous, fail-closed, non-publishable, and internally consistent without claiming executable support."
+}

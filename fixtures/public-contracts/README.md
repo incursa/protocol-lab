@@ -43,6 +43,8 @@ Focused core contract examples live under:
 - [`scenarios/valid`](scenarios/valid/) and [`scenarios/invalid`](scenarios/invalid/)
 - [`suites/valid`](suites/valid/) and [`suites/invalid`](suites/invalid/)
 - [`load-profiles/valid`](load-profiles/valid/) and [`load-profiles/invalid`](load-profiles/invalid/)
+- [`tls/`](tls/) for public certificate-profile metadata and public root/leaf
+  certificates; private keys are never public-contract fixtures
 
 The scenario and suite valid fixtures include representative HTTP/1, HTTP/2,
 HTTP/3, and QUIC examples, including QUIC transport handshake, stream churn,
@@ -133,3 +135,8 @@ not replace the root HTTP/3 catalog under
 QUIC fixture packages use `quic.*` scenario IDs and the `quic` protocol token.
 They are separate from HTTP/3 fixture packages even when the same participant
 could support both protocol families.
+
+The TLS fixture `plab-single-leaf-p256-v1` pins a fixed public root and leaf
+certificate, SNI/SAN, validity window, serial number, and DER/SPKI hashes. Its
+leaf private key belongs only in a future version-pinned implementation
+package. The public fixture does not provide executable TLS behavior.

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.incursa.com/protocol-lab/tls/v1/certificate-profile.schema.json",
+  "title": "ProtocolLab TLS Certificate Profile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "purpose", "hostname", "sni", "alpn", "trustModel", "privateKeyPolicy", "runtimeGenerationAllowedInMeasuredWindow", "leaf", "trustAnchor", "chain"],
+  "properties": {
+    "schemaVersion": {"const": "protocol-lab.tls-certificate-profile.v1"},
+    "id": {"const": "plab-single-leaf-p256-v1"},
+    "purpose": {"type": "string", "minLength": 1},
+    "hostname": {"const": "tls.protocol-lab.test"},
+    "sni": {"const": "tls.protocol-lab.test"},
+    "alpn": {"const": "protocol-lab-tls"},
+    "trustModel": {"const": "private-test-root"},
+    "privateKeyPolicy": {"const": "test-only-package-material-never-evidence"},
+    "runtimeGenerationAllowedInMeasuredWindow": {"const": false},
+    "leaf": {"$ref": "#/$defs/leaf"},
+    "trustAnchor": {"$ref": "#/$defs/trustAnchor"},
+    "chain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["presentedCertificates", "validationTrustAnchors", "intermediateCount", "totalDerBytes"],
+      "properties": {
+        "presentedCertificates": {"const": ["leaf"]},
+        "validationTrustAnchors": {"const": ["trustAnchor"]},
+        "intermediateCount": {"const": 0},
+        "totalDerBytes": {"type": "integer", "minimum": 1}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "commonCertificate": {
+      "type": "object",
+      "required": ["subject", "notBefore", "notAfter", "publicKeyAlgorithm", "namedCurve", "certificateSignatureAlgorithm", "derBytes", "derSha256", "spkiSha256", "publicCertificatePath"],
+      "properties": {
+        "subject": {"type": "string", "minLength": 1},
+        "notBefore": {"type": "string", "format": "date-time"},
+        "notAfter": {"type": "string", "format": "date-time"},
+        "publicKeyAlgorithm": {"const": "id-ecPublicKey"},
+        "namedCurve": {"const": "P-256"},
+        "certificateSignatureAlgorithm": {"const": "ecdsa-with-SHA256"},
+        "derBytes": {"type": "integer", "minimum": 1},
+        "derSha256": {"$ref": "#/$defs/sha256"},
+        "spkiSha256": {"$ref": "#/$defs/sha256"},
+        "publicCertificatePath": {"type": "string", "pattern": "^[a-z0-9.-]+\\.pem$"}
+      }
+    },
+    "leaf": {
+      "allOf": [
+        {"$ref": "#/$defs/commonCertificate"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["subject", "subjectAlternativeNames", "serialNumberHex", "notBefore", "notAfter", "publicKeyAlgorithm", "namedCurve", "certificateSignatureAlgorithm", "tlsSignatureScheme", "extendedKeyUsages", "derBytes", "derSha256", "spkiSha256", "publicCertificatePath"],
+          "properties": {
+            "subject": {"const": "CN=tls.protocol-lab.test"},
+            "subjectAlternativeNames": {"const": ["DNS:tls.protocol-lab.test"]},
+            "serialNumberHex": {"const": "504C41420000000000000001"},
+            "notBefore": {"type": "string", "format": "date-time"},
+            "notAfter": {"type": "string", "format": "date-time"},
+            "publicKeyAlgorithm": {"const": "id-ecPublicKey"},
+            "namedCurve": {"const": "P-256"},
+            "certificateSignatureAlgorithm": {"const": "ecdsa-with-SHA256"},
+            "tlsSignatureScheme": {"const": "ecdsa_secp256r1_sha256"},
+            "extendedKeyUsages": {"const": ["serverAuth"]},
+            "derBytes": {"type": "integer", "minimum": 1},
+            "derSha256": {"$ref": "#/$defs/sha256"},
+            "spkiSha256": {"$ref": "#/$defs/sha256"},
+            "publicCertificatePath": {"const": "leaf.pem"}
+          }
+        }
+      ]
+    },
+    "trustAnchor": {
+      "allOf": [
+        {"$ref": "#/$defs/commonCertificate"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["subject", "notBefore", "notAfter", "publicKeyAlgorithm", "namedCurve", "certificateSignatureAlgorithm", "derBytes", "derSha256", "spkiSha256", "publicCertificatePath"],
+          "properties": {
+            "subject": {"const": "CN=ProtocolLab Test Root P256 v1"},
+            "notBefore": {"type": "string", "format": "date-time"},
+            "notAfter": {"type": "string", "format": "date-time"},
+            "publicKeyAlgorithm": {"const": "id-ecPublicKey"},
+            "namedCurve": {"const": "P-256"},
+            "certificateSignatureAlgorithm": {"const": "ecdsa-with-SHA256"},
+            "derBytes": {"type": "integer", "minimum": 1},
+            "derSha256": {"$ref": "#/$defs/sha256"},
+            "spkiSha256": {"$ref": "#/$defs/sha256"},
+            "publicCertificatePath": {"const": "root.pem"}
+          }
+        }
+      ]
+    }
+  }
+}

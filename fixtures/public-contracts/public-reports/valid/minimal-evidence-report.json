@@ -81,6 +81,7 @@
       "warmupSeconds": 0,
       "repetition": 0,
       "connections": 1,
+      "concurrency": 1,
       "streamsPerConnection": 1,
       "networkProfile": "clean",
       "validation": {

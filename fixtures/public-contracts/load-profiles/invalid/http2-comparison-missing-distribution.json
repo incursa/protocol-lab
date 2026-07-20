@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "protocol-lab.load-profile.v1",
+  "id": "http2-comparison",
+  "title": "Invalid HTTP/2 comparison without distribution",
+  "status": "stable",
+  "purpose": "comparison",
+  "durationSeconds": 30,
+  "warmupSeconds": 10,
+  "repetitions": 3,
+  "http2": {
+    "connections": 16,
+    "concurrency": 128,
+    "streamsPerConnection": 8,
+    "requestTimeoutSeconds": 10
+  }
+}

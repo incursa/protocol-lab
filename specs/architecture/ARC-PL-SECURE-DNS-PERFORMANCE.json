@@ -1,0 +1,18 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "ARC-PL-SECURE-DNS-PERFORMANCE",
+  "artifact_type": "architecture",
+  "title": "ProtocolLab Secure DNS Lane Isolation Architecture",
+  "domain": "protocol-lab",
+  "status": "draft",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-SECURE-DNS-PERFORMANCE", "VER-PL-SECURE-DNS-LANE-ISOLATION-0001"],
+  "purpose": "Explain how common DNS semantics remain separate from exact secure transport bindings.",
+  "satisfies": ["REQ-PL-SECDNS-0001", "REQ-PL-SECDNS-0002", "REQ-PL-SECDNS-0003"],
+  "design_summary": "A future deterministic fixture will define one exact local question and answer, such as `plab.test. A` returning `192.0.2.1`, so DNS content is constant. DoT, DoH2, DoH3, and DoQ will each bind that content to a different exact transport stack, scenario ID, load profile, executor identity, fallback policy, proof artifact, and comparison group. Shared source libraries are allowed, but executing one lane through another is invalid.",
+  "key_components": ["dns.dot.query.a", "dns.doh2.query.a", "dns.doh3.query.a", "dns.doq.query.a", "future deterministic DNS wire fixture", "four lane-specific profile pairs and executor identities"],
+  "data_and_state_considerations": "The future fixture will use a deterministic local authoritative answer with cache disabled. Transaction-ID normalization, canonical wire encoding, cache state, connection reuse, and transport binding must be explicit before an executor slice starts.",
+  "edge_cases_and_constraints": ["DoH2 and DoH3 are distinct despite sharing RFC 8484 application semantics.", "DoQ is not raw QUIC.", "Public recursive resolvers and Internet upstreams are excluded.", "No lane may silently substitute another executor or transport."],
+  "alternatives_considered": ["One generic secure-DNS comparison lane was rejected because transport handshake, multiplexing, fallback, and implementation maturity differ.", "Separate DNS content per transport was rejected because it would confound transport comparison with message semantics."],
+  "risks": ["A shared profile ID can accidentally merge incomparable transport results.", "Cache or upstream state can dominate results unless the authority is local and deterministic."]
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "protocol-lab.tls-certificate-profile.v1",
+  "id": "plab-single-leaf-p256-v1",
+  "purpose": "Deterministic public identity and chain descriptor for test-only ProtocolLab TLS performance workloads.",
+  "hostname": "tls.protocol-lab.test",
+  "sni": "tls.protocol-lab.test",
+  "alpn": "protocol-lab-tls",
+  "trustModel": "private-test-root",
+  "privateKeyPolicy": "test-only-package-material-never-evidence",
+  "runtimeGenerationAllowedInMeasuredWindow": false,
+  "leaf": {
+    "subject": "CN=tls.protocol-lab.test",
+    "subjectAlternativeNames": [
+      "DNS:tls.protocol-lab.test"
+    ],
+    "serialNumberHex": "504C41420000000000000001",
+    "notBefore": "2026-01-01T00:00:00Z",
+    "notAfter": "2035-01-01T00:00:00Z",
+    "publicKeyAlgorithm": "id-ecPublicKey",
+    "namedCurve": "P-256",
+    "certificateSignatureAlgorithm": "ecdsa-with-SHA256",
+    "tlsSignatureScheme": "ecdsa_secp256r1_sha256",
+    "extendedKeyUsages": [
+      "serverAuth"
+    ],
+    "derBytes": 450,
+    "derSha256": "da2726daa05ed45fb402c07ad30397eacaf2b1e7613429e895616fc64cf04d27",
+    "spkiSha256": "bdfb8c50b2fef0bea004230ce8839d1b1bf7c7dc1b058b8f3c4887d41a9c9dd8",
+    "publicCertificatePath": "leaf.pem"
+  },
+  "trustAnchor": {
+    "subject": "CN=ProtocolLab Test Root P256 v1",
+    "notBefore": "2025-01-01T00:00:00Z",
+    "notAfter": "2036-01-01T00:00:00Z",
+    "publicKeyAlgorithm": "id-ecPublicKey",
+    "namedCurve": "P-256",
+    "certificateSignatureAlgorithm": "ecdsa-with-SHA256",
+    "derBytes": 396,
+    "derSha256": "a6fbc2bcd337be4ae79daa8c6908b641757a4d0d6d8e78a0e7a4fd8d3a43e1a6",
+    "spkiSha256": "d11593090759f9987680180c43a3eac493f5638655166e2a8536c6c19b1bd157",
+    "publicCertificatePath": "root.pem"
+  },
+  "chain": {
+    "presentedCertificates": [
+      "leaf"
+    ],
+    "validationTrustAnchors": [
+      "trustAnchor"
+    ],
+    "intermediateCount": 0,
+    "totalDerBytes": 846
+  }
+}

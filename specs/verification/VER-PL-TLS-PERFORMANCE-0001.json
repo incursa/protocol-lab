@@ -1,0 +1,15 @@
+{
+  "$schema": "https://github.com/incursa/spec-trace/raw/refs/heads/main/model/model.schema.json",
+  "artifact_id": "VER-PL-TLS-PERFORMANCE-0001",
+  "artifact_type": "verification",
+  "title": "ProtocolLab TLS Contract Verification",
+  "domain": "protocol-lab",
+  "status": "planned",
+  "owner": "protocol-lab-maintainers",
+  "related_artifacts": ["SPEC-PL-TLS-PERFORMANCE", "ARC-PL-TLS-PERFORMANCE"],
+  "verifies": ["REQ-PL-TLSPERF-0001", "REQ-PL-TLSPERF-0002", "REQ-PL-TLSPERF-0003", "REQ-PL-TLSPERF-0004", "REQ-PL-TLSPERF-0005", "REQ-PL-TLSPERF-0006", "REQ-PL-TLSPERF-0007", "REQ-PL-TLSPERF-0008"],
+  "scope": "Verify TLS public contract structure and fixture identity only; do not verify an executor, target, cryptographic library, private key, runner, or benchmark.",
+  "verification_method": "Schema validation, certificate descriptor and public-certificate hash checks, valid and invalid fixture checks, scenario and suite reference resolution, standards-reference inspection, and repository-boundary inspection.",
+  "procedure": ["Validate tls.handshake.full and tls-handshake-smoke.", "Confirm every first-wave surface requires zero application-data bytes and a fresh TLS 1.3 session.", "Confirm the suite selects only tls.handshake.full.", "Confirm SNI, ALPN, certificate profile, DER/SPKI fingerprints, chain shape, and latency boundaries are exact.", "Confirm invalid fixtures reject nonzero application data, wrong or missing version, resumed session, wrong ALPN, missing certificate identity, and missing latency boundary.", "Confirm public certificate PEM hashes match the descriptor and no private key exists under fixtures."],
+  "expected_result": "The first TLS 1.3 full-handshake contract is internally consistent, non-publishable, and makes no executable support claim."
+}

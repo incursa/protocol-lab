@@ -29,6 +29,8 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
+          import base64
+          import hashlib
           import json
           import pathlib
           import re
@@ -73,12 +75,16 @@ jobs:
           package_schema = load_json(root / "schemas" / "package" / "v2" / "package.schema.json")
           run_plan_schema = load_json(root / "schemas" / "run-plan" / "v1" / "run-plan.schema.json")
           validation_check_outcomes_schema = load_json(root / "schemas" / "validation" / "v1" / "check-outcomes.schema.json")
+          evidence_report_schema = load_json(root / "schemas" / "public-report" / "v1" / "evidence-report-v1.schema.json")
+          tls_certificate_profile_schema = load_json(root / "schemas" / "tls" / "v1" / "certificate-profile.schema.json")
           scenario_validator = Draft202012Validator(scenario_schema)
           suite_validator = Draft202012Validator(suite_schema)
           load_profile_validator = Draft202012Validator(load_profile_schema)
           package_validator = Draft202012Validator(package_schema)
           run_plan_validator = Draft202012Validator(run_plan_schema)
           validation_check_outcomes_validator = Draft202012Validator(validation_check_outcomes_schema)
+          evidence_report_validator = Draft202012Validator(evidence_report_schema)
+          tls_certificate_profile_validator = Draft202012Validator(tls_certificate_profile_schema)
 
           specification_schema_root = root / "schemas" / "specification" / "v1"
           specification_schema_files = {
@@ -497,6 +503,51 @@ jobs:
               for test_executor_id in run_plan.get("testExecutorIds", []):
                   if test_executor_id not in provided_test_executors:
                       errors.append(f"{rel(run_plan_path)}: test executor {test_executor_id} is not provided by the pinned package fixtures")
+
+          valid_report_root = root / "fixtures" / "public-contracts" / "public-reports" / "valid"
+          for report_path, report in json_docs.items():
+              if not report_path.is_relative_to(valid_report_root):
+                  continue
+              for error in evidence_report_validator.iter_errors(report):
+                  errors.append(f"{rel(report_path)}: evidence-report schema: {error.message}")
+
+          invalid_report_root = root / "fixtures" / "public-contracts" / "public-reports" / "invalid"
+          for report_path, report in json_docs.items():
+              if not report_path.is_relative_to(invalid_report_root):
+                  continue
+              if evidence_report_validator.is_valid(report):
+                  errors.append(f"{rel(report_path)}: invalid evidence-report fixture unexpectedly passes schema validation")
+
+          tls_fixture_root = root / "fixtures" / "public-contracts" / "tls"
+          for descriptor_path in sorted(tls_fixture_root.rglob("certificate-profile.json")):
+              descriptor = json_docs.get(descriptor_path) or load_json(descriptor_path)
+              for error in tls_certificate_profile_validator.iter_errors(descriptor):
+                  errors.append(f"{rel(descriptor_path)}: TLS certificate-profile schema: {error.message}")
+
+              total_der_bytes = 0
+              for descriptor_key in ("leaf", "trustAnchor"):
+                  certificate = descriptor.get(descriptor_key, {})
+                  pem_path = descriptor_path.parent / certificate.get("publicCertificatePath", "")
+                  if not pem_path.is_file():
+                      errors.append(f"{rel(descriptor_path)}: missing public certificate {certificate.get('publicCertificatePath')}")
+                      continue
+                  pem_text = pem_path.read_text(encoding="ascii")
+                  match = re.fullmatch(r"-----BEGIN CERTIFICATE-----\s+([A-Za-z0-9+/=\s]+)-----END CERTIFICATE-----\s*", pem_text)
+                  if not match:
+                      errors.append(f"{rel(pem_path)}: invalid certificate PEM encoding")
+                      continue
+                  der = base64.b64decode(re.sub(r"\s+", "", match.group(1)), validate=True)
+                  total_der_bytes += len(der)
+                  if len(der) != certificate.get("derBytes"):
+                      errors.append(f"{rel(pem_path)}: DER byte count does not match certificate profile")
+                  if hashlib.sha256(der).hexdigest() != certificate.get("derSha256"):
+                      errors.append(f"{rel(pem_path)}: DER SHA-256 does not match certificate profile")
+              if total_der_bytes != descriptor.get("chain", {}).get("totalDerBytes"):
+                  errors.append(f"{rel(descriptor_path)}: chain totalDerBytes does not match public certificates")
+
+          for path in sorted(tls_fixture_root.rglob("*")):
+              if path.is_file() and b"PRIVATE KEY" in path.read_bytes():
+                  errors.append(f"{rel(path)}: private key material is forbidden in public TLS fixtures")
 
           forbidden_dirs = {
               "src", "tests", "scripts", "servers", "tools",

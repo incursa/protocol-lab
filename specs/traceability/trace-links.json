@@ -9,18 +9,25 @@
     "specs/requirements/SPEC-PL-ARTIFACTS.json",
     "specs/requirements/SPEC-PL-REPORT.json",
     "specs/requirements/SPEC-PL-SPECIFICATION-COVERAGE.json",
+    "specs/requirements/SPEC-PL-TLS-PERFORMANCE.json",
+    "specs/requirements/SPEC-PL-SECURE-DNS-PERFORMANCE.json",
     "specs/architecture/ARC-PL-PUBLIC-CONTRACTS.json",
     "specs/architecture/ARC-PL-CORE-CONTRACTS.json",
     "specs/architecture/ARC-PL-MEASUREMENT-TELEMETRY.json",
     "specs/architecture/public-report/ARC-PL-REPORT.json",
     "specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json",
+    "specs/architecture/ARC-PL-TLS-PERFORMANCE.json",
+    "specs/architecture/ARC-PL-SECURE-DNS-PERFORMANCE.json",
     "specs/work-items/WI-PL-PUBLIC-REPOSITION-0001.json",
     "specs/work-items/WI-PL-SPECIFICATION-COVERAGE-0001.json",
     "specs/verification/VER-PL-PUBLIC-REPOSITION-0001.json",
     "specs/verification/VER-PL-CONTRACT-COVERAGE-0001.json",
     "specs/verification/VER-PL-MEASUREMENT-CONTRACT-0001.json",
     "specs/verification/public-report/VER-PL-REPORT-0001.json",
-    "specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"
+    "specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json",
+    "specs/verification/VER-PL-HTTP2-COMPARISON-0001.json",
+    "specs/verification/VER-PL-TLS-PERFORMANCE-0001.json",
+    "specs/verification/VER-PL-SECURE-DNS-LANE-ISOLATION-0001.json"
   ],
   "requirements": [
     {
@@ -470,6 +477,83 @@
       ],
       "architecture": ["specs/architecture/ARC-PL-SPECIFICATION-COVERAGE-0001.json"],
       "verification": ["specs/verification/VER-PL-SPECIFICATION-COVERAGE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-CORE-0011",
+      "schemas": ["schemas/load-profile/load-profile.schema.json"],
+      "fixtures": ["fixtures/public-contracts/load-profiles/valid/http2-comparison-load-profile.json"],
+      "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
+      "verification": ["specs/verification/VER-PL-HTTP2-COMPARISON-0001.json"]
+    },
+    {
+      "id": "REQ-PL-CORE-0012",
+      "schemas": ["schemas/load-profile/load-profile.schema.json"],
+      "fixtures": ["fixtures/public-contracts/load-profiles/invalid/http2-comparison-concurrency-over-capacity.json"],
+      "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
+      "verification": ["specs/verification/VER-PL-HTTP2-COMPARISON-0001.json"]
+    },
+    {
+      "id": "REQ-PL-CORE-0013",
+      "schemas": ["schemas/public-report/v1/evidence-report-v1.schema.json"],
+      "fixtures": ["fixtures/public-contracts/load-profiles/valid/http2-comparison-load-profile.json"],
+      "architecture": ["specs/architecture/ARC-PL-CORE-CONTRACTS.json"],
+      "verification": ["specs/verification/VER-PL-HTTP2-COMPARISON-0001.json"]
+    },
+    {
+      "id": "REQ-PL-MEASURE-0012",
+      "schemas": ["schemas/public-report/v1/evidence-report-v1.schema.json"],
+      "fixtures": ["fixtures/public-contracts/public-reports/valid/minimal-evidence-report.json"],
+      "architecture": ["specs/architecture/ARC-PL-MEASUREMENT-TELEMETRY.json"],
+      "verification": ["specs/verification/VER-PL-HTTP2-COMPARISON-0001.json"]
+    },
+    {
+      "id": "REQ-PL-MEASURE-0013",
+      "schemas": ["schemas/public-report/v1/evidence-report-v1.schema.json"],
+      "fixtures": ["fixtures/public-contracts/public-reports/invalid/evidence-report-missing-comparison-concurrency.json"],
+      "architecture": ["specs/architecture/ARC-PL-MEASUREMENT-TELEMETRY.json"],
+      "verification": ["specs/verification/VER-PL-HTTP2-COMPARISON-0001.json"]
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0001",
+      "schemas": ["schemas/scenario.schema.json"],
+      "fixtures": ["fixtures/public-contracts/scenarios/valid/tls-handshake-full-scenario.json", "fixtures/public-contracts/scenarios/invalid/tls-handshake-wrong-version.json"],
+      "architecture": ["specs/architecture/ARC-PL-TLS-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-TLS-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0004",
+      "schemas": ["schemas/tls/v1/certificate-profile.schema.json"],
+      "fixtures": ["fixtures/public-contracts/tls/plab-single-leaf-p256-v1/certificate-profile.json"],
+      "architecture": ["specs/architecture/ARC-PL-TLS-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-TLS-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-TLSPERF-0006",
+      "schemas": ["schemas/scenario.schema.json"],
+      "fixtures": ["fixtures/public-contracts/scenarios/invalid/tls-handshake-missing-latency-boundary.json"],
+      "architecture": ["specs/architecture/ARC-PL-TLS-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-TLS-PERFORMANCE-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SECDNS-0001",
+      "schemas": [],
+      "fixtures": [],
+      "architecture": ["specs/architecture/ARC-PL-SECURE-DNS-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-SECURE-DNS-LANE-ISOLATION-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SECDNS-0002",
+      "schemas": [],
+      "fixtures": [],
+      "architecture": ["specs/architecture/ARC-PL-SECURE-DNS-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-SECURE-DNS-LANE-ISOLATION-0001.json"]
+    },
+    {
+      "id": "REQ-PL-SECDNS-0003",
+      "schemas": [],
+      "fixtures": [],
+      "architecture": ["specs/architecture/ARC-PL-SECURE-DNS-PERFORMANCE.json"],
+      "verification": ["specs/verification/VER-PL-SECURE-DNS-LANE-ISOLATION-0001.json"]
     }
   ]
 }

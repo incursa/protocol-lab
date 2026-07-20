@@ -15,9 +15,10 @@ cooldownSeconds: 5
 repetitions: 3
 
 http2:
-  connections: 128
+  connections: 16
   concurrency: 128
-  streamsPerConnection: 100
+  streamsPerConnection: 8
+  operationDistribution: balanced-round-robin
   requestTimeoutSeconds: 10
 
 evidence:
@@ -28,7 +29,12 @@ artifacts:
   required:
     - load.stdout.log
     - load.stderr.log
+    - validation.json
+    - protocol-proof.json
+    - http2-topology.json
     - result.json
+    - target-telemetry.json
+    - load-generator-telemetry.json
   optional:
     - counters
     - telemetry-bundle.json

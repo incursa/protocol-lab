@@ -189,6 +189,37 @@
       }
     },
     {
+      "id": "REQ-PL-CORE-0011",
+      "title": "HTTP/2 load-field semantics",
+      "statement": "An HTTP/2 load profile MUST treat `connections` as simultaneously established connections, `concurrency` as the global maximum in-flight operation count, and `streamsPerConnection` as a per-connection in-flight stream cap rather than a multiplier or observed-activity claim.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-HTTP2-COMPARISON-0001"],
+        "related": ["schemas/load-profile/load-profile.schema.json", "load-profiles/http2-comparison.yaml"],
+        "upstream_refs": ["https://www.rfc-editor.org/rfc/rfc9113"]
+      }
+    },
+    {
+      "id": "REQ-PL-CORE-0012",
+      "title": "HTTP/2 stream-capacity constraint",
+      "statement": "An HTTP/2 load profile MUST keep global concurrency less than or equal to the product of requested connections and the per-connection stream cap.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-HTTP2-COMPARISON-0001"],
+        "related": ["schemas/load-profile/load-profile.schema.json", "fixtures/public-contracts/load-profiles/invalid/http2-comparison-concurrency-over-capacity.json"]
+      }
+    },
+    {
+      "id": "REQ-PL-CORE-0013",
+      "title": "HTTP/2 comparison topology proof",
+      "statement": "HTTP/2 comparison evidence MUST preserve requested and observed connection count, global concurrency, per-connection maximum active streams, peer-advertised stream limits, operation distribution, and any clamping or redistribution outcome.",
+      "trace": {
+        "satisfied_by": ["ARC-PL-CORE-CONTRACTS"],
+        "verified_by": ["VER-PL-HTTP2-COMPARISON-0001"],
+        "related": ["schemas/public-report/v1/evidence-report-v1.schema.json", "load-profiles/http2-comparison.yaml"]
+      }
+    },
+    {
       "id": "PLAB-VERSIONING-001",
       "title": "Versioning and compatibility rules",
       "statement": "ProtocolLab public contracts MUST use stable contract-version identifiers and MUST preserve explicit unsupported, unavailable, and incompatible outcomes instead of allowing implicit fallback.",

@@ -1,0 +1,164 @@
+{
+  "schemaVersion": "protocol-lab.evidence-report.v1",
+  "runId": "run-2026-07-13-http2-comparison",
+  "generatedAt": "2026-07-13T12:00:00Z",
+  "identity": {
+    "runId": "run-2026-07-13-http2-comparison",
+    "timestamp": "2026-07-13T12:00:00Z",
+    "suiteId": "http2-comparison-benchmark",
+    "suiteTitle": "ProtocolLab HTTP/2 comparison benchmark",
+    "processorCount": 8,
+    "evidenceTier": "comparison",
+    "warnings": []
+  },
+  "matrixSummary": {
+    "totalCells": 1,
+    "supportedCells": 1,
+    "unsupportedCells": 0,
+    "missingCapability": 0,
+    "missingLoadGenerator": 0,
+    "incompatibleTrafficShape": 0,
+    "incompatibleLoadProfile": 0,
+    "experimentalDisabled": 0,
+    "placeholderNotRunnable": 0,
+    "otherUnsupported": 0,
+    "unsupportedCellDetails": []
+  },
+  "validationSummary": {
+    "passed": 1,
+    "failed": 0,
+    "unsupported": 0,
+    "notApplicable": 0,
+    "inconclusive": 0,
+    "infrastructureFailure": 0,
+    "proofArtifacts": [{
+      "cellKey": "cell-http2-001",
+      "status": "passed",
+      "artifacts": ["validation.json", "protocol-proof.json", "http2-topology.json"]
+    }]
+  },
+  "benchmarkAcceptance": {
+    "acceptedBenchmarks": 1,
+    "rejectedBenchmarks": 0,
+    "notRunValidationFailed": 0,
+    "notRunUnsupported": 0,
+    "notRunLoadGeneratorFailed": 0,
+    "notRunParserFailed": 0,
+    "acceptedDetails": [{
+      "implementationId": "example-http2-origin",
+      "scenarioId": "http2.core.plaintext",
+      "protocol": "h2",
+      "connections": 16,
+      "concurrency": 128,
+      "streamsPerConnection": 8,
+      "repetition": 0,
+      "benchmarkStatus": "accepted",
+      "evidenceTier": "comparison"
+    }],
+    "rejectedDetails": [],
+    "notRunDetails": []
+  },
+  "cells": [{
+    "cellKey": "cell-http2-001",
+    "implementationId": "example-http2-origin",
+    "implementationName": "Example HTTP/2 origin",
+    "scenarioId": "http2.core.plaintext",
+    "scenarioName": "HTTP/2 plaintext response",
+    "testExecutorId": "org.protocol-lab.executor.http-performance",
+    "family": "http",
+    "protocol": "h2",
+    "role": "server",
+    "executionProfile": "cleartext",
+    "loadProfileId": "http2-comparison",
+    "loadProfilePurpose": "comparison",
+    "durationSeconds": 30,
+    "warmupSeconds": 5,
+    "repetition": 0,
+    "connections": 16,
+    "concurrency": 128,
+    "streamsPerConnection": 8,
+    "protocolVariant": "h2c-prior-knowledge",
+    "loadGeneratorIdentity": {
+      "id": "h2load",
+      "version": "1.64.0"
+    },
+    "requestedLoad": {
+      "connections": 16,
+      "concurrency": 128,
+      "streamsPerConnection": 8,
+      "operationDistribution": "balanced-round-robin"
+    },
+    "effectiveLoad": {
+      "connections": 16,
+      "concurrency": 128,
+      "streamsPerConnection": 8,
+      "operationDistribution": "balanced-round-robin",
+      "maximumActiveStreamsByConnection": [8],
+      "peerAdvertisedMaxConcurrentStreamsByConnection": [100],
+      "clamped": false,
+      "redistributed": false
+    },
+    "networkProfile": "clean",
+    "validation": {
+      "status": "passed",
+      "summary": "Exact HTTP/2 protocol and deterministic response validation passed.",
+      "provenProtocol": "h2",
+      "protocolProofMethod": "executor protocol proof",
+      "observations": [],
+      "proofArtifacts": [],
+      "warnings": [],
+      "errors": []
+    },
+    "benchmark": {
+      "status": "accepted",
+      "parsedMetricsAvailable": true,
+      "evidenceClass": "comparison",
+      "comparabilityStatus": "matched",
+      "evidenceReasons": [],
+      "comparabilityWarnings": []
+    },
+    "measurements": [],
+    "artifacts": [{
+      "name": "http2-topology.json",
+      "path": "artifacts/cell-http2-001/http2-topology.json",
+      "exists": true
+    }],
+    "warnings": [],
+    "errors": []
+  }],
+  "comparisonGroups": [{
+    "scenarioId": "http2.core.plaintext",
+    "protocol": "h2",
+    "protocolVariant": "h2c-prior-knowledge",
+    "loadProfileId": "http2-comparison",
+    "testExecutorId": "org.protocol-lab.executor.http-performance",
+    "loadGeneratorIdentity": {
+      "id": "h2load",
+      "version": "1.64.0"
+    },
+    "requestedLoad": {
+      "connections": 16,
+      "concurrency": 128,
+      "streamsPerConnection": 8,
+      "operationDistribution": "balanced-round-robin"
+    },
+    "effectiveLoad": {
+      "connections": 16,
+      "concurrency": 128,
+      "streamsPerConnection": 8,
+      "operationDistribution": "balanced-round-robin"
+    },
+    "entries": [{"cellKey": "cell-http2-001"}],
+    "comparabilityWarnings": []
+  }],
+  "warnings": [],
+  "artifactIndex": [{
+    "cellKey": "cell-http2-001",
+    "cellDirectory": "artifacts/cell-http2-001",
+    "files": [{
+      "name": "http2-topology.json",
+      "path": "artifacts/cell-http2-001/http2-topology.json",
+      "exists": true
+    }]
+  }]
+}

@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "protocol-lab.evidence-report.v1",
+  "runId": "run-invalid-http2-comparison",
+  "generatedAt": "2026-07-13T12:00:00Z",
+  "identity": {
+    "runId": "run-invalid-http2-comparison",
+    "timestamp": "2026-07-13T12:00:00Z",
+    "processorCount": 8,
+    "evidenceTier": "comparison",
+    "warnings": []
+  },
+  "matrixSummary": {
+    "totalCells": 1,
+    "supportedCells": 1,
+    "unsupportedCells": 0,
+    "missingCapability": 0,
+    "missingLoadGenerator": 0,
+    "incompatibleTrafficShape": 0,
+    "incompatibleLoadProfile": 0,
+    "experimentalDisabled": 0,
+    "placeholderNotRunnable": 0,
+    "otherUnsupported": 0,
+    "unsupportedCellDetails": []
+  },
+  "validationSummary": {
+    "passed": 1,
+    "failed": 0,
+    "unsupported": 0,
+    "notApplicable": 0,
+    "inconclusive": 0,
+    "infrastructureFailure": 0,
+    "proofArtifacts": []
+  },
+  "benchmarkAcceptance": {
+    "acceptedBenchmarks": 0,
+    "rejectedBenchmarks": 0,
+    "notRunValidationFailed": 0,
+    "notRunUnsupported": 0,
+    "notRunLoadGeneratorFailed": 0,
+    "notRunParserFailed": 0,
+    "acceptedDetails": [],
+    "rejectedDetails": [],
+    "notRunDetails": []
+  },
+  "cells": [{
+    "cellKey": "cell-invalid-http2",
+    "implementationId": "example-http2-origin",
+    "implementationName": "Example HTTP/2 origin",
+    "scenarioId": "http2.core.plaintext",
+    "scenarioName": "HTTP/2 plaintext response",
+    "testExecutorId": "org.protocol-lab.executor.http-performance",
+    "family": "http",
+    "protocol": "h2",
+    "role": "server",
+    "executionProfile": "cleartext",
+    "loadProfileId": "http2-comparison",
+    "loadProfilePurpose": "comparison",
+    "durationSeconds": 30,
+    "warmupSeconds": 5,
+    "repetition": 0,
+    "connections": 16,
+    "streamsPerConnection": 8,
+    "protocolVariant": "h2c-prior-knowledge",
+    "loadGeneratorIdentity": {"id": "h2load", "version": "1.64.0"},
+    "requestedLoad": {
+      "connections": 16,
+      "concurrency": 128,
+      "streamsPerConnection": 8,
+      "operationDistribution": "balanced-round-robin"
+    },
+    "effectiveLoad": {
+      "connections": 16,
+      "concurrency": 128,
+      "streamsPerConnection": 8,
+      "operationDistribution": "balanced-round-robin"
+    },
+    "networkProfile": "clean",
+    "validation": {
+      "status": "passed",
+      "summary": "Validation passed.",
+      "observations": [],
+      "proofArtifacts": [],
+      "warnings": [],
+      "errors": []
+    },
+    "benchmark": {
+      "status": "accepted",
+      "parsedMetricsAvailable": true,
+      "evidenceReasons": [],
+      "comparabilityWarnings": []
+    },
+    "measurements": [],
+    "artifacts": [],
+    "warnings": [],
+    "errors": []
+  }],
+  "comparisonGroups": [],
+  "warnings": [],
+  "artifactIndex": []
+}

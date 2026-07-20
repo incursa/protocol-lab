@@ -24,6 +24,8 @@
     "PLAB-MEASURE-009",
     "PLAB-MEASURE-010",
     "PLAB-MEASURE-011",
+    "REQ-PL-MEASURE-0012",
+    "REQ-PL-MEASURE-0013",
     "PLAB-ADAPTER-TELEMETRY-001",
     "PLAB-EXECUTOR-TELEMETRY-001",
     "PLAB-REPORT-MEASURE-001",
@@ -35,7 +37,7 @@
     "PLAB-ARTIFACT-006",
     "PLAB-ARTIFACT-007"
   ],
-  "design_summary": "ProtocolLab separates behavior validation from measurement evidence, raw artifacts, redaction safety, and public report claims. Normalized telemetry bundles carry samples, summaries, collector descriptors, producer metadata, source/scope separation, warnings, errors, and optional artifact references. Artifact bundles carry hash-addressable references to raw or derived evidence. Adapter and test-executor contracts may advertise optional telemetry export, but export absence is a valid state unless a run plan requires it.",
+  "design_summary": "ProtocolLab separates behavior validation from measurement evidence, raw artifacts, redaction safety, and public report claims. A comparison key includes the exact scenario and protocol variant, requested and effective load topology, network profile, executor and load-generator identities, implementation role, platform, topology, validation, saturation, and repetition policy. A mismatch produces an ineligible comparison cell rather than silent regrouping. Normalized telemetry bundles carry samples, summaries, collector descriptors, producer metadata, source/scope separation, warnings, errors, and optional artifact references. Artifact bundles carry hash-addressable references to raw or derived evidence. Adapter and test-executor contracts may advertise optional telemetry export, but export absence is a valid state unless a run plan requires it.",
   "key_components": [
     "measurement profiles",
     "telemetry bundles",
@@ -59,6 +61,8 @@
     "Raw artifacts can use any media type, but public references must remain hash-addressable and redaction-aware.",
     "Telemetry bundles must not introduce conformance pass/fail authority.",
     "External telemetry systems can be named as producer systems without becoming canonical ProtocolLab models."
+    ,"Requested topology and observed topology are distinct evidence; neither may be inferred from the other."
+    ,"Comparison grouping fails closed when executor, generator, protocol variant, load, topology, validation, or saturation identity is missing or mismatched."
   ],
   "alternatives_considered": [
     "Requiring one telemetry backend was rejected because it would make the public contract implementation-specific.",

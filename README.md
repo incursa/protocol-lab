@@ -228,6 +228,9 @@ guidance.
   SpecTrace usage policies.
 - [`docs/lab/package-v2.md`](docs/lab/package-v2.md) describes the package
   contract.
+- Third-party package consumers can use the companion
+  [`protocol-lab-components consumer guide`](https://github.com/incursa/protocol-lab-components/blob/main/docs/third-party-package-consumption.md)
+  for package verification, provenance, and immutable run-plan pinning.
 - [`docs/lab/run-plan-v1.md`](docs/lab/run-plan-v1.md) describes immutable
   run-plan documents.
 - [`docs/protocol-lab/product-boundaries.md`](docs/protocol-lab/product-boundaries.md)

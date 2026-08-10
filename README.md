@@ -22,6 +22,21 @@ The Incursa-hosted lab tester is available at
 implementation of these contracts; this repository remains the public source
 of truth for the contracts.
 
+## Choose Your Path
+
+| Goal | Start here |
+| --- | --- |
+| Understand the contract model | [Getting Started](docs/getting-started.md) |
+| Browse scenarios and suites | [Scenario Catalog](docs/scenarios/catalog.md) and [Suite Catalog](docs/scenarios/suite-catalog.md) |
+| Build or verify a component package | [ProtocolLab Components guide](https://github.com/incursa/protocol-lab-components/blob/main/docs/third-party-package-consumption.md) |
+| Run a hosted experiment | [lab.incursa.com](https://lab.incursa.com/) |
+| Propose a contract, fixture, or scenario change | [CONTRIBUTING.md](CONTRIBUTING.md) |
+
+ProtocolLab does not require one implementation language or runner. Start with
+the public contract when you need interoperability, use the component guide
+when you need package provenance, and use a runner or hosted lab when you need
+execution.
+
 ## Documentation And Mirroring
 
 The source documentation for this repository lives under [`docs/`](docs/).

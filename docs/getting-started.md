@@ -7,6 +7,19 @@ title: "Getting Started"
 This guide is for developers, evaluators, and documentation readers who need
 to understand ProtocolLab without assuming a specific runner or hosted lab.
 
+## Pick A Practical Starting Point
+
+- To run a hosted experiment, use [lab.incursa.com](https://lab.incursa.com/).
+- To build or verify an implementation, executor, or scenario package, use the
+  [ProtocolLab Components guide](https://github.com/incursa/protocol-lab-components/blob/main/docs/third-party-package-consumption.md).
+- To add a public scenario, schema, fixture, or contract, follow
+  [CONTRIBUTING.md](../CONTRIBUTING.md).
+- To integrate another runner, begin with the package and run-plan contracts,
+  then preserve explicit `unsupported` and `unavailable` outcomes.
+
+The reading path below explains the model in depth; it is not a prerequisite
+for trying the hosted lab or completing the component-package quickstart.
+
 ## First Reading Path
 
 1. Start with the [overview](overview.md) for the repository purpose and

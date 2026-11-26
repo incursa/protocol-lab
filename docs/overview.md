@@ -45,19 +45,15 @@ ProtocolLab is intended to support:
   suites
 - publication-safe evidence reports and artifact manifests
 
-The current public protocol examples include HTTP/1, HTTP/2, HTTP/3, QUIC
+Public protocol examples include HTTP/1, HTTP/2, HTTP/3, QUIC
 transport, WebTransport, WebSocket, MASQUE, and network profile surfaces where
 the corresponding scenario or suite definitions exist.
 
-## Stable And Developing Areas
+## Contract authority
 
-The contract areas marked `complete` in the
-[contract coverage matrix](contracts/coverage-matrix.md) are the current
-stable public source of truth for implementation repositories and report
-consumers.
-
-Open work is still expected around new contract versions, additional
-fixtures, future protocol surfaces, package-index admission policy, and
-public-report evolution. Open work should extend or revise the public
-contracts explicitly; it should not replace the public contract layer with
-implementation-owned behavior.
+The [contract index](contracts/coverage-matrix.md) links requirements,
+architecture, verification, schemas, and fixtures. The linked canonical
+artifacts are the public source of truth for implementation repositories and
+report consumers. New versions, fixtures, and protocol surfaces must extend or
+revise those contracts explicitly rather than substituting implementation-owned
+behavior.

@@ -50,6 +50,7 @@ requirement that belongs in SpecTrace JSON.
 - Governance changes may update root governance files, `.github/`, and docs
   indexes, but must not reintroduce implementation build or publication
   workflows.
+- Keep durable documentation free of branch, commit, deployment, point-in-time validation, test-count, package-count, exact-latest-version, temporary-blocker, and unfinished-work status. Put release history in release notes and active planning in issues or pull requests.
 
 ## Repository-Health Checks
 

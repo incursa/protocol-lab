@@ -212,25 +212,18 @@ The workflow also parses JSON and YAML, checks repository-local Markdown
 links, validates schema IDs, resolves traceability paths, and rejects
 implementation files and folders.
 
-## Readiness And Gaps
+## Contract authority
 
 The public contract surfaces indexed by
 [`docs/contracts/coverage-matrix.md`](docs/contracts/coverage-matrix.md)
-are stable enough for implementation repositories, hosted labs, validators,
-report consumers, and package producers to consume as the current public
-source of truth.
-
-Current open questions are contract refinement choices, not permission to
-replace public contracts with implementation behavior. They include whether to
-add OpenAPI documents for adapter and test-executor control-plane routes,
-whether package component entry manifests need dedicated schemas, and whether
-a future public-report version should rename historical fields with migration
-guidance.
+are the navigation surface for implementation repositories, hosted labs,
+validators, report consumers, and package producers. The linked canonical
+SpecTrace artifacts and schemas remain authoritative.
 
 ## Documentation
 
 - [`docs/overview.md`](docs/overview.md) explains ProtocolLab's purpose,
-  supported work, stable areas, and current open work.
+  supported work, and contract authority.
 - [`docs/getting-started.md`](docs/getting-started.md) gives a practical
   reader path, repository layout, validation expectations, and docs mirroring
   notes.
@@ -263,7 +256,7 @@ guidance.
   [`specs/README.md`](specs/README.md) index the public schema and SpecTrace
   surfaces.
 - [`docs/contracts/coverage-matrix.md`](docs/contracts/coverage-matrix.md)
-  summarizes current contract coverage and remaining questions.
+  indexes contract artifacts, schemas, and fixtures.
 - [`AGENTS.md`](AGENTS.md) gives Codex and other agent contributors safe
   operating instructions for this spec-only repository.
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), [`SUPPORT.md`](SUPPORT.md),
